@@ -36,7 +36,7 @@ Because the layout is plain Rojo, `rojo serve` still works locally too.
 
 ## Server
 
-`sync-server/server.js` is plain Node with no dependencies; it needs `git` (the Dockerfile installs it).
+Railway settings live in `/railway.json` (it only redeploys when `sync-server/` or that file changes). `sync-server/server.js` is plain Node with no dependencies; it needs `git` (the Dockerfile installs it).
 
 | Env var | Meaning |
 |---|---|

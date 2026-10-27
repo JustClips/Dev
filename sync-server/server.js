@@ -29,6 +29,7 @@ const PORT = Number(process.env.PORT || 34873);
 const WORKDIR = process.env.WORKDIR || path.join(require("os").tmpdir(), "livesync-repo");
 // Set LOCAL_DIR to serve a local folder instead of cloning (for testing).
 const LOCAL_DIR = process.env.LOCAL_DIR || "";
+const STARTED_AT = new Date().toISOString();
 
 if (!SYNC_KEY) {
   console.error("SYNC_KEY is not set; refusing to start (the API would be open to anyone).");
@@ -211,7 +212,7 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, "http://x");
 
   if (url.pathname === "/" || url.pathname === "/healthz") {
-    return send(res, 200, { ok: true, name: "livesync", version: state.version, commit: state.commit, error: state.error });
+    return send(res, 200, { ok: true, name: "livesync", startedAt: STARTED_AT, version: state.version, commit: state.commit, error: state.error });
   }
 
   if (url.pathname === "/webhook" && req.method === "POST") {
