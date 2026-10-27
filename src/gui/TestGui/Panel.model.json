@@ -1,0 +1,64 @@
+{
+  "className": "Frame",
+  "properties": {
+    "AnchorPoint": [1, 1],
+    "Position": [[1, -24], [1, -24]],
+    "Size": [[0, 260], [0, 150]],
+    "BackgroundColor3": "#1E2230",
+    "BorderSizePixel": 0
+  },
+  "attributes": { "Clicks": 0 },
+  "children": [
+    { "name": "Corner", "className": "UICorner", "properties": { "CornerRadius": [0, 12] } },
+    { "name": "Stroke", "className": "UIStroke", "properties": { "Color": "#4FC3F7", "Thickness": 2, "Transparency": 0.2 } },
+    {
+      "name": "Padding", "className": "UIPadding",
+      "properties": { "PaddingTop": [0, 12], "PaddingBottom": [0, 12], "PaddingLeft": [0, 14], "PaddingRight": [0, 14] }
+    },
+    {
+      "name": "Layout", "className": "UIListLayout",
+      "properties": { "Padding": [0, 10], "SortOrder": "LayoutOrder", "HorizontalAlignment": "Center" }
+    },
+    {
+      "name": "Title", "className": "TextLabel",
+      "properties": {
+        "LayoutOrder": 1,
+        "Size": [[1, 0], [0, 28]],
+        "BackgroundTransparency": 1,
+        "Text": "LiveSync test panel",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 20,
+        "FontFace": { "family": "rbxasset://fonts/families/GothamSSm.json", "weight": "Bold" }
+      }
+    },
+    {
+      "name": "ClickButton", "className": "TextButton",
+      "properties": {
+        "LayoutOrder": 2,
+        "Size": [[1, 0], [0, 44]],
+        "BackgroundColor3": "#4FC3F7",
+        "AutoButtonColor": true,
+        "Text": "Click me",
+        "TextColor3": "#0B1020",
+        "TextSize": 18,
+        "FontFace": { "family": "rbxasset://fonts/families/GothamSSm.json", "weight": "Bold" }
+      },
+      "attributes": { "Message": "Button works!" },
+      "children": [
+        { "name": "Corner", "className": "UICorner", "properties": { "CornerRadius": [0, 8] } }
+      ]
+    },
+    {
+      "name": "Counter", "className": "TextLabel",
+      "properties": {
+        "LayoutOrder": 3,
+        "Size": [[1, 0], [0, 20]],
+        "BackgroundTransparency": 1,
+        "Text": "Clicks: 0",
+        "TextColor3": "#B0BEC5",
+        "TextSize": 14,
+        "Font": "Gotham"
+      }
+    }
+  ]
+}

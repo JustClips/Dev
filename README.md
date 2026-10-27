@@ -18,20 +18,45 @@ Sync is one way: GitHub → Studio. Edits made by hand in Studio to synced scrip
 | `src/shared/` | `ReplicatedStorage.Shared` |
 | `src/server/` | `ServerScriptService.Server` |
 | `src/client/` | `StarterPlayer.StarterPlayerScripts.Client` |
+| `src/gui/` | `StarterGui` |
+| `src/workspace/` | `Workspace` |
 
-File rules (same as Rojo):
+File rules (Rojo-compatible):
 
 - `Name.server.luau` → Script, `Name.client.luau` → LocalScript, `Name.luau` → ModuleScript (`.lua` works too)
 - a folder → Folder; a folder with `init.luau` / `init.server.luau` / `init.client.luau` becomes that script, with the other files as children
+- `Name.model.json` → any instance tree (Parts, UI, lights, constraints...)
+- `init.meta.json` in a folder, or `Name.meta.json` next to a script, sets its `className`, `properties`, `attributes` and `tags`
 - `Name.txt` → StringValue
+- in `default.project.json`: `$className`, `$path`, `$properties`, `$attributes`, `$tags`
 
-Because the layout is plain Rojo, `rojo serve` still works locally too.
+A `.model.json` looks like this:
+
+```json
+{
+  "className": "Part",
+  "properties": { "Anchored": true, "Size": [4, 1, 4], "Color": "#33AAFF", "Material": "Neon" },
+  "attributes": { "Speed": 10, "Tint": { "Color3": [1, 0, 0] } },
+  "tags": ["Lava"],
+  "children": [{ "name": "Light", "className": "PointLight", "properties": { "Range": 12 } }]
+}
+```
+
+Property values are read using the property's own type, so short forms work:
+Vector3/Vector2 `[x, y, z]`, Color3 `[r, g, b]` (0–1 or 0–255) or `"#RRGGBB"`, UDim2 `[[xScale, xOffset], [yScale, yOffset]]`,
+UDim `[scale, offset]`, enums by name (`"Neon"`), BrickColor by name, CFrame `{ "position": [..], "orientation": [deg, deg, deg] }`,
+FontFace `{ "family": "rbxasset://...", "weight": "Bold" }`, NumberRange, NumberSequence, ColorSequence, Rect.
+Rojo's explicit form (`{ "Vector3": [1, 2, 3] }`) also works and is required for non-basic attribute types.
+
+What the plugin does on each sync: creates missing instances, updates changed properties/attributes/tags, resets
+properties you removed from a file to their defaults, and deletes instances it created that are gone from the repo.
+It never deletes things it didn't create. Warnings (unknown property, bad value) show in the panel and in Output.
 
 ## Install the Studio plugin
 
 1. In Studio: **Plugins** tab → **Plugins Folder**.
 2. Copy `studio-plugin/LiveSync.server.lua` into that folder and restart Studio (or reload plugins).
-3. Click **LiveSync** in the Plugins tab, enter the server URL and sync key, press **Connect**.
+3. Click **LiveSync** in the Plugins tab, enter the server URL and sync key, press **Connect**. The login is saved and reconnects automatically next time; **Pause** stops syncing, **Log out** forgets the key.
 4. The first time, Studio asks to allow HTTP requests to the server's domain. Allow it.
 
 ## Server

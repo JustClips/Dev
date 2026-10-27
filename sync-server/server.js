@@ -58,6 +58,8 @@ function git(args, cwd) {
 // ---------- Rojo-style tree builder ----------
 
 const SCRIPT_RE = /^(.*?)(\.server|\.client)?\.(lua|luau)$/;
+const INIT_RE = /^init(\.server|\.client)?\.(lua|luau)$/;
+const HISTORY_DEPTH = Number(process.env.HISTORY_DEPTH || 30);
 
 function classForScript(kind) {
   if (kind === ".server") return "Script";
@@ -68,8 +70,51 @@ function classForScript(kind) {
 function readJson(file) {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
-  } catch {
+  } catch (e) {
+    if (fs.existsSync(file)) warnings.push(`${path.relative(currentRoot, file)}: ${e.message}`);
     return null;
+  }
+}
+
+// Reads a key in either camelCase (Rojo 7) or PascalCase.
+function pick(obj, key) {
+  if (!obj) return undefined;
+  if (obj[key] !== undefined) return obj[key];
+  const pascal = key[0].toUpperCase() + key.slice(1);
+  return obj[pascal];
+}
+
+// Applies className / properties / attributes / tags from a meta-like object.
+function applyMeta(node, meta) {
+  if (!meta) return node;
+  const className = pick(meta, "className");
+  if (className && (node.className === "Folder" || node.container)) node.className = className;
+  const props = Object.assign({}, pick(meta, "properties") || {});
+  const attrs = Object.assign({}, pick(meta, "attributes") || {}, props.Attributes || {});
+  delete props.Attributes;
+  let tags = pick(meta, "tags") || props.Tags;
+  delete props.Tags;
+  if (Object.keys(props).length) node.properties = Object.assign(node.properties || {}, props);
+  if (Object.keys(attrs).length) node.attributes = Object.assign(node.attributes || {}, attrs);
+  if (Array.isArray(tags)) node.tags = tags;
+  return node;
+}
+
+// A .model.json tree: { className, properties, attributes, tags, children: [{ name, ... }] }
+function buildFromModel(model, segs, out) {
+  const node = { path: segs, className: pick(model, "className") || "Folder" };
+  applyMeta(node, Object.assign({}, model, { className: undefined, ClassName: undefined }));
+  out.push(node);
+  const children = pick(model, "children") || [];
+  const used = new Set();
+  for (const child of children) {
+    let name = pick(child, "name") || pick(child, "className") || "Instance";
+    // Two siblings with the same name would collide on path; number the extras.
+    let unique = name, i = 2;
+    while (used.has(unique)) unique = `${name} (${i++})`;
+    if (unique !== name) warnings.push(`${segs.join("/")}: duplicate child name "${name}", synced as "${unique}"`);
+    used.add(unique);
+    buildFromModel(child, segs.concat(unique), out);
   }
 }
 
@@ -81,12 +126,20 @@ function buildFromPath(abs, segs, out) {
   } catch {
     return;
   }
+  const base = path.basename(abs);
   if (st.isFile()) {
-    const m = path.basename(abs).match(SCRIPT_RE);
+    const dir = path.dirname(abs);
+    const m = base.match(SCRIPT_RE);
     if (m) {
-      out.push({ path: segs, className: classForScript(m[2]), source: fs.readFileSync(abs, "utf8") });
-    } else if (abs.endsWith(".txt")) {
-      out.push({ path: segs, className: "StringValue", value: fs.readFileSync(abs, "utf8") });
+      const node = { path: segs, className: classForScript(m[2]), source: fs.readFileSync(abs, "utf8") };
+      out.push(applyMeta(node, readJson(path.join(dir, `${m[1]}.meta.json`))));
+    } else if (base.endsWith(".model.json")) {
+      const model = readJson(abs);
+      if (model) buildFromModel(model, segs, out);
+    } else if (base.endsWith(".txt")) {
+      const stem = base.slice(0, -4);
+      const node = { path: segs, className: "StringValue", value: fs.readFileSync(abs, "utf8") };
+      out.push(applyMeta(node, readJson(path.join(dir, `${stem}.meta.json`))));
     }
     return;
   }
@@ -95,24 +148,23 @@ function buildFromPath(abs, segs, out) {
   const entries = fs.readdirSync(abs).filter((n) => !n.startsWith(".")).sort();
   let node = { path: segs, className: "Folder" };
   for (const n of entries) {
-    const m = n.match(/^init(\.server|\.client)?\.(lua|luau)$/);
+    const m = n.match(INIT_RE);
     if (m) {
       node = { path: segs, className: classForScript(m[1]), source: fs.readFileSync(path.join(abs, n), "utf8") };
       break;
     }
   }
-  const meta = readJson(path.join(abs, "init.meta.json"));
-  if (meta && meta.className && node.className === "Folder") node.className = meta.className;
+  applyMeta(node, readJson(path.join(abs, "init.meta.json")));
   out.push(node);
 
   for (const n of entries) {
-    if (/^init(\.server|\.client)?\.(lua|luau)$/.test(n) || n === "init.meta.json") continue;
-    if (n.endsWith(".meta.json")) continue;
+    if (INIT_RE.test(n) || n.endsWith(".meta.json")) continue;
     const child = path.join(abs, n);
     let name = n;
     if (fs.statSync(child).isFile()) {
       const m = n.match(SCRIPT_RE);
       if (m) name = m[1];
+      else if (n.endsWith(".model.json")) name = n.slice(0, -".model.json".length);
       else if (n.endsWith(".txt")) name = n.slice(0, -4);
       else continue;
     }
@@ -120,13 +172,16 @@ function buildFromPath(abs, segs, out) {
   }
 }
 
-// Walks a project.json tree node.
+// Walks a project.json tree node ($className, $path, $properties, $attributes).
 function buildFromProject(root, tree, segs, out) {
   if (segs.length > 0) {
+    const meta = { className: tree.$className, properties: tree.$properties, attributes: tree.$attributes, tags: tree.$tags };
     if (tree.$path) {
+      const start = out.length;
       buildFromPath(path.join(root, tree.$path), segs, out);
+      if (out.length > start) applyMeta(out[start], meta);
     } else {
-      out.push({ path: segs, className: tree.$className || (segs.length === 1 ? "Service" : "Folder"), container: true });
+      out.push(applyMeta({ path: segs, className: tree.$className || (segs.length === 1 ? "Service" : "Folder"), container: true }, meta));
     }
   }
   for (const [key, child] of Object.entries(tree)) {
@@ -135,29 +190,54 @@ function buildFromProject(root, tree, segs, out) {
   }
 }
 
+let warnings = [];
+let currentRoot = "";
+
 function buildSnapshot(root) {
+  warnings = [];
+  currentRoot = root;
   const project = readJson(path.join(root, PROJECT_FILE));
   if (!project || !project.tree) throw new Error(`${PROJECT_FILE} missing or has no "tree"`);
   const nodes = [];
   buildFromProject(root, project.tree, [], nodes);
-  return nodes;
+  return { nodes, warnings };
+}
+
+// Recent commits with message, author, time and changed files.
+async function readHistory(cwd) {
+  const SEP = "\u001e";
+  const raw = await git(["log", `-n${HISTORY_DEPTH}`, "--name-status", `--format=${SEP}%H%x1f%an%x1f%aI%x1f%B%x1f`], cwd);
+  const out = [];
+  for (const chunk of raw.split(SEP)) {
+    if (!chunk.trim()) continue;
+    const [sha, author, date, message, rest] = chunk.split("\u001f");
+    const files = [];
+    for (const line of (rest || "").split("\n")) {
+      const parts = line.trim().split("\t");
+      if (parts.length < 2) continue;
+      files.push({ status: parts[0][0], path: parts[parts.length - 1] });
+    }
+    out.push({ sha, author, date, message: (message || "").trim(), files });
+  }
+  return out;
 }
 
 // ---------- state + polling ----------
 
 // version is a content hash, so it stays stable across restarts/redeploys and a
 // plugin can never miss an update because a counter reset.
-let state = { version: "", commit: null, hash: null, nodes: [], error: null, updatedAt: null };
+let state = { version: "", commit: null, hash: null, nodes: [], history: [], warnings: [], error: null, updatedAt: null };
 let waiters = [];
 
-function publish(commit, nodes) {
-  const hash = crypto.createHash("sha1").update(JSON.stringify(nodes)).digest("hex");
-  if (hash === state.hash) {
-    state.commit = commit;
-    return;
-  }
-  state = { version: hash.slice(0, 12), commit, hash, nodes, error: null, updatedAt: new Date().toISOString() };
-  console.log(`v${state.version} commit=${commit} nodes=${nodes.length}`);
+function publish(commit, snap, history) {
+  const hash = crypto.createHash("sha1").update(commit + JSON.stringify(snap.nodes)).digest("hex");
+  if (hash === state.hash) return;
+  state = {
+    version: hash.slice(0, 12), commit, hash, nodes: snap.nodes, history, warnings: snap.warnings,
+    error: null, updatedAt: new Date().toISOString(),
+  };
+  console.log(`v${state.version} commit=${commit.slice(0, 7)} nodes=${snap.nodes.length}` + (snap.warnings.length ? ` warnings=${snap.warnings.length}` : ""));
+  for (const w of snap.warnings) console.log("  warning:", w);
   const w = waiters;
   waiters = [];
   for (const fn of w) fn();
@@ -171,20 +251,22 @@ async function syncOnce() {
   syncing = true;
   try {
     if (LOCAL_DIR) {
-      publish("local", buildSnapshot(LOCAL_DIR));
+      let history = [];
+      try { history = await readHistory(LOCAL_DIR); } catch {}
+      publish("local", buildSnapshot(LOCAL_DIR), history);
       return;
     }
     if (!fs.existsSync(path.join(WORKDIR, ".git"))) {
       fs.rmSync(WORKDIR, { recursive: true, force: true });
-      await git(["clone", "--depth", "1", "--branch", BRANCH, authedUrl(), WORKDIR]);
+      await git(["clone", "--depth", String(HISTORY_DEPTH), "--branch", BRANCH, authedUrl(), WORKDIR]);
       lastRemote = null;
     }
     const remote = (await git(["ls-remote", authedUrl(), `refs/heads/${BRANCH}`], WORKDIR)).split(/\s+/)[0];
     if (remote && remote === lastRemote) return;
-    await git(["fetch", "--depth", "1", authedUrl(), BRANCH], WORKDIR);
+    await git(["fetch", "--depth", String(HISTORY_DEPTH), authedUrl(), BRANCH], WORKDIR);
     await git(["reset", "--hard", "FETCH_HEAD"], WORKDIR);
     const commit = await git(["rev-parse", "HEAD"], WORKDIR);
-    publish(commit, buildSnapshot(WORKDIR));
+    publish(commit, buildSnapshot(WORKDIR), await readHistory(WORKDIR));
     lastRemote = remote;
   } catch (e) {
     if (state.error !== e.message) console.error("sync error:", e.message);
@@ -248,7 +330,7 @@ const server = http.createServer((req, res) => {
       if (since === state.version) {
         send(res, 200, { version: state.version, commit: state.commit, unchanged: true, error: state.error });
       } else {
-        send(res, 200, { version: state.version, commit: state.commit, nodes: state.nodes, error: state.error });
+        send(res, 200, { version: state.version, commit: state.commit, nodes: state.nodes, history: state.history, warnings: state.warnings, error: state.error });
       }
     };
     if (since !== state.version || wait <= 0 || !state.version) return reply();
