@@ -1,0 +1,5 @@
+node_modules/
+*.rbxl
+*.rbxlx
+*.lock
+sourcemap.json
