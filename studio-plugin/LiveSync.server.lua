@@ -227,6 +227,7 @@ end
 -- ---------- polling ----------
 
 local session = 0 -- bumps on every connect/disconnect so old loops stop
+local connected = false
 
 local function request(url: string, key: string, since: string): (boolean, any)
 	local ok, res = pcall(function()
@@ -247,6 +248,7 @@ end
 
 local function disconnect(reason: string?)
 	session += 1
+	connected = false
 	button:SetActive(false)
 	connectButton.Text = "Connect"
 	connectButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
@@ -267,11 +269,21 @@ local function connect()
 	plugin:SetSetting("key", key)
 
 	session += 1
+	connected = true
 	local mySession = session
 	button:SetActive(true)
 	connectButton.Text = "Disconnect"
 	connectButton.BackgroundColor3 = Color3.fromRGB(170, 50, 50)
 	setStatus("Connecting to " .. url)
+	print("[LiveSync] connecting to " .. url)
+
+	-- Studio asks once per domain before a plugin may use HTTP. Until that popup
+	-- is answered the request just waits, so say so if nothing comes back.
+	task.delay(6, function()
+		if session == mySession and string.sub(statusLabel.Text, 1, 10) == "Connecting" then
+			setStatus("Still waiting... If Studio showed a popup asking to let LiveSync reach this domain, click Allow (check behind the main window).")
+		end
+	end)
 
 	task.spawn(function()
 		local version = ""
@@ -283,6 +295,7 @@ local function connect()
 			end
 			if not ok then
 				failures += 1
+				warn("[LiveSync] request failed:", data)
 				if string.find(data, "HTTP 401") then
 					disconnect("Wrong sync key.")
 					break
@@ -317,17 +330,23 @@ local function connect()
 end
 
 connectButton.MouseButton1Click:Connect(function()
-	if button:GetActive() or connectButton.Text == "Disconnect" then
+	if connected then
 		disconnect()
 	else
-		connect()
+		local ok, err = pcall(connect)
+		if not ok then
+			setStatus("Error: " .. tostring(err))
+			warn("[LiveSync] connect failed:", err)
+		end
 	end
 end)
 
 button.Click:Connect(function()
 	widget.Enabled = not widget.Enabled
-	button:SetActive(connectButton.Text == "Disconnect")
+	button:SetActive(connected)
 end)
+
+print("[LiveSync] plugin loaded (v2)")
 
 plugin.Unloading:Connect(function()
 	session += 1

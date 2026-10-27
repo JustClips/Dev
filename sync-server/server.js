@@ -235,7 +235,13 @@ const server = http.createServer((req, res) => {
   }
 
   if (url.pathname === "/api/state" && req.method === "GET") {
-    if (!keyOk(req)) return send(res, 401, { error: "bad or missing X-Sync-Key" });
+    if (!keyOk(req)) {
+      console.log(`401 wrong sync key from ${req.headers["x-forwarded-for"] || req.socket.remoteAddress}`);
+      return send(res, 401, { error: "bad or missing X-Sync-Key" });
+    }
+    if (url.searchParams.get("since") !== state.version) {
+      console.log(`plugin sync: since=${url.searchParams.get("since") || "(none)"} -> ${state.version}`);
+    }
     const since = String(url.searchParams.get("since") || "");
     const wait = Math.min(Number(url.searchParams.get("wait") || 0), 25);
     const reply = () => {
