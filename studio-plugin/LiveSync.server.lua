@@ -228,7 +228,7 @@ end
 
 local session = 0 -- bumps on every connect/disconnect so old loops stop
 
-local function request(url: string, key: string, since: number): (boolean, any)
+local function request(url: string, key: string, since: string): (boolean, any)
 	local ok, res = pcall(function()
 		return HttpService:RequestAsync({
 			Url = `{url}/api/state?since={since}&wait={WAIT_SECONDS}`,
@@ -274,7 +274,7 @@ local function connect()
 	setStatus("Connecting to " .. url)
 
 	task.spawn(function()
-		local version = -1
+		local version = ""
 		local failures = 0
 		while session == mySession do
 			local ok, data = request(url, key, version)

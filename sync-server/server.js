@@ -19,7 +19,7 @@ const crypto = require("crypto");
 const { execFile } = require("child_process");
 
 const SYNC_KEY = process.env.SYNC_KEY || "";
-const REPO_URL = process.env.REPO_URL || "https://github.com/megafartCc/gamedev.git";
+const REPO_URL = process.env.REPO_URL || "https://github.com/megafartCc/GAMEDEV.git";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 const BRANCH = process.env.BRANCH || "main";
 const POLL_SECONDS = Number(process.env.POLL_SECONDS || 3);
@@ -144,7 +144,9 @@ function buildSnapshot(root) {
 
 // ---------- state + polling ----------
 
-let state = { version: 0, commit: null, nodes: [], error: null, updatedAt: null };
+// version is a content hash, so it stays stable across restarts/redeploys and a
+// plugin can never miss an update because a counter reset.
+let state = { version: "", commit: null, hash: null, nodes: [], error: null, updatedAt: null };
 let waiters = [];
 
 function publish(commit, nodes) {
@@ -153,7 +155,7 @@ function publish(commit, nodes) {
     state.commit = commit;
     return;
   }
-  state = { version: state.version + 1, commit, hash, nodes, error: null, updatedAt: new Date().toISOString() };
+  state = { version: hash.slice(0, 12), commit, hash, nodes, error: null, updatedAt: new Date().toISOString() };
   console.log(`v${state.version} commit=${commit} nodes=${nodes.length}`);
   const w = waiters;
   waiters = [];
@@ -233,7 +235,7 @@ const server = http.createServer((req, res) => {
 
   if (url.pathname === "/api/state" && req.method === "GET") {
     if (!keyOk(req)) return send(res, 401, { error: "bad or missing X-Sync-Key" });
-    const since = Number(url.searchParams.get("since") || -1);
+    const since = String(url.searchParams.get("since") || "");
     const wait = Math.min(Number(url.searchParams.get("wait") || 0), 25);
     const reply = () => {
       if (since === state.version) {
@@ -242,7 +244,7 @@ const server = http.createServer((req, res) => {
         send(res, 200, { version: state.version, commit: state.commit, nodes: state.nodes, error: state.error });
       }
     };
-    if (since !== state.version || wait <= 0) return reply();
+    if (since !== state.version || wait <= 0 || !state.version) return reply();
     let done = false;
     const fire = () => {
       if (done) return;
