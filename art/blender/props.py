@@ -675,33 +675,124 @@ def satellite():
 
 
 def rocket():
-    """The Rocket at the middle of the hub. Players sell dust on the ring around it."""
+    """The market in the middle of the hub (kept under the old asset name "Rocket" so the
+    map code needs no change). Players sell what they swept on the ring around it.
+    A square wooden market hall on a stone base: striped awnings, a counter with crates of
+    fruit on each side, a scale, sacks, recycling bins at the corners, a hip roof with a
+    cupola and a flag, and a blank sign board over the front (-Y) for text in game.
+    Fits inside the sell ring (radius 15): footprint about 22 x 22 studs."""
     a = Asset("Rocket", "prop")
     use(a)
-    white, red, dark = "F5F5FA", "FF4A4A", "3A3F4A"
-    body = cyl(white, loc=(0, 0, 16), r=5, h=22, verts=28)
-    nose = sphere(red, loc=(0, 0, 27), scale=(5, 5, 9), seg=28, rings=14)
-    deform(nose, lambda v: Vector((v.x * max(0.0, 1 - (v.z - 27) / 9) ** 0.6 if v.z > 27 else v.x,
-                                   v.y * max(0.0, 1 - (v.z - 27) / 9) ** 0.6 if v.z > 27 else v.y, max(v.z, 27))))
-    band = [cyl(red, loc=(0, 0, z), r=5.08, h=1.2, verts=28) for z in (8.5, 20)]
-    skirt = cyl(dark, loc=(0, 0, 3.5), r=6.2, r2=5, h=3, verts=28)
-    fins = []
-    for i in range(4):
-        ang = i * 90 + 45
-        f = box(red, loc=(math.cos(math.radians(ang)) * 6.5, math.sin(math.radians(ang)) * 6.5, 5.5), size=(3.5, 0.6, 7), rot=(0, 0, ang), bevel=0.2)
-        fins.append(f)
-    legs = []
-    for i in range(4):
-        ang = i * 90
-        x, y = math.cos(math.radians(ang)), math.sin(math.radians(ang))
-        legs.append(tube("B4BCCD", [(x * 5.5, y * 5.5, 6), (x * 8.5, y * 8.5, 1.2)], 0.35, seg=8))
-        legs.append(cyl(dark, loc=(x * 8.6, y * 8.6, 0.4), r=1.0, h=0.8, verts=12))
-    windows_frame = [torus("B4BCCD", loc=(0, -4.95, z), R=1.25, r=0.25, rot=(90, 0, 0), seg=20, mseg=6) for z in (15, 23.5)]
-    door = box(dark, loc=(0, -4.85, 12), size=(3.2, 0.6, 4.6), bevel=0.4)
-    ramp = box("B4BCCD", loc=(0, -8.2, 5.2), size=(3.2, 7.4, 0.4), rot=(-38, 0, 0))
-    a.part("Body", [body, nose, skirt, door, ramp] + band + fins + legs + windows_frame, collide=True)
-    a.part("Body_Glow", [cyl("9BE6FF", loc=(0, -5.0, z), r=1.1, h=0.2, rot=(90, 0, 0), verts=18) for z in (15, 23.5)]
-           + [cyl("FFB43C", loc=(0, 0, 1.6), r=4.2, h=0.4, verts=24)], parent="Body", glow="9BE6FF")
+    stone, stone_dark = "B9B4AA", "8E8A82"
+    roof, roof_dark = "C0504A", "A8443F"
+    red, cream = "E8463C", "FFF4DE"
+    S = 8.0          # half size of the hall (posts at +-S)
+    post_h = 8.0
+    p = []
+    # stone base with a step all round
+    p.append(box(stone_dark, loc=(0, 0, 0.3), size=(2 * S + 5, 2 * S + 5, 0.6), bevel=0.2))
+    p.append(box(stone, loc=(0, 0, 0.8), size=(2 * S + 3, 2 * S + 3, 0.5), bevel=0.15))
+    for i in range(-3, 4):
+        for j in range(-3, 4):
+            if (i + j) % 2 == 0:
+                p.append(box("C9C4BA", loc=(i * 2.4, j * 2.4, 1.07), size=(2.3, 2.3, 0.06)))
+    base = 1.05
+    # posts: corners plus middles, each with a stone foot and a beam cap
+    for x in (-S, 0, S):
+        for y in (-S, 0, S):
+            if x == 0 and y == 0:
+                continue
+            p.append(box(stone_dark, loc=(x, y, base + 0.4), size=(1.5, 1.5, 0.8), bevel=0.15))
+            p.append(box(WOOD_DARK, loc=(x, y, base + post_h / 2), size=(0.9, 0.9, post_h), bevel=0.12))
+    top = base + post_h
+    for y in (-S, S):
+        p.append(box(WOOD, loc=(0, y, top + 0.35), size=(2 * S + 1.6, 1.0, 0.7), bevel=0.12))
+    for x in (-S, S):
+        p.append(box(WOOD, loc=(x, 0, top + 0.35), size=(1.0, 2 * S + 1.6, 0.7), bevel=0.12))
+    # hip roof (square pyramid) with an overhang, plus a ridge cap
+    rf = cone(roof, loc=(0, 0, top + 0.7 + 3.0), r=(S + 1.2) * math.sqrt(2), h=5.4, verts=4, rot=(0, 0, 45), smooth=False)
+    p.append(rf)
+    p.append(cone(roof_dark, loc=(0, 0, top + 0.62), r=(S + 1.3) * math.sqrt(2), h=0.25, verts=4, rot=(0, 0, 45), smooth=False))
+    # cupola with a little roof and a flag
+    ct = top + 0.7 + 4.2
+    p.append(box(WOOD_LIGHT, loc=(0, 0, ct + 0.9), size=(2.6, 2.6, 1.8), bevel=0.1))
+    for x in (-1.3, 1.3):
+        for y in (-1.3, 1.3):
+            p.append(box(WOOD_DARK, loc=(x, y, ct + 0.9), size=(0.35, 0.35, 1.9), bevel=0.05))
+    p.append(cone(roof, loc=(0, 0, ct + 2.6), r=2.6, h=1.8, verts=4, rot=(0, 0, 45), smooth=False))
+    p.append(cyl("5A5A66", loc=(0, 0, ct + 4.4), r=0.08, h=2.4, verts=8))
+    p.append(box("4CAF50", loc=(0.75, 0, ct + 5.1), size=(1.4, 0.08, 0.8)))
+    # striped awnings sloping out from the beams on all four sides
+    stripes = 9
+    for side in range(4):
+        ang = side * 90
+        for k in range(stripes):
+            t = -S + (k + 0.5) * (2 * S / stripes)
+            col = red if k % 2 == 0 else cream
+            aw = box(col, loc=(t, -S - 1.2, top - 0.6), size=(2 * S / stripes + 0.02, 2.6, 0.15), rot=(-25, 0, 0))
+            scallop = cyl(col, loc=(t, -S - 2.45, top - 1.25), r=2 * S / stripes / 2, h=0.15, rot=(90, 0, 0), verts=12)
+            deform(scallop, lambda v: Vector((v.x, v.y, min(v.z, top - 1.25))))
+            for o in (aw, scallop):
+                o.rotation_euler = (0, 0, math.radians(ang))
+                bpy.context.view_layer.update()
+                o.select_set(True)
+                bpy.context.view_layer.objects.active = o
+                bpy.ops.object.transform_apply(rotation=True)
+                o.select_set(False)
+                p.append(o)
+    # one stall counter per side, with fruit crates on it
+    fruit = ("FF5A4A", "FFB13C", "8BD448", "FFE04A")
+    for side in range(4):
+        ang = math.radians(side * 90)
+        c, s_ = math.cos(ang), math.sin(ang)
+
+        def at(x, y):
+            return (x * c - y * s_, x * s_ + y * c)
+        pieces = []
+        cx, cy = at(0, -S + 1.6)
+        pieces.append(box(WOOD, loc=(cx, cy, base + 1.0), size=(9, 1.6, 2.0) if side % 2 == 0 else (1.6, 9, 2.0), bevel=0.1))
+        pieces.append(box(WOOD_DARK, loc=(cx, cy, base + 2.1), size=(9.6, 2.0, 0.25) if side % 2 == 0 else (2.0, 9.6, 0.25), bevel=0.06))
+        for n, off in enumerate((-3.2, -1.1, 1.1, 3.2)):
+            bx, by = at(off, -S + 1.6)
+            pieces.append(box(WOOD_LIGHT, loc=(bx, by, base + 2.6), size=(1.8, 1.4, 0.75), bevel=0.06))
+            col = fruit[(n + side) % 4]
+            for fx in (-0.45, 0, 0.45):
+                for fy in (-0.3, 0.3):
+                    qx, qy = at(off + fx, -S + 1.6 + fy)
+                    pieces.append(sphere(col, loc=(qx, qy, base + 3.05), scale=0.27, seg=10, rings=6))
+        p.extend(pieces)
+    # scale on the front counter, sacks and barrels inside
+    sx, sy = 0, -S + 1.6
+    p.append(cyl("5A5A66", loc=(4.4, sy, base + 2.9), r=0.08, h=1.2, verts=8))
+    p.append(box("5A5A66", loc=(4.4, sy, base + 3.5), size=(1.6, 0.12, 0.12)))
+    for x in (3.7, 5.1):
+        p.append(cyl("D9B44A", loc=(x, sy, base + 3.1), r=0.4, r2=0.25, h=0.15, verts=12))
+    for (x, y) in ((-4.5, 3.5), (-3.2, 4.6), (4.2, 4.0)):
+        sack = sphere("D8C39A", loc=(x, y, base + 0.75), scale=(0.75, 0.7, 0.85), seg=12, rings=8)
+        p.append(sack)
+        p.append(cyl("A88E5E", loc=(x, y, base + 1.65), r=0.2, h=0.3, verts=8))
+    for (x, y) in ((0, 3.0), (1.6, 4.4)):
+        p.append(cyl(WOOD, loc=(x, y, base + 1.0), r=0.8, h=2.0, verts=14))
+        for z in (0.35, 1.65):
+            p.append(torus("6E6E78", loc=(x, y, base + z), R=0.8, r=0.06, seg=16, mseg=4))
+    # recycling bins at the four outer corners
+    bins = ("3E8EDE", "4CAF50", "F2C230", "E8463C")
+    for k, (x, y) in enumerate(((-S - 1.8, -S - 1.8), (S + 1.8, -S - 1.8), (S + 1.8, S + 1.8), (-S - 1.8, S + 1.8))):
+        p.append(box(bins[k], loc=(x, y, base + 1.1), size=(1.6, 1.6, 2.2), bevel=0.15))
+        p.append(box(bins[k], loc=(x, y, base + 2.35), size=(1.8, 1.8, 0.3), bevel=0.1))
+        p.append(box(cream, loc=(x, y - 0.81, base + 1.3), size=(0.8, 0.05, 0.8)))
+    # blank sign board over the front, on two short posts above the beam
+    for x in (-3.5, 3.5):
+        p.append(box(WOOD_DARK, loc=(x, -S - 0.2, top + 1.4), size=(0.4, 0.4, 2.0)))
+    p.append(box(WOOD_DARK, loc=(0, -S - 0.2, top + 2.7), size=(9.6, 0.5, 2.8), bevel=0.12))
+    p.append(box(cream, loc=(0, -S - 0.5, top + 2.7), size=(9.0, 0.1, 2.2)))
+    a.part("Body", p, collide=True)
+    # warm lanterns hanging under the front and back beams
+    lamps = []
+    for (x, y) in ((-4, -S), (4, -S), (-4, S), (4, S)):
+        lamps.append(box("FFD68C", loc=(x, y, top - 0.9), size=(0.6, 0.6, 0.7), bevel=0.08))
+    a.part("Body_Glow", lamps, parent="Body", glow="FFD68C")
+    a.extra["sign"] = [0, round(top + 2.7, 2), -round(S + 0.56, 2)]
     return a
 
 

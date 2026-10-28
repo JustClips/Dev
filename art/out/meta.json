@@ -5312,14 +5312,14 @@
  "Rocket": {
   "bounds": {
    "max": [
-    9.6,
-    36.0,
-    9.6
+    10.7,
+    19.55,
+    10.7
    ],
    "min": [
-    -9.6,
+    -10.7,
     0.0,
-    -11.239
+    -10.7
    ]
   },
   "kind": "prop",
@@ -5334,13 +5334,18 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "9BE6FF",
+    "glow": "FFD68C",
     "joint": null,
     "material": null,
     "parent": "Body"
    }
   },
-  "tris": 3556
+  "sign": [
+   0,
+   11.75,
+   -8.56
+  ],
+  "tris": 20302
  },
  "Satellite": {
   "bounds": {
