@@ -877,6 +877,7 @@ Assets.Models = {
 			max = Vector3.new(0.722, 2.163, 1.26),
 			min = Vector3.new(-0.722, -0.013, -1.39),
 		},
+		fallback = 82640245635426,
 		id = 112652349735656,
 		kind = "alien",
 		parts = {
@@ -944,6 +945,7 @@ Assets.Models = {
 			max = Vector3.new(1.582, 3.468, 2.291),
 			min = Vector3.new(-1.582, 1.3, -1.534),
 		},
+		fallback = 134001718768488,
 		float = true,
 		id = 115735530217188,
 		kind = "alien",
@@ -982,7 +984,7 @@ Assets.Models = {
 			max = Vector3.new(1.05, 2.67, 0.725),
 			min = Vector3.new(-1.05, 0.0, -0.68),
 		},
-		fallback = 124659141008546,
+		fallback = 133379285259089,
 		id = 129593175665483,
 		kind = "alien",
 		parts = {
@@ -1026,7 +1028,7 @@ Assets.Models = {
 			max = Vector3.new(0.944, 2.336, 0.897),
 			min = Vector3.new(-0.944, -0.02, -0.972),
 		},
-		fallback = 128488291933128,
+		fallback = 78723008226480,
 		id = 93251299544345,
 		kind = "alien",
 		parts = {
@@ -1050,7 +1052,7 @@ Assets.Models = {
 			max = Vector3.new(0.6, 1.54, 1.45),
 			min = Vector3.new(-0.6, -0.01, -1.3),
 		},
-		fallback = 125135904569865,
+		fallback = 85737391473490,
 		id = 133832930363987,
 		kind = "alien",
 		parts = {
@@ -1084,6 +1086,7 @@ Assets.Models = {
 			max = Vector3.new(1.08, 1.81, 1.9),
 			min = Vector3.new(-1.08, -0.011, -1.399),
 		},
+		fallback = 100740249564213,
 		id = 83261294441177,
 		kind = "alien",
 		parts = {
@@ -1152,6 +1155,7 @@ Assets.Models = {
 			max = Vector3.new(0.79, 1.78, 0.73),
 			min = Vector3.new(-0.79, -0.02, -0.822),
 		},
+		fallback = 137744652800129,
 		id = 79609954812028,
 		kind = "alien",
 		parts = {
@@ -1182,6 +1186,7 @@ Assets.Models = {
 			max = Vector3.new(0.55, 2.296, 1.42),
 			min = Vector3.new(-0.55, -0.012, -1.209),
 		},
+		fallback = 90749792885920,
 		id = 139640334819328,
 		kind = "alien",
 		parts = {
@@ -1235,6 +1240,7 @@ Assets.Models = {
 			max = Vector3.new(1.52, 1.831, 0.7),
 			min = Vector3.new(-1.52, -0.02, -1.425),
 		},
+		fallback = 133143477912482,
 		id = 128065799246261,
 		kind = "alien",
 		parts = {
@@ -1293,6 +1299,7 @@ Assets.Models = {
 			max = Vector3.new(2.057, 2.954, 2.425),
 			min = Vector3.new(-2.057, -0.016, -1.85),
 		},
+		fallback = 103048376701964,
 		id = 73304731587949,
 		kind = "alien",
 		parts = {
@@ -1356,6 +1363,7 @@ Assets.Models = {
 			max = Vector3.new(0.6, 1.54, 1.45),
 			min = Vector3.new(-0.6, -0.01, -1.3),
 		},
+		fallback = 92271171468982,
 		id = 80361182258166,
 		kind = "alien",
 		parts = {
@@ -1394,6 +1402,7 @@ Assets.Models = {
 			max = Vector3.new(1.17, 3.79, 0.75),
 			min = Vector3.new(-1.17, 0.0, -0.72),
 		},
+		fallback = 139037612190388,
 		id = 75242255565424,
 		kind = "alien",
 		parts = {
@@ -1442,7 +1451,7 @@ Assets.Models = {
 			max = Vector3.new(0.722, 1.45, 0.8),
 			min = Vector3.new(-0.722, -0.02, -1.083),
 		},
-		fallback = 73288734346101,
+		fallback = 74386301695112,
 		id = 81988689631428,
 		kind = "alien",
 		parts = {
@@ -1493,7 +1502,7 @@ Assets.Models = {
 			max = Vector3.new(0.92, 2.6, 0.92),
 			min = Vector3.new(-0.92, 0.46, -0.963),
 		},
-		fallback = 107578080275579,
+		fallback = 135250269030588,
 		float = true,
 		id = 138206928006209,
 		kind = "alien",
@@ -1533,7 +1542,7 @@ Assets.Models = {
 			max = Vector3.new(1.113, 3.67, 0.85),
 			min = Vector3.new(-1.113, 0.835, -0.85),
 		},
-		fallback = 97045626328234,
+		fallback = 134723761651446,
 		float = true,
 		id = 104791105877996,
 		kind = "alien",
@@ -1580,7 +1589,7 @@ Assets.Models = {
 			max = Vector3.new(1.251, 2.45, 1.208),
 			min = Vector3.new(-1.251, 0.75, -1.208),
 		},
-		fallback = 92368580080008,
+		fallback = 109026162702554,
 		float = true,
 		id = 71550887099161,
 		kind = "alien",
@@ -1610,7 +1619,7 @@ Assets.Models = {
 			max = Vector3.new(0.722, 1.95, 1.26),
 			min = Vector3.new(-0.722, -0.013, -1.39),
 		},
-		fallback = 72436159225756,
+		fallback = 115937635188361,
 		id = 115291289587321,
 		kind = "alien",
 		parts = {
@@ -1674,6 +1683,7 @@ Assets.Models = {
 			max = Vector3.new(0.816, 2.22, 0.729),
 			min = Vector3.new(-0.816, -0.01, -0.888),
 		},
+		fallback = 81782182299377,
 		id = 116611105386930,
 		kind = "alien",
 		parts = {
@@ -1716,6 +1726,7 @@ Assets.Models = {
 			max = Vector3.new(1.05, 2.82, 0.725),
 			min = Vector3.new(-1.05, 0.0, -0.68),
 		},
+		fallback = 97579519709641,
 		id = 105466471593849,
 		kind = "alien",
 		parts = {
@@ -1768,6 +1779,7 @@ Assets.Models = {
 			max = Vector3.new(0.92, 3.155, 0.92),
 			min = Vector3.new(-0.92, 0.46, -0.963),
 		},
+		fallback = 119017640581341,
 		float = true,
 		id = 138399041926852,
 		kind = "alien",
@@ -1816,6 +1828,7 @@ Assets.Models = {
 			max = Vector3.new(0.722, 2.282, 1.26),
 			min = Vector3.new(-0.722, -0.013, -1.39),
 		},
+		fallback = 81233945363646,
 		id = 84654400068778,
 		kind = "alien",
 		parts = {
@@ -1888,6 +1901,7 @@ Assets.Models = {
 			max = Vector3.new(1.582, 3.673, 2.291),
 			min = Vector3.new(-1.582, 1.3, -1.534),
 		},
+		fallback = 121323838440828,
 		float = true,
 		id = 125479813687505,
 		kind = "alien",
@@ -1931,6 +1945,7 @@ Assets.Models = {
 			max = Vector3.new(0.64, 2.61, 0.55),
 			min = Vector3.new(-0.64, 0.0, -0.55),
 		},
+		fallback = 81246577078678,
 		id = 119289716823215,
 		kind = "alien",
 		parts = {
@@ -1990,6 +2005,7 @@ Assets.Models = {
 			max = Vector3.new(1.0, 3.158, 0.45),
 			min = Vector3.new(-1.0, 0.0, -0.622),
 		},
+		fallback = 84343841361655,
 		id = 93996866636804,
 		kind = "alien",
 		parts = {
