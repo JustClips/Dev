@@ -35,7 +35,8 @@ Players only get a character once their profile has loaded (`CharacterAutoLoads 
 | BaseService | Gives each player a base, spawns and respawns them there. |
 | BoostService | Server luck tiers (time stacks per tier, highest active wins), personal boosts (2x cash, Luck and Speed potions), and the single cash multiplier formula. |
 | DustService | Tiles, HP, clearing, regrowth per zone, the Moon Clean counter, 0.1 s batches of cleared tile ids. |
-| SweepService | Validates `SweepTick(position)`: rate (10/s token bucket), distance from the character, zone unlocked. Applies tool power through the grid lookup, fills the backpack, rolls eggs. |
+| SweepService | Validates `SweepTick(position)`: rate (10/s token bucket), distance from the character, zone unlocked. Applies tool power through the grid lookup, fills the backpack, rolls eggs. Keeps the sweep combo (x1 to x3, `Economy.Combo`), pays 15x on golden piles (`DustService` gilds a few tiles per zone, `Economy.Golden`) and pops dust bunnies in the sweep circle. |
+| DustBunnyService | Part-built dust bunnies (3 per zone) that hop around and flee players. Sweeping one pays cash (seconds of your earnings), sometimes a potion or an egg; it comes back after 12 s. `Economy.Bunnies`. |
 | ToolService | Tool ladder (tiers 1-6), tool in hand, and cars (`Tools.Vehicles`): buying with cash, Robux unlocks and rentals, spawning at your feet (hotbar slot 2) or on the Garage pad. |
 | UpgradeService | Cash upgrades from `Config/Upgrades.luau` (Bigger Backpack, Sweep Power, Moon Boots, Egg Luck), sold at the Upgrade Station. Reset on rebirth. |
 | BackpackService | Dust units + their cash value, selling (a 0.2 s distance check: stand within `World.SellRadius` of the Rocket), `GiveCash` / `TrySpend` helpers. |
@@ -46,19 +47,20 @@ Players only get a character once their profile has loaded (`CharacterAutoLoads 
 | AlienService | Base pet limit (slot count), income every second from placed pets, offline income on join, publishes `base.Aliens` (one Folder per placed pet, named by uid, rendered by every client's PetController) and `base.Hatching` (incubating eggs and free nests), the top-3 followers attribute. |
 | RebirthService | Cost, reset, +50% cash per rebirth. |
 | EventService | Meteor Shower state machine. |
-| ShopService | Idempotent `ProcessReceipt`, gamepass checks, gifting, what each product grants. |
+| ShopService | Idempotent `ProcessReceipt`, gamepass checks, gifting, what each product grants. `CashFor(player, seconds, floor)` scales free cash rewards like cash packs. |
+| RewardService | Free rewards from `Config/Rewards.luau`, one remote `Rewards(action, arg)`: ClaimDaily (7-day streak in `data.Daily`, a missed day restarts it), ClaimPlaytime(i) (session playtime counted by its 1 s loop), StartStay (the stay offer: a potion after 5 more minutes, 30 min cooldown), ClaimGroup (off while `Rewards.Group.Id` is 0), SignUp(eventId) (`Flags.EventSignups`: 1 signed up, 2 rewarded; the gift is paid when a signed-up player is in game during the event). Writes the event name and countdown on the plaza event board. A live event also multiplies server luck (`BoostService:GetServerLuck`). |
 | OfferService | Contextual offers with cooldowns, never before the first hatch. |
 | LeaderboardService | leaderstats and the overhead tag. |
 
 ## Client controllers
 
-LoadingController (loading screen until terrain, models, images, save and character are ready; 45 s timeout), HudController (HUD, toasts, teleport pills), HotbarController (our hotbar: 1 = tool, 2 = car, 3 = bag; the default backpack is hidden), InventoryController (bag window, key B: All/Pets/Eggs/Items tabs, Equip Best, Place Eggs, Open Ready), GarageController, UpgradeController, ShopController, IndexController (3D viewports), RebirthController, OfferController, HatchController (egg -> alien reveal in a WorldModel, then Place/Keep; Skip Hatch and Open prompts on your incubating eggs), SweepController (input, dust puffs, `Player_Sweep` animation), PetController (pets wander each base's park with Idle/Walk/Happy, only near the camera), FollowerController (top 3 follow you), VehicleController, ZoneController, ArrowController, SkyController (the Earth).
+LoadingController (loading screen until terrain, models, images, save and character are ready; 45 s timeout), HudController (HUD, toasts, teleport pills), HotbarController (our hotbar: 1 = tool, 2 = car, 3 = bag; the default backpack is hidden), InventoryController (Roblox-style bag above the hotbar, key B: Pets/Eggs/Items tabs on its side, search, detail panel), BasePanelsController (Steal an Egg style side panels: "3/6 Active" pets with Unequip/Equip and Equip Best, "Growing Eggs" with timers, Open/Skip, Open All and Place Eggs), RewardsController (Rewards window from the pink rail button: daily cards, playtime gifts, group and event rows; the stay popup on `GuiService.MenuOpened`; the event board prompt), GarageController, UpgradeController, ShopController, IndexController (one zone at a time with arrows, rarity-coloured cards, silhouettes for pets not found yet, zone and total progress bars), RebirthController, OfferController, HatchController (egg -> alien reveal in a WorldModel, then Place/Keep; Skip Hatch and Open prompts on your incubating eggs), SweepController (input, dust puffs, `Player_Sweep` animation), PetController (pets wander each base's park with Idle/Walk/Happy, only near the camera), FollowerController (top 3 follow you), VehicleController, ZoneController, ArrowController, SkyController (the Earth).
 
 ## Remotes (`src/shared/Net.luau`)
 
-Client → server (all rate limited): `SweepTick`, `OfferResponse`, `SetAutoSweep`, and the functions `GetState`, `BuyNextTool`, `Rebirth`, `PromptPurchase(key, giftToUserId?)`, `ToggleVehicle`, `SpawnVehicle(id)`, `BuyVehicle(id)`, `BuyUpgrade(id)`, `EquipTool`, `Teleport(target)`, `Inventory(action, arg)`.
+Client → server (all rate limited): `SweepTick`, `OfferResponse`, `SetAutoSweep`, and the functions `GetState`, `BuyNextTool`, `Rebirth`, `PromptPurchase(key, giftToUserId?)`, `ToggleVehicle`, `SpawnVehicle(id)`, `BuyVehicle(id)`, `BuyUpgrade(id)`, `EquipTool`, `Teleport(target)`, `Inventory(action, arg)`, `Rewards(action, arg)`.
 
-Server → client: `PlayerState`, `TilesCleared` (buffer of u16 ids), `SweepResult`, `Notify`, `Announce`, `HatchCompleted`, `WelcomeBack`, `ShowOffer`, `MeteorImpact`.
+Server → client: `PlayerState`, `TilesCleared` (buffer of u16 ids), `SweepResult`, `Notify`, `Announce`, `HatchCompleted`, `WelcomeBack`, `ShowOffer`, `MeteorImpact`, `BunnyPop`.
 
 The client never sends amounts. Every cash, egg and tool change happens on the server.
 
@@ -70,6 +72,7 @@ See `Types.ProfileData` and the template in `DataService`. Pets, eggs and incuba
 
 - **A tool:** add a row to `Config/Tools.luau` (keep tiers in order). For a Robux skip, add a `ToolSkipN` product in `Config/Products.luau`.
 - **An alien:** add a row to `Config/Aliens.luau`. It joins its rarity's Landing hatch pool and the index automatically. Zone variants (Crystal, Shadow, Magma, Frost) are generated from `ZONE_SETS` and only hatch from eggs found in their zone.
+- **A reward or event:** edit `Config/Rewards.luau`. Daily cards, playtime gifts and the stay reward are lists of `{Kind = "Cash" | "Item" | "Egg", ...}`. For an event add a row to `Events` with unix `StartsAt`/`EndsAt` (UTC); the plaza board, the Rewards window and the luck boost pick it up. To turn on the group reward, set `Group.Id` (and `Group.Name`).
 - **An item:** add a row to `Config/Items.luau` and handle its effect in `InventoryService:UseItem`.
 - **A zone:** add a row to `Config/Zones.luau` with bounds that don't overlap others (keep total tiles under ~8k), add ground for it in `src/workspace/Moon/Ground.model.json`, and if it has a price add a part named `Gate_<ZoneId>` in `Gates.model.json` (ZoneService labels it and adds the prompt).
 - **A product:** add it to `Config/Products.luau` with `Id = 0` and an existing `Kind`, then run `python3 tools/create_products.py` (creates it on Roblox through Open Cloud and writes the ID back). For a new kind, add it to `Types.ProductKind` plus a function in `GRANTS` in `ShopService`. Put it in a shop tab in `ShopController`.

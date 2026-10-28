@@ -10,10 +10,10 @@ Assets.Models = {
 	Alien_AstroAxolotl = {
 		bounds = {
 			max = Vector3.new(1.08, 1.55, 1.9),
-			min = Vector3.new(-1.08, -0.011, -1.385),
+			min = Vector3.new(-1.08, -0.011, -1.399),
 		},
-		fallback = 107895594943303,
-		id = 127515995674942,
+		fallback = 104230502799322,
+		id = 102261882833400,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -73,11 +73,11 @@ Assets.Models = {
 	},
 	Alien_Blip = {
 		bounds = {
-			max = Vector3.new(0.786, 1.78, 0.726),
-			min = Vector3.new(-0.786, 0.04, -0.835),
+			max = Vector3.new(0.79, 1.78, 0.73),
+			min = Vector3.new(-0.79, -0.02, -0.822),
 		},
-		fallback = 79489100688856,
-		id = 97664436457337,
+		fallback = 84675890297461,
+		id = 89800094213604,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -100,10 +100,10 @@ Assets.Models = {
 	Alien_CometCat = {
 		bounds = {
 			max = Vector3.new(0.55, 2.211, 1.42),
-			min = Vector3.new(-0.55, -0.012, -1.234),
+			min = Vector3.new(-0.55, -0.012, -1.209),
 		},
-		fallback = 115391056826226,
-		id = 96234547579566,
+		fallback = 125292055407746,
+		id = 102900074125217,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -151,9 +151,9 @@ Assets.Models = {
 			max = Vector3.new(1.541, 4.787, 1.48),
 			min = Vector3.new(-1.541, 0.667, -1.222),
 		},
-		fallback = 113603281550176,
+		fallback = 129275051566438,
 		float = true,
-		id = 75221730545227,
+		id = 102286792601932,
 		kind = "alien",
 		parts = {
 			ArmL = {
@@ -193,11 +193,11 @@ Assets.Models = {
 	},
 	Alien_CraterCrab = {
 		bounds = {
-			max = Vector3.new(1.52, 1.72, 0.7),
+			max = Vector3.new(1.52, 1.734, 0.7),
 			min = Vector3.new(-1.52, -0.02, -1.425),
 		},
-		fallback = 107353608462373,
-		id = 137040133871345,
+		fallback = 123284247086027,
+		id = 97689638780325,
 		kind = "alien",
 		parts = {
 			ArmL = {
@@ -245,13 +245,316 @@ Assets.Models = {
 			},
 		},
 	},
+	Alien_CrystalBlip = {
+		bounds = {
+			max = Vector3.new(0.79, 1.78, 0.73),
+			min = Vector3.new(-0.79, -0.02, -0.822),
+		},
+		fallback = 110292177970214,
+		id = 118995079409769,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				glow = "FFF27A",
+				joint = Vector3.new(-0.25, 1.18, 0.05),
+				parent = "Body",
+			},
+			EarR = {
+				collide = false,
+				glow = "FFF27A",
+				joint = Vector3.new(0.25, 1.18, 0.05),
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "7AE6FF",
+				parent = "Body",
+			},
+		},
+	},
+	Alien_CrystalCometCat = {
+		bounds = {
+			max = Vector3.new(0.55, 2.318, 1.42),
+			min = Vector3.new(-0.55, -0.012, -1.209),
+		},
+		fallback = 131112929009919,
+		id = 122062830066236,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.0, -0.45),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.27, 0.6, 0.478),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.27, 0.6, 0.478),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.27, 0.6, -0.278),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.27, 0.6, -0.278),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.9, 0.72),
+				parent = "Body",
+			},
+			Tail_Glow = {
+				collide = false,
+				glow = "FFB14A",
+				parent = "Tail",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "7AE6FF",
+				parent = "Head",
+			},
+		},
+	},
+	Alien_CrystalCraterCrab = {
+		bounds = {
+			max = Vector3.new(1.52, 1.869, 0.7),
+			min = Vector3.new(-1.52, -0.02, -1.425),
+		},
+		fallback = 76871363604835,
+		id = 132923892933818,
+		kind = "alien",
+		parts = {
+			ArmL = {
+				collide = false,
+				joint = Vector3.new(-0.8, 0.75, -0.3),
+				parent = "Body",
+			},
+			ArmR = {
+				collide = false,
+				joint = Vector3.new(0.8, 0.75, -0.3),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.25, 1.0, -0.45),
+				parent = "Body",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.25, 1.0, -0.45),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.675, 0.6, 0.35),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.675, 0.6, 0.35),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.765, 0.6, 0.0),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.765, 0.6, 0.0),
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "7AE6FF",
+				parent = "Body",
+			},
+		},
+	},
+	Alien_CrystalGlorp = {
+		bounds = {
+			max = Vector3.new(0.944, 2.336, 0.897),
+			min = Vector3.new(-0.944, -0.02, -0.972),
+		},
+		fallback = 97553311158028,
+		id = 93910974395017,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.35, 1.45, 0.0),
+				parent = "Body",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.35, 1.45, 0.0),
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "7AE6FF",
+				parent = "Body",
+			},
+		},
+	},
+	Alien_CrystalLunarSlug = {
+		bounds = {
+			max = Vector3.new(0.6, 1.54, 1.45),
+			min = Vector3.new(-0.6, -0.01, -1.3),
+		},
+		fallback = 131690497341925,
+		id = 86336810478695,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.2, 0.95, -0.55),
+				parent = "Body",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.2, 0.95, -0.55),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.4, 0.25),
+				parent = "Body",
+			},
+			Tail_Glow = {
+				collide = false,
+				glow = "9BFFF5",
+				parent = "Tail",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "7AE6FF",
+				parent = "Body",
+			},
+		},
+	},
+	Alien_CrystalMoonMite = {
+		bounds = {
+			max = Vector3.new(0.722, 1.45, 0.8),
+			min = Vector3.new(-0.722, -0.02, -1.083),
+		},
+		fallback = 115928189119535,
+		id = 94496056678118,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				glow = "9EF0FF",
+				joint = Vector3.new(-0.15, 0.95, -0.72),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				glow = "9EF0FF",
+				joint = Vector3.new(0.15, 0.95, -0.72),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.62, -0.38),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.36, 0.55, 0.4),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.36, 0.55, 0.4),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.36, 0.55, -0.2),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.36, 0.55, -0.2),
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "7AE6FF",
+				parent = "Head",
+			},
+		},
+	},
+	Alien_CrystalOrbo = {
+		bounds = {
+			max = Vector3.new(1.251, 2.982, 1.208),
+			min = Vector3.new(-1.251, 0.75, -1.208),
+		},
+		fallback = 112365460068347,
+		float = true,
+		id = 107310454851113,
+		kind = "alien",
+		parts = {
+			ArmL = {
+				collide = false,
+				joint = Vector3.new(-0.8, 1.6, 0.0),
+				parent = "Body",
+			},
+			ArmR = {
+				collide = false,
+				joint = Vector3.new(0.8, 1.6, 0.0),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFE36E",
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "7AE6FF",
+				parent = "Body",
+			},
+		},
+	},
 	Alien_Dusty = {
 		bounds = {
-			max = Vector3.new(0.816, 2.22, 0.74),
-			min = Vector3.new(-0.816, -0.01, -0.871),
+			max = Vector3.new(0.816, 2.22, 0.713),
+			min = Vector3.new(-0.816, -0.01, -0.854),
 		},
-		fallback = 133261758452244,
-		id = 82934688856650,
+		fallback = 91580234759228,
+		id = 72634309781550,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -284,8 +587,8 @@ Assets.Models = {
 			max = Vector3.new(2.057, 2.603, 2.425),
 			min = Vector3.new(-2.057, -0.016, -1.85),
 		},
-		fallback = 76260055784937,
-		id = 91518097321561,
+		fallback = 97521541287817,
+		id = 126945352298714,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -338,13 +641,349 @@ Assets.Models = {
 			},
 		},
 	},
+	Alien_FrostEclipseDragon = {
+		bounds = {
+			max = Vector3.new(2.057, 2.836, 2.425),
+			min = Vector3.new(-2.057, -0.016, -1.85),
+		},
+		fallback = 81310052454306,
+		id = 75873838008907,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFB43C",
+				parent = "Body",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.2, -0.6),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.372, 0.85, 0.688),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.372, 0.85, 0.688),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.372, 0.85, -0.488),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.372, 0.85, -0.488),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.0, 0.9),
+				parent = "Body",
+			},
+			WingL = {
+				collide = false,
+				joint = Vector3.new(-0.5, 1.5, -0.1),
+				parent = "Body",
+			},
+			WingR = {
+				collide = false,
+				joint = Vector3.new(0.5, 1.5, -0.1),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Head",
+			},
+		},
+	},
+	Alien_FrostGlorp = {
+		bounds = {
+			max = Vector3.new(0.944, 2.336, 0.897),
+			min = Vector3.new(-0.944, -0.02, -0.972),
+		},
+		fallback = 133755956563004,
+		id = 75567845216977,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.35, 1.45, 0.0),
+				parent = "Body",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.35, 1.45, 0.0),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Body",
+			},
+		},
+	},
+	Alien_FrostMoonMite = {
+		bounds = {
+			max = Vector3.new(0.722, 1.45, 0.8),
+			min = Vector3.new(-0.722, -0.02, -1.083),
+		},
+		fallback = 117760050192820,
+		id = 86631587445126,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				glow = "9EF0FF",
+				joint = Vector3.new(-0.15, 0.95, -0.72),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				glow = "9EF0FF",
+				joint = Vector3.new(0.15, 0.95, -0.72),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.62, -0.38),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.36, 0.55, 0.4),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.36, 0.55, 0.4),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.36, 0.55, -0.2),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.36, 0.55, -0.2),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Head",
+			},
+		},
+	},
+	Alien_FrostNovaQueen = {
+		bounds = {
+			max = Vector3.new(1.113, 3.67, 0.85),
+			min = Vector3.new(-1.113, 0.835, -0.85),
+		},
+		fallback = 77627497895056,
+		float = true,
+		id = 87450090091403,
+		kind = "alien",
+		parts = {
+			ArmL = {
+				collide = false,
+				joint = Vector3.new(-0.3, 2.35, 0.0),
+				parent = "Body",
+			},
+			ArmR = {
+				collide = false,
+				joint = Vector3.new(0.3, 2.35, 0.0),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 2.45, 0.0),
+				parent = "Body",
+			},
+			Head_Glow = {
+				collide = false,
+				glow = "FFF08C",
+				parent = "Head",
+			},
+			WingL = {
+				collide = false,
+				glow = "B4F0FF",
+				joint = Vector3.new(-0.15, 2.25, 0.25),
+				parent = "Body",
+			},
+			WingR = {
+				collide = false,
+				glow = "B4F0FF",
+				joint = Vector3.new(0.15, 2.25, 0.25),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Head",
+			},
+		},
+	},
+	Alien_FrostOrbo = {
+		bounds = {
+			max = Vector3.new(1.251, 2.779, 1.208),
+			min = Vector3.new(-1.251, 0.75, -1.208),
+		},
+		fallback = 90912470539787,
+		float = true,
+		id = 83324080088501,
+		kind = "alien",
+		parts = {
+			ArmL = {
+				collide = false,
+				joint = Vector3.new(-0.8, 1.6, 0.0),
+				parent = "Body",
+			},
+			ArmR = {
+				collide = false,
+				joint = Vector3.new(0.8, 1.6, 0.0),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFE36E",
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Body",
+			},
+		},
+	},
+	Alien_FrostQuasarPup = {
+		bounds = {
+			max = Vector3.new(0.722, 2.163, 1.26),
+			min = Vector3.new(-0.722, -0.013, -1.39),
+		},
+		id = 112652349735656,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.45, 1.72, -0.7),
+				parent = "Head",
+			},
+			EarL_Glow = {
+				collide = false,
+				glow = "5AFFF0",
+				parent = "EarL",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.45, 1.72, -0.7),
+				parent = "Head",
+			},
+			EarR_Glow = {
+				collide = false,
+				glow = "5AFFF0",
+				parent = "EarR",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.05, -0.5),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.3, 0.62, 0.52),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.3, 0.62, 0.52),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.3, 0.62, -0.32),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.3, 0.62, -0.32),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.0, 0.8),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Head",
+			},
+		},
+	},
+	Alien_FrostStarWhale = {
+		bounds = {
+			max = Vector3.new(1.582, 3.468, 2.291),
+			min = Vector3.new(-1.582, 1.3, -1.534),
+		},
+		float = true,
+		id = 115735530217188,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFF5A0",
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 2.25, 1.3),
+				parent = "Body",
+			},
+			WingL = {
+				collide = false,
+				joint = Vector3.new(-0.75, 2.05, -0.1),
+				parent = "Body",
+			},
+			WingR = {
+				collide = false,
+				joint = Vector3.new(0.75, 2.05, -0.1),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Body",
+			},
+		},
+	},
 	Alien_GalaxyGus = {
 		bounds = {
 			max = Vector3.new(1.05, 2.67, 0.725),
 			min = Vector3.new(-1.05, 0.0, -0.68),
 		},
 		fallback = 124659141008546,
-		id = 137175031371756,
+		id = 129593175665483,
 		kind = "alien",
 		parts = {
 			ArmL = {
@@ -384,11 +1023,11 @@ Assets.Models = {
 	},
 	Alien_Glorp = {
 		bounds = {
-			max = Vector3.new(0.944, 2.32, 0.897),
-			min = Vector3.new(-0.944, -0.02, -0.976),
+			max = Vector3.new(0.944, 2.336, 0.897),
+			min = Vector3.new(-0.944, -0.02, -0.972),
 		},
 		fallback = 128488291933128,
-		id = 105279632742633,
+		id = 93251299544345,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -412,7 +1051,7 @@ Assets.Models = {
 			min = Vector3.new(-0.6, -0.01, -1.3),
 		},
 		fallback = 125135904569865,
-		id = 111111608056175,
+		id = 133832930363987,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -440,13 +1079,371 @@ Assets.Models = {
 			},
 		},
 	},
+	Alien_MagmaAstroAxolotl = {
+		bounds = {
+			max = Vector3.new(1.08, 1.81, 1.9),
+			min = Vector3.new(-1.08, -0.011, -1.399),
+		},
+		id = 83261294441177,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.55, 1.05, -0.8),
+				parent = "Head",
+			},
+			EarL_Glow = {
+				collide = false,
+				glow = "FFE36E",
+				parent = "EarL",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.55, 1.05, -0.8),
+				parent = "Head",
+			},
+			EarR_Glow = {
+				collide = false,
+				glow = "FFE36E",
+				parent = "EarR",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.75, -0.55),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.3456, 0.45, 0.604),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.3456, 0.45, 0.604),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.3456, 0.45, -0.404),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.3456, 0.45, -0.404),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.6, 0.6),
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "FF9A2E",
+				parent = "Head",
+			},
+		},
+	},
+	Alien_MagmaBlip = {
+		bounds = {
+			max = Vector3.new(0.79, 1.78, 0.73),
+			min = Vector3.new(-0.79, -0.02, -0.822),
+		},
+		id = 79609954812028,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				glow = "FFF27A",
+				joint = Vector3.new(-0.25, 1.18, 0.05),
+				parent = "Body",
+			},
+			EarR = {
+				collide = false,
+				glow = "FFF27A",
+				joint = Vector3.new(0.25, 1.18, 0.05),
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "FF9A2E",
+				parent = "Body",
+			},
+		},
+	},
+	Alien_MagmaCometCat = {
+		bounds = {
+			max = Vector3.new(0.55, 2.296, 1.42),
+			min = Vector3.new(-0.55, -0.012, -1.209),
+		},
+		id = 139640334819328,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.0, -0.45),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.27, 0.6, 0.478),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.27, 0.6, 0.478),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.27, 0.6, -0.278),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.27, 0.6, -0.278),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.9, 0.72),
+				parent = "Body",
+			},
+			Tail_Glow = {
+				collide = false,
+				glow = "FFB14A",
+				parent = "Tail",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "FF9A2E",
+				parent = "Head",
+			},
+		},
+	},
+	Alien_MagmaCraterCrab = {
+		bounds = {
+			max = Vector3.new(1.52, 1.831, 0.7),
+			min = Vector3.new(-1.52, -0.02, -1.425),
+		},
+		id = 128065799246261,
+		kind = "alien",
+		parts = {
+			ArmL = {
+				collide = false,
+				joint = Vector3.new(-0.8, 0.75, -0.3),
+				parent = "Body",
+			},
+			ArmR = {
+				collide = false,
+				joint = Vector3.new(0.8, 0.75, -0.3),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.25, 1.0, -0.45),
+				parent = "Body",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.25, 1.0, -0.45),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.675, 0.6, 0.35),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.675, 0.6, 0.35),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.765, 0.6, 0.0),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.765, 0.6, 0.0),
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "FF9A2E",
+				parent = "Body",
+			},
+		},
+	},
+	Alien_MagmaEclipseDragon = {
+		bounds = {
+			max = Vector3.new(2.057, 2.954, 2.425),
+			min = Vector3.new(-2.057, -0.016, -1.85),
+		},
+		id = 73304731587949,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFB43C",
+				parent = "Body",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.2, -0.6),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.372, 0.85, 0.688),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.372, 0.85, 0.688),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.372, 0.85, -0.488),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.372, 0.85, -0.488),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.0, 0.9),
+				parent = "Body",
+			},
+			WingL = {
+				collide = false,
+				joint = Vector3.new(-0.5, 1.5, -0.1),
+				parent = "Body",
+			},
+			WingR = {
+				collide = false,
+				joint = Vector3.new(0.5, 1.5, -0.1),
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "FF9A2E",
+				parent = "Head",
+			},
+		},
+	},
+	Alien_MagmaLunarSlug = {
+		bounds = {
+			max = Vector3.new(0.6, 1.54, 1.45),
+			min = Vector3.new(-0.6, -0.01, -1.3),
+		},
+		id = 80361182258166,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.2, 0.95, -0.55),
+				parent = "Body",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.2, 0.95, -0.55),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.4, 0.25),
+				parent = "Body",
+			},
+			Tail_Glow = {
+				collide = false,
+				glow = "9BFFF5",
+				parent = "Tail",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "FF9A2E",
+				parent = "Body",
+			},
+		},
+	},
+	Alien_MagmaVoidKing = {
+		bounds = {
+			max = Vector3.new(1.17, 3.79, 0.75),
+			min = Vector3.new(-1.17, 0.0, -0.72),
+		},
+		id = 75242255565424,
+		kind = "alien",
+		parts = {
+			ArmL = {
+				collide = false,
+				joint = Vector3.new(-0.65, 1.6, 0.0),
+				parent = "Body",
+			},
+			ArmR = {
+				collide = false,
+				joint = Vector3.new(0.65, 1.6, 0.0),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 2.0, 0.0),
+				parent = "Body",
+			},
+			Head_Glow = {
+				collide = false,
+				glow = "C85AFF",
+				parent = "Head",
+			},
+			LegL = {
+				collide = false,
+				joint = Vector3.new(-0.32, 0.6, 0.0),
+				parent = "Body",
+			},
+			LegR = {
+				collide = false,
+				joint = Vector3.new(0.32, 0.6, 0.0),
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "FF9A2E",
+				parent = "Head",
+			},
+		},
+	},
 	Alien_MoonMite = {
 		bounds = {
 			max = Vector3.new(0.722, 1.45, 0.8),
-			min = Vector3.new(-0.722, -0.02, -1.09),
+			min = Vector3.new(-0.722, -0.02, -1.083),
 		},
 		fallback = 73288734346101,
-		id = 72946029649148,
+		id = 81988689631428,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -494,11 +1491,11 @@ Assets.Models = {
 	Alien_Nebby = {
 		bounds = {
 			max = Vector3.new(0.92, 2.6, 0.92),
-			min = Vector3.new(-0.92, 0.46, -0.964),
+			min = Vector3.new(-0.92, 0.46, -0.963),
 		},
 		fallback = 107578080275579,
 		float = true,
-		id = 123535130530433,
+		id = 138206928006209,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -533,12 +1530,12 @@ Assets.Models = {
 	},
 	Alien_NovaQueen = {
 		bounds = {
-			max = Vector3.new(1.115, 3.67, 0.75),
-			min = Vector3.new(-1.115, 0.8, -0.75),
+			max = Vector3.new(1.113, 3.67, 0.85),
+			min = Vector3.new(-1.113, 0.835, -0.85),
 		},
 		fallback = 97045626328234,
 		float = true,
-		id = 71239173030856,
+		id = 104791105877996,
 		kind = "alien",
 		parts = {
 			ArmL = {
@@ -585,7 +1582,7 @@ Assets.Models = {
 		},
 		fallback = 92368580080008,
 		float = true,
-		id = 99602458023385,
+		id = 71550887099161,
 		kind = "alien",
 		parts = {
 			ArmL = {
@@ -610,11 +1607,11 @@ Assets.Models = {
 	},
 	Alien_QuasarPup = {
 		bounds = {
-			max = Vector3.new(0.721, 1.95, 1.26),
-			min = Vector3.new(-0.721, -0.013, -1.39),
+			max = Vector3.new(0.722, 1.95, 1.26),
+			min = Vector3.new(-0.722, -0.013, -1.39),
 		},
 		fallback = 72436159225756,
-		id = 87145308776057,
+		id = 115291289587321,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -672,14 +1669,382 @@ Assets.Models = {
 			},
 		},
 	},
+	Alien_ShadowDusty = {
+		bounds = {
+			max = Vector3.new(0.816, 2.22, 0.729),
+			min = Vector3.new(-0.816, -0.01, -0.888),
+		},
+		id = 116611105386930,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.28, 1.35, 0.05),
+				parent = "Body",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.28, 1.35, 0.05),
+				parent = "Body",
+			},
+			LegL = {
+				collide = false,
+				joint = Vector3.new(-0.3, 0.3, 0.0),
+				parent = "Body",
+			},
+			LegR = {
+				collide = false,
+				joint = Vector3.new(0.3, 0.3, 0.0),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "B45AFF",
+				parent = "Zone",
+			},
+		},
+	},
+	Alien_ShadowGalaxyGus = {
+		bounds = {
+			max = Vector3.new(1.05, 2.82, 0.725),
+			min = Vector3.new(-1.05, 0.0, -0.68),
+		},
+		id = 105466471593849,
+		kind = "alien",
+		parts = {
+			ArmL = {
+				collide = false,
+				joint = Vector3.new(-0.6, 1.3, 0.0),
+				parent = "Body",
+			},
+			ArmR = {
+				collide = false,
+				joint = Vector3.new(0.6, 1.3, 0.0),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.55, 0.0),
+				parent = "Body",
+			},
+			Head_Glass = {
+				collide = false,
+				material = "Glass",
+				parent = "Head",
+			},
+			LegL = {
+				collide = false,
+				joint = Vector3.new(-0.3, 0.55, 0.0),
+				parent = "Body",
+			},
+			LegR = {
+				collide = false,
+				joint = Vector3.new(0.3, 0.55, 0.0),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Head",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "B45AFF",
+				parent = "Zone",
+			},
+		},
+	},
+	Alien_ShadowNebby = {
+		bounds = {
+			max = Vector3.new(0.92, 3.155, 0.92),
+			min = Vector3.new(-0.92, 0.46, -0.963),
+		},
+		float = true,
+		id = 138399041926852,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "D7B4FF",
+				parent = "Body",
+			},
+			Tent1 = {
+				collide = false,
+				joint = Vector3.new(-0.3182, 1.75, 0.3182),
+				parent = "Body",
+			},
+			Tent2 = {
+				collide = false,
+				joint = Vector3.new(0.3182, 1.75, 0.3182),
+				parent = "Body",
+			},
+			Tent3 = {
+				collide = false,
+				joint = Vector3.new(0.3182, 1.75, -0.3182),
+				parent = "Body",
+			},
+			Tent4 = {
+				collide = false,
+				joint = Vector3.new(-0.3182, 1.75, -0.3182),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "B45AFF",
+				parent = "Zone",
+			},
+		},
+	},
+	Alien_ShadowQuasarPup = {
+		bounds = {
+			max = Vector3.new(0.722, 2.282, 1.26),
+			min = Vector3.new(-0.722, -0.013, -1.39),
+		},
+		id = 84654400068778,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.45, 1.72, -0.7),
+				parent = "Head",
+			},
+			EarL_Glow = {
+				collide = false,
+				glow = "5AFFF0",
+				parent = "EarL",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.45, 1.72, -0.7),
+				parent = "Head",
+			},
+			EarR_Glow = {
+				collide = false,
+				glow = "5AFFF0",
+				parent = "EarR",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.05, -0.5),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.3, 0.62, 0.52),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.3, 0.62, 0.52),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.3, 0.62, -0.32),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.3, 0.62, -0.32),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.0, 0.8),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Head",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "B45AFF",
+				parent = "Zone",
+			},
+		},
+	},
+	Alien_ShadowStarWhale = {
+		bounds = {
+			max = Vector3.new(1.582, 3.673, 2.291),
+			min = Vector3.new(-1.582, 1.3, -1.534),
+		},
+		float = true,
+		id = 125479813687505,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFF5A0",
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(0.0, 2.25, 1.3),
+				parent = "Body",
+			},
+			WingL = {
+				collide = false,
+				joint = Vector3.new(-0.75, 2.05, -0.1),
+				parent = "Body",
+			},
+			WingR = {
+				collide = false,
+				joint = Vector3.new(0.75, 2.05, -0.1),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Body",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "B45AFF",
+				parent = "Zone",
+			},
+		},
+	},
+	Alien_ShadowZib = {
+		bounds = {
+			max = Vector3.new(0.64, 2.61, 0.55),
+			min = Vector3.new(-0.64, 0.0, -0.55),
+		},
+		id = 119289716823215,
+		kind = "alien",
+		parts = {
+			ArmL = {
+				collide = false,
+				joint = Vector3.new(-0.34, 1.0, 0.0),
+				parent = "Body",
+			},
+			ArmR = {
+				collide = false,
+				joint = Vector3.new(0.34, 1.0, 0.0),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				glow = "FF5AD2",
+				joint = Vector3.new(-0.18, 2.0, 0.0),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				glow = "FF5AD2",
+				joint = Vector3.new(0.18, 2.0, 0.0),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.1, 0.0),
+				parent = "Body",
+			},
+			LegL = {
+				collide = false,
+				joint = Vector3.new(-0.16, 0.45, 0.0),
+				parent = "Body",
+			},
+			LegR = {
+				collide = false,
+				joint = Vector3.new(0.16, 0.45, 0.0),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Head",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "B45AFF",
+				parent = "Zone",
+			},
+		},
+	},
+	Alien_ShadowZorblax = {
+		bounds = {
+			max = Vector3.new(1.0, 3.158, 0.45),
+			min = Vector3.new(-1.0, 0.0, -0.622),
+		},
+		id = 93996866636804,
+		kind = "alien",
+		parts = {
+			ArmL = {
+				collide = false,
+				joint = Vector3.new(-0.48, 1.3, 0.0),
+				parent = "Body",
+			},
+			ArmR = {
+				collide = false,
+				joint = Vector3.new(0.48, 1.3, 0.0),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "5AFFE0",
+				parent = "Body",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.5, 0.0),
+				parent = "Body",
+			},
+			LegL = {
+				collide = false,
+				joint = Vector3.new(-0.25, 0.6, 0.0),
+				parent = "Body",
+			},
+			LegR = {
+				collide = false,
+				joint = Vector3.new(0.25, 0.6, 0.0),
+				parent = "Body",
+			},
+			Zone = {
+				collide = false,
+				parent = "Head",
+			},
+			Zone_Glow = {
+				collide = false,
+				glow = "B45AFF",
+				parent = "Zone",
+			},
+		},
+	},
 	Alien_StarWhale = {
 		bounds = {
-			max = Vector3.new(1.581, 3.15, 2.287),
-			min = Vector3.new(-1.581, 1.3, -1.586),
+			max = Vector3.new(1.582, 3.15, 2.291),
+			min = Vector3.new(-1.582, 1.3, -1.534),
 		},
 		fallback = 131033114744337,
 		float = true,
-		id = 125166969435086,
+		id = 102623881783331,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -710,10 +2075,10 @@ Assets.Models = {
 	Alien_VoidKing = {
 		bounds = {
 			max = Vector3.new(1.17, 3.32, 0.75),
-			min = Vector3.new(-1.17, 0.0, -0.6),
+			min = Vector3.new(-1.17, 0.0, -0.72),
 		},
 		fallback = 111317952703850,
-		id = 79546865983728,
+		id = 110094192759357,
 		kind = "alien",
 		parts = {
 			ArmL = {
@@ -757,7 +2122,7 @@ Assets.Models = {
 			min = Vector3.new(-0.64, 0.0, -0.55),
 		},
 		fallback = 102404816752077,
-		id = 137475240058924,
+		id = 96327672950573,
 		kind = "alien",
 		parts = {
 			ArmL = {
@@ -805,10 +2170,10 @@ Assets.Models = {
 	Alien_Zorblax = {
 		bounds = {
 			max = Vector3.new(1.0, 2.75, 0.45),
-			min = Vector3.new(-1.0, 0.0, -0.644),
+			min = Vector3.new(-1.0, 0.0, -0.622),
 		},
 		fallback = 127349188999331,
-		id = 100192311295244,
+		id = 111162628575826,
 		kind = "alien",
 		parts = {
 			ArmL = {
@@ -848,20 +2213,15 @@ Assets.Models = {
 	},
 	BaseArch = {
 		bounds = {
-			max = Vector3.new(8.25, 12.9, 1.0),
-			min = Vector3.new(-8.25, 0.0, -1.0),
+			max = Vector3.new(9.25, 13.25, 1.0),
+			min = Vector3.new(-9.25, 0.0, -1.0),
 		},
 		fallback = 131753565238068,
-		id = 132327604890101,
+		id = 114321826123700,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "5AFFC8",
-				parent = "Body",
 			},
 		},
 		sign = Vector3.new(0.0, 11.4, -0.3),
@@ -1076,11 +2436,11 @@ Assets.Models = {
 	},
 	Fence = {
 		bounds = {
-			max = Vector3.new(4.28, 3.18, 0.28),
-			min = Vector3.new(-4.28, 0.0, -0.28),
+			max = Vector3.new(4.283, 3.125, 0.283),
+			min = Vector3.new(-4.283, 0.0, -0.283),
 		},
 		fallback = 94101631166079,
-		id = 75852623209908,
+		id = 101158727824445,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1123,63 +2483,53 @@ Assets.Models = {
 	},
 	Hatchery = {
 		bounds = {
-			max = Vector3.new(9.0, 2.2, 9.0),
+			max = Vector3.new(9.0, 1.9, 9.0),
 			min = Vector3.new(-9.0, 0.0, -9.0),
 		},
 		fallback = 80892667400473,
-		id = 91098903744651,
+		id = 117013164524904,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "5AFFC8",
-				parent = "Body",
 			},
 		},
 	},
 	Incubator = {
 		bounds = {
-			max = Vector3.new(1.576, 4.85, 1.6),
-			min = Vector3.new(-1.576, 0.0, -1.6),
+			max = Vector3.new(1.2, 6.15, 1.2),
+			min = Vector3.new(-1.2, 0.0, -1.2),
 		},
 		fallback = 118504148968378,
-		id = 104302418696142,
+		id = 117073768251787,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
 			},
-			Body_Glass = {
-				collide = false,
-				material = "Glass",
-				parent = "Body",
-			},
 			Body_Glow = {
 				collide = false,
-				glow = "5AFFC8",
+				glow = "FFD68C",
 				parent = "Body",
 			},
 		},
 	},
 	Lamp = {
 		bounds = {
-			max = Vector3.new(0.6, 8.15, 0.6),
-			min = Vector3.new(-0.6, 0.0, -1.8),
+			max = Vector3.new(0.7, 8.175, 0.7),
+			min = Vector3.new(-0.7, 0.0, -1.618),
 		},
 		fallback = 135432862094576,
-		id = 72580564455004,
+		id = 112812006017317,
 		kind = "prop",
-		light = Vector3.new(0.0, 7.5, -1.3),
+		light = Vector3.new(0.0, 6.8, -1.3),
 		parts = {
 			Body = {
 				collide = true,
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "FFF0C8",
+				glow = "FFD68C",
 				parent = "Body",
 			},
 		},
@@ -1450,12 +2800,12 @@ Assets.Models = {
 	},
 	Tool_Broom = {
 		bounds = {
-			max = Vector3.new(0.75, 0.262, 2.22),
-			min = Vector3.new(-0.75, -0.262, -2.68),
+			max = Vector3.new(0.75, 0.262, 2.45),
+			min = Vector3.new(-0.75, -0.262, -2.7),
 		},
 		fallback = 80325302560694,
 		grip = Vector3.new(0.0, 0.0, 1.4),
-		id = 92674663690267,
+		id = 78093032288186,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1465,12 +2815,12 @@ Assets.Models = {
 	},
 	Tool_LeafBlower = {
 		bounds = {
-			max = Vector3.new(0.35, 0.55, 1.2),
-			min = Vector3.new(-0.44, -0.55, -1.85),
+			max = Vector3.new(0.36, 0.55, 1.2),
+			min = Vector3.new(-0.47, -0.55, -1.85),
 		},
 		fallback = 136713241963556,
 		grip = Vector3.new(0.0, 0.45, 0.7),
-		id = 130569732797474,
+		id = 121612476258333,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1480,12 +2830,12 @@ Assets.Models = {
 	},
 	Tool_Mop = {
 		bounds = {
-			max = Vector3.new(0.696, 0.666, 2.1),
-			min = Vector3.new(-0.696, -0.666, -2.63),
+			max = Vector3.new(0.713, 0.697, 2.23),
+			min = Vector3.new(-0.713, -0.697, -2.84),
 		},
 		fallback = 70875734599625,
 		grip = Vector3.new(0.0, 0.0, 1.4),
-		id = 91304897272976,
+		id = 140734399491158,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1496,11 +2846,11 @@ Assets.Models = {
 	Tool_ShopVac = {
 		bounds = {
 			max = Vector3.new(0.5, 0.44, 1.475),
-			min = Vector3.new(-0.5, -0.64, -1.975),
+			min = Vector3.new(-0.517, -0.74, -1.975),
 		},
 		fallback = 138719504516982,
 		grip = Vector3.new(0.0, 0.35, 0.9),
-		id = 125558326295758,
+		id = 137276354459522,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1510,12 +2860,12 @@ Assets.Models = {
 	},
 	Tool_Toothbrush = {
 		bounds = {
-			max = Vector3.new(0.16, 0.16, 1.41),
-			min = Vector3.new(-0.16, -0.31, -1.55),
+			max = Vector3.new(0.18, 0.19, 1.41),
+			min = Vector3.new(-0.18, -0.48, -1.55),
 		},
 		fallback = 75491264781846,
 		grip = Vector3.new(0.0, 0.0, 0.85),
-		id = 134880869544045,
+		id = 115953753678715,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1530,7 +2880,7 @@ Assets.Models = {
 		},
 		fallback = 128091050780061,
 		grip = Vector3.new(0.0, 0.42, 0.75),
-		id = 97241256529735,
+		id = 99452655197920,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1602,11 +2952,11 @@ Assets.Models = {
 	},
 	Vehicle_DustTruck = {
 		bounds = {
-			max = Vector3.new(4.52, 6.777, 6.075),
-			min = Vector3.new(-4.52, -0.081, -8.384),
+			max = Vector3.new(4.61, 6.777, 6.885),
+			min = Vector3.new(-4.61, -0.027, -8.302),
 		},
 		fallback = 132235458406457,
-		id = 139111166539914,
+		id = 117951814203412,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1626,16 +2976,21 @@ Assets.Models = {
 				joint = Vector3.new(0.0, 1.0125, -7.29),
 				parent = "Body",
 			},
+			Tail_Glow = {
+				collide = false,
+				glow = "FF3A4A",
+				parent = "Body",
+			},
 		},
 		seat = Vector3.new(0.0, 3.78, 1.35),
 	},
 	Vehicle_HoverSweeper = {
 		bounds = {
-			max = Vector3.new(5.25, 5.987, 7.037),
-			min = Vector3.new(-5.25, -0.09, -9.315),
+			max = Vector3.new(5.25, 5.987, 7.65),
+			min = Vector3.new(-5.25, 0.0, -9.225),
 		},
 		fallback = 84373661850759,
-		id = 128142838252687,
+		id = 138275532418294,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1655,16 +3010,21 @@ Assets.Models = {
 				joint = Vector3.new(0.0, 1.125, -8.1),
 				parent = "Body",
 			},
+			Tail_Glow = {
+				collide = false,
+				glow = "FF3A4A",
+				parent = "Body",
+			},
 		},
 		seat = Vector3.new(0.0, 4.2, 1.5),
 	},
 	Vehicle_MoonBuggy = {
 		bounds = {
-			max = Vector3.new(3.84, 6.44, 5.175),
-			min = Vector3.new(-3.84, -0.069, -7.142),
+			max = Vector3.new(3.92, 6.44, 5.865),
+			min = Vector3.new(-3.92, -0.023, -7.073),
 		},
 		fallback = 110074258000570,
-		id = 87264804303541,
+		id = 114717293513414,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1684,16 +3044,21 @@ Assets.Models = {
 				joint = Vector3.new(0.0, 0.8625, -6.21),
 				parent = "Body",
 			},
+			Tail_Glow = {
+				collide = false,
+				glow = "FF3A4A",
+				parent = "Body",
+			},
 		},
 		seat = Vector3.new(0.0, 3.22, 1.15),
 	},
 	Vehicle_MoonCrawler = {
 		bounds = {
-			max = Vector3.new(6.28, 11.34, 8.1),
-			min = Vector3.new(-6.28, -0.108, -11.178),
+			max = Vector3.new(6.28, 11.34, 9.18),
+			min = Vector3.new(-6.28, -0.036, -11.07),
 		},
 		fallback = 105103192060824,
-		id = 100499498622530,
+		id = 95258827109399,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1713,16 +3078,21 @@ Assets.Models = {
 				joint = Vector3.new(0.0, 1.35, -9.72),
 				parent = "Body",
 			},
+			Tail_Glow = {
+				collide = false,
+				glow = "FF3A4A",
+				parent = "Body",
+			},
 		},
 		seat = Vector3.new(0.0, 5.04, 1.8),
 	},
 	Vehicle_RocketSweeper = {
 		bounds = {
 			max = Vector3.new(10.956, 11.0, 14.08),
-			min = Vector3.new(-10.956, -0.132, -13.662),
+			min = Vector3.new(-10.956, -0.044, -13.53),
 		},
 		fallback = 98988418561881,
-		id = 133577992219871,
+		id = 79287267875735,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1742,16 +3112,21 @@ Assets.Models = {
 				joint = Vector3.new(0.0, 1.65, -11.88),
 				parent = "Body",
 			},
+			Tail_Glow = {
+				collide = false,
+				glow = "FF3A4A",
+				parent = "Body",
+			},
 		},
 		seat = Vector3.new(0.0, 6.16, 2.2),
 	},
 	Vehicle_SolarRover = {
 		bounds = {
-			max = Vector3.new(12.2, 11.6, 9.0),
-			min = Vector3.new(-12.2, -0.12, -12.42),
+			max = Vector3.new(12.2, 11.6, 10.2),
+			min = Vector3.new(-12.2, -0.04, -12.3),
 		},
 		fallback = 94763121171895,
-		id = 97590307426997,
+		id = 133401549224983,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1771,16 +3146,21 @@ Assets.Models = {
 				joint = Vector3.new(0.0, 1.5, -10.8),
 				parent = "Body",
 			},
+			Tail_Glow = {
+				collide = false,
+				glow = "FF3A4A",
+				parent = "Body",
+			},
 		},
 		seat = Vector3.new(0.0, 5.6, 2.0),
 	},
 	Vehicle_SweeperCart = {
 		bounds = {
-			max = Vector3.new(3.33, 5.425, 4.5),
-			min = Vector3.new(-3.33, -0.06, -6.21),
+			max = Vector3.new(3.402, 5.425, 5.1),
+			min = Vector3.new(-3.402, -0.02, -6.15),
 		},
 		fallback = 99361441529847,
-		id = 113796643098393,
+		id = 102448576415041,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1798,6 +3178,11 @@ Assets.Models = {
 			Brush = {
 				collide = false,
 				joint = Vector3.new(0.0, 0.75, -5.4),
+				parent = "Body",
+			},
+			Tail_Glow = {
+				collide = false,
+				glow = "FF3A4A",
 				parent = "Body",
 			},
 		},
@@ -1827,8 +3212,8 @@ Assets.Models = {
 
 Assets.Animations = {
 	Pet_Happy = 121509518198286,
-	Pet_Idle = 92065903957406,
-	Pet_Walk = 130705289172156,
+	Pet_Idle = 118201470503798,
+	Pet_Walk = 96173339977660,
 	Player_Hold = 70450038284627,
 	Player_Sweep = 87735193219138,
 }
@@ -1847,29 +3232,50 @@ Assets.AnimationFallback = {
 Assets.Images = {
 	BannerLuck = "rbxassetid://80280328077497",
 	BannerStarter = "rbxassetid://140216401802209",
-	Icon_Alien = "rbxassetid://130343755563541",
-	Icon_Auto = "rbxassetid://100400998462031",
-	Icon_Backpack = "rbxassetid://78397712725630",
-	Icon_Base = "rbxassetid://78445407823725",
-	Icon_Boost = "rbxassetid://122729187950772",
-	Icon_Cash = "rbxassetid://77755252353039",
-	Icon_Dust = "rbxassetid://102117683884604",
-	Icon_Egg = "rbxassetid://126416972764798",
-	Icon_Gift = "rbxassetid://131227221102400",
-	Icon_Index = "rbxassetid://129110672308655",
-	Icon_Lock = "rbxassetid://98827331378055",
-	Icon_Luck = "rbxassetid://79028205861075",
-	Icon_Meteor = "rbxassetid://126446331367765",
-	Icon_Rebirth = "rbxassetid://129431956423248",
-	Icon_Sell = "rbxassetid://113142295565740",
-	Icon_Shop = "rbxassetid://105247630037745",
-	Icon_Speed = "rbxassetid://92027505567695",
-	Icon_Star = "rbxassetid://70582665516009",
-	Icon_Timer = "rbxassetid://113659680582613",
-	Icon_Tool = "rbxassetid://73274476326631",
-	Icon_Upgrade = "rbxassetid://117595367687228",
-	Icon_Vehicle = "rbxassetid://134464398158021",
-	Icon_Zones = "rbxassetid://96129567125793",
+	Icon_Alien = "rbxassetid://96284894082842",
+	Icon_Auto = "rbxassetid://140389556652076",
+	Icon_Backpack = "rbxassetid://93587336308441",
+	Icon_Base = "rbxassetid://139493072629786",
+	Icon_Boost = "rbxassetid://93142645936946",
+	Icon_Car_DustTruck = "rbxassetid://127537393941067",
+	Icon_Car_HoverSweeper = "rbxassetid://123781746258237",
+	Icon_Car_MoonBuggy = "rbxassetid://139284723791055",
+	Icon_Car_MoonCrawler = "rbxassetid://121277872115114",
+	Icon_Car_RocketSweeper = "rbxassetid://89157426739376",
+	Icon_Car_SolarRover = "rbxassetid://120352898836315",
+	Icon_Car_SweeperCart = "rbxassetid://80574176883038",
+	Icon_Cash = "rbxassetid://85777016145545",
+	Icon_Daily = "rbxassetid://127570717481867",
+	Icon_Dust = "rbxassetid://88214974293818",
+	Icon_Egg = "rbxassetid://126607713488030",
+	Icon_Event = "rbxassetid://131797110254843",
+	Icon_Gift = "rbxassetid://123745627398275",
+	Icon_Group = "rbxassetid://92319128056787",
+	Icon_Index = "rbxassetid://118419475405763",
+	Icon_Lock = "rbxassetid://139687817831108",
+	Icon_Luck = "rbxassetid://104212602321163",
+	Icon_Meteor = "rbxassetid://117961016683160",
+	Icon_Potion = "rbxassetid://101130746797217",
+	Icon_PotionCash = "rbxassetid://72172229118624",
+	Icon_PotionHatch = "rbxassetid://126187979476633",
+	Icon_PotionLuck = "rbxassetid://84262214970870",
+	Icon_PotionSpeed = "rbxassetid://77095006790199",
+	Icon_Rebirth = "rbxassetid://88807687836893",
+	Icon_Sell = "rbxassetid://85496393973162",
+	Icon_Shop = "rbxassetid://79123475569846",
+	Icon_Speed = "rbxassetid://98710779122937",
+	Icon_Star = "rbxassetid://111986986082052",
+	Icon_Timer = "rbxassetid://104899064515972",
+	Icon_Tool = "rbxassetid://114502791229592",
+	Icon_Tool_Broom = "rbxassetid://101030131513570",
+	Icon_Tool_LeafBlower = "rbxassetid://73585117607218",
+	Icon_Tool_Mop = "rbxassetid://73462006393088",
+	Icon_Tool_ShopVac = "rbxassetid://72962237548215",
+	Icon_Tool_Toothbrush = "rbxassetid://70823974597930",
+	Icon_Tool_TurboVacuum = "rbxassetid://80369455269750",
+	Icon_Upgrade = "rbxassetid://118709070397753",
+	Icon_Vehicle = "rbxassetid://137244696142454",
+	Icon_Zones = "rbxassetid://76068568124350",
 	Logo = "rbxassetid://135332141267180",
 	Sky_Stars = "rbxassetid://132647195236775",
 	Stud = "rbxassetid://139302839809244",

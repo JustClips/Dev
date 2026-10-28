@@ -222,6 +222,8 @@ export type PlayerSnapshot = {
 	Boosts: { [string]: number },
 	Gamepasses: { [string]: boolean },
 	Daily: { Streak: number, LastDay: number },
+	-- RewardService:Snapshot (daily card, session playtime, stay offer, group, event)
+	Rewards: { [string]: any }?,
 	Flags: { [string]: any },
 	Stats: { [string]: number },
 	Slots: number,

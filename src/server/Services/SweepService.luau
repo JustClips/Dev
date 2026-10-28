@@ -60,6 +60,7 @@ local function onSweep(player: Player, position: any)
 		return
 	end
 
+	S.DustBunnyService:TryCatch(player, position, tool.Radius)
 	local cleared = {}
 	Grid.forEachInRadius(position, tool.Radius, function(id)
 		if S.DustService:Damage(id, tool.Power) then
@@ -70,10 +71,23 @@ local function onSweep(player: Player, position: any)
 		return
 	end
 
-	local totalDust, totalValue = 0, 0
+	-- Combo: keep clearing dust without a break to push the cash multiplier up to x3.
+	local combo = Economy.Combo
+	if now - (runtime.ComboAt or 0) > combo.Timeout then
+		runtime.Combo = 1
+	end
+	runtime.Combo = math.min(combo.Max, (runtime.Combo or 1) + combo.Step)
+	runtime.ComboAt = now
+
+	local totalDust, totalValue, goldenHits = 0, 0, 0
 	for _, id in cleared do
 		local tileZone = S.DustService:GetZone(id)
-		local units, value = S.BackpackService:AddDust(player, tileZone, tool.Power)
+		local mult = runtime.Combo
+		if S.DustService:TakeGolden(id) then
+			mult *= Economy.Golden.Mult
+			goldenHits += 1
+		end
+		local units, value = S.BackpackService:AddDust(player, tileZone, tool.Power, mult)
 		totalDust += units
 		totalValue += value
 		S.EggService:OnTileCleared(player, tileZone, Grid.tilePosition(id) :: Vector3)
@@ -85,6 +99,8 @@ local function onSweep(player: Player, position: any)
 		Value = totalValue * S.BoostService:GetCashMultiplier(player),
 		Full = S.BackpackService:IsFull(player),
 		Tiles = #cleared,
+		Combo = runtime.Combo,
+		Golden = goldenHits,
 	})
 end
 

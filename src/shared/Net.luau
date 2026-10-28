@@ -18,6 +18,7 @@ local EVENTS: { [string]: number } = {
 	ShowOffer = 0, -- server -> owner: contextual offer
 	OfferResponse = 4, -- client: offer clicked / dismissed
 	MeteorImpact = 0, -- server -> all: meteor visual at a position
+	BunnyPop = 0, -- server -> all: a dust bunny got swept at a position
 	SetAutoSweep = 4, -- client: toggle auto sweep (gamepass)
 }
 
@@ -33,6 +34,7 @@ local FUNCTIONS: { [string]: number } = {
 	EquipTool = 4,
 	Teleport = 2, -- ("Base" | "Rocket" | zoneId) -> ok, message
 	Inventory = 10, -- (action, arg?) -> ok, message: see InventoryService ACTIONS
+	Rewards = 6, -- (action, arg?) -> ok, message: see RewardService ACTIONS
 }
 
 local FOLDER_NAME = "Remotes"

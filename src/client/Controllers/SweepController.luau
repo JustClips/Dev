@@ -220,6 +220,13 @@ local function onSweepResult(result)
 	if result.Value and result.Value > 0 then
 		floatNumber("+" .. Format.cash(result.Value), root.Position + Vector3.new(math.random() * 2 - 1, 3, math.random() * 2 - 1))
 	end
+	if result.Golden and result.Golden > 0 then
+		floatNumber("GOLDEN!", root.Position + Vector3.new(0, 5, 0))
+		Ui.sound("Coin")
+	end
+	if result.Combo then
+		C.HudController:SetCombo(result.Combo)
+	end
 	if result.Full and os.clock() > fullWarnAt then
 		fullWarnAt = os.clock() + 6
 		C.HudController:Toast("Backpack full! Tap Sell to fly to the Rocket", "Bad")
@@ -292,6 +299,14 @@ function SweepController:Start()
 	Net.event("TilesCleared").OnClientEvent:Connect(onTilesCleared)
 	Net.event("SweepResult").OnClientEvent:Connect(onSweepResult)
 	Net.event("MeteorImpact").OnClientEvent:Connect(onMeteor)
+	Net.event("BunnyPop").OnClientEvent:Connect(function(position: Vector3)
+		local camera = Workspace.CurrentCamera
+		if camera and (position - camera.Focus.Position).Magnitude < 200 then
+			emitterPart.Position = position
+			emitter:Emit(30)
+			Ui.sound("Pop")
+		end
+	end)
 
 	local acc = 0
 	RunService.Heartbeat:Connect(function(dt)

@@ -86,7 +86,7 @@ function BackpackService:IsFull(player: Player): boolean
 end
 
 -- Adds dust from one cleared tile. Returns units actually added and their base value.
-function BackpackService:AddDust(player: Player, zone, power: number): (number, number)
+function BackpackService:AddDust(player: Player, zone, power: number, mult: number?): (number, number)
 	local session = S.DataService:GetSession(player)
 	if not session then
 		return 0, 0
@@ -98,7 +98,7 @@ function BackpackService:AddDust(player: Player, zone, power: number): (number, 
 		return 0, 0
 	end
 	local units = math.min(room, zone.DustPerTile * power)
-	local value = units * zone.CashMult
+	local value = units * zone.CashMult * (mult or 1)
 	data.Backpack += units
 	data.BackpackValue += value
 	if data.Backpack >= capacity and not session.Runtime.WasFull then

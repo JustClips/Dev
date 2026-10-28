@@ -21,6 +21,12 @@ local S: any
 local parts: { [number]: BasePart } = {}
 local hp: { [number]: number } = {}
 local zoneOf: { [number]: any } = {} -- id -> ZoneDef
+local baseColor: { [number]: Color3 } = {}
+local zoneTiles: { [string]: { number } } = {}
+-- Golden dust piles: a few per zone at a time, worth Economy.Golden.Mult x cash.
+local golden: { [number]: boolean } = {}
+local goldenCount: { [string]: number } = {}
+local GOLD = Color3.fromRGB(255, 205, 60)
 local clearedBatch: { number } = {}
 -- One FIFO per zone (same regrow delay per zone, so entries come out in order).
 type RegrowQueue = { items: { [number]: { id: number, at: number } }, head: number, tail: number }
@@ -53,6 +59,9 @@ local function buildTiles()
 			-- Slight checker variation so the field doesn't look flat.
 			local shade = if (index + (index // zg.Cols)) % 2 == 0 then 1 else 0.94
 			part.Color = Color3.new(zone.DustColor.R * shade, zone.DustColor.G * shade, zone.DustColor.B * shade)
+			baseColor[id] = part.Color
+			zoneTiles[zone.Id] = zoneTiles[zone.Id] or {}
+			table.insert(zoneTiles[zone.Id], id)
 			part.TopSurface = Enum.SurfaceType.Smooth
 			part.BottomSurface = Enum.SurfaceType.Smooth
 			CollectionService:AddTag(part, TAG)
@@ -83,6 +92,66 @@ end
 
 function DustService:GetZone(id: number)
 	return zoneOf[id]
+end
+
+local function setGolden(id: number, on: boolean)
+	local part = parts[id]
+	local zone = zoneOf[id]
+	if (golden[id] == true) == on then
+		return
+	end
+	golden[id] = if on then true else nil
+	goldenCount[zone.Id] = (goldenCount[zone.Id] or 0) + (if on then 1 else -1)
+	part.Color = if on then GOLD else baseColor[id]
+	part.Material = if on then Enum.Material.Foil else Enum.Material.Sand
+	local sparkle = part:FindFirstChild("Gold")
+	if on and not sparkle then
+		local e = Instance.new("ParticleEmitter")
+		e.Name = "Gold"
+		e.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		e.Color = ColorSequence.new(GOLD)
+		e.Size = NumberSequence.new(0.6, 0)
+		e.Rate = 5
+		e.Lifetime = NumberRange.new(0.8, 1.2)
+		e.Speed = NumberRange.new(1, 2)
+		e.LightEmission = 1
+		e.Parent = part
+	elseif not on and sparkle then
+		sparkle:Destroy()
+	end
+	part:SetAttribute("Golden", if on then true else nil)
+end
+
+-- True (once) if this tile was a golden pile; the pile turns back into normal dust.
+function DustService:TakeGolden(id: number): boolean
+	if golden[id] then
+		setGolden(id, false)
+		return true
+	end
+	return false
+end
+
+-- Tops every zone up to Economy.Golden.PerZone golden piles on standing dust.
+function DustService:RefreshGolden(rng: Random)
+	for zoneId, ids in zoneTiles do
+		local tries = 0
+		while (goldenCount[zoneId] or 0) < Economy.Golden.PerZone and tries < 20 do
+			tries += 1
+			local id = ids[rng:NextInteger(1, #ids)]
+			if hp[id] > 0 and not golden[id] then
+				setGolden(id, true)
+			end
+		end
+	end
+end
+
+-- A random standing tile position in a zone (for dust bunnies).
+function DustService:GetRandomTilePosition(zoneId: string, rng: Random): Vector3?
+	local ids = zoneTiles[zoneId]
+	if not ids then
+		return nil
+	end
+	return Grid.tilePosition(ids[rng:NextInteger(1, #ids)])
 end
 
 function DustService:IsCleared(id: number): boolean
@@ -170,6 +239,14 @@ function DustService:Start()
 				clearedBatch = {}
 				Net.fireAll("TilesCleared", Grid.pack(batch))
 			end
+		end
+	end)
+
+	task.spawn(function()
+		local rng = Random.new()
+		while true do
+			DustService:RefreshGolden(rng)
+			task.wait(Economy.Golden.CheckSeconds)
 		end
 	end)
 

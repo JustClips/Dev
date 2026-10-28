@@ -112,6 +112,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		EggBagSize = Economy.EggBagSize,
 		PlacedCount = S.AlienService:PlacedCount(player),
 		Daily = data.Daily,
+		Rewards = S.RewardService:Snapshot(player),
 		Index = data.Index,
 		Boosts = data.Boosts,
 		Gamepasses = data.Gamepasses,

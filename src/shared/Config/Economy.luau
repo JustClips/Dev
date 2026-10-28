@@ -71,6 +71,22 @@ local Economy = {
 		MoonBarFraction = 0.8,
 	},
 
+	-- Sweeping extras: keep sweeping to build a combo (cash x1 -> x3), golden dust piles
+	-- (much more cash) and dust bunnies that run away and drop rewards when swept.
+	Combo = { Step = 0.04, Max = 3, Timeout = 1.6 },
+	Golden = { PerZone = 4, Mult = 15, CheckSeconds = 6 },
+	Bunnies = {
+		PerZone = 3,
+		CashSeconds = 25, -- reward = this many seconds of your earnings
+		MinCashPerZoneMult = 80, -- floor: zone cash mult x this
+		PotionChance = 0.22,
+		EggChance = 0.06,
+		FleeRadius = 16,
+		Speed = 11,
+		RespawnSeconds = 12,
+		CatchSlack = 2,
+	},
+
 	-- Server loops
 	StateFlushInterval = 0.2,
 	TileBatchInterval = 0.1,

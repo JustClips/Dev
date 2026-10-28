@@ -108,8 +108,8 @@ def pet_idle(w, t):
     s = math.sin
     ears = D(9) * s(w + 0.6)
     return {
-        "Body": ((0, 0.06 * (1 - math.cos(w)) / 2, 0), (0, 0, D(1.5) * s(w))),
-        "Head": ((0, 0, 0), (D(3) * s(w + 1), 0, D(5) * s(w * 0.5))),
+        "Body": ((0, 0.1 * (1 - math.cos(w)) / 2, 0), (D(2) * s(w), 0, D(3) * s(w))),
+        "Head": ((0, 0, 0), (D(4) * s(w + 1), D(6) * s(w * 0.5), D(8) * s(w * 0.5))),
         "EarL": ((0, 0, 0), (0, 0, ears)),
         "EarR": ((0, 0, 0), (0, 0, -ears)),
         "Tail": ((0, 0, 0), (0, D(18) * s(w * 2), 0)),
@@ -125,7 +125,7 @@ def pet_walk(w, t):
     s, c = math.sin, math.cos
     leg = D(32) * s(w)
     return {
-        "Body": ((0, 0.14 * abs(s(w)), 0), (D(3) * s(2 * w), 0, D(4) * s(w))),
+        "Body": ((0, 0.3 * abs(s(w)), 0), (D(6) * s(2 * w), 0, D(7) * s(w))),
         "Head": ((0, 0, 0), (D(5) * s(2 * w + 0.5), 0, -D(3) * s(w))),
         "LegFL": ((0, 0, 0), (leg, 0, 0)), "LegBR": ((0, 0, 0), (leg, 0, 0)),
         "LegFR": ((0, 0, 0), (-leg, 0, 0)), "LegBL": ((0, 0, 0), (-leg, 0, 0)),

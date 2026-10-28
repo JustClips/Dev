@@ -106,51 +106,75 @@ def toothbrush(a):
     blue, white = "5AB4FF", "FFFFFF"
     handle = capsule(blue, (0, 1.2, 0), (0, -1.0, 0), 0.13)
     grip = capsule("2A7ACD", (0, 1.25, 0), (0, 0.4, 0), 0.16)
+    rings = [torus("FFE36E", loc=(0, y, 0), R=0.15, r=0.03, rot=(90, 0, 0), seg=14, mseg=4) for y in (0.35, 1.3)]
+    dots = [sphere("FF7AB4", loc=(0, y, 0.15), scale=0.04) for y in (0.55, 0.75, 0.95, 1.15)]
     head = box(blue, loc=(0, -1.25, 0.02), size=(0.32, 0.6, 0.16), bevel=0.05)
-    bristles = [box(white if i % 2 else "BCE6FF", loc=(0, -1.45 + i * 0.1, -0.16), size=(0.28, 0.07, 0.3), bevel=0.02) for i in range(5)]
-    a.part("Handle", [handle, grip, head] + bristles)
+    bristles = []
+    for i in range(5):
+        for j, x in enumerate((-0.08, 0.08)):
+            col = ("FFFFFF", "9ED8FF", "FF9EC4")[(i + j) % 3]
+            bristles.append(box(col, loc=(x, -1.45 + i * 0.1, -0.18), size=(0.12, 0.07, 0.32), bevel=0.02))
+    paste = [sphere("7AF0C8", loc=(0, -1.25 + k * 0.12, -0.38 - 0.03 * (k % 2)), scale=(0.1, 0.09, 0.07)) for k in (-1, 0, 1)]
+    paste += [sphere(white, loc=(0, -1.25 + k * 0.12, -0.42), scale=(0.05, 0.05, 0.04)) for k in (-1, 1)]
+    a.part("Handle", [handle, grip, head] + rings + dots + bristles + paste)
 
 
 def broom(a):
     wood, straw, band = "B4783C", "FFD25A", "D23C3C"
     stick = cyl(wood, loc=(0, 0.3, 0), r=0.09, h=3.6, rot=(90, 0, 0), verts=10)
+    grain = [torus(shade(wood, -0.15), loc=(0, y, 0), R=0.09, r=0.015, rot=(90, 0, 0), seg=10, mseg=4) for y in (-0.6, 0.2, 1.0, 1.6)]
     knob = sphere(shade(wood, -0.2), loc=(0, 2.1, 0), scale=0.12)
+    loop = torus("D23C3C", loc=(0, 2.3, 0), R=0.12, r=0.03, rot=(0, 90, 0), seg=12, mseg=4)
     b = cyl(band, loc=(0, -1.55, 0), r=0.16, h=0.25, rot=(90, 0, 0), verts=12)
     head = cone(straw, loc=(0, -2.1, 0), r=0.75, h=1.0, rot=(-90, 0, 0), verts=16)
     deform(head, lambda v: Vector((v.x, v.y, v.z * 0.35)))
-    strands = [box(shade(straw, -0.15), loc=(-0.6 + i * 0.15, -2.62, 0), size=(0.05, 0.12, 0.2)) for i in range(9)]
-    a.part("Handle", [stick, knob, b, head] + strands)
+    stitches = [box(band, loc=(0, y, 0), size=(w, 0.06, 0.3 * w + 0.05)) for y, w in ((-1.85, 0.62), (-2.05, 0.95))]
+    strands = [box(shade(straw, -0.15 if i % 2 else 0.1), loc=(-0.6 + i * 0.15, -2.62, 0), size=(0.07, 0.16, 0.22)) for i in range(9)]
+    a.part("Handle", [stick, knob, loop, b, head] + grain + stitches + strands)
 
 
 def mop(a):
     stick = cyl("5AC8A0", loc=(0, 0.3, 0), r=0.09, h=3.6, rot=(90, 0, 0), verts=10)
-    cap = cyl("FFFFFF", loc=(0, -1.55, 0), r=0.2, h=0.3, rot=(90, 0, 0), verts=12)
+    tip = sphere("FFFFFF", loc=(0, 2.1, 0), scale=0.13)
+    grip = capsule("2A8C6E", (0, 1.9, 0), (0, 1.2, 0), 0.12)
+    cap = cyl("FFFFFF", loc=(0, -1.55, 0), r=0.22, h=0.3, rot=(90, 0, 0), verts=12)
+    ring = torus("5AC8A0", loc=(0, -1.6, 0), R=0.23, r=0.04, rot=(90, 0, 0), seg=14, mseg=4)
     strands = []
-    for i in range(10):
-        ang = i * 36
+    for i in range(14):
+        ang = i * 360 / 14
         x, z = math.cos(math.radians(ang)) * 0.22, math.sin(math.radians(ang)) * 0.22
-        strands.append(capsule("E6F5FF" if i % 2 else "B4E6F0", (x, -1.65, z), (x * 2.8, -2.55, z * 2.8), 0.08, seg=8))
-    a.part("Handle", [stick, cap] + strands)
+        strands.append(capsule(("E6F5FF", "B4E6F0", "FFD2E6")[i % 3], (x, -1.65, z), (x * 2.9, -2.6, z * 2.9), 0.075, seg=8))
+    bubbles = [sphere("CDEBFF", loc=(x, -2.75, z), scale=0.09) for x, z in ((0.3, 0.2), (-0.35, -0.1), (0.05, -0.4))]
+    a.part("Handle", [stick, tip, grip, cap, ring] + strands + bubbles)
 
 
 def leaf_blower(a):
     o = "FF8C3C"
     body = box(o, loc=(0, 0.6, -0.1), size=(0.7, 1.2, 0.8), bevel=0.15)
+    stripe = box("FFFFFF", loc=(0, 0.6, -0.1), size=(0.72, 0.18, 0.82), bevel=0.05)
     engine = cyl("3A3A46", loc=(0.38, 0.6, -0.1), r=0.32, h=0.12, rot=(0, 90, 0), verts=16)
+    vents = [box("2A2A33", loc=(0.45, 0.6, -0.1 + k * 0.12), size=(0.04, 0.4, 0.05)) for k in (-1, 0, 1)]
+    fuel = cyl("FFD23C", loc=(-0.2, 0.95, 0.32), r=0.1, h=0.1, verts=10)
     grip = capsule("3A3A46", (0, 0.4, 0.45), (0, 1.0, 0.45), 0.1)
+    trigger = box("FF3A4A", loc=(0, 0.5, 0.3), size=(0.08, 0.12, 0.14), bevel=0.02)
     tube_ = cyl("3A3A46", loc=(0, -0.7, -0.25), r=0.17, h=1.8, rot=(90, 0, 0), verts=12)
+    bands = [torus(o, loc=(0, y, -0.25), R=0.18, r=0.03, rot=(90, 0, 0), seg=14, mseg=4) for y in (-0.2, -0.9)]
     nozzle = cyl(o, loc=(0, -1.7, -0.25), r=0.22, h=0.3, rot=(90, 0, 0), r2=0.3, verts=12)
-    a.part("Handle", [body, engine, grip, tube_, nozzle])
+    a.part("Handle", [body, stripe, engine, fuel, grip, trigger, tube_, nozzle] + vents + bands)
 
 
 def shop_vac(a):
     y = "FFD23C"
     canister = cyl(y, loc=(0, 0.9, -0.2), r=0.42, h=0.9, rot=(90, 0, 0), verts=18)
+    label = cyl("3A3A46", loc=(0, 0.85, -0.2), r=0.43, h=0.25, rot=(90, 0, 0), verts=18)
     lid = cyl("3A3A46", loc=(0, 1.4, -0.2), r=0.44, h=0.15, rot=(90, 0, 0), verts=18)
+    wheels = [sphere("2A2A33", loc=(x, 1.25, -0.62), scale=(0.08, 0.12, 0.12)) for x in (-0.3, 0.3)]
     grip = capsule("3A3A46", (0, 0.6, 0.35), (0, 1.2, 0.35), 0.09)
+    hose = tube("5A5A6E", [(0.35, 0.6, -0.1), (0.45, 0.2, 0.1), (0.25, -0.2, 0.0), (0.08, -0.5, -0.15)], 0.07)
     wand = cyl("C8C8D2", loc=(0, -0.6, -0.2), r=0.1, h=2.2, rot=(90, 0, 0), verts=10)
     head = box("3A3A46", loc=(0, -1.8, -0.25), size=(1.0, 0.35, 0.25), bevel=0.06)
-    a.part("Handle", [canister, lid, grip, wand, head])
+    brush = box("FFD23C", loc=(0, -1.8, -0.4), size=(0.9, 0.2, 0.08), bevel=0.02)
+    a.part("Handle", [canister, label, lid, grip, hose, wand, head, brush] + wheels)
 
 
 def turbo_vacuum(a):
@@ -178,9 +202,17 @@ TOOLS = {
 # ------------------------------------------------------------------------- vehicles
 
 def wheel(col, x, y, r, w, hub="D2D2DC"):
-    t = cyl(col, loc=(x, y, r), r=r, h=w, rot=(0, 90, 0), verts=16)
-    h = cyl(hub, loc=(x + (w / 2) * (1 if x > 0 else -1), y, r), r=r * 0.45, h=0.06, rot=(0, 90, 0), verts=12)
-    return [t, h]
+    """Chunky cartoon wheel: rounded tyre with tread blocks, coloured rim, hub cap."""
+    side = 1 if x > 0 else -1
+    t = cyl(col, loc=(x, y, r), r=r * 0.92, h=w, rot=(0, 90, 0), verts=20)
+    edges = [torus(col, loc=(x + side * k * w * 0.42, y, r), R=r * 0.86, r=r * 0.12, rot=(0, 90, 0), seg=20, mseg=6) for k in (-1, 1)]
+    tread = [box(shade(col, 0.12), loc=(x, y + math.cos(a) * r * 0.95, r + math.sin(a) * r * 0.95), size=(w * 0.9, r * 0.22, r * 0.14),
+                 rot=(math.degrees(a) + 90, 0, 0)) for a in [i * math.pi / 6 for i in range(12)]]
+    rim = cyl(hub, loc=(x + side * w / 2, y, r), r=r * 0.55, h=0.08, rot=(0, 90, 0), verts=16)
+    cap = sphere(shade(hub, -0.25), loc=(x + side * (w / 2 + 0.04), y, r), scale=(0.06, r * 0.22, r * 0.22), seg=12, rings=6)
+    bolts = [sphere("FFFFFF", loc=(x + side * (w / 2 + 0.05), y + math.cos(a) * r * 0.36, r + math.sin(a) * r * 0.36), scale=r * 0.06, seg=6, rings=4)
+             for a in [i * math.pi * 2 / 5 for i in range(5)]]
+    return [t, rim, cap] + edges + tread + bolts
 
 
 def vehicle(name, s, color, kind):
@@ -261,18 +293,50 @@ def vehicle(name, s, color, kind):
         pieces.append(sphere("9BE6FF", loc=(0, -2.6 * s, wr + 3.2 * s), scale=(1.6 * s, 1.2 * s, 1.1 * s)))
         pieces.append(cyl("C8C8D2", loc=(1.6 * s, 2.8 * s, wr + 3.5 * s), r=0.25 * s, h=3 * s, verts=10))
         pieces.append(sphere("FFFFFF", loc=(1.6 * s, 2.8 * s, wr + 5.1 * s), scale=(0.6 * s, 0.6 * s, 0.2 * s)))
+    pieces += car_details(s, W, L, wr, color, kind)
     a.part("Body", pieces)
     # front roller brush spins in game
     by = -L / 2 - 0.9 * s
-    brush = cyl("FFE678", loc=(0, by, 0.75 * s), r=0.75 * s, h=W * 1.05, rot=(0, 90, 0), verts=16)
-    bristle = [box("FFB43C", loc=(0, by + math.cos(t) * 0.75 * s, 0.75 * s + math.sin(t) * 0.75 * s), size=(W * 1.05, 0.12 * s, 0.25 * s), rot=(math.degrees(t), 0, 0)) for t in [i * math.pi / 4 for i in range(8)]]
+    brush = cyl("FFE678", loc=(0, by, 0.75 * s), r=0.62 * s, h=W * 1.05, rot=(0, 90, 0), verts=16)
+    bristle = [box("FFB43C" if i % 2 else "FF8C3C", loc=(0, by + math.cos(t) * 0.68 * s, 0.75 * s + math.sin(t) * 0.68 * s), size=(W * 1.05, 0.14 * s, 0.3 * s),
+                   rot=(math.degrees(t), 0, 0), bevel=0.04 * s) for i, t in enumerate([i * math.pi / 6 for i in range(12)])]
+    bristle += [cyl(shade(color, -0.3), loc=(x * W * 0.53, by, 0.75 * s), r=0.4 * s, h=0.12 * s, rot=(0, 90, 0), verts=12) for x in (-1, 1)]
     arm = [box("3A3A46", loc=(x * (W / 2 + 0.2), by / 2 - 0.5, 1.0 * s), size=(0.25 * s, abs(by) - L / 2 + 2.5 * s, 0.25 * s)) for x in (-1, 1)]
     a.part("Body_Arms", arm, parent="Body")
     a.part("Brush", [brush] + bristle, parent="Body", joint=(0, by, 0.75 * s))
-    lights = [sphere("FFF5C8", loc=(x * (W / 2 - 0.8), -L / 2 - 0.05, wr + 0.8 * s), scale=(0.3 * s, 0.1, 0.3 * s)) for x in (-1, 1)]
+    lights = [sphere("FFF5C8", loc=(x * (W / 2 - 0.8), -L / 2 - 0.12 * s, wr + 0.8 * s), scale=(0.34 * s, 0.12 * s, 0.3 * s)) for x in (-1, 1)]
     a.part("Body_Glow", lights, parent="Body", glow="FFF5C8")
+    tail = [box("FF3A4A", loc=(x * (W / 2 - 0.7), L / 2 + 0.02, wr + 0.85 * s), size=(0.7 * s, 0.1 * s, 0.3 * s), bevel=0.05 * s) for x in (-1, 1)]
+    a.part("Tail_Glow", tail, parent="Body", glow="FF3A4A")
     a.extra["seat"] = [0, round(wr + 1.8 * s, 3), round(1 * s, 3)]
     return a
+
+
+def car_details(s, W, L, wr, color, kind):
+    """Shared car dressing: racing stripe, bumpers, grille, steering wheel, mirrors,
+    exhausts and a dust hopper with a window (it's a sweeper after all)."""
+    top = wr + 1.2 * s
+    p = []
+    p.append(box("FFFFFF", loc=(0, 0, top + 0.02), size=(0.9 * s, L * 0.98, 0.06 * s), bevel=0.02 * s))
+    p.append(box(shade(color, -0.35), loc=(0, 0, top + 0.03), size=(0.25 * s, L * 0.99, 0.07 * s)))
+    for y in (-1, 1):
+        p.append(box("3A3A46", loc=(0, y * (L / 2 + 0.1 * s), wr + 0.45 * s), size=(W - 0.2, 0.45 * s, 0.45 * s), bevel=0.15 * s))
+    for k in range(4):
+        p.append(box("2A2A33", loc=(-0.75 * s + k * 0.5 * s, -L / 2 - 0.02, wr + 1.0 * s), size=(0.12 * s, 0.1 * s, 0.45 * s)))
+    for x in (-1, 1):
+        p.append(box(shade(color, -0.2), loc=(x * (W / 2 - 0.25), 0, wr + 0.25 * s), size=(0.35 * s, L * 0.55, 0.3 * s), bevel=0.1 * s))
+    if kind != "hover":
+        p.append(cyl("2A2A3A", loc=(0, 0.1 * s, wr + 2.0 * s), r=0.12 * s, h=1.2 * s, rot=(-40, 0, 0), verts=8))
+        p.append(torus("2A2A3A", loc=(0, -0.3 * s, wr + 2.45 * s), R=0.45 * s, r=0.07 * s, rot=(50, 0, 0), seg=18, mseg=6))
+    for x in (-1, 1):
+        p.append(cyl("C8C8D2", loc=(x * (W / 2 - 0.9 * s), L / 2 + 0.2 * s, wr + 0.6 * s), r=0.18 * s, h=0.8 * s, rot=(90, 0, 0), verts=10))
+        p.append(sphere("C8C8D2", loc=(x * (W / 2 + 0.15 * s), -0.6 * s, wr + 2.1 * s), scale=(0.15 * s, 0.1 * s, 0.22 * s)))
+    if kind in ("cart", "buggy", "crawler"):
+        hy = 2.9 * s if kind != "crawler" else 2.6 * s
+        p.append(box(shade(color, -0.15), loc=(0, hy, wr + 2.0 * s), size=(W * 0.62, 1.6 * s, 1.6 * s), bevel=0.3 * s))
+        p.append(box("B4E6FF", loc=(0, hy - 0.81 * s, wr + 2.1 * s), size=(W * 0.4, 0.04 * s, 0.9 * s)))
+        p.append(box("A0A0AA", loc=(0, hy - 0.83 * s, wr + 1.85 * s), size=(W * 0.38, 0.04 * s, 0.35 * s)))
+    return p
 
 
 VEHICLES = {
@@ -366,59 +430,86 @@ def mushroom(name, stem, cap, glow, seed):
     return a
 
 
+WOOD, WOOD_DARK, WOOD_LIGHT, STRAW = "C48E5C", "805434", "E0B482", "F5D26E"
+
+
+def plank_x(col, x0, x1, y, z, w, h, gap=0.0):
+    return box(col, loc=((x0 + x1) / 2, y, z), size=(abs(x1 - x0) - gap, w, h), bevel=min(w, h) * 0.2)
+
+
 def fence():
-    """One 8-stud fence segment along X (centered), posts at both ends."""
+    """One 8-stud wooden fence segment along X (centered): posts, two rails and an X brace."""
     a = Asset("Fence", "prop")
     use(a)
     p = []
     for x in (-4, 4):
-        p.append(cyl("C8CCD8", loc=(x, 0, 1.4), r=0.22, h=2.8, verts=10))
-        p.append(sphere("FFD23C", loc=(x, 0, 2.9), scale=0.28))
-    for z in (0.9, 2.1):
-        p.append(cyl("8C96AA", loc=(0, 0, z), r=0.12, h=8, rot=(0, 90, 0), verts=8))
+        p.append(box(WOOD_DARK, loc=(x, 0, 1.4), size=(0.55, 0.55, 2.8), bevel=0.08))
+        p.append(cone(WOOD_DARK, loc=(x, 0, 2.95), r=0.4, h=0.35, verts=4, rot=(0, 0, 45), smooth=False))
+    for z in (0.7, 2.3):
+        p.append(plank_x(WOOD, -4, 4, 0, z, 0.3, 0.35))
+    for sgn in (-1, 1):
+        brace = box(WOOD_LIGHT, loc=(0, 0.02, 1.5), size=(8.2, 0.22, 0.28), bevel=0.05, rot=(0, sgn * 11, 0))
+        p.append(brace)
     a.part("Body", p, collide=True)
     return a
 
 
 def base_arch():
+    """Wooden gate: two log posts, a beam, a hanging plank sign (text added in game)."""
     a = Asset("BaseArch", "prop")
     use(a)
     p = []
     for x in (-7, 7):
-        p.append(box("D2D6E2", loc=(x, 0, 4.5), size=(1.4, 1.4, 9), bevel=0.25))
-        p.append(box("5A6478", loc=(x, 0, 0.3), size=(2.0, 2.0, 0.6), bevel=0.15))
-    p.append(box("D2D6E2", loc=(0, 0, 9.4), size=(16.5, 1.6, 1.2), bevel=0.3))
-    # sign board (SurfaceGui is added in game)
-    p.append(box("2A3248", loc=(0, 0, 11.4), size=(11, 0.5, 3.0), bevel=0.3))
+        p.append(cyl(WOOD_DARK, loc=(x, 0, 4.6), r=0.75, h=9.2, verts=12))
+        p.append(cyl(WOOD, loc=(x, 0, 9.3), r=0.8, h=0.25, verts=12))
+        for z in (1.5, 4.0, 6.5):
+            p.append(torus(WOOD_LIGHT, loc=(x, 0, z), R=0.76, r=0.06, seg=16, mseg=4))
+        p.append(box("8C8C96", loc=(x, 0, 0.35), size=(2.0, 2.0, 0.7), bevel=0.3))
+    p.append(box(WOOD, loc=(0, 0, 9.5), size=(17.5, 1.3, 1.1), bevel=0.2))
+    p.append(box(WOOD_DARK, loc=(0, 0, 10.15), size=(18.5, 1.5, 0.3), bevel=0.08))
+    for x in (-5.5, 5.5):
+        p.append(box(WOOD_LIGHT, loc=(x * 0.95, 0, 7.6), size=(4.2, 0.4, 0.4), bevel=0.08, rot=(0, x / abs(x) * -38, 0)))
+    # plank sign board (SurfaceGui is added in game)
+    for k in range(4):
+        p.append(box(WOOD_LIGHT if k % 2 else WOOD, loc=(0, 0, 10.4 + k * 0.75), size=(11, 0.5, 0.72), bevel=0.06))
+    p.append(box(WOOD_DARK, loc=(0, 0.15, 11.55), size=(11.6, 0.4, 3.4), bevel=0.1))
     a.part("Body", p, collide=True)
-    a.part("Body_Glow", [box("5AFFC8", loc=(0, -0.3, 9.4), size=(15, 0.1, 0.25))], parent="Body", glow="5AFFC8")
     a.extra["sign"] = [0, 11.4, -0.3]
     return a
 
 
 def hatchery():
-    """Delivery pad: a round platform with a glowing ring (eggs incubate on it)."""
+    """Egg pad: a round wooden deck with a straw nest ring (eggs incubate on it)."""
     a = Asset("Hatchery", "prop")
     use(a)
-    p = [cyl("8C96AA", loc=(0, 0, 0.3), r=9, h=0.6, verts=32),
-         cyl("D2D6E2", loc=(0, 0, 0.75), r=8.2, h=0.3, verts=32)]
-    for i in range(6):
-        ang = math.radians(i * 60 + 30)
-        p.append(cyl("5A6478", loc=(math.cos(ang) * 8.6, math.sin(ang) * 8.6, 1.4), r=0.25, h=1.6, verts=8))
+    p = [cyl(WOOD_DARK, loc=(0, 0, 0.3), r=9, h=0.6, verts=32),
+         cyl(WOOD, loc=(0, 0, 0.72), r=8.4, h=0.3, verts=32)]
+    for i in range(-7, 8):
+        half = math.sqrt(max(0.0, 8.3 ** 2 - (i * 1.1) ** 2))
+        p.append(box(WOOD_DARK, loc=(i * 1.1 + 0.55, 0, 0.88), size=(0.06, half * 2, 0.04)))
+    p.append(torus(STRAW, loc=(0, 0, 0.95), R=5.6, r=0.9, seg=40, mseg=8))
+    noise = torus(shade(STRAW, -0.12), loc=(0, 0, 1.15), R=5.6, r=0.6, seg=40, mseg=6)
+    noise_deform(noise, 0.18, seed=4, freq=2.2)
+    p.append(noise)
+    p.append(cyl(shade(STRAW, 0.2), loc=(0, 0, 0.92), r=2.2, h=0.12, verts=20))
+    for i in range(8):
+        ang = math.radians(i * 45 + 22.5)
+        p.append(box(WOOD_DARK, loc=(math.cos(ang) * 8.7, math.sin(ang) * 8.7, 1.1), size=(0.5, 0.5, 1.6), bevel=0.08))
     a.part("Body", p, collide=True)
-    a.part("Body_Glow", [torus("5AFFC8", loc=(0, 0, 0.92), R=7.6, r=0.18, seg=48, mseg=6),
-                         torus("5AFFC8", loc=(0, 0, 0.92), R=2.2, r=0.12, seg=24, mseg=6)], parent="Body", glow="5AFFC8")
     return a
 
 
 def incubator():
+    """Wooden lantern stand next to the egg pad (warm light at night)."""
     a = Asset("Incubator", "prop")
     use(a)
-    base = cyl("5A6478", loc=(0, 0, 0.4), r=1.6, h=0.8, verts=18)
-    top = cyl("5A6478", loc=(0, 0, 4.6), r=1.3, h=0.5, verts=18)
-    a.part("Body", [base, top], collide=True)
-    a.part("Body_Glass", [cyl("BCE6FF", loc=(0, 0, 2.55), r=1.4, h=3.6, verts=18)], parent="Body", material="Glass")
-    a.part("Body_Glow", [torus("5AFFC8", loc=(0, 0, 0.85), R=1.45, r=0.08, seg=24, mseg=6)], parent="Body", glow="5AFFC8")
+    base = box(WOOD_DARK, loc=(0, 0, 0.3), size=(2.4, 2.4, 0.6), bevel=0.15)
+    post = box(WOOD, loc=(0, 0, 2.6), size=(0.6, 0.6, 4.2), bevel=0.1)
+    top = box(WOOD_DARK, loc=(0, 0, 4.85), size=(1.6, 1.6, 0.3), bevel=0.08)
+    roof = cone(WOOD_DARK, loc=(0, 0, 5.75), r=1.25, h=0.8, verts=4, rot=(0, 0, 45), smooth=False)
+    frame = [box(WOOD_DARK, loc=(x, y, 5.1), size=(0.15, 0.15, 0.9)) for x in (-0.6, 0.6) for y in (-0.6, 0.6)]
+    a.part("Body", [base, post, top, roof] + frame, collide=True)
+    a.part("Body_Glow", [box("FFD68C", loc=(0, 0, 5.1), size=(1.0, 1.0, 0.8), bevel=0.1)], parent="Body", glow="FFD68C")
     return a
 
 
@@ -438,13 +529,17 @@ def habitat():
 
 
 def lamp():
+    """Wooden lamp post with a hanging lantern."""
     a = Asset("Lamp", "prop")
     use(a)
-    p = [cyl("5A6478", loc=(0, 0, 0.3), r=0.6, h=0.6, verts=12), cyl("B4BCCD", loc=(0, 0, 4), r=0.18, h=8, verts=10),
-         box("5A6478", loc=(0, -0.6, 8.0), size=(0.4, 1.6, 0.3))]
+    p = [box(WOOD_DARK, loc=(0, 0, 0.3), size=(1.4, 1.4, 0.6), bevel=0.15), box(WOOD, loc=(0, 0, 4), size=(0.45, 0.45, 8), bevel=0.08),
+         box(WOOD_DARK, loc=(0, -0.7, 8.0), size=(0.35, 1.8, 0.35), bevel=0.06),
+         box(WOOD_DARK, loc=(0, -0.35, 7.3), size=(0.25, 1.2, 0.25), bevel=0.04, rot=(-40, 0, 0)),
+         cyl("5A5A66", loc=(0, -1.3, 7.6), r=0.04, h=0.5, verts=6),
+         cone(WOOD_DARK, loc=(0, -1.3, 7.3), r=0.45, h=0.35, verts=4, rot=(0, 0, 45), smooth=False)]
     a.part("Body", p, collide=True)
-    a.part("Body_Glow", [sphere("FFF0C8", loc=(0, -1.3, 7.7), scale=(0.5, 0.5, 0.35))], parent="Body", glow="FFF0C8")
-    a.extra["light"] = [0, 7.5, -1.3]
+    a.part("Body_Glow", [box("FFD68C", loc=(0, -1.3, 6.8), size=(0.55, 0.55, 0.7), bevel=0.08)], parent="Body", glow="FFD68C")
+    a.extra["light"] = [0, 6.8, -1.3]
     return a
 
 

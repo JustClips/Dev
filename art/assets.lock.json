@@ -137,64 +137,156 @@
  },
  "models": {
   "Alien_AstroAxolotl": {
-   "id": 107895594943303,
-   "sha": "8a143cafa346cc61346ead398fcb33907e3d38e674b3bdaa3943ff6e0bb9281e"
+   "id": 104230502799322,
+   "sha": "0e830c65e5970ffff6e33ec92ec6611f77d6e693528fc03eca4cc2246f56ff5d"
   },
   "Alien_Blip": {
-   "id": 79489100688856,
-   "sha": "d2d46128f80e31b7abfffdedb87fed7574d508ccebd888ca6cefbd0afcec949c"
+   "id": 84675890297461,
+   "sha": "083a72aa3b713caf6ef39fc36c5a95332c8e51576c98a27b927f5caa04bf567a"
   },
   "Alien_CometCat": {
-   "id": 115391056826226,
-   "sha": "84df8d1f3ee138da26b58a7c367045544f0d2e1eda95d1a084c1e88a5f533e29"
+   "id": 125292055407746,
+   "sha": "1b470b5a37dbca18834706bb57614ec7b3b7426ac355fbff8a1872827e6f074f"
   },
   "Alien_Cosmo": {
-   "id": 113603281550176,
-   "sha": "6d4044e9526086ca77e1b8e600063f87ac5b97710ed712fdd001fd7b0e1476b4"
+   "id": 129275051566438,
+   "sha": "0006095249fd77099cd1e55df2b721fe586fb521c98a2ad670db83dd4dfeb2fc"
   },
   "Alien_CraterCrab": {
-   "id": 107353608462373,
-   "sha": "b219df0cbb2427e4254a0348941130e8250d6f2eb29ae5879abf0b9c903ff571"
+   "id": 123284247086027,
+   "sha": "a11de6a21cbebd4913449fff04924d3d73e681026a9ff6475d45a573e571a2da"
+  },
+  "Alien_CrystalBlip": {
+   "id": 110292177970214,
+   "sha": "cb2457bb6785006288024f9cbdf028d3d49312e2204f775c4a457c8a92aa500e"
+  },
+  "Alien_CrystalCometCat": {
+   "id": 131112929009919,
+   "sha": "8f64913f7ac643d348c8168d1d9177e1ee799d57ce18d2dcc8c5e9b76fb1fb14"
+  },
+  "Alien_CrystalCraterCrab": {
+   "id": 76871363604835,
+   "sha": "73bafc2e19ed0be5c183243d3ff0f7d509fafb0a5d5f14fd6ae774e8b7b03e4d"
+  },
+  "Alien_CrystalGlorp": {
+   "id": 97553311158028,
+   "sha": "a25d5f1111069b205d83ebcbabd3a5bcc39aac67bb6f1e66c62e4a35c63f674f"
+  },
+  "Alien_CrystalLunarSlug": {
+   "id": 131690497341925,
+   "sha": "43d0e6ba4b6526f058fa8545fd1adb9d3eb3043f7266ff837ee9e92652cbb842"
+  },
+  "Alien_CrystalMoonMite": {
+   "id": 115928189119535,
+   "sha": "988b432c3c0378c4a9b29114f1ac638e1cda32554f66cfd392740ad79235f4a5"
+  },
+  "Alien_CrystalOrbo": {
+   "id": 112365460068347,
+   "sha": "6cf5a26206824e6a1aeb8c8fd6fdbd0a151512052b1f4c7632e2c781cd416b9a"
   },
   "Alien_Dusty": {
-   "id": 133261758452244,
-   "sha": "d5cadf00588b8e50b2b47124b350ecb81b2759c90609143a482786ee91238cfe"
+   "id": 91580234759228,
+   "sha": "3feb8ee3389732ff8498168affbc9bfd17fa1d2fe950d602353b6a6826068254"
   },
   "Alien_EclipseDragon": {
-   "id": 76260055784937,
-   "sha": "3dfabac12787b2475e75a7becc121ee14b3e02738ffb6e8f9f9cc8c5b393662b"
+   "id": 97521541287817,
+   "sha": "383b9554ee2db80a6deaf613cddb6aa72e1cbc8983d1e772e3e13b8d754737b3"
+  },
+  "Alien_FrostEclipseDragon": {
+   "id": 81310052454306,
+   "sha": "4ec7f140d307f861ac3386f7a218145c8b081534c6b8f995b70d113d2985258b"
+  },
+  "Alien_FrostGlorp": {
+   "id": 133755956563004,
+   "sha": "0d33d6a254c360428ab59ca2878567d3cdb8fa0ef0f1654275a2046ba50b76ca"
+  },
+  "Alien_FrostMoonMite": {
+   "id": 117760050192820,
+   "sha": "ea99d0e7a4a1ffdcb3d1753aebfe8a0f0967862da5b565b735bf4aa66c7f5303"
+  },
+  "Alien_FrostNovaQueen": {
+   "id": 77627497895056,
+   "sha": "1e458a4451698bcc95a1521d9da340275d99c143909fbafed1f5c6e6a0655a71"
+  },
+  "Alien_FrostOrbo": {
+   "id": 90912470539787,
+   "sha": "cc8b10dd9e0bdae4112b05c6f264c718a750b73d1e4dd8f582b1f4d5c8258a49"
+  },
+  "Alien_FrostQuasarPup": {
+   "id": 82640245635426,
+   "sha": "709ae33e171958da8937efd094827915fcc6103c31bbd91e88a82cdc06f4e9b4"
+  },
+  "Alien_FrostStarWhale": {
+   "id": 134001718768488,
+   "sha": "e3a2a838aca9ed0fc3564d974b1a1d585658c724376303d12ca2c4a2b3187ee7"
   },
   "Alien_GalaxyGus": {
-   "id": 124659141008546,
-   "sha": "379eecbbeee41da465dd843a7fc01469d553638d52730424bf9b79a121dd0883"
+   "id": 133379285259089,
+   "sha": "fe23271b1706d5f2f10b729b6561aa378f45880db160d8c10239f0537964d533"
   },
   "Alien_Glorp": {
-   "id": 128488291933128,
-   "sha": "b7fad0b637986b7b9fd73214adefdfe5034e5ff9a0ed0e5e5c4fdc556b6b5ee1"
+   "id": 78723008226480,
+   "sha": "7fba89fefa01a6a784bf43be8327f56019156488d4b24e4e7d8b84b3fcedc0fe"
   },
   "Alien_LunarSlug": {
-   "id": 125135904569865,
-   "sha": "7e7916e4e8c58975200d66f0fe560435a6fa98f7da60231082e3e33cdd338fd6"
+   "id": 85737391473490,
+   "sha": "16949b002fe8857ea85d8890127a92099d9ab9d839360ea8acae64180cd3a374"
+  },
+  "Alien_MagmaAstroAxolotl": {
+   "id": 100740249564213,
+   "sha": "865e050aa2fc1a65e21a4b9e88f042a8fc0fed62c5c715c14e7c0277e93d478a"
+  },
+  "Alien_MagmaBlip": {
+   "id": 137744652800129,
+   "sha": "6ee7134967641ff43deecb5d7406e3241a3795f9a1fd06995fae9cddbe114224"
+  },
+  "Alien_MagmaCometCat": {
+   "id": 90749792885920,
+   "sha": "125ed5a373ce763cd6f66c33da47d09189ecf94d537081c1d1b40f627629255a"
+  },
+  "Alien_MagmaCraterCrab": {
+   "id": 133143477912482,
+   "sha": "beea7a6aaf57727231f5fd7837c5901dac2b480572a482423c3a56d34168a2bd"
+  },
+  "Alien_MagmaEclipseDragon": {
+   "id": 103048376701964,
+   "sha": "7dbe4ca63d55184053bf0298ce44c870af38fe805b53d5d1029b37b8486e87f0"
+  },
+  "Alien_MagmaLunarSlug": {
+   "id": 92271171468982,
+   "sha": "ce5df0f209be70c8ab65f458f57e4ca59da8c41d14f67d0a955891dc10238912"
+  },
+  "Alien_MagmaVoidKing": {
+   "id": 139037612190388,
+   "sha": "dc0db2a8f467a5fad4ec70bd7ba724407056616e1fa378f25546c45517c0f0a0"
   },
   "Alien_MoonMite": {
-   "id": 73288734346101,
-   "sha": "1464cfa638ad22ced266544ff3ca4a35d694bfa397b0f535e2a60288416b3cfc"
+   "id": 74386301695112,
+   "sha": "7ec7faa0ff92b0ccc54cdd7fa899bc0807c1d1ec19f8ec63f0051eb6e7ab9976"
   },
   "Alien_Nebby": {
-   "id": 107578080275579,
-   "sha": "c50d8ad4cee193902d6b59c66fe0a41f133b07a811b9b5088babb5c6df06f374"
+   "id": 135250269030588,
+   "sha": "a7f838be7585e109fbc45a3b0b8efde712e3fe254f917f29dfcba66ecf929acd"
   },
   "Alien_NovaQueen": {
-   "id": 97045626328234,
-   "sha": "7c3e47a9a961e6008901d8ba11bd6de642292feffad022f047bb41cc6ac2be45"
+   "id": 134723761651446,
+   "sha": "b7da0fd6d64156c455758df31d18528e4cc482246c29021009bf115d24851f06"
   },
   "Alien_Orbo": {
-   "id": 92368580080008,
-   "sha": "559708051cfc47dc50235fe102984ca17945d30973f6735de97976f78ddc8a1a"
+   "id": 109026162702554,
+   "sha": "d7f5695ad9a4fadc8fe02e2fecb6de1e36d98530d64ee81e87da39d8cea2f477"
   },
   "Alien_QuasarPup": {
-   "id": 72436159225756,
-   "sha": "5274a1da9915cfb7c94bea0e7d7ecb16cd9ed3ef55f1b37652906b2002b879ae"
+   "id": 115937635188361,
+   "sha": "f76d6240d38d06e90b00f61aa903a2b4f68fa82f4fe0498b2db7789a5afb5cf0"
+  },
+  "Alien_ShadowDusty": {
+   "id": 81782182299377,
+   "sha": "1e86b986ba4f3c355665f6e70215d485f3a446c08366c5274bf8dfe1ad187b81"
+  },
+  "Alien_ShadowGalaxyGus": {
+   "id": 97579519709641,
+   "sha": "34980e2e1c0913d442bc6b41a45bfa9b83b916cca3eef8ef09456e101d3ecbe7"
   },
   "Alien_StarWhale": {
    "id": 131033114744337,

@@ -179,7 +179,7 @@ def _finish(obj, color, smooth=True, loc=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 
     return obj
 
 
-def sphere(color, loc=(0, 0, 0), scale=1, rot=(0, 0, 0), seg=16, rings=10, smooth=True):
+def sphere(color, loc=(0, 0, 0), scale=1, rot=(0, 0, 0), seg=20, rings=12, smooth=True):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=seg, ring_count=rings, radius=1)
     return _finish(bpy.context.object, color, smooth, loc, rot, scale)
 
@@ -264,16 +264,36 @@ def tube(color, points, r, seg=10):
     return join(pieces, "tube")
 
 
-def eye(loc, size, look=(0, -1, 0), white="FFFFFF", pupil="1B1530", shine=True):
-    """Big cute eye at loc (Blender coords) facing `look`."""
+def eye(loc, size, look=(0, -1, 0), white="FFFFFF", pupil="1B1530", shine=True, iris=None):
+    """Big sparkly cartoon eye at loc (Blender coords) facing `look`: a white, a coloured
+    iris, a dark pupil and two shine dots (big top-right, small bottom-left)."""
     look = Vector(look).normalized()
     p = Vector(loc)
-    pieces = [sphere(white, loc=p, scale=size, seg=16, rings=10)]
-    pieces.append(sphere(pupil, loc=p + look * size * 0.55, scale=(size * 0.62, size * 0.62, size * 0.62), seg=14, rings=8))
+    flat = (size * 0.78, size * 0.5, size * 0.88)
+    pieces = [sphere(white, loc=p, scale=(size, size * 0.9, size * 1.08), seg=20, rings=12)]
+    if iris:
+        pieces.append(sphere(iris, loc=p + look * size * 0.5, scale=flat, seg=18, rings=10))
+        pieces.append(sphere(pupil, loc=p + look * size * 0.62, scale=(flat[0] * 0.6, flat[1] * 0.8, flat[2] * 0.62), seg=14, rings=8))
+    else:
+        pieces.append(sphere(pupil, loc=p + look * size * 0.52, scale=flat, seg=18, rings=10))
     if shine:
-        side = Vector((0.35, 0, 0.45))
-        pieces.append(sphere(white, loc=p + look * size * 1.02 + side * size, scale=size * 0.22, seg=8, rings=6))
+        pieces.append(sphere(white, loc=p + look * size * 0.98 + Vector((0.28, 0, 0.32)) * size, scale=size * 0.24, seg=10, rings=6))
+        pieces.append(sphere(white, loc=p + look * size * 0.98 + Vector((-0.22, 0, -0.28)) * size, scale=size * 0.11, seg=8, rings=5))
     return join(pieces, "eye")
+
+
+def arc(color, loc, R, r, rot=(90, 0, 0), keep="below", seg=20):
+    """Half a torus: a smile line (keep='below') or a frown/brow (keep='above')."""
+    bpy.ops.mesh.primitive_torus_add(major_radius=R, minor_radius=r, major_segments=seg, minor_segments=6)
+    o = bpy.context.object
+    bm = bmesh.new()
+    bm.from_mesh(o.data)
+    cut = [v for v in bm.verts if (v.co.y > r * 0.3 if keep == "below" else v.co.y < -r * 0.3)]
+    bmesh.ops.delete(bm, geom=cut, context="VERTS")
+    bm.to_mesh(o.data)
+    bm.free()
+    # torus lies in XY; after rot=(90,0,0) its -Y half becomes the lower half (a smile)
+    return _finish(o, color, True, loc, rot, 1)
 
 
 def join(pieces, name):

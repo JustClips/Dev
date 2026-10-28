@@ -1,8 +1,9 @@
 --!strict
--- Inventory window (hotbar slot 3, key 3 or B): every pet, egg and item you own, with
--- filter tabs (All / Pets / Eggs / Items). Pick a card to see it on the right and act on
--- it: place or pick up a pet, sell it, place an egg in an incubator, use a potion.
--- Equip Best, Place Eggs and Open Ready work on everything at once.
+-- Backpack (hotbar slot 3, key 3 or B), styled like Roblox's own backpack: a see-through
+-- grid above the hotbar with Pets / Eggs / Items tabs on its left (tap the lit tab again
+-- for All Items) and a search box. Pick a card to get an action card on the right: place
+-- or pick up a pet, sell it, place an egg in an incubator, use a potion. Equip Best and
+-- the egg buttons live in the Pets / Eggs panels (BasePanelsController).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
@@ -22,9 +23,10 @@ local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Zones = require(Shared.Config.Zones)
 
-local TABS = { "All", "Pets", "Eggs", "Items" }
-local MINT = Color3.fromRGB(124, 245, 200)
-local TAB_BLUE = Color3.fromRGB(59, 79, 168)
+local TABS = { "Pets", "Eggs", "Items" }
+local TITLES = { All = "All Items", Pets = "Pets", Eggs = "Eggs", Items = "Items" }
+local TAB_ON = Color3.fromRGB(233, 238, 247)
+local TAB_OFF = Color3.fromRGB(11, 14, 30)
 local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(27, 31, 58)
 local GREEN = Color3.fromRGB(61, 220, 90)
@@ -47,6 +49,8 @@ local grid: ScrollingFrame
 local template: Frame
 local emptyLabel: TextLabel
 local countsLabel: TextLabel
+local titleLabel: TextLabel
+local searchBox: TextBox
 local detail: Frame
 local primary: TextButton
 local secondary: TextButton
@@ -79,6 +83,11 @@ local function petName(pet): string
 	return (if pet.Huge then "Huge " else "") .. AlienModel.displayName(pet.Id, pet.Mutation)
 end
 
+local function matches(name: string): boolean
+	local q = string.lower(searchBox.Text)
+	return q == "" or string.find(string.lower(name), q, 1, true) ~= nil
+end
+
 local function entries(data): { Entry }
 	local list: { Entry } = {}
 	if currentTab == "All" or currentTab == "Pets" then
@@ -87,17 +96,21 @@ local function entries(data): { Entry }
 			local rarity = def and Eggs.order(def.Rarity) or 0
 			-- Placed first, then by income.
 			local order = (if pet.Placed then 0 else 1e9) - math.min(Aliens.income(pet), 1e9 - 1) / 1e9 * 1e8 - rarity
-			table.insert(list, { kind = "Pet", key = uid, order = order })
+			if matches(petName(pet)) then
+				table.insert(list, { kind = "Pet", key = uid, order = order })
+			end
 		end
 	end
 	if currentTab == "All" or currentTab == "Eggs" then
 		for uid, egg in data.Eggs or {} do
-			table.insert(list, { kind = "Egg", key = uid, order = 2e9 - Eggs.order(egg.Rarity) })
+			if matches(egg.Rarity .. " Egg") then
+				table.insert(list, { kind = "Egg", key = uid, order = 2e9 - Eggs.order(egg.Rarity) })
+			end
 		end
 	end
 	if currentTab == "All" or currentTab == "Items" then
 		for i, def in Items.List do
-			if (data.Items and data.Items[def.Id] or 0) > 0 then
+			if (data.Items and data.Items[def.Id] or 0) > 0 and matches(def.Name) then
 				table.insert(list, { kind = "Item", key = def.Id, order = 3e9 + i })
 			end
 		end
@@ -127,13 +140,9 @@ local function setButton(button: TextButton, text: string?, color: Color3?, labe
 	end
 end
 
-local function setChip(chip: Frame, text: string, color: Color3)
-	chip.BackgroundColor3 = color
-	local studs = chip:FindFirstChild("Studs") :: ImageLabel?
-	if studs then
-		studs.ImageColor3 = color
-	end
-	Ui.setText(chip, text)
+local function setChip(chip: TextLabel, text: string, color: Color3)
+	chip.Text = text
+	chip.TextColor3 = color
 end
 
 local function showModel(viewport: ViewportFrame, icon: ImageLabel, kind: string, key: string, data, zoom: number?)
@@ -156,7 +165,7 @@ local function renderDetail()
 	local viewport = detail:FindFirstChild("Viewport") :: ViewportFrame
 	local icon = detail:FindFirstChild("Icon") :: ImageLabel
 	local nameLabel = detail:FindFirstChild("Name") :: TextLabel
-	local chip = detail:FindFirstChild("Rarity") :: Frame
+	local chip = detail:FindFirstChild("Rarity") :: TextLabel
 	local info = detail:FindFirstChild("Info") :: TextLabel
 	primaryAction, secondaryAction = nil, nil
 	local entry = selected
@@ -169,16 +178,14 @@ local function renderDetail()
 		)
 	if not entry or not exists or not data then
 		selected = nil
+		detail.Visible = false
 		viewport.Visible = false
 		icon.Visible = false
-		nameLabel.Text = "Pick something"
-		chip.Visible = false
-		info.Text = "Tap a pet, egg or potion to see what you can do with it."
 		setButton(primary, nil)
 		setButton(secondary, nil)
 		return
 	end
-	chip.Visible = true
+	detail.Visible = true
 	showModel(viewport, icon, entry.kind, entry.key, data, 1.15)
 	if entry.kind == "Pet" then
 		local pet = data.Pets[entry.key]
@@ -232,6 +239,14 @@ local function renderDetail()
 	end
 end
 
+local function highlight(card: Frame, on: boolean)
+	local stroke = card:FindFirstChild("Stroke") :: UIStroke?
+	if stroke then
+		stroke.Color = WHITE
+		stroke.Thickness = if on then 3 else 0
+	end
+end
+
 local function cardFor(entry: Entry, data): Frame
 	local card = template:Clone()
 	card.Name = entry.key
@@ -239,42 +254,36 @@ local function cardFor(entry: Entry, data): Frame
 	local viewport = card:FindFirstChild("Viewport") :: ViewportFrame
 	local icon = card:FindFirstChild("Icon") :: ImageLabel
 	local nameLabel = card:FindFirstChild("Name") :: TextLabel
-	local sub = card:FindFirstChild("Sub") :: TextLabel
-	local strip = card:FindFirstChild("Rarity") :: Frame
 	local placed = card:FindFirstChild("Placed") :: Frame
-	local count = card:FindFirstChild("Count") :: Frame
+	local count = card:FindFirstChild("Count") :: TextLabel
 	showModel(viewport, icon, entry.kind, entry.key, data)
 	if entry.kind == "Pet" then
 		local pet = data.Pets[entry.key]
 		local def = Aliens.ById[pet.Id]
 		nameLabel.Text = petName(pet)
-		sub.Text = `+{Format.cash(Aliens.income(pet) * (data.CashMultiplier or 1))}/s`
-		strip.BackgroundColor3 = Eggs.ByName[def.Rarity].Color
+		nameLabel.TextColor3 = Eggs.ByName[def.Rarity].Color
 		placed.Visible = pet.Placed == true
 	elseif entry.kind == "Egg" then
 		local egg = data.Eggs[entry.key]
 		nameLabel.Text = `{egg.Rarity} Egg`
-		sub.Text = if egg.Zone == "Landing" then "" else zoneName(egg.Zone)
-		sub.TextColor3 = Color3.fromRGB(74, 81, 112)
-		strip.BackgroundColor3 = Eggs.ByName[egg.Rarity].Color
+		nameLabel.TextColor3 = Eggs.ByName[egg.Rarity].Color
 	else
 		local def = Items.ById[entry.key]
 		nameLabel.Text = def.Name
-		sub.Text = ""
-		strip.BackgroundColor3 = def.Color
+		nameLabel.TextColor3 = def.Color
 		count.Visible = true
-		Ui.setText(count, `x{data.Items[entry.key]}`)
+		count.Text = `x{data.Items[entry.key]}`
 	end
 	local select = card:FindFirstChild("Select") :: TextButton
 	select.Activated:Connect(function()
 		Ui.sound("Click")
-		selected = entry
+		if selected and selected.key == entry.key then
+			selected = nil
+		else
+			selected = entry
+		end
 		for key, other in cards do
-			local stroke = other:FindFirstChild("Stroke") :: UIStroke?
-			if stroke then
-				stroke.Color = if key == entry.key then MINT else INK
-				stroke.Thickness = if key == entry.key then 6 else 4
-			end
+			highlight(other, selected ~= nil and key == selected.key)
 		end
 		renderDetail()
 	end)
@@ -282,7 +291,7 @@ local function cardFor(entry: Entry, data): Frame
 end
 
 local function signature(data): string
-	return table.concat({ currentTab, data.InvVersion or 0, data.PlacedCount, data.Slots, #data.Hatching, data.Incubators }, "|")
+	return table.concat({ currentTab, searchBox.Text, data.InvVersion or 0, data.PlacedCount, data.Slots, #data.Hatching, data.Incubators }, "|")
 end
 
 local function render(force: boolean?)
@@ -297,7 +306,8 @@ local function render(force: boolean?)
 	lastSignature = sig
 	for name, button in tabButtons do
 		local on = name == currentTab
-		button.BackgroundColor3 = if on then MINT else TAB_BLUE
+		button.BackgroundColor3 = if on then TAB_ON else TAB_OFF
+		button.BackgroundTransparency = if on then 0.05 else 0.3
 		local label = button:FindFirstChild("Label") :: TextLabel?
 		if label then
 			label.TextColor3 = if on then INK else WHITE
@@ -307,6 +317,7 @@ local function render(force: boolean?)
 			end
 		end
 	end
+	titleLabel.Text = TITLES[currentTab]
 	for _, card in cards do
 		card:Destroy()
 	end
@@ -315,30 +326,31 @@ local function render(force: boolean?)
 	for i, entry in list do
 		local card = cardFor(entry, data)
 		card.LayoutOrder = i
-		if selected and selected.key == entry.key then
-			local stroke = card:FindFirstChild("Stroke") :: UIStroke?
-			if stroke then
-				stroke.Color = MINT
-				stroke.Thickness = 6
-			end
-		end
+		highlight(card, selected ~= nil and selected.key == entry.key)
 		card.Parent = grid
 		cards[entry.key] = card
 	end
 	emptyLabel.Visible = #list == 0
-	local petCount, eggCount = 0, 0
+	local petCount, eggCount, itemCount = 0, 0, 0
 	for _ in data.Pets or {} do
 		petCount += 1
 	end
 	for _ in data.Eggs or {} do
 		eggCount += 1
 	end
-	countsLabel.Text = `Pets {petCount}/{data.PetBagSize} · On base {data.PlacedCount}/{data.Slots}\nEggs {eggCount}/{data.EggBagSize} · Incubators {#data.Hatching}/{data.Incubators}`
+	for _, n in data.Items or {} do
+		itemCount += n
+	end
+	countsLabel.Text = if currentTab == "Eggs"
+		then `Eggs: {eggCount}/{data.EggBagSize}`
+		elseif currentTab == "Items" then `Items: {itemCount}`
+		else `Pets: {petCount}/{data.PetBagSize}`
 	renderDetail()
 end
 
 function InventoryController:Open(tab: string?)
 	currentTab = tab or currentTab
+	selected = nil
 	Ui.open("Inventory")
 	render(true)
 end
@@ -357,7 +369,9 @@ function InventoryController:Init(controllers)
 	grid = Ui.find(gui, "Window.Grid")
 	template = Ui.find(gui, "Window.Grid.Template")
 	emptyLabel = Ui.find(gui, "Window.Empty")
-	countsLabel = Ui.find(gui, "Window.Counts")
+	countsLabel = Ui.find(gui, "Window.Count")
+	titleLabel = Ui.find(gui, "Window.Title")
+	searchBox = Ui.find(gui, "Window.Search")
 	detail = Ui.find(gui, "Window.Detail")
 	primary = Ui.find(gui, "Window.Detail.Primary")
 	secondary = Ui.find(gui, "Window.Detail.Secondary")
@@ -367,15 +381,10 @@ function InventoryController:Init(controllers)
 end
 
 function InventoryController:Start()
-	Ui.button(Ui.find(gui, "Window.Close"), function()
-		Ui.close("Inventory")
-	end)
-	Ui.button(Ui.find(gui, "Dim"), function()
-		Ui.close("Inventory")
-	end)
 	for name, button in tabButtons do
 		Ui.button(button, function()
-			currentTab = name
+			currentTab = if currentTab == name then "All" else name
+			selected = nil
 			render(true)
 		end)
 	end
@@ -389,16 +398,8 @@ function InventoryController:Start()
 			secondaryAction()
 		end
 	end)
-	Ui.button(Ui.find(gui, "Window.Bar.EquipBest"), function()
-		act("EquipBest")
-	end)
-	Ui.button(Ui.find(gui, "Window.Bar.PlaceEggs"), function()
-		act("PlaceBestEggs")
-	end)
-	Ui.button(Ui.find(gui, "Window.Bar.OpenReady"), function()
-		if act("OpenReady") then
-			Ui.close("Inventory")
-		end
+	searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+		render(false)
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if not processed and input.KeyCode == Enum.KeyCode.B then

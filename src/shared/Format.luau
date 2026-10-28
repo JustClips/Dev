@@ -91,10 +91,14 @@ function Format.time(seconds: number): string
 	return string.format("%d:%02d", m, sec)
 end
 
--- 7300 -> "2h 1m", 300 -> "5m", 40 -> "40s"
+-- 93600 -> "1d 2h", 7300 -> "2h 1m", 300 -> "5m", 40 -> "40s"
 function Format.duration(seconds: number): string
 	local s = math.max(0, math.floor(seconds))
-	if s >= 3600 then
+	if s >= 86400 then
+		local d = s // 86400
+		local h = (s % 86400) // 3600
+		return if h > 0 then `{d}d {h}h` else `{d}d`
+	elseif s >= 3600 then
 		local h = s // 3600
 		local m = (s % 3600) // 60
 		return if m > 0 then `{h}h {m}m` else `{h}h`
@@ -106,6 +110,11 @@ end
 
 function Format.percent(fraction: number): string
 	return `{math.floor(math.clamp(fraction, 0, 1) * 100)}%`
+end
+
+-- Long waits as "2d 3h" / "4h 10m", the last hour as a ticking "12:34".
+function Format.countdown(seconds: number): string
+	return if seconds >= 3600 then Format.duration(seconds) else Format.time(seconds)
 end
 
 return Format

@@ -1,0 +1,844 @@
+{
+ "className": "ScreenGui",
+ "properties": {
+  "ResetOnSpawn": false,
+  "ZIndexBehavior": "Sibling",
+  "Enabled": true,
+  "DisplayOrder": 14,
+  "IgnoreGuiInset": false,
+  "ScreenInsets": "CoreUISafeInsets"
+ },
+ "children": [
+  {
+   "name": "Chip",
+   "className": "Frame",
+   "properties": {
+    "Size": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      40
+     ]
+    ],
+    "Position": [
+     [
+      0.5,
+      0
+     ],
+     [
+      0,
+      116
+     ]
+    ],
+    "AnchorPoint": [
+     0.5,
+     0
+    ],
+    "BorderSizePixel": 0,
+    "AutomaticSize": "X",
+    "Visible": false,
+    "BackgroundTransparency": 0,
+    "BackgroundColor3": "#141A33"
+   },
+   "children": [
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": "#1B1F3A",
+      "Thickness": 3,
+      "ApplyStrokeMode": "Border",
+      "LineJoinMode": "Round"
+     }
+    },
+    {
+     "name": "Studs",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        1,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "rbxassetid://139302839809244",
+      "ScaleType": "Tile",
+      "TileSize": [
+       [
+        0,
+        64
+       ],
+       [
+        0,
+        64
+       ]
+      ],
+      "ImageColor3": "#141A33",
+      "ImageTransparency": 0.5,
+      "ZIndex": 0
+     },
+     "children": []
+    },
+    {
+     "name": "AutoScale",
+     "className": "UIScale",
+     "properties": {
+      "Scale": 1
+     }
+    },
+    {
+     "name": "Padding",
+     "className": "UIPadding",
+     "properties": {
+      "PaddingLeft": [
+       0,
+       48
+      ],
+      "PaddingRight": [
+       0,
+       14
+      ],
+      "PaddingTop": [
+       0,
+       0
+      ],
+      "PaddingBottom": [
+       0,
+       0
+      ]
+     }
+    },
+    {
+     "name": "Icon",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        44
+       ],
+       [
+        0,
+        44
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        -46
+       ],
+       [
+        0.5,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0.5
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "rbxassetid://84262214970870",
+      "ScaleType": "Fit",
+      "ZIndex": 3
+     }
+    },
+    {
+     "name": "Label",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        0
+       ],
+       [
+        1,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "Free potion in 5:00",
+      "TextColor3": "#7CF5C8",
+      "TextSize": 19,
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": false,
+      "ZIndex": 2,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/Montserrat.json",
+       "weight": "Heavy",
+       "style": "Normal"
+      },
+      "AutomaticSize": "X"
+     },
+     "children": [
+      {
+       "name": "TextStroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#1B1F3A",
+        "Thickness": 2.5,
+        "ApplyStrokeMode": "Contextual",
+        "LineJoinMode": "Round"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Popup",
+   "className": "Frame",
+   "properties": {
+    "Size": [
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "Position": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      0
+     ]
+    ],
+    "AnchorPoint": [
+     0,
+     0
+    ],
+    "BorderSizePixel": 0,
+    "Visible": false,
+    "BackgroundTransparency": 1
+   },
+   "children": [
+    {
+     "name": "Window",
+     "className": "Frame",
+     "properties": {
+      "Size": [
+       [
+        0,
+        440
+       ],
+       [
+        0,
+        230
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        0
+       ],
+       [
+        0.5,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0.5
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 0,
+      "BackgroundColor3": "#E9EEF7"
+     },
+     "children": [
+      {
+       "name": "Stroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#1B1F3A",
+        "Thickness": 4,
+        "ApplyStrokeMode": "Border",
+        "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Studs",
+       "className": "ImageLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          0
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Image": "rbxassetid://139302839809244",
+        "ScaleType": "Tile",
+        "TileSize": [
+         [
+          0,
+          64
+         ],
+         [
+          0,
+          64
+         ]
+        ],
+        "ImageColor3": "#E9EEF7",
+        "ImageTransparency": 0,
+        "ZIndex": 0
+       },
+       "children": []
+      },
+      {
+       "name": "AutoScale",
+       "className": "UIScale",
+       "properties": {
+        "Scale": 1
+       }
+      },
+      {
+       "name": "Header",
+       "className": "Frame",
+       "properties": {
+        "Size": [
+         [
+          1,
+          0
+         ],
+         [
+          0,
+          56
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 0,
+        "BackgroundColor3": "#FF5FA2"
+       },
+       "children": [
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 4,
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Studs",
+         "className": "ImageLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            0
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Image": "rbxassetid://139302839809244",
+          "ScaleType": "Tile",
+          "TileSize": [
+           [
+            0,
+            64
+           ],
+           [
+            0,
+            64
+           ]
+          ],
+          "ImageColor3": "#FF5FA2",
+          "ImageTransparency": 0,
+          "ZIndex": 0
+         },
+         "children": []
+        },
+        {
+         "name": "Icon",
+         "className": "ImageLabel",
+         "properties": {
+          "Size": [
+           [
+            0,
+            64
+           ],
+           [
+            0,
+            64
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            -6
+           ],
+           [
+            0.5,
+            -2
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Image": "rbxassetid://84262214970870",
+          "ScaleType": "Fit",
+          "ZIndex": 3
+         }
+        },
+        {
+         "name": "Title",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            -130
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            62
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Text": "Wait! Free potion!",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 28,
+          "TextXAlignment": "Left",
+          "TextYAlignment": "Center",
+          "TextWrapped": true,
+          "ZIndex": 2,
+          "FontFace": {
+           "family": "rbxasset://fonts/families/Montserrat.json",
+           "weight": "Heavy",
+           "style": "Normal"
+          }
+         },
+         "children": [
+          {
+           "name": "TextStroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#1B1F3A",
+            "Thickness": 3,
+            "ApplyStrokeMode": "Contextual",
+            "LineJoinMode": "Round"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "Close",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          0,
+          48
+         ],
+         [
+          0,
+          48
+         ]
+        ],
+        "Position": [
+         [
+          1,
+          -6
+         ],
+         [
+          0,
+          6
+         ]
+        ],
+        "AnchorPoint": [
+         0.5,
+         0.5
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundColor3": "#FF4D5E",
+        "Text": "",
+        "AutoButtonColor": false,
+        "ZIndex": 5
+       },
+       "children": [
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 4,
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Shine",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.55,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#BCC4D4"
+            ]
+           ]
+          },
+          "Rotation": 90
+         }
+        },
+        {
+         "name": "Label",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            -12
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            6
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Text": "X",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 28,
+          "TextXAlignment": "Center",
+          "TextYAlignment": "Center",
+          "TextWrapped": true,
+          "ZIndex": 2,
+          "FontFace": {
+           "family": "rbxasset://fonts/families/Montserrat.json",
+           "weight": "Heavy",
+           "style": "Normal"
+          }
+         },
+         "children": [
+          {
+           "name": "TextStroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#1B1F3A",
+            "Thickness": 2.5,
+            "ApplyStrokeMode": "Contextual",
+            "LineJoinMode": "Round"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "Text",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -40
+         ],
+         [
+          0,
+          64
+         ]
+        ],
+        "Position": [
+         [
+          0.5,
+          0
+         ],
+         [
+          0,
+          68
+         ]
+        ],
+        "AnchorPoint": [
+         0.5,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Text": "Stay 5 more minutes and get a free Luck Potion!",
+        "TextColor3": "#1B1F3A",
+        "TextSize": 20,
+        "TextXAlignment": "Center",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "ZIndex": 2,
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "ExtraBold",
+         "style": "Normal"
+        }
+       }
+      },
+      {
+       "name": "Stay",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          0,
+          260
+         ],
+         [
+          0,
+          58
+         ]
+        ],
+        "Position": [
+         [
+          0.5,
+          0
+         ],
+         [
+          1,
+          -14
+         ]
+        ],
+        "AnchorPoint": [
+         0.5,
+         1
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundColor3": "#3DDC5A",
+        "Text": "",
+        "AutoButtonColor": false,
+        "ZIndex": 1
+       },
+       "children": [
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 4,
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Shine",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.55,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#BCC4D4"
+            ]
+           ]
+          },
+          "Rotation": 90
+         }
+        },
+        {
+         "name": "Label",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            -12
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            6
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Text": "Stay & get it!",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 26,
+          "TextXAlignment": "Center",
+          "TextYAlignment": "Center",
+          "TextWrapped": true,
+          "ZIndex": 2,
+          "FontFace": {
+           "family": "rbxasset://fonts/families/Montserrat.json",
+           "weight": "Heavy",
+           "style": "Normal"
+          }
+         },
+         "children": [
+          {
+           "name": "TextStroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#1B1F3A",
+            "Thickness": 2.5,
+            "ApplyStrokeMode": "Contextual",
+            "LineJoinMode": "Round"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

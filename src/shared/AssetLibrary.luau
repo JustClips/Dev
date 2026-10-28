@@ -295,4 +295,13 @@ function AssetLibrary.image(name: string): string
 	return Assets.Images[name] or ""
 end
 
+-- Icon for one tool / car, falling back to the generic icon.
+function AssetLibrary.toolIcon(toolId: string): string
+	return Assets.Images["Icon_Tool_" .. toolId] or Assets.Images.Icon_Tool or ""
+end
+
+function AssetLibrary.carIcon(carId: string): string
+	return Assets.Images["Icon_Car_" .. carId] or Assets.Images.Icon_Vehicle or ""
+end
+
 return AssetLibrary

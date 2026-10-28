@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
+local Rewards = require(Shared.Config.Rewards)
 
 local LUCK_TIERS = { 2, 4, 8, 16 }
 
@@ -33,7 +34,9 @@ function BoostService:GetServerLuck(): number
 			best = tier
 		end
 	end
-	return best
+	-- A live event (Config/Rewards.Events) multiplies whatever luck is running.
+	local event = Rewards.activeEvent(now)
+	return best * (if event then event.LuckMult else 1)
 end
 
 function BoostService:AddServerLuck(mult: number, minutes: number, buyer: Player?)

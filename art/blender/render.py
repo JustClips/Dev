@@ -9,7 +9,7 @@ import math
 from mathutils import Vector
 
 
-def render(glb, png, size=320, yaw=-22):
+def render(glb, png, size=448, yaw=-22):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=glb)
     objs = [o for o in bpy.context.scene.objects if o.type == "MESH"]
@@ -35,10 +35,12 @@ def render(glb, png, size=320, yaw=-22):
     scene.render.resolution_x = size
     scene.render.resolution_y = size
     scene.render.film_transparent = False
+    scene.view_settings.view_transform = "Standard"
     world = bpy.data.worlds.new("w")
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.08, 0.09, 0.16, 1)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.9
+    fill = bpy.data.worlds.new("fill")  # noqa: F841 (kept simple: ambient comes from the background)
     scene.world = world
     cam_data = bpy.data.cameras.new("cam")
     cam_data.lens = 50
@@ -51,7 +53,7 @@ def render(glb, png, size=320, yaw=-22):
     cam.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
     scene.camera = cam
     sun = bpy.data.lights.new("sun", "SUN")
-    sun.energy = 3.5
+    sun.energy = 2.6
     so = bpy.data.objects.new("sun", sun)
     so.rotation_euler = (math.radians(50), 0, math.radians(-40))
     scene.collection.objects.link(so)

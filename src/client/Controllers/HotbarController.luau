@@ -89,12 +89,13 @@ local function render(_: any?)
 	end
 	local tool = Tools.get(data.ToolTier)
 	;(toolSlot:FindFirstChild("Name") :: TextLabel).Text = tool.Name
+	;(toolSlot:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.toolIcon(tool.Id)
 	local car = Tools.vehicle(data.BestVehicle or "")
 	local carName = carSlot:FindFirstChild("Name") :: TextLabel
 	local carIcon = carSlot:FindFirstChild("Icon") :: ImageLabel
 	carName.Text = if car then car.Name else "No car"
 	carName.TextColor3 = if car then INK else GREY
-	carIcon.Image = AssetLibrary.image(if car then "Icon_Vehicle" else "Icon_Lock")
+	carIcon.Image = if car then AssetLibrary.carIcon(car.Id) else AssetLibrary.image("Icon_Lock")
 	setSelected(carSlot, data.InVehicle)
 	-- Badge: eggs ready to open, else eggs waiting for a free incubator.
 	local ready, waiting = 0, 0

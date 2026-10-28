@@ -20,7 +20,7 @@
      ],
      [
       0,
-      402
+      476
      ]
     ],
     "Position": [
@@ -30,7 +30,7 @@
      ],
      [
       0.5,
-      0
+      -24
      ]
     ],
     "AnchorPoint": [
@@ -54,7 +54,7 @@
      "properties": {
       "Padding": [
        0,
-       22
+       14
       ],
       "FillDirection": "Vertical",
       "HorizontalAlignment": "Center",
@@ -209,7 +209,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://105247630037745",
+        "Image": "rbxassetid://79123475569846",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -510,7 +510,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://129110672308655",
+        "Image": "rbxassetid://118419475405763",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -811,7 +811,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://117595367687228",
+        "Image": "rbxassetid://118709070397753",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -1112,7 +1112,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://129431956423248",
+        "Image": "rbxassetid://88807687836893",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -1148,6 +1148,307 @@
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
         "Text": "Rebirth",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 17,
+        "TextXAlignment": "Center",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "ZIndex": 2,
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "Heavy",
+         "style": "Normal"
+        }
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 3,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        }
+       ]
+      },
+      {
+       "name": "Badge",
+       "className": "Frame",
+       "properties": {
+        "Size": [
+         [
+          0,
+          28
+         ],
+         [
+          0,
+          28
+         ]
+        ],
+        "Position": [
+         [
+          1,
+          6
+         ],
+         [
+          0,
+          -6
+         ]
+        ],
+        "AnchorPoint": [
+         1,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "Visible": false,
+        "ZIndex": 4,
+        "BackgroundTransparency": 0,
+        "BackgroundColor3": "#FF4D5E"
+       },
+       "children": [
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 3,
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Label",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            0
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Text": "!",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 20,
+          "TextXAlignment": "Center",
+          "TextYAlignment": "Center",
+          "TextWrapped": true,
+          "ZIndex": 5,
+          "FontFace": {
+           "family": "rbxasset://fonts/families/Montserrat.json",
+           "weight": "Heavy",
+           "style": "Normal"
+          }
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "RewardsButton",
+     "className": "TextButton",
+     "properties": {
+      "Size": [
+       [
+        0,
+        84
+       ],
+       [
+        0,
+        84
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundColor3": "#FF5FA2",
+      "Text": "",
+      "AutoButtonColor": false,
+      "ZIndex": 1,
+      "LayoutOrder": 5
+     },
+     "children": [
+      {
+       "name": "Stroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#1B1F3A",
+        "Thickness": 4,
+        "ApplyStrokeMode": "Border",
+        "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Shine",
+       "className": "UIGradient",
+       "properties": {
+        "Color": {
+         "keypoints": [
+          [
+           0,
+           "#FFFFFF"
+          ],
+          [
+           0.55,
+           "#FFFFFF"
+          ],
+          [
+           1,
+           "#BCC4D4"
+          ]
+         ]
+        },
+        "Rotation": 90
+       }
+      },
+      {
+       "name": "Studs",
+       "className": "ImageLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          0
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Image": "rbxassetid://139302839809244",
+        "ScaleType": "Tile",
+        "TileSize": [
+         [
+          0,
+          64
+         ],
+         [
+          0,
+          64
+         ]
+        ],
+        "ImageColor3": "#FF5FA2",
+        "ImageTransparency": 0.15,
+        "ZIndex": 0
+       },
+       "children": []
+      },
+      {
+       "name": "Icon",
+       "className": "ImageLabel",
+       "properties": {
+        "Size": [
+         [
+          0,
+          62
+         ],
+         [
+          0,
+          62
+         ]
+        ],
+        "Position": [
+         [
+          0.5,
+          0
+         ],
+         [
+          0,
+          2
+         ]
+        ],
+        "AnchorPoint": [
+         0.5,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Image": "rbxassetid://127570717481867",
+        "ScaleType": "Fit",
+        "ZIndex": 3
+       }
+      },
+      {
+       "name": "Label",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          20
+         ],
+         [
+          0,
+          24
+         ]
+        ],
+        "Position": [
+         [
+          0.5,
+          0
+         ],
+         [
+          1,
+          2
+         ]
+        ],
+        "AnchorPoint": [
+         0.5,
+         1
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Text": "Rewards",
         "TextColor3": "#FFFFFF",
         "TextSize": 17,
         "TextXAlignment": "Center",
@@ -1420,7 +1721,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://78445407823725",
+        "Image": "rbxassetid://139493072629786",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -1582,7 +1883,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://113142295565740",
+        "Image": "rbxassetid://85496393973162",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -1744,7 +2045,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://96129567125793",
+        "Image": "rbxassetid://76068568124350",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -1937,7 +2238,7 @@
       ],
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
-      "Image": "rbxassetid://70582665516009",
+      "Image": "rbxassetid://111986986082052",
       "ScaleType": "Fit",
       "ZIndex": 3
      }
@@ -2227,7 +2528,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://79028205861075",
+        "Image": "rbxassetid://104212602321163",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -2724,7 +3025,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://77755252353039",
+        "Image": "rbxassetid://85777016145545",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -3067,7 +3368,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://102117683884604",
+        "Image": "rbxassetid://88214974293818",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -3628,7 +3929,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://73274476326631",
+        "Image": "rbxassetid://114502791229592",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -3949,7 +4250,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://100400998462031",
+        "Image": "rbxassetid://140389556652076",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -4120,7 +4421,7 @@
       ],
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
-      "Image": "rbxassetid://73274476326631",
+      "Image": "rbxassetid://114502791229592",
       "ScaleType": "Fit",
       "ZIndex": 3
      }
@@ -4190,11 +4491,11 @@
     "Size": [
      [
       0,
-      320
+      290
      ],
      [
       0,
-      96
+      88
      ]
     ],
     "Position": [
@@ -4228,7 +4529,7 @@
      "properties": {
       "Padding": [
        0,
-       16
+       8
       ],
       "FillDirection": "Horizontal",
       "HorizontalAlignment": "Center",
@@ -4243,11 +4544,11 @@
       "Size": [
        [
         0,
-        92
+        84
        ],
        [
         0,
-        92
+        84
        ]
       ],
       "Position": [
@@ -4265,10 +4566,11 @@
        0
       ],
       "BorderSizePixel": 0,
-      "BackgroundColor3": "#E9EEF7",
+      "BackgroundColor3": "#0B0E1E",
       "Text": "",
       "AutoButtonColor": false,
       "ZIndex": 1,
+      "BackgroundTransparency": 0.35,
       "LayoutOrder": 1
      },
      "children": [
@@ -4277,7 +4579,7 @@
        "className": "UIStroke",
        "properties": {
         "Color": "#1B1F3A",
-        "Thickness": 4,
+        "Thickness": 3,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Round"
        }
@@ -4306,65 +4608,17 @@
        }
       },
       {
-       "name": "Studs",
-       "className": "ImageLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "Position": [
-         [
-          0,
-          0
-         ],
-         [
-          0,
-          0
-         ]
-        ],
-        "AnchorPoint": [
-         0,
-         0
-        ],
-        "BorderSizePixel": 0,
-        "BackgroundTransparency": 1,
-        "Image": "rbxassetid://139302839809244",
-        "ScaleType": "Tile",
-        "TileSize": [
-         [
-          0,
-          64
-         ],
-         [
-          0,
-          64
-         ]
-        ],
-        "ImageColor3": "#E9EEF7",
-        "ImageTransparency": 0.2,
-        "ZIndex": 0
-       },
-       "children": []
-      },
-      {
        "name": "Icon",
        "className": "ImageLabel",
        "properties": {
         "Size": [
          [
           0,
-          60
+          70
          ],
          [
           0,
-          60
+          70
          ]
         ],
         "Position": [
@@ -4373,17 +4627,17 @@
           0
          ],
          [
-          0,
-          4
+          0.5,
+          -6
          ]
         ],
         "AnchorPoint": [
          0.5,
-         0
+         0.5
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://73274476326631",
+        "Image": "rbxassetid://114502791229592",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -4399,7 +4653,7 @@
          ],
          [
           0,
-          20
+          18
          ]
         ],
         "Position": [
@@ -4409,7 +4663,7 @@
          ],
          [
           1,
-          -4
+          -3
          ]
         ],
         "AnchorPoint": [
@@ -4419,8 +4673,8 @@
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
         "Text": "Toothbrush",
-        "TextColor3": "#1B1F3A",
-        "TextSize": 14,
+        "TextColor3": "#FFFFFF",
+        "TextSize": 13,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -4430,7 +4684,19 @@
          "weight": "Heavy",
          "style": "Normal"
         }
-       }
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 2,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        }
+       ]
       },
       {
        "name": "Key",
@@ -4439,21 +4705,21 @@
         "Size": [
          [
           0,
-          26
+          22
          ],
          [
           0,
-          26
+          22
          ]
         ],
         "Position": [
          [
           0,
-          -6
+          3
          ],
          [
           0,
-          -6
+          2
          ]
         ],
         "AnchorPoint": [
@@ -4462,20 +4728,9 @@
         ],
         "BorderSizePixel": 0,
         "ZIndex": 4,
-        "BackgroundTransparency": 0,
-        "BackgroundColor3": "#141A33"
+        "BackgroundTransparency": 1
        },
        "children": [
-        {
-         "name": "Stroke",
-         "className": "UIStroke",
-         "properties": {
-          "Color": "#1B1F3A",
-          "Thickness": 3,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Round"
-         }
-        },
         {
          "name": "Label",
          "className": "TextLabel",
@@ -4509,8 +4764,8 @@
           "Text": "1",
           "TextColor3": "#FFFFFF",
           "TextSize": 16,
-          "TextXAlignment": "Center",
-          "TextYAlignment": "Center",
+          "TextXAlignment": "Left",
+          "TextYAlignment": "Top",
           "TextWrapped": true,
           "ZIndex": 5,
           "FontFace": {
@@ -4518,7 +4773,19 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         }
+         },
+         "children": [
+          {
+           "name": "TextStroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#1B1F3A",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Contextual",
+            "LineJoinMode": "Round"
+           }
+          }
+         ]
         }
        ]
       }
@@ -4531,11 +4798,11 @@
       "Size": [
        [
         0,
-        92
+        84
        ],
        [
         0,
-        92
+        84
        ]
       ],
       "Position": [
@@ -4553,10 +4820,11 @@
        0
       ],
       "BorderSizePixel": 0,
-      "BackgroundColor3": "#E9EEF7",
+      "BackgroundColor3": "#0B0E1E",
       "Text": "",
       "AutoButtonColor": false,
       "ZIndex": 1,
+      "BackgroundTransparency": 0.35,
       "LayoutOrder": 2
      },
      "children": [
@@ -4565,7 +4833,7 @@
        "className": "UIStroke",
        "properties": {
         "Color": "#1B1F3A",
-        "Thickness": 4,
+        "Thickness": 3,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Round"
        }
@@ -4594,65 +4862,17 @@
        }
       },
       {
-       "name": "Studs",
-       "className": "ImageLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "Position": [
-         [
-          0,
-          0
-         ],
-         [
-          0,
-          0
-         ]
-        ],
-        "AnchorPoint": [
-         0,
-         0
-        ],
-        "BorderSizePixel": 0,
-        "BackgroundTransparency": 1,
-        "Image": "rbxassetid://139302839809244",
-        "ScaleType": "Tile",
-        "TileSize": [
-         [
-          0,
-          64
-         ],
-         [
-          0,
-          64
-         ]
-        ],
-        "ImageColor3": "#E9EEF7",
-        "ImageTransparency": 0.2,
-        "ZIndex": 0
-       },
-       "children": []
-      },
-      {
        "name": "Icon",
        "className": "ImageLabel",
        "properties": {
         "Size": [
          [
           0,
-          60
+          70
          ],
          [
           0,
-          60
+          70
          ]
         ],
         "Position": [
@@ -4661,17 +4881,17 @@
           0
          ],
          [
-          0,
-          4
+          0.5,
+          -6
          ]
         ],
         "AnchorPoint": [
          0.5,
-         0
+         0.5
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://134464398158021",
+        "Image": "rbxassetid://137244696142454",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -4687,7 +4907,7 @@
          ],
          [
           0,
-          20
+          18
          ]
         ],
         "Position": [
@@ -4697,7 +4917,7 @@
          ],
          [
           1,
-          -4
+          -3
          ]
         ],
         "AnchorPoint": [
@@ -4707,8 +4927,8 @@
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
         "Text": "No car",
-        "TextColor3": "#1B1F3A",
-        "TextSize": 14,
+        "TextColor3": "#FFFFFF",
+        "TextSize": 13,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -4718,7 +4938,19 @@
          "weight": "Heavy",
          "style": "Normal"
         }
-       }
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 2,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        }
+       ]
       },
       {
        "name": "Key",
@@ -4727,21 +4959,21 @@
         "Size": [
          [
           0,
-          26
+          22
          ],
          [
           0,
-          26
+          22
          ]
         ],
         "Position": [
          [
           0,
-          -6
+          3
          ],
          [
           0,
-          -6
+          2
          ]
         ],
         "AnchorPoint": [
@@ -4750,20 +4982,9 @@
         ],
         "BorderSizePixel": 0,
         "ZIndex": 4,
-        "BackgroundTransparency": 0,
-        "BackgroundColor3": "#141A33"
+        "BackgroundTransparency": 1
        },
        "children": [
-        {
-         "name": "Stroke",
-         "className": "UIStroke",
-         "properties": {
-          "Color": "#1B1F3A",
-          "Thickness": 3,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Round"
-         }
-        },
         {
          "name": "Label",
          "className": "TextLabel",
@@ -4797,8 +5018,8 @@
           "Text": "2",
           "TextColor3": "#FFFFFF",
           "TextSize": 16,
-          "TextXAlignment": "Center",
-          "TextYAlignment": "Center",
+          "TextXAlignment": "Left",
+          "TextYAlignment": "Top",
           "TextWrapped": true,
           "ZIndex": 5,
           "FontFace": {
@@ -4806,7 +5027,19 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         }
+         },
+         "children": [
+          {
+           "name": "TextStroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#1B1F3A",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Contextual",
+            "LineJoinMode": "Round"
+           }
+          }
+         ]
         }
        ]
       }
@@ -4819,11 +5052,11 @@
       "Size": [
        [
         0,
-        92
+        84
        ],
        [
         0,
-        92
+        84
        ]
       ],
       "Position": [
@@ -4841,10 +5074,11 @@
        0
       ],
       "BorderSizePixel": 0,
-      "BackgroundColor3": "#E9EEF7",
+      "BackgroundColor3": "#0B0E1E",
       "Text": "",
       "AutoButtonColor": false,
       "ZIndex": 1,
+      "BackgroundTransparency": 0.35,
       "LayoutOrder": 3
      },
      "children": [
@@ -4853,7 +5087,7 @@
        "className": "UIStroke",
        "properties": {
         "Color": "#1B1F3A",
-        "Thickness": 4,
+        "Thickness": 3,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Round"
        }
@@ -4882,65 +5116,17 @@
        }
       },
       {
-       "name": "Studs",
-       "className": "ImageLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "Position": [
-         [
-          0,
-          0
-         ],
-         [
-          0,
-          0
-         ]
-        ],
-        "AnchorPoint": [
-         0,
-         0
-        ],
-        "BorderSizePixel": 0,
-        "BackgroundTransparency": 1,
-        "Image": "rbxassetid://139302839809244",
-        "ScaleType": "Tile",
-        "TileSize": [
-         [
-          0,
-          64
-         ],
-         [
-          0,
-          64
-         ]
-        ],
-        "ImageColor3": "#E9EEF7",
-        "ImageTransparency": 0.2,
-        "ZIndex": 0
-       },
-       "children": []
-      },
-      {
        "name": "Icon",
        "className": "ImageLabel",
        "properties": {
         "Size": [
          [
           0,
-          60
+          70
          ],
          [
           0,
-          60
+          70
          ]
         ],
         "Position": [
@@ -4949,17 +5135,17 @@
           0
          ],
          [
-          0,
-          4
+          0.5,
+          -6
          ]
         ],
         "AnchorPoint": [
          0.5,
-         0
+         0.5
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://78397712725630",
+        "Image": "rbxassetid://93587336308441",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -4975,7 +5161,7 @@
          ],
          [
           0,
-          20
+          18
          ]
         ],
         "Position": [
@@ -4985,7 +5171,7 @@
          ],
          [
           1,
-          -4
+          -3
          ]
         ],
         "AnchorPoint": [
@@ -4995,8 +5181,8 @@
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
         "Text": "Bag",
-        "TextColor3": "#1B1F3A",
-        "TextSize": 14,
+        "TextColor3": "#FFFFFF",
+        "TextSize": 13,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -5006,7 +5192,19 @@
          "weight": "Heavy",
          "style": "Normal"
         }
-       }
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 2,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        }
+       ]
       },
       {
        "name": "Key",
@@ -5015,21 +5213,21 @@
         "Size": [
          [
           0,
-          26
+          22
          ],
          [
           0,
-          26
+          22
          ]
         ],
         "Position": [
          [
           0,
-          -6
+          3
          ],
          [
           0,
-          -6
+          2
          ]
         ],
         "AnchorPoint": [
@@ -5038,20 +5236,9 @@
         ],
         "BorderSizePixel": 0,
         "ZIndex": 4,
-        "BackgroundTransparency": 0,
-        "BackgroundColor3": "#141A33"
+        "BackgroundTransparency": 1
        },
        "children": [
-        {
-         "name": "Stroke",
-         "className": "UIStroke",
-         "properties": {
-          "Color": "#1B1F3A",
-          "Thickness": 3,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Round"
-         }
-        },
         {
          "name": "Label",
          "className": "TextLabel",
@@ -5085,8 +5272,8 @@
           "Text": "3",
           "TextColor3": "#FFFFFF",
           "TextSize": 16,
-          "TextXAlignment": "Center",
-          "TextYAlignment": "Center",
+          "TextXAlignment": "Left",
+          "TextYAlignment": "Top",
           "TextWrapped": true,
           "ZIndex": 5,
           "FontFace": {
@@ -5094,7 +5281,19 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         }
+         },
+         "children": [
+          {
+           "name": "TextStroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#1B1F3A",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Contextual",
+            "LineJoinMode": "Round"
+           }
+          }
+         ]
         }
        ]
       },
@@ -5889,7 +6088,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://96129567125793",
+          "Image": "rbxassetid://76068568124350",
           "ScaleType": "Fit",
           "ZIndex": 3
          }
@@ -6107,7 +6306,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://96129567125793",
+          "Image": "rbxassetid://76068568124350",
           "ScaleType": "Fit",
           "ZIndex": 3
          }
@@ -6325,7 +6524,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://96129567125793",
+          "Image": "rbxassetid://76068568124350",
           "ScaleType": "Fit",
           "ZIndex": 3
          }
@@ -6543,7 +6742,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://96129567125793",
+          "Image": "rbxassetid://76068568124350",
           "ScaleType": "Fit",
           "ZIndex": 3
          }
@@ -6761,7 +6960,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://96129567125793",
+          "Image": "rbxassetid://76068568124350",
           "ScaleType": "Fit",
           "ZIndex": 3
          }

@@ -52,6 +52,11 @@ local function cashPackAmount(player: Player, product): number
 	return math.floor(math.max(rate * (product.Seconds or 600), floor, 100))
 end
 
+-- Same scaling as cash packs, for free rewards (daily, playtime, group).
+function ShopService:CashFor(player: Player, seconds: number, floorFactor: number?): number
+	return cashPackAmount(player, { Seconds = seconds, FloorFactor = floorFactor or 0 })
+end
+
 function ShopService:GetCashPackAmounts(player: Player): { [string]: number }
 	local amounts = {}
 	for _, key in CASH_PACKS do

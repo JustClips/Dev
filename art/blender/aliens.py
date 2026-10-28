@@ -9,12 +9,14 @@ L is the alien's left (+X in Blender, -X in Roblox). Missing parts are simply no
 """
 import math
 from mathutils import Vector
-from lib import (Asset, use, sphere, ico, box, cyl, cone, torus, capsule, tube, eye, join,
+from lib import (Asset, use, sphere, ico, box, cyl, cone, torus, capsule, tube, eye, arc, join,
                  deform, noise_deform)
 
 DARK = "1B1530"
 WHITE = "FFFFFF"
 PINK = "FF8FB8"
+BLUSH = "FF9EC4"
+IRIS = "5A48C8"
 
 
 def V(*a):
@@ -33,22 +35,43 @@ def shade(h, k):
 
 
 def face(center, r, eye_size=0.3, spread=0.4, up=0.1, mouth=True, cheeks=True, n_eyes=2,
-         pupil=DARK, fwd=-1.0, smile_color=DARK):
+         pupil=DARK, fwd=-1.0, smile_color=DARK, iris="AUTO", tongue=True, lashes=False, on=None):
+    """Cute face on a round head: big sparkly eyes, a smile with a little tongue, blush.
+    `on` = the head/body mesh: features are then placed on its actual surface."""
     c = Vector(center)
     spread *= 0.8
     pieces = []
+    if iris == "AUTO":
+        iris = IRIS
+
+    def surf(d, k):
+        if on is not None:
+            hit, loc, _, _ = on.ray_cast(c + d * r * 6, -d)
+            if hit:
+                return loc + d * r * (k - 1)
+        return c + d * r * k
     sides = [-1, 1] if n_eyes == 2 else ([0] if n_eyes == 1 else [-1, 0, 1])
     for s in sides:
         d = V(s * spread, fwd, up + (0.18 if n_eyes == 3 and s == 0 else 0)).normalized()
         look = (d + V(0, fwd * 2.5, 0)).normalized()
-        pieces.append(eye(c + d * r * 0.9, r * eye_size * (1.15 if n_eyes == 1 else 1), look=look, pupil=pupil))
+        size = r * eye_size * (1.15 if n_eyes == 1 else 1)
+        pos = surf(d, 0.9)
+        pieces.append(eye(pos, size, look=look, pupil=pupil, iris=iris))
+        if lashes and s != 0:
+            for k in (0, 1):
+                lash = capsule(DARK, pos + V(s * size * (0.55 + k * 0.25), 0, size * (0.85 - k * 0.2)),
+                               pos + V(s * size * (0.85 + k * 0.3), 0, size * (1.15 - k * 0.15)), size * 0.07, seg=6)
+                pieces.append(lash)
     if mouth:
         d = V(0, fwd, up - 0.42).normalized()
-        pieces.append(sphere(smile_color, loc=c + d * r * 0.96, scale=(r * 0.2, r * 0.07, r * 0.09)))
+        m = surf(d, 0.99)
+        pieces.append(arc(smile_color, m, r * 0.13, r * 0.028, keep="below"))
+        if tongue:
+            pieces.append(sphere("FF6F91", loc=m + V(0, fwd * r * 0.01, -r * 0.1), scale=(r * 0.07, r * 0.035, r * 0.05), seg=10, rings=6))
     if cheeks:
         for s in (-1, 1):
-            d = V(s * (spread + 0.22), fwd, up - 0.28).normalized()
-            pieces.append(sphere(PINK, loc=c + d * r * 0.93, scale=(r * 0.13, r * 0.04, r * 0.08)))
+            d = V(s * (spread + 0.26), fwd, up - 0.26).normalized()
+            pieces.append(sphere(BLUSH, loc=surf(d, 0.97), scale=(r * 0.15, r * 0.045, r * 0.09), seg=12, rings=6))
     return pieces
 
 
@@ -76,7 +99,10 @@ def blip():
     body = sphere(g, loc=(0, 0, 0.62), scale=(0.78, 0.72, 0.62))
     deform(body, lambda v: Vector((v.x * (1 + max(0, 0.6 - v.z) * 0.35), v.y * (1 + max(0, 0.6 - v.z) * 0.35), max(v.z, 0.04))))
     b2 = sphere(belly, loc=(0, -0.42, 0.42), scale=(0.45, 0.25, 0.32))
-    a.part("Body", [body, b2] + face((0, 0, 0.72), 0.7, eye_size=0.27, spread=0.36, up=0.12))
+    spots = [sphere(shade(g, 0.35), loc=(x, y, z), scale=(0.11, 0.11, 0.06), rot=(rx, ry, 0)) for x, y, z, rx, ry in
+             ((0.55, 0.25, 0.95, -20, 40), (-0.5, 0.35, 0.9, -25, -40), (0.1, 0.5, 1.12, -45, 5), (0.68, -0.1, 0.62, 0, 75))]
+    feet = [sphere(shade(g, -0.15), loc=(s * 0.35, -0.45, 0.07), scale=(0.17, 0.22, 0.09)) for s in (-1, 1)]
+    a.part("Body", [body, b2] + spots + feet + face((0, 0, 0.72), 0.7, eye_size=0.27, spread=0.36, up=0.12, iris="2FA84F", on=body))
     for s, n in ((1, "EarL"), (-1, "EarR")):
         antenna(a, shade(g, -0.2), "FFF27A", (s * 0.25, 0.05, 1.18), (s * 0.45, 0.1, 1.62), n, parent="Body", glow="FFF27A")
     return a
@@ -90,7 +116,7 @@ def moon_mite():
     spots = [sphere(spot, loc=(x, y, z), scale=0.12) for x, y, z in ((0.25, 0.2, 1.0), (-0.3, 0.35, 0.95), (0.05, 0.5, 0.9), (-0.1, -0.05, 1.04))]
     a.part("Body", [shell] + spots)
     head = sphere(shade(c, 0.25), loc=(0, -0.55, 0.62), scale=0.42)
-    a.part("Head", [head] + face((0, -0.55, 0.62), 0.42, eye_size=0.36, spread=0.42, up=0.18, cheeks=False), parent="Body", joint=(0, -0.38, 0.62))
+    a.part("Head", [head] + face((0, -0.55, 0.62), 0.42, eye_size=0.36, spread=0.42, up=0.18, cheeks=False, iris="3A8FD8", on=head), parent="Body", joint=(0, -0.38, 0.62))
     for s, n in ((1, "EarL"), (-1, "EarR")):
         antenna(a, "6E6E88", "9EF0FF", (s * 0.15, -0.72, 0.95), (s * 0.4, -0.95, 1.35), n, glow="9EF0FF", r=0.04, ball=0.1)
     for (x, y, n) in ((0.45, -0.2, "LegFL"), (-0.45, -0.2, "LegFR"), (0.45, 0.4, "LegBL"), (-0.45, 0.4, "LegBR")):
@@ -107,7 +133,7 @@ def dusty():
     noise_deform(fluff, 0.09, seed=3, freq=3.5)
     puffs = [ico(shade(c, 0.12), loc=V(math.cos(t) * 0.55, math.sin(t) * 0.5, 0.85 + math.sin(t * 3) * 0.2), scale=0.28, sub=2, smooth=True)
              for t in [i * math.pi / 3 for i in range(6)]]
-    a.part("Body", [fluff] + puffs + face((0, 0, 0.9), 0.72, eye_size=0.28, spread=0.36, up=0.05))
+    a.part("Body", [fluff] + puffs + face((0, 0, 0.9), 0.72, eye_size=0.28, spread=0.36, up=0.05, iris="9A6A3A", on=fluff))
     for s, n in ((1, "EarL"), (-1, "EarR")):
         ear = sphere(c, loc=(s * 0.32, 0.05, 1.75), scale=(0.16, 0.1, 0.48), rot=(0, s * -12, 0))
         inn = sphere(inner, loc=(s * 0.32, -0.04, 1.75), scale=(0.1, 0.05, 0.36), rot=(0, s * -12, 0))
@@ -149,7 +175,9 @@ def zib():
         e = sphere(DARK, loc=(s * 0.25, -0.44, 1.55), scale=(0.18, 0.08, 0.26), rot=(0, s * 25, 0))
         sh = sphere(WHITE, loc=(s * 0.2, -0.5, 1.65), scale=0.05)
         eyes += [e, sh]
-    smile = sphere(DARK, loc=(0, -0.5, 1.3), scale=(0.08, 0.03, 0.03))
+    smile = join([arc(DARK, (0, -0.5, 1.3), 0.08, 0.02),
+                  sphere(BLUSH, loc=(0.36, -0.38, 1.36), scale=(0.08, 0.03, 0.05)),
+                  sphere(BLUSH, loc=(-0.36, -0.38, 1.36), scale=(0.08, 0.03, 0.05))], "smile")
     a.part("Head", [head, smile] + eyes, parent="Body", joint=(0, 0, 1.1))
     for s, n in ((1, "EarL"), (-1, "EarR")):
         antenna(a, shade(c, -0.25), "FF5AD2", (s * 0.18, 0, 2.0), (s * 0.42, 0.1, 2.45), n, glow="FF5AD2")
@@ -172,7 +200,8 @@ def crater_crab():
     deform(shell, lambda v: Vector((v.x, v.y, max(v.z, 0.55 + (v.z - 0.55) * 0.3) if v.z < 0.55 else v.z)))
     b = sphere(belly, loc=(0, -0.05, 0.55), scale=(0.8, 0.6, 0.22))
     spikes = [cone(shade(c, -0.2), loc=(x, 0.2, 1.15), r=0.1, h=0.25) for x in (-0.45, 0, 0.45)]
-    mouth = sphere(DARK, loc=(0, -0.66, 0.62), scale=(0.14, 0.04, 0.05))
+    mouth = join([arc(DARK, (0, -0.68, 0.7), 0.12, 0.03), sphere("FF6F91", loc=(0, -0.69, 0.62), scale=(0.06, 0.03, 0.04)),
+                  sphere(BLUSH, loc=(0.4, -0.58, 0.78), scale=(0.11, 0.04, 0.06)), sphere(BLUSH, loc=(-0.4, -0.58, 0.78), scale=(0.11, 0.04, 0.06))], "mouth")
     a.part("Body", [shell, b, mouth] + spikes)
     for s, n in ((1, "EarL"), (-1, "EarR")):
         stalk = tube(shade(c, -0.1), [(s * 0.25, -0.45, 1.0), (s * 0.3, -0.5, 1.45)], 0.06)
@@ -197,7 +226,7 @@ def nebby():
     dome = sphere(c, loc=(0, 0, 1.0 + lift), scale=(0.85, 0.85, 0.7))
     deform(dome, lambda v: Vector((v.x, v.y, max(v.z, 0.8 + lift))))
     rim = torus(shade(c, 0.3), loc=(0, 0, 0.82 + lift), R=0.82, r=0.1)
-    a.part("Body", [dome, rim] + face((0, 0, 1.08 + lift), 0.83, eye_size=0.24, spread=0.36, up=0.0))
+    a.part("Body", [dome, rim] + face((0, 0, 1.08 + lift), 0.83, eye_size=0.24, spread=0.36, up=0.0, iris="3A5AD8", on=dome))
     a.part("Body_Glow", [sphere("D7B4FF", loc=(x, y, z + lift), scale=0.09) for x, y, z in
                          ((0.4, 0.3, 1.5), (-0.3, 0.45, 1.45), (0.1, 0.6, 1.6), (-0.55, 0.0, 1.3), (0.55, -0.15, 1.35))],
            parent="Body", glow="D7B4FF")
@@ -217,7 +246,7 @@ def orbo():
     lift = 0.7
     body = sphere(c, loc=(0, 0, 0.9 + lift), scale=0.85, seg=24, rings=14)
     belly = sphere(shade(c, 0.4), loc=(0, -0.3, 0.75 + lift), scale=(0.55, 0.5, 0.5))
-    a.part("Body", [body, belly] + face((0, 0, 0.95 + lift), 0.85, eye_size=0.3, n_eyes=1, up=0.12))
+    a.part("Body", [body, belly] + face((0, 0, 0.95 + lift), 0.85, eye_size=0.3, n_eyes=1, up=0.12, iris="1E7FD0", on=body))
     a.part("Body_Glow", [torus("FFE36E", loc=(0, 0, 0.95 + lift), R=1.2, r=0.07, rot=(18, 10, 0), seg=32)], parent="Body", glow="FFE36E")
     for s, n in ((1, "ArmL"), (-1, "ArmR")):
         a.part(n, [sphere(shade(c, -0.1), loc=(s * 0.92, -0.05, 0.75 + lift), scale=(0.16, 0.16, 0.24))], parent="Body", joint=(s * 0.8, 0, 0.9 + lift))
@@ -231,7 +260,7 @@ def lunar_slug():
     c, belly = "B4DCFF", "E6F4FF"
     front = sphere(c, loc=(0, -0.35, 0.55), scale=(0.55, 0.75, 0.55))
     foot = sphere(belly, loc=(0, 0, 0.15), scale=(0.6, 1.3, 0.16))
-    a.part("Body", [front, foot] + face((0, -0.55, 0.65), 0.5, eye_size=0.26, spread=0.42, up=0.05))
+    a.part("Body", [front, foot] + face((0, -0.55, 0.65), 0.5, eye_size=0.26, spread=0.42, up=0.05, iris="3AA0C8", on=front))
     tail = sphere(c, loc=(0, 0.75, 0.35), scale=(0.42, 0.7, 0.35))
     a.part("Tail", [tail], parent="Body", joint=(0, 0.25, 0.4))
     a.part("Tail_Glow", [ico("9BFFF5", loc=(0, 0.5, 1.0), scale=(0.22, 0.22, 0.42), sub=1),
@@ -256,7 +285,7 @@ def zorblax():
     head = sphere(c, loc=(0, -0.05, 1.95), scale=(0.55, 0.5, 0.5))
     fins = [cone(dark, loc=(s * 0.45, 0.05, 2.35), r=0.12, h=0.45, rot=(0, s * -35, 0)) for s in (-1, 1)]
     fins.append(cone(dark, loc=(0, 0.05, 2.5), r=0.14, h=0.5))
-    a.part("Head", [head] + fins + face((0, -0.05, 1.95), 0.52, eye_size=0.22, n_eyes=3, spread=0.42, up=0.08, pupil="2A0050"),
+    a.part("Head", [head] + fins + face((0, -0.05, 1.95), 0.52, eye_size=0.22, n_eyes=3, spread=0.42, up=0.08, pupil="2A0050", iris="1FB89A", on=head),
            parent="Body", joint=(0, 0, 1.5))
     for s, n in ((1, "ArmL"), (-1, "ArmR")):
         arm = tube(c, [(s * 0.5, 0, 1.3), (s * 0.8, -0.1, 1.0), (s * 0.85, -0.2, 0.7)], 0.1)
@@ -295,7 +324,7 @@ def comet_cat():
     for s in (-1, 1):
         ears.append(cone(c, loc=(s * 0.3, -0.6, 1.8), r=0.17, h=0.36, rot=(0, s * -15, 0)))
         ears.append(cone("FFC8E8", loc=(s * 0.3, -0.66, 1.79), r=0.1, h=0.26, rot=(0, s * -15, 0)))
-    a.part("Head", [head, muzzle, nose, star] + ears + face((0, -0.65, 1.38), 0.5, eye_size=0.26, spread=0.42, up=0.12, mouth=False),
+    a.part("Head", [head, muzzle, nose, star] + ears + face((0, -0.65, 1.38), 0.5, eye_size=0.26, spread=0.42, up=0.12, mouth=False, iris="D84A9A", on=head),
            parent="Body", joint=(0, -0.45, 1.0))
     tail = tube(c, [(0, 0.75, 0.9), (0, 1.05, 1.15), (0, 1.15, 1.5)], 0.08)
     a.part("Tail", [tail], parent="Body", joint=(0, 0.72, 0.9))
@@ -319,7 +348,7 @@ def quasar_pup():
     snout = sphere(belly, loc=(0, -1.15, 1.32), scale=(0.28, 0.2, 0.18))
     nose = sphere(DARK, loc=(0, -1.33, 1.4), scale=(0.09, 0.06, 0.07))
     tongue = sphere("FF7A9A", loc=(0.08, -1.25, 1.18), scale=(0.07, 0.05, 0.1))
-    a.part("Head", [head, snout, nose, tongue] + face((0, -0.75, 1.5), 0.52, eye_size=0.25, spread=0.42, up=0.15, mouth=False),
+    a.part("Head", [head, snout, nose, tongue] + face((0, -0.75, 1.5), 0.52, eye_size=0.25, spread=0.42, up=0.15, mouth=False, iris="5A48C8", on=head),
            parent="Body", joint=(0, -0.5, 1.05))
     for s, n in ((1, "EarL"), (-1, "EarR")):
         ear = sphere(shade(c, -0.2), loc=(s * 0.55, -0.7, 1.4), scale=(0.12, 0.2, 0.38), rot=(0, s * 20, 0))
@@ -338,7 +367,7 @@ def star_whale():
     body = sphere(c, loc=(0, 0, 1.2 + lift), scale=(0.95, 1.5, 0.9))
     deform(body, lambda v: Vector((v.x * (1 - max(0, v.y) * 0.35), v.y, v.z - max(0, v.y) * 0.1 * (v.z - 1.2 - lift))))
     b = sphere(belly, loc=(0, -0.2, 0.75 + lift), scale=(0.7, 1.1, 0.45))
-    a.part("Body", [body, b] + face((0, -0.6, 1.25 + lift), 0.9, eye_size=0.22, spread=0.55, up=0.0))
+    a.part("Body", [body, b] + face((0, -0.6, 1.25 + lift), 0.9, eye_size=0.22, spread=0.55, up=0.0, iris="2A5AE0", on=body))
     a.part("Body_Glow", [ico("FFF5A0", loc=(x, y, z + lift), scale=(0.1, 0.1, 0.03), sub=1) for x, y, z in
                          ((0.3, 0.2, 2.05), (-0.25, 0.5, 2.0), (0.0, -0.3, 2.12), (0.4, 0.8, 1.8), (-0.45, -0.1, 1.95))],
            parent="Body", glow="FFF5A0")
@@ -367,7 +396,7 @@ def galaxy_gus():
     glass = sphere("CDEBFF", loc=helmet_c, scale=0.62, seg=24, rings=14)
     deform(glass, lambda v: v if v.y > -0.25 else Vector((v.x, -0.25 + (v.y + 0.25) * 0.98, v.z)))
     ring = torus(gold, loc=(0, -0.05, 1.5), R=0.45, r=0.08)
-    a.part("Head", [alien, ring] + face(helmet_c, 0.45, eye_size=0.3, spread=0.4, up=0.1), parent="Body", joint=(0, 0, 1.55))
+    a.part("Head", [alien, ring] + face(helmet_c, 0.45, eye_size=0.3, spread=0.4, up=0.1, iris="2FA84F", on=alien), parent="Body", joint=(0, 0, 1.55))
     a.part("Head_Glass", [glass], parent="Head", material="Glass")
     for s, n in ((1, "ArmL"), (-1, "ArmR")):
         arm = capsule(suit, (s * 0.65, 0, 1.3), (s * 0.85, -0.1, 0.85), 0.16)
@@ -389,7 +418,7 @@ def astro_axolotl():
     for x, y, n in legs:
         stub_leg(a, c, x * 1.2, y, 0.45, 0.45, 0.11, n, foot=shade(c, 0.2))
     head = sphere(c, loc=(0, -0.85, 0.95), scale=(0.7, 0.5, 0.45))
-    a.part("Head", [head] + face((0, -0.85, 0.98), 0.5, eye_size=0.25, spread=0.75, up=0.18, cheeks=True),
+    a.part("Head", [head] + face((0, -0.85, 0.98), 0.5, eye_size=0.25, spread=0.75, up=0.18, cheeks=True, iris="D8407A", on=head),
            parent="Body", joint=(0, -0.55, 0.75))
     for s, n in ((1, "EarL"), (-1, "EarR")):
         gills = [capsule("FF5A9A", (s * 0.55, -0.8, 1.05 + k * 0.2), (s * (0.95 + k * 0.05), -0.75, 1.15 + k * 0.32), 0.06) for k in (-1, 0, 1)]
@@ -414,9 +443,9 @@ def void_king():
     crown = [cyl(gold, loc=(0, -0.05, 2.95), r=0.42, h=0.2, verts=10)]
     crown += [cone(gold, loc=(math.cos(t) * 0.38, -0.05 + math.sin(t) * 0.38, 3.18), r=0.08, h=0.28, verts=6) for t in [i * math.pi / 3 for i in range(6)]]
     horns = [cone("E0D0FF", loc=(s * 0.55, -0.05, 2.85), r=0.1, h=0.55, rot=(0, s * -40, 0)) for s in (-1, 1)]
-    a.part("Head", [head] + crown + horns, parent="Body", joint=(0, 0, 2.0))
-    a.part("Head_Glow", [sphere("C85AFF", loc=(s * 0.22, -0.55, 2.5), scale=(0.13, 0.05, 0.08), rot=(0, s * -15, 0)) for s in (-1, 1)]
-           + [ico("FF5AFF", loc=(0, -0.42, 3.0), scale=0.08, sub=1)], parent="Head", glow="C85AFF")
+    a.part("Head", [head] + crown + horns + face((0, -0.05, 2.45), 0.55, eye_size=0.3, spread=0.42, up=0.05, iris="C85AFF",
+                                                   smile_color="E0D0FF", on=head), parent="Body", joint=(0, 0, 2.0))
+    a.part("Head_Glow", [ico("FF5AFF", loc=(0, -0.42, 3.0), scale=0.08, sub=1)], parent="Head", glow="C85AFF")
     for s, n in ((1, "ArmL"), (-1, "ArmR")):
         arm = capsule(c, (s * 0.7, 0, 1.6), (s * 1.0, -0.15, 1.05), 0.17)
         claw = [cone("E0D0FF", loc=(s * (1.0 + k * 0.08), -0.25, 0.85), r=0.05, h=0.22, rot=(180, 0, 0)) for k in (-1, 0, 1)]
@@ -438,10 +467,10 @@ def eclipse_dragon():
     for x, y, n in legs:
         stub_leg(a, c, x, y, 0.85, 0.85, 0.16, n, foot=horn)
     neck = capsule(c, (0, -0.7, 1.2), (0, -1.0, 1.75), 0.25)
-    head = sphere(c, loc=(0, -1.15, 1.95), scale=(0.5, 0.6, 0.42))
+    head = sphere(c, loc=(0, -1.15, 1.95), scale=(0.6, 0.62, 0.52))
     snout = sphere(belly, loc=(0, -1.6, 1.85), scale=(0.3, 0.25, 0.2))
     horns = [cone(horn, loc=(s * 0.3, -0.95, 2.4), r=0.08, h=0.5, rot=(-30, s * -20, 0)) for s in (-1, 1)]
-    a.part("Head", [neck, head, snout] + horns + face((0, -1.15, 2.0), 0.48, eye_size=0.25, spread=0.5, up=0.25, mouth=False, cheeks=False, pupil="7A1A00"),
+    a.part("Head", [neck, head, snout] + horns + face((0, -1.15, 2.0), 0.55, eye_size=0.3, spread=0.5, up=0.25, mouth=False, cheeks=True, pupil="3A0A00", iris="E07A10", on=head),
            parent="Body", joint=(0, -0.6, 1.2))
     for s, n in ((1, "WingL"), (-1, "WingR")):
         bone = tube(horn, [(s * 0.5, -0.1, 1.5), (s * 1.3, 0.0, 2.1), (s * 2.0, 0.2, 1.8)], 0.06)
@@ -458,19 +487,30 @@ def nova_queen():
     use(a)
     c, dress, gold = "FFF5C8", "FFD25A", "FFB43C"
     lift = 0.5
-    skirt = cone(dress, loc=(0, 0, 0.9 + lift), r=0.75, h=1.2, verts=24)
+    skirt = cyl(dress, loc=(0, 0, 0.95 + lift), r=0.8, r2=0.28, h=1.15, verts=28)
+    deform(skirt, lambda v: Vector((v.x, v.y, v.z + 0.05 * math.sin(math.atan2(v.y, v.x) * 8) * max(0, 1.2 + lift - v.z))))
+    ruffles = [torus(shade(dress, 0.45), loc=(0, 0, 0.42 + lift), R=0.78, r=0.07, seg=28),
+               torus(shade(dress, 0.45), loc=(0, 0, 0.95 + lift), R=0.55, r=0.05, seg=24),
+               torus(gold, loc=(0, 0, 1.48 + lift), R=0.3, r=0.05, seg=20)]
+    stars = [ico("FFFFFF", loc=(math.cos(t) * 0.62, math.sin(t) * 0.62, 0.7 + lift + 0.1 * (k % 2)), scale=0.06, sub=1)
+             for k, t in enumerate([i * math.pi / 4 for i in range(8)])]
     torso = sphere(c, loc=(0, 0, 1.6 + lift), scale=(0.35, 0.3, 0.4))
-    a.part("Body", [skirt, torso])
+    a.part("Body", [skirt, torso] + ruffles + stars)
     head = sphere(c, loc=(0, 0, 2.35 + lift), scale=0.45)
     hair = sphere("FF96C8", loc=(0, 0.12, 2.45 + lift), scale=(0.5, 0.45, 0.45))
     deform(hair, lambda v: v if v.y > -0.05 else Vector((v.x, -0.05 + (v.y + 0.05) * 0.2, v.z)))
-    a.part("Head", [head, hair] + face((0, 0, 2.35 + lift), 0.45, eye_size=0.27, spread=0.38, up=0.05, pupil="5A2A8A"),
+    a.part("Head", [head, hair] + face((0, 0, 2.35 + lift), 0.45, eye_size=0.27, spread=0.38, up=0.05, pupil="5A2A8A", iris="9A4AD8", on=head),
            parent="Body", joint=(0, 0, 1.95 + lift))
     a.part("Head_Glow", [ico("FFF08C", loc=(0, -0.05, 2.95 + lift), scale=(0.22, 0.08, 0.22), sub=1)]
            + [ico("FFF08C", loc=(s * 0.25, 0.0, 2.85 + lift), scale=(0.11, 0.05, 0.11), sub=1) for s in (-1, 1)],
            parent="Head", glow="FFF08C")
     for s, n in ((1, "ArmL"), (-1, "ArmR")):
-        a.part(n, [capsule(c, (s * 0.32, 0, 1.85 + lift), (s * 0.65, -0.1, 1.45 + lift), 0.08)], parent="Body", joint=(s * 0.3, 0, 1.85 + lift))
+        arm = [capsule(c, (s * 0.32, 0, 1.85 + lift), (s * 0.65, -0.1, 1.45 + lift), 0.08)]
+        if s == -1:
+            arm += [capsule(gold, (s * 0.68, -0.15, 1.35 + lift), (s * 0.72, -0.25, 2.0 + lift), 0.035)]
+            star = ico("FFF08C", loc=(s * 0.72, -0.27, 2.12 + lift), scale=(0.16, 0.06, 0.16), sub=1)
+            arm.append(star)
+        a.part(n, arm, parent="Body", joint=(s * 0.3, 0, 1.85 + lift))
     for s, n in ((1, "WingL"), (-1, "WingR")):
         w = [sphere("B4F0FF", loc=(s * 0.6, 0.35, 2.0 + lift), scale=(0.55, 0.06, 0.4), rot=(0, s * -30, 0)),
              sphere("B4F0FF", loc=(s * 0.5, 0.35, 1.45 + lift), scale=(0.35, 0.05, 0.25), rot=(0, s * 30, 0))]
@@ -494,7 +534,7 @@ def cosmo():
            parent="Body", glow="FFE36E")
     head = sphere(deep, loc=(0, -0.1, 2.75 + lift), scale=0.65)
     ears = [cone(deep, loc=(s * 0.42, -0.05, 3.35 + lift), r=0.22, h=0.5, rot=(0, s * -20, 0)) for s in (-1, 1)]
-    a.part("Head", [head] + ears + face((0, -0.1, 2.78 + lift), 0.65, eye_size=0.27, spread=0.4, up=0.1, pupil="FF2AC8", smile_color="FFFFFF"),
+    a.part("Head", [head] + ears + face((0, -0.1, 2.78 + lift), 0.65, eye_size=0.27, spread=0.4, up=0.1, pupil="FF2AC8", smile_color="FFFFFF", iris="FF2AC8", on=head),
            parent="Body", joint=(0, 0, 2.25 + lift))
     a.part("Head_Glow", [torus("FFF08C", loc=(0, 0.1, 3.65 + lift), R=0.45, r=0.06, rot=(10, 0, 0))], parent="Head", glow="FFF08C")
     for s, n in ((1, "ArmL"), (-1, "ArmR")):
@@ -514,3 +554,111 @@ ALL = {
     "VoidKing": void_king, "EclipseDragon": eclipse_dragon, "NovaQueen": nova_queen,
     "Cosmo": cosmo,
 }
+
+
+# ------------------------------------------------------------------ zone variants
+# Eggs found in later zones hatch variants of the Landing pets: recoloured, with a zone
+# accessory on top (crystals, shadow horns, a magma flame, a frost beanie). Must match
+# Aliens.luau ZONE_SETS.
+
+KEEP = {WHITE, DARK, BLUSH, PINK, "FF6F91", "1B1530", "FFFFFF"}
+
+
+def _rgb(h):
+    return [int(h[i:i + 2], 16) for i in (0, 2, 4)]
+
+
+def _hex(c):
+    return "".join(f"{max(0, min(255, round(x))):02X}" for x in c)
+
+
+def _tint(h, target, k, light=0.0):
+    c = _rgb(h)
+    t = _rgb(target)
+    lum = (c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11) / 255
+    tl = (t[0] * 0.3 + t[1] * 0.59 + t[2] * 0.11) / 255
+    # keep the original brightness so shading details survive
+    scaled = [x * (lum / max(tl, 0.05)) for x in t]
+    out = [c[i] * (1 - k) + scaled[i] * k for i in range(3)]
+    if light > 0:
+        out = [x + (255 - x) * light for x in out]
+    elif light < 0:
+        out = [x * (1 + light) for x in out]
+    return _hex(out)
+
+
+def _top(a):
+    """Top-centre point and width of the head (or body if there's no head)."""
+    o = a.parts.get("Head", a.parts["Body"])["obj"]
+    zs = [v.co.z for v in o.data.vertices]
+    top = max(zs)
+    cut = top - (top - min(zs)) * 0.12
+    pts = [v.co for v in o.data.vertices if v.co.z >= cut]
+    cx = sum(p.x for p in pts) / len(pts)
+    cy = sum(p.y for p in pts) / len(pts)
+    xs = [v.co.x for v in o.data.vertices]
+    return Vector((cx, cy, top)), (max(xs) - min(xs)), ("Head" if "Head" in a.parts else "Body")
+
+
+def acc_crystal(a):
+    top, w, parent = _top(a)
+    k = max(0.35, w * 0.45)
+    shards = []
+    for i, (dx, tilt, h, col) in enumerate(((0, 0, 1.0, "7AE6FF"), (-0.35, -28, 0.7, "FF9AF0"), (0.35, 28, 0.75, "B4F5FF"))):
+        shards.append(cone(col, loc=top + Vector((dx * k, 0.05, h * k * 0.32)), r=0.13 * k, h=h * k * 0.75, verts=5, rot=(0, tilt, 0), smooth=False))
+    a.part("Zone_Glow", shards, parent=parent, glow="7AE6FF")
+
+
+def acc_shadow(a):
+    top, w, parent = _top(a)
+    k = max(0.35, w * 0.45)
+    horns = [tube("3A1A5A", [top + Vector((s * 0.28 * k, 0, -0.05 * k)), top + Vector((s * 0.42 * k, 0, 0.3 * k)),
+                             top + Vector((s * 0.3 * k, 0.05, 0.55 * k))], lambda i: 0.09 * k - i * 0.03 * k) for s in (-1, 1)]
+    a.part("Zone", horns, parent=parent)
+    wisps = [sphere("B45AFF", loc=top + Vector((s * 0.3 * k, 0.05, 0.6 * k)), scale=0.07 * k) for s in (-1, 1)]
+    a.part("Zone_Glow", wisps, parent="Zone", glow="B45AFF")
+
+
+def acc_magma(a):
+    top, w, parent = _top(a)
+    k = max(0.35, w * 0.45)
+    flame = [cone("FF7A1E", loc=top + Vector((0, 0, 0.3 * k)), r=0.22 * k, h=0.7 * k, verts=8),
+             cone("FFD23C", loc=top + Vector((0.12 * k, -0.05, 0.22 * k)), r=0.13 * k, h=0.45 * k, verts=8, rot=(0, 18, 0)),
+             cone("FFB43C", loc=top + Vector((-0.13 * k, 0.03, 0.2 * k)), r=0.12 * k, h=0.4 * k, verts=8, rot=(0, -20, 0))]
+    a.part("Zone_Glow", flame, parent=parent, glow="FF9A2E")
+
+
+def acc_frost(a):
+    top, w, parent = _top(a)
+    k = max(0.35, w * 0.45)
+    hat = sphere("7AB4FF", loc=top + Vector((0, 0, -0.08 * k)), scale=(0.42 * k, 0.42 * k, 0.3 * k))
+    deform(hat, lambda v: Vector((v.x, v.y, max(v.z, top.z - 0.08 * k))))
+    band = torus("FFFFFF", loc=top + Vector((0, 0, -0.06 * k)), R=0.4 * k, r=0.08 * k, seg=20)
+    pom = sphere("FFFFFF", loc=top + Vector((0, 0, 0.3 * k)), scale=0.13 * k)
+    flakes = [ico("E6F8FF", loc=top + Vector((s * 0.2 * k, -0.33 * k, 0.07 * k)), scale=(0.06 * k, 0.02, 0.06 * k), sub=1) for s in (-1, 1)]
+    a.part("Zone", [hat, band, pom] + flakes, parent=parent)
+
+
+ZONE_SETS = [
+    ("Crystal", "78DCFF", 0.5, 0.15, acc_crystal, ["Blip", "MoonMite", "Glorp", "CraterCrab", "Orbo", "LunarSlug", "CometCat"]),
+    ("Shadow", "965AE6", 0.6, -0.25, acc_shadow, ["Dusty", "Zib", "Nebby", "Zorblax", "QuasarPup", "StarWhale", "GalaxyGus"]),
+    ("Magma", "FF6E32", 0.55, 0.0, acc_magma, ["Blip", "CraterCrab", "LunarSlug", "CometCat", "AstroAxolotl", "EclipseDragon", "VoidKing"]),
+    ("Frost", "BEEBFF", 0.55, 0.25, acc_frost, ["MoonMite", "Glorp", "Orbo", "QuasarPup", "StarWhale", "NovaQueen", "EclipseDragon"]),
+]
+
+
+def variant(prefix, target, k, light, acc, base):
+    def build():
+        a = ALL[base]()
+        a.name = f"Alien_{prefix}{base}"
+        a.colors = [c if c in KEEP else _tint(c, target, k, light) for c in a.colors]
+        use(a)
+        acc(a)
+        return a
+    return build
+
+
+VARIANTS = {}
+for _prefix, _target, _k, _light, _acc, _bases in ZONE_SETS:
+    for _base in _bases:
+        VARIANTS[_prefix + _base] = variant(_prefix, _target, _k, _light, _acc, _base)

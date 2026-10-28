@@ -33,6 +33,8 @@ World.Plaza = { Min = Vector2.new(-62, 150), Max = Vector2.new(62, 198) }
 World.Garage = CFrame.lookAt(Vector3.new(-34, 0, 178), Vector3.new(-34, 0, 100))
 World.GarageSpawn = CFrame.lookAt(Vector3.new(-34, 0, 158), Vector3.new(-34, 0, 100))
 World.UpgradeStation = CFrame.lookAt(Vector3.new(34, 0, 178), Vector3.new(34, 0, 100))
+-- Event sign-up board in the middle of the plaza, facing the field.
+World.EventBoard = CFrame.lookAt(Vector3.new(0, 0, 170), Vector3.new(0, 0, 100))
 
 World.BaseCount = 8
 World.BaseSize = Vector2.new(92, 88) -- width (local X), depth (local Z)

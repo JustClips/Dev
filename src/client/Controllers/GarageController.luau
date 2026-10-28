@@ -65,7 +65,7 @@ local function render()
 			elseif rented then "Rented for this run"
 			elseif locked then `Needs Rebirth {car.RequiredRebirths} · {Format.cash(car.Price)}`
 			else Format.cash(car.Price)
-		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.image("Icon_Vehicle")
+		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.carIcon(car.Id)
 
 		local main = row:FindFirstChild("Main") :: TextButton
 		if owned or rented then

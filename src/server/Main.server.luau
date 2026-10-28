@@ -28,8 +28,10 @@ local ORDER = {
 	"RebirthService",
 	"EventService",
 	"ShopService",
+	"RewardService",
 	"OfferService",
 	"LeaderboardService",
+	"DustBunnyService",
 	"SweepService",
 }
 

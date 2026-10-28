@@ -16,6 +16,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
+local Rewards = require(Shared.Config.Rewards)
 local Tools = require(Shared.Config.Tools)
 local Zones = require(Shared.Config.Zones)
 
@@ -186,7 +187,7 @@ local function render(data)
 		local affordable = BigNum.gte(data.Cash, def.Price)
 		el.NextTool.Visible = true
 		el.NextToolName.Text = def.Name
-		el.NextToolIcon.Image = AssetLibrary.image("Icon_Tool")
+		el.NextToolIcon.Image = AssetLibrary.toolIcon(def.Id)
 		Ui.setText(el.NextToolButton, `Buy {Format.cash(def.Price)}`)
 		setButton(el.NextToolButton, affordable, GREEN)
 		el.NextToolHint.Text = `Sweeps {def.Radius} wide, holds {Format.number(def.Capacity)}`
@@ -250,6 +251,10 @@ local function renderBoosts()
 			table.insert(entries, { `{tier}x Server Luck  {Format.time(ends - now)}`, "Icon_Luck" })
 		end
 	end
+	local event = Rewards.activeEvent(now)
+	if event then
+		table.insert(entries, { `{event.Name}: {event.LuckMult}x Luck  {Format.time(event.EndsAt - now)}`, "Icon_Event" })
+	end
 	local data = State.data
 	if data and (data.Boosts.Cash2x or 0) > now then
 		table.insert(entries, { `2x Cash  {Format.time(data.Boosts.Cash2x - now)}`, "Icon_Cash" })
@@ -293,7 +298,19 @@ local function layoutForTouch()
 	if layout then
 		layout.VerticalAlignment = Enum.VerticalAlignment.Top
 	end
-	el.Rail.Position = UDim2.new(0, 14, 0.58, 0)
+	-- Phones are short: the rail becomes two columns under the wallet.
+	local list = el.Rail:FindFirstChildOfClass("UIListLayout")
+	if list then
+		list:Destroy()
+	end
+	local grid = Instance.new("UIGridLayout")
+	grid.CellSize = UDim2.fromOffset(84, 84)
+	grid.CellPadding = UDim2.fromOffset(12, 26)
+	grid.SortOrder = Enum.SortOrder.LayoutOrder
+	grid.Parent = el.Rail
+	el.Rail.Size = UDim2.fromOffset(180, 330)
+	el.Rail.AnchorPoint = Vector2.new(0, 0)
+	el.Rail.Position = UDim2.new(0, 14, 0, math.floor(6 + 140 * Ui.scale()))
 	el.SweepButton.Visible = true
 	local boosts = (el.BoostTemplate :: Instance).Parent :: Frame
 	boosts.AnchorPoint = Vector2.new(1, 0)
@@ -332,10 +349,28 @@ function HudController:Init(controllers)
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
 	el.Hint = Ui.find(hud, "Hint")
 	el.HintText = Ui.find(hud, "Hint.Text")
+	el.Combo = Ui.find(hud, "Combo")
+	el.ComboFill = Ui.find(hud, "Combo.Bar.Fill")
+	el.ComboLabel = Ui.find(hud, "Combo.Label")
 	el.ZoneRows = {}
 	for _, zoneId in ZONE_ORDER do
 		el.ZoneRows[zoneId] = Ui.find(hud, "ZonePicker.List.Zone_" .. zoneId)
 	end
+end
+
+-- Sweep combo meter (x1 -> x3 cash). Shows while you keep sweeping, hides after a pause.
+local comboToken = 0
+function HudController:SetCombo(combo: number)
+	comboToken += 1
+	local token = comboToken
+	el.Combo.Visible = combo > 1.05
+	el.ComboLabel.Text = string.format("COMBO x%.1f", combo)
+	el.ComboFill.Size = UDim2.fromScale(math.clamp((combo - 1) / 2, 0, 1), 1)
+	task.delay(1.8, function()
+		if comboToken == token then
+			el.Combo.Visible = false
+		end
+	end)
 end
 
 function HudController:GetSweepButton(): GuiButton

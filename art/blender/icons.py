@@ -1,7 +1,7 @@
 """Render the UI icon set: chunky 3D objects with a thick navy outline on transparent PNGs.
 
 One look for every icon (same outline weight, camera, light), so the set reads as a set.
-Usage: python icons.py [filter ...]  -> art/out/icons/<name>.png (256x256)
+Usage: python icons.py [filter ...]  -> art/out/icons/<name>.png (512x512, cropped to fill)
 """
 import math
 import os
@@ -113,8 +113,40 @@ def render(name, objs, yaw=-25, pitch=18, outline_w=None, zoom=1.0):
     so.rotation_euler = (math.radians(40), math.radians(-15), math.radians(-35))
     scene.collection.objects.link(so)
     os.makedirs(OUT, exist_ok=True)
-    scene.render.filepath = os.path.join(OUT, f"{name}.png")
+    path = os.path.join(OUT, f"{name}.png")
+    scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
+    crop_to_fill(path)
+
+
+def crop_to_fill(path, pad=0.03):
+    """Crops the render to the icon's visible pixels (plus a thin margin) and scales it
+    back to SIZE, so every icon fills its frame and reads big in the UI."""
+    import numpy as np
+    img = bpy.data.images.load(path)
+    w, h = img.size
+    px = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)
+    ys, xs = np.nonzero(px[:, :, 3] > 0.02)
+    if len(xs) == 0:
+        return
+    x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
+    side = int(max(x1 - x0, y1 - y0) * (1 + pad * 2))
+    cx, cy = (x0 + x1) // 2, (y0 + y1) // 2
+    out = np.zeros((side, side, 4), dtype=np.float32)
+    sx0, sy0 = cx - side // 2, cy - side // 2
+    for oy in range(side):
+        yy = sy0 + oy
+        if 0 <= yy < h:
+            lo, hi = max(sx0, 0), min(sx0 + side, w)
+            out[oy, lo - sx0:hi - sx0] = px[yy, lo:hi]
+    crop = bpy.data.images.new(f"{os.path.basename(path)}_crop", side, side, alpha=True)
+    crop.pixels[:] = out.ravel()
+    crop.scale(SIZE, SIZE)
+    crop.filepath_raw = path
+    crop.file_format = "PNG"
+    crop.save()
+    bpy.data.images.remove(crop)
+    bpy.data.images.remove(img)
 
 
 # --------------------------------------------------------------------- icon scenes
@@ -435,9 +467,125 @@ ICONS = {
 }
 
 
+# ---------------------------------------------------------------- tools, cars, potions
+
+def tool_icon(tool_id):
+    def build():
+        a = new(f"Tool_{tool_id}")
+        props.TOOLS[tool_id][0](a)
+        for p in a.parts.values():
+            p["obj"].rotation_euler = (math.radians(-90), math.radians(-40), 0)
+        bpy.context.view_layer.update()
+        return a, {"yaw": 0, "pitch": 6}
+    return build
+
+
+def car_icon(car_id):
+    def build():
+        a = props.VEHICLES[car_id]()
+        a.name = f"Icon_Car_{car_id}"
+        return a, {"yaw": -38, "pitch": 20}
+    return build
+
+
+def potion(name, liquid, symbol):
+    def build():
+        a = new(name)
+        flask = sphere("E6F5FF", loc=(0, 0, 0), scale=1.0, seg=24, rings=14)
+        deform(flask, lambda v: v if v.z > 0.28 else v * 0.95)
+        juice = sphere(liquid, loc=(0, 0, 0), scale=0.995, seg=24, rings=14)
+        deform(juice, lambda v: Vector((v.x, v.y, min(v.z, 0.3))))
+        surface = cyl(aliens.shade(liquid, 0.3), loc=(0, 0, 0.3), r=0.95, h=0.02, verts=24)
+        shine = sphere("FFFFFF", loc=(-0.45, -0.75, 0.35), scale=(0.16, 0.08, 0.28))
+        neck = cyl("E6F5FF", loc=(0, 0, 1.15), r=0.32, h=0.6, verts=16)
+        rim = torus("E6F5FF", loc=(0, 0, 1.42), R=0.34, r=0.08, seg=18, mseg=6)
+        cork = cyl("B4783C", loc=(0, 0, 1.6), r=0.27, r2=0.32, h=0.4, verts=14)
+        bubbles = [sphere(aliens.shade(liquid, 0.4), loc=(x, -0.86, z), scale=r) for x, z, r in ((0.3, -0.3, 0.1), (0.05, 0.05, 0.07), (-0.2, -0.45, 0.08))]
+        a.part("Body", [flask, juice, surface, shine, neck, rim, cork] + bubbles + symbol())
+        return a, {"yaw": -10, "pitch": 8}
+    return build
+
+
+def sym_clover():
+    leaves = [sphere("3CDC5A", loc=(math.cos(t) * 0.24, -0.98, -0.15 + math.sin(t) * 0.24), scale=(0.2, 0.05, 0.2)) for t in [i * math.pi / 2 + math.pi / 4 for i in range(4)]]
+    return leaves
+
+
+def sym_coin():
+    return [cyl("FFD23C", loc=(0, -0.98, -0.15), r=0.38, h=0.08, rot=(90, 0, 0), verts=20),
+            box("E0A020", loc=(0, -1.03, -0.15), size=(0.12, 0.04, 0.4))]
+
+
+def sym_bolt():
+    o = bolt_mesh("FFE36E", depth=0.08)
+    o.scale = (0.35, 0.35, 0.35)
+    o.location = (0, -0.98, -0.15)
+    bpy.context.view_layer.update()
+    bpy.ops.object.select_all(action="DESELECT")
+    o.select_set(True)
+    bpy.context.view_layer.objects.active = o
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    return [o]
+
+
+def sym_egg():
+    return [sphere("FFF5DC", loc=(0, -0.95, -0.15), scale=(0.24, 0.12, 0.32)),
+            sphere("FF9A3C", loc=(0.08, -1.05, -0.05), scale=(0.06, 0.03, 0.06))]
+
+
+def ic_daily():
+    a = new("Daily")
+    page = box("FFFFFF", loc=(0, 0, 0), size=(2.0, 0.4, 1.9), bevel=0.12)
+    top = box("FF4A5A", loc=(0, 0, 0.85), size=(2.05, 0.45, 0.55), bevel=0.12)
+    rings = [torus("5A6478", loc=(x, 0, 1.15), R=0.16, r=0.05, rot=(90, 0, 0), seg=14, mseg=5) for x in (-0.55, 0.55)]
+    grid = [box("C8D2E6", loc=(-0.6 + (i % 3) * 0.6, -0.22, 0.25 - (i // 3) * 0.45), size=(0.42, 0.04, 0.3)) for i in range(6)]
+    star = star_mesh("FFD23C", r1=0.45, r2=0.2, depth=0.18)
+    star.location = (0.55, -0.35, -0.35)
+    a.part("Body", [page, top, star] + rings + grid)
+    return a, {"yaw": -14, "pitch": 8}
+
+
+def ic_group():
+    a = new("Group")
+    pieces = []
+    for x, col, sz in ((-0.75, "5AB4FF", 0.8), (0.75, "FF8C3C", 0.8), (0, "5AE650", 1.0)):
+        y = -0.3 if x == 0 else 0.2
+        pieces.append(box("FFD23C", loc=(x, y, 0.9 * sz), size=(0.7 * sz, 0.7 * sz, 0.7 * sz), bevel=0.12 * sz))
+        pieces.append(box(col, loc=(x, y, 0.0), size=(1.0 * sz, 0.6 * sz, 0.95 * sz), bevel=0.15 * sz))
+        pieces += [sphere(DARKC, loc=(x + s * 0.13 * sz, y - 0.36 * sz, 0.95 * sz), scale=0.06 * sz) for s in (-1, 1)]
+    a.part("Body", pieces)
+    return a, {"yaw": -8, "pitch": 10}
+
+
+def ic_event():
+    a = new("Event")
+    t = box("B45AFF", loc=(0, 0, 0), size=(2.4, 0.3, 1.4), bevel=0.15)
+    holes = [cyl("7A2ACD", loc=(x, 0, 0), r=0.22, h=0.34, rot=(90, 0, 0), verts=14) for x in (-1.2, 1.2)]
+    star = star_mesh("FFD23C", r1=0.5, r2=0.22, depth=0.2)
+    star.location = (0, -0.2, 0)
+    dots = [box("FFFFFF", loc=(0.75, -0.17, z), size=(0.06, 0.04, 0.16)) for z in (-0.45, -0.15, 0.15, 0.45)]
+    a.part("Body", [t, star] + holes + dots)
+    return a, {"yaw": -10, "pitch": 8}
+
+
+DARKC = "1B1530"
+for _t in props.TOOLS:
+    ICONS[f"Tool_{_t}"] = tool_icon(_t)
+for _c in props.VEHICLES:
+    ICONS[f"Car_{_c}"] = car_icon(_c)
+ICONS.update({
+    "Potion": potion("Potion", "B45AFF", lambda: []),
+    "PotionLuck": potion("PotionLuck", "5AE650", sym_clover),
+    "PotionCash": potion("PotionCash", "FFC83C", sym_coin),
+    "PotionSpeed": potion("PotionSpeed", "5AB4FF", sym_bolt),
+    "PotionHatch": potion("PotionHatch", "FF7AB4", sym_egg),
+    "Daily": ic_daily, "Group": ic_group, "Event": ic_event,
+})
+
+
 def main(filters):
     for name, fn in ICONS.items():
-        if filters and name not in filters:
+        if filters and not any(name.startswith(f) for f in filters):
             continue
         a, opts = fn()
         objs = finish(a)

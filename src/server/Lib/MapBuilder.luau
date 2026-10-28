@@ -247,7 +247,10 @@ local function studs(p: BasePart, color: Color3, studsPerTile: number?)
 	}, p)
 end
 
-local FLOOR_GREY = Color3.fromRGB(120, 126, 150)
+local WOOD = Color3.fromRGB(196, 142, 92)
+local WOOD_DARK = Color3.fromRGB(128, 84, 52)
+local DIRT = Color3.fromRGB(150, 118, 86)
+local LANTERN = Color3.fromRGB(255, 214, 140)
 
 local function lighten(c: Color3, t: number): Color3
 	return c:Lerp(WHITE, t)
@@ -406,50 +409,68 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 	local w, d = World.BaseSize.X, World.BaseSize.Y
 	local floorY = World.BaseFloorY
 
-	-- Muted floor tinted with the base colour (a near-white floor glared in daylight).
+	-- Wooden deck: warm planks, darker wood trim, log posts with lanterns and a rail
+	-- fence. The base colour only shows on the rails, post bands and lantern light.
 	-- Parts that sit on the floor stay at least 0.1 stud above it so nothing flickers.
-	local floor = block(model, "Floor", Vector3.new(w, floorY + 1, d), cf * CFrame.new(0, -(floorY + 1) / 2, 0), color:Lerp(FLOOR_GREY, 0.62))
-	studs(floor, color:Lerp(WHITE, 0.35))
-	-- coloured border band (0.1 proud of the floor) and a ramp along the front edge
+	block(model, "Floor", Vector3.new(w, floorY + 1, d), cf * CFrame.new(0, -(floorY + 1) / 2, 0), WOOD, M.WoodPlanks)
 	local trimH = floorY + 1.1
 	for _, side in { -1, 1 } do
-		block(model, "Trim", Vector3.new(2, trimH, d), cf * CFrame.new(side * (w / 2 - 1), -(floorY + 1) / 2 + 0.05, 0), color)
+		block(model, "Trim", Vector3.new(2, trimH, d), cf * CFrame.new(side * (w / 2 - 1), -(floorY + 1) / 2 + 0.05, 0), WOOD_DARK, M.Wood)
 	end
-	block(model, "Trim", Vector3.new(w - 4, trimH, 2), cf * CFrame.new(0, -(floorY + 1) / 2 + 0.05, d / 2 - 1), color)
-	block(model, "Trim", Vector3.new(w - 4, trimH, 2), cf * CFrame.new(0, -(floorY + 1) / 2 + 0.05, -d / 2 + 1), color)
+	block(model, "Trim", Vector3.new(w - 4, trimH, 2), cf * CFrame.new(0, -(floorY + 1) / 2 + 0.05, d / 2 - 1), WOOD_DARK, M.Wood)
+	block(model, "Trim", Vector3.new(w - 4, trimH, 2), cf * CFrame.new(0, -(floorY + 1) / 2 + 0.05, -d / 2 + 1), WOOD_DARK, M.Wood)
 	-- (a WedgePart's high side is its +Z, here the platform edge)
 	make("WedgePart", {
 		Name = "Ramp",
 		Size = Vector3.new(w, floorY, 3),
 		CFrame = cf * CFrame.new(0, -floorY / 2, -d / 2 - 1.5),
-		Color = color,
+		Color = WOOD_DARK,
+		Material = M.WoodPlanks,
 	}, model)
-	-- walkway from the arch to the hatchery
-	local path = block(model, "Path", Vector3.new(10, 0.2, 13), cf * CFrame.new(0, 0.1, -35), lighten(INK, 0.35))
+	-- dirt walkway from the arch to the hatchery
+	local path = block(model, "Path", Vector3.new(10, 0.2, 13), cf * CFrame.new(0, 0.1, -35), DIRT, M.Ground)
 	path.CanCollide = false
-	-- moss park
+	-- grass park
 	local pMin, pMax = World.Base.ParkMin, World.Base.ParkMax
 	local parkCenter = (pMin + pMax) / 2
 	local park = block(model, "Park", Vector3.new(pMax.X - pMin.X, 0.3, pMax.Y - pMin.Y), cf * CFrame.new(parkCenter.X, 0.05, parkCenter.Y), World.TerrainColors.Grass:Lerp(Color3.new(0, 0, 0), 0.15), M.Grass)
 	park.CanCollide = false
-	-- corner pillars with a light on top
+	-- corner log posts with a lantern on top
 	for _, x in { -1, 1 } do
 		for _, z in { -1, 1 } do
 			local at = cf * CFrame.new(x * (w / 2 - 1.5), 0, z * (d / 2 - 1.5))
-			block(model, "Pillar", Vector3.new(2.6, 7, 2.6), at * CFrame.new(0, 3.5, 0), SURFACE)
-			block(model, "PillarBand", Vector3.new(2.8, 0.8, 2.8), at * CFrame.new(0, 1.2, 0), color)
-			local cap = glow(model, "PillarLight", Vector3.new(2.2, 1, 2.2), at * CFrame.new(0, 7.5, 0), color)
-			light(cap, color, 14, 0.6)
+			make("Part", {
+				Name = "Pillar",
+				Shape = Enum.PartType.Cylinder,
+				Size = Vector3.new(7, 2.2, 2.2),
+				CFrame = at * CFrame.new(0, 3.5, 0) * CFrame.Angles(0, 0, math.rad(90)),
+				Color = WOOD_DARK,
+				Material = M.Wood,
+			}, model)
+			block(model, "PillarBand", Vector3.new(2.5, 0.6, 2.5), at * CFrame.new(0, 1.2, 0), color, M.SmoothPlastic)
+			block(model, "LanternTop", Vector3.new(2.2, 0.4, 2.2), at * CFrame.new(0, 8.3, 0), WOOD_DARK, M.Wood)
+			local cap = glow(model, "PillarLight", Vector3.new(1.4, 1.2, 1.4), at * CFrame.new(0, 7.5, 0), LANTERN)
+			light(cap, LANTERN, 16, 0.7)
 		end
 	end
-	-- low walls on the sides and back (the front stays open)
+	-- wooden rail fence on the sides and back (the front stays open)
 	local wallH = 3
 	for _, side in { -1, 1 } do
-		block(model, "Wall", Vector3.new(0.8, wallH, d - 5), cf * CFrame.new(side * (w / 2 - 0.4), wallH / 2, 0), SURFACE)
-		block(model, "WallRail", Vector3.new(1.1, 0.5, d - 5), cf * CFrame.new(side * (w / 2 - 0.4), wallH + 0.25, 0), color)
+		for _, y in { 1, 2.4 } do
+			block(model, "Wall", Vector3.new(0.5, 0.5, d - 5), cf * CFrame.new(side * (w / 2 - 0.4), y, 0), WOOD, M.Wood)
+		end
+		block(model, "WallRail", Vector3.new(0.8, 0.4, d - 5), cf * CFrame.new(side * (w / 2 - 0.4), wallH + 0.2, 0), color)
+		for k = -4, 4 do
+			block(model, "Post", Vector3.new(0.7, wallH, 0.7), cf * CFrame.new(side * (w / 2 - 0.4), wallH / 2, k * (d - 6) / 8), WOOD_DARK, M.Wood)
+		end
 	end
-	block(model, "Wall", Vector3.new(w - 5, wallH, 0.8), cf * CFrame.new(0, wallH / 2, d / 2 - 0.4), SURFACE)
-	block(model, "WallRail", Vector3.new(w - 5, 0.5, 1.1), cf * CFrame.new(0, wallH + 0.25, d / 2 - 0.4), color)
+	for _, y in { 1, 2.4 } do
+		block(model, "Wall", Vector3.new(w - 5, 0.5, 0.5), cf * CFrame.new(0, y, d / 2 - 0.4), WOOD, M.Wood)
+	end
+	block(model, "WallRail", Vector3.new(w - 5, 0.4, 0.8), cf * CFrame.new(0, wallH + 0.2, d / 2 - 0.4), color)
+	for k = -4, 4 do
+		block(model, "Post", Vector3.new(0.7, wallH, 0.7), cf * CFrame.new(k * (w - 6) / 8, wallH / 2, d / 2 - 0.4), WOOD_DARK, M.Wood)
+	end
 	-- name sign above the arch, facing the field
 	local arch = World.Base.Arch
 	local s = sign(model, "NameSign", cf * CFrame.new(arch + Vector3.new(0, 15.4, 0)), 19, 4.6, color, "Free Base", "Claim it by joining!", true)
@@ -554,6 +575,36 @@ local function plazaScreen()
 	}, gui)
 end
 
+-- Event board in the plaza: a big sign (RewardService writes the event name and the
+-- countdown on it), a sign-up kiosk with a prompt, and a floating event icon.
+local eventSign: Sign? = nil
+
+local function eventBoard()
+	local cf = World.EventBoard
+	local model = make("Model", { Name = "EventBoard" }, structures)
+	local pink = Color3.fromRGB(255, 120, 230)
+	block(model, "Floor", Vector3.new(20, 0.6, 10), cf * CFrame.new(0, 0.3, 0), STEEL, M.DiamondPlate)
+	glow(model, "FloorTrim", Vector3.new(20.4, 0.2, 0.4), cf * CFrame.new(0, 0.62, -5), pink)
+	eventSign = signOnPosts(model, "EventSign", cf * CFrame.new(0, 0, 3), 18, 7, GOLD, "EVENTS", "Sign up here!")
+	local kiosk = block(model, "Kiosk", Vector3.new(4, 3.6, 2), cf * CFrame.new(0, 2.4, -1.5), SURFACE)
+	studs(kiosk, SURFACE, 3)
+	glow(model, "KioskTop", Vector3.new(4.4, 0.4, 2.4), cf * CFrame.new(0, 4.4, -1.5), pink)
+	prompt(kiosk, "Event", "Sign up", "Event")
+	local holo = block(model, "Hologram", Vector3.new(1, 1, 1), cf * CFrame.new(0, 7.2, -1.5), WHITE, nil, {
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+	})
+	local bb = make("BillboardGui", { Size = UDim2.fromScale(4, 4), LightInfluence = 0, MaxDistance = 160 }, holo)
+	make("ImageLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = AssetLibrary.image("Icon_Event") }, bb)
+	holo:SetAttribute("Bob", true)
+end
+
+function MapBuilder.getEventSign(): Sign?
+	return eventSign
+end
+
 -- Ramps where a corridor changes height (terrain under them is carved by buildTerrain).
 local function corridorRamps()
 	local model = make("Model", { Name = "Ramps" }, structures)
@@ -594,6 +645,7 @@ function MapBuilder.buildStructures()
 	garage()
 	upgradeStation()
 	plazaScreen()
+	eventBoard()
 	for i = 1, World.BaseCount do
 		MapBuilder.buildBaseStructure(i)
 	end

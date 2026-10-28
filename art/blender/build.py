@@ -20,6 +20,8 @@ OUT = os.path.join(HERE, "..", "out")
 def builders():
     for k, fn in aliens.ALL.items():
         yield f"Alien_{k}", fn
+    for k, fn in aliens.VARIANTS.items():
+        yield f"Alien_{k}", fn
     for k, fn in props.ALL.items():
         yield k, fn
 

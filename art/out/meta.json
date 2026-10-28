@@ -9,7 +9,7 @@
    "min": [
     -1.08,
     -0.011,
-    -1.385
+    -1.399
    ]
   },
   "kind": "alien",
@@ -125,19 +125,19 @@
     "parent": "Body"
    }
   },
-  "tris": 9912
+  "tris": 12908
  },
  "Alien_Blip": {
   "bounds": {
    "max": [
-    0.786,
+    0.79,
     1.78,
-    0.726
+    0.73
    ],
    "min": [
-    -0.786,
-    0.04,
-    -0.835
+    -0.79,
+    -0.02,
+    -0.822
    ]
   },
   "kind": "alien",
@@ -173,7 +173,7 @@
     "parent": "Body"
    }
   },
-  "tris": 4344
+  "tris": 8308
  },
  "Alien_CometCat": {
   "bounds": {
@@ -185,7 +185,7 @@
    "min": [
     -0.55,
     -0.012,
-    -1.234
+    -1.209
    ]
   },
   "kind": "alien",
@@ -272,7 +272,7 @@
     "parent": "Tail"
    }
   },
-  "tris": 6794
+  "tris": 9098
  },
  "Alien_Cosmo": {
   "bounds": {
@@ -357,13 +357,13 @@
     "parent": "Body"
    }
   },
-  "tris": 6228
+  "tris": 7248
  },
  "Alien_CraterCrab": {
   "bounds": {
    "max": [
     1.52,
-    1.72,
+    1.734,
     0.7
    ],
    "min": [
@@ -471,19 +471,602 @@
     "parent": "Body"
    }
   },
-  "tris": 6318
+  "tris": 8806
+ },
+ "Alien_CrystalBlip": {
+  "bounds": {
+   "max": [
+    0.79,
+    1.78,
+    0.73
+   ],
+   "min": [
+    -0.79,
+    -0.02,
+    -0.822
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_CrystalBlip",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": "FFF27A",
+    "joint": [
+     -0.25,
+     1.18,
+     0.05
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": "FFF27A",
+    "joint": [
+     0.25,
+     1.18,
+     0.05
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "7AE6FF",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 8332
+ },
+ "Alien_CrystalCometCat": {
+  "bounds": {
+   "max": [
+    0.55,
+    2.318,
+    1.42
+   ],
+   "min": [
+    -0.55,
+    -0.012,
+    -1.209
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_CrystalCometCat",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.0,
+     -0.45
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.27,
+     0.6,
+     0.478
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.27,
+     0.6,
+     0.478
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.27,
+     0.6,
+     -0.278
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.27,
+     0.6,
+     -0.278
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.9,
+     0.72
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "FFB14A",
+    "joint": null,
+    "material": null,
+    "parent": "Tail"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "7AE6FF",
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 9122
+ },
+ "Alien_CrystalCraterCrab": {
+  "bounds": {
+   "max": [
+    1.52,
+    1.869,
+    0.7
+   ],
+   "min": [
+    -1.52,
+    -0.02,
+    -1.425
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_CrystalCraterCrab",
+  "parts": {
+   "ArmL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.8,
+     0.75,
+     -0.3
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "ArmR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.8,
+     0.75,
+     -0.3
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.25,
+     1.0,
+     -0.45
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.25,
+     1.0,
+     -0.45
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.675,
+     0.6,
+     0.35
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.675,
+     0.6,
+     0.35
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.765,
+     0.6,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.765,
+     0.6,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "7AE6FF",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 8830
+ },
+ "Alien_CrystalGlorp": {
+  "bounds": {
+   "max": [
+    0.944,
+    2.336,
+    0.897
+   ],
+   "min": [
+    -0.944,
+    -0.02,
+    -0.972
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_CrystalGlorp",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.35,
+     1.45,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.35,
+     1.45,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "7AE6FF",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 8848
+ },
+ "Alien_CrystalLunarSlug": {
+  "bounds": {
+   "max": [
+    0.6,
+    1.54,
+    1.45
+   ],
+   "min": [
+    -0.6,
+    -0.01,
+    -1.3
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_CrystalLunarSlug",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.2,
+     0.95,
+     -0.55
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.2,
+     0.95,
+     -0.55
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.4,
+     0.25
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "9BFFF5",
+    "joint": null,
+    "material": null,
+    "parent": "Tail"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "7AE6FF",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 5592
+ },
+ "Alien_CrystalMoonMite": {
+  "bounds": {
+   "max": [
+    0.722,
+    1.45,
+    0.8
+   ],
+   "min": [
+    -0.722,
+    -0.02,
+    -1.083
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_CrystalMoonMite",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": "9EF0FF",
+    "joint": [
+     -0.15,
+     0.95,
+     -0.72
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": "9EF0FF",
+    "joint": [
+     0.15,
+     0.95,
+     -0.72
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.62,
+     -0.38
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.36,
+     0.55,
+     0.4
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.36,
+     0.55,
+     0.4
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.36,
+     0.55,
+     -0.2
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.36,
+     0.55,
+     -0.2
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "7AE6FF",
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 9612
+ },
+ "Alien_CrystalOrbo": {
+  "bounds": {
+   "max": [
+    1.251,
+    2.982,
+    1.208
+   ],
+   "min": [
+    -1.251,
+    0.75,
+    -1.208
+   ]
+  },
+  "float": true,
+  "kind": "alien",
+  "name": "Alien_CrystalOrbo",
+  "parts": {
+   "ArmL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.8,
+     1.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "ArmR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.8,
+     1.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow": {
+    "collide": false,
+    "glow": "FFE36E",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "7AE6FF",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 4064
  },
  "Alien_Dusty": {
   "bounds": {
    "max": [
     0.816,
     2.22,
-    0.74
+    0.713
    ],
    "min": [
     -0.816,
     -0.01,
-    -0.871
+    -0.854
    ]
   },
   "kind": "alien",
@@ -541,7 +1124,7 @@
     "parent": "Body"
    }
   },
-  "tris": 4520
+  "tris": 6148
  },
  "Alien_EclipseDragon": {
   "bounds": {
@@ -662,7 +1245,668 @@
     "parent": "Body"
    }
   },
-  "tris": 7992
+  "tris": 11024
+ },
+ "Alien_FrostEclipseDragon": {
+  "bounds": {
+   "max": [
+    2.057,
+    2.836,
+    2.425
+   ],
+   "min": [
+    -2.057,
+    -0.016,
+    -1.85
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_FrostEclipseDragon",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow": {
+    "collide": false,
+    "glow": "FFB43C",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.2,
+     -0.6
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.372,
+     0.85,
+     0.688
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.372,
+     0.85,
+     0.688
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.372,
+     0.85,
+     -0.488
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.372,
+     0.85,
+     -0.488
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.0,
+     0.9
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.5,
+     1.5,
+     -0.1
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.5,
+     1.5,
+     -0.1
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 12264
+ },
+ "Alien_FrostGlorp": {
+  "bounds": {
+   "max": [
+    0.944,
+    2.336,
+    0.897
+   ],
+   "min": [
+    -0.944,
+    -0.02,
+    -0.972
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_FrostGlorp",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.35,
+     1.45,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.35,
+     1.45,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 10064
+ },
+ "Alien_FrostMoonMite": {
+  "bounds": {
+   "max": [
+    0.722,
+    1.45,
+    0.8
+   ],
+   "min": [
+    -0.722,
+    -0.02,
+    -1.083
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_FrostMoonMite",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": "9EF0FF",
+    "joint": [
+     -0.15,
+     0.95,
+     -0.72
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": "9EF0FF",
+    "joint": [
+     0.15,
+     0.95,
+     -0.72
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.62,
+     -0.38
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.36,
+     0.55,
+     0.4
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.36,
+     0.55,
+     0.4
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.36,
+     0.55,
+     -0.2
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.36,
+     0.55,
+     -0.2
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 10828
+ },
+ "Alien_FrostNovaQueen": {
+  "bounds": {
+   "max": [
+    1.113,
+    3.67,
+    0.85
+   ],
+   "min": [
+    -1.113,
+    0.835,
+    -0.85
+   ]
+  },
+  "float": true,
+  "kind": "alien",
+  "name": "Alien_FrostNovaQueen",
+  "parts": {
+   "ArmL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3,
+     2.35,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "ArmR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3,
+     2.35,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     2.45,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Head_Glow": {
+    "collide": false,
+    "glow": "FFF08C",
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   },
+   "WingL": {
+    "collide": false,
+    "glow": "B4F0FF",
+    "joint": [
+     -0.15,
+     2.25,
+     0.25
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingR": {
+    "collide": false,
+    "glow": "B4F0FF",
+    "joint": [
+     0.15,
+     2.25,
+     0.25
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 9608
+ },
+ "Alien_FrostOrbo": {
+  "bounds": {
+   "max": [
+    1.251,
+    2.779,
+    1.208
+   ],
+   "min": [
+    -1.251,
+    0.75,
+    -1.208
+   ]
+  },
+  "float": true,
+  "kind": "alien",
+  "name": "Alien_FrostOrbo",
+  "parts": {
+   "ArmL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.8,
+     1.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "ArmR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.8,
+     1.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow": {
+    "collide": false,
+    "glow": "FFE36E",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 5280
+ },
+ "Alien_FrostQuasarPup": {
+  "bounds": {
+   "max": [
+    0.722,
+    2.163,
+    1.26
+   ],
+   "min": [
+    -0.722,
+    -0.013,
+    -1.39
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_FrostQuasarPup",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.45,
+     1.72,
+     -0.7
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "EarL_Glow": {
+    "collide": false,
+    "glow": "5AFFF0",
+    "joint": null,
+    "material": null,
+    "parent": "EarL"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.45,
+     1.72,
+     -0.7
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "EarR_Glow": {
+    "collide": false,
+    "glow": "5AFFF0",
+    "joint": null,
+    "material": null,
+    "parent": "EarR"
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.05,
+     -0.5
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3,
+     0.62,
+     0.52
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3,
+     0.62,
+     0.52
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3,
+     0.62,
+     -0.32
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3,
+     0.62,
+     -0.32
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.0,
+     0.8
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 12472
+ },
+ "Alien_FrostStarWhale": {
+  "bounds": {
+   "max": [
+    1.582,
+    3.468,
+    2.291
+   ],
+   "min": [
+    -1.582,
+    1.3,
+    -1.534
+   ]
+  },
+  "float": true,
+  "kind": "alien",
+  "name": "Alien_FrostStarWhale",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow": {
+    "collide": false,
+    "glow": "FFF5A0",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     2.25,
+     1.3
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.75,
+     2.05,
+     -0.1
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.75,
+     2.05,
+     -0.1
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 7128
  },
  "Alien_GalaxyGus": {
   "bounds": {
@@ -750,19 +1994,19 @@
     "parent": "Body"
    }
   },
-  "tris": 7248
+  "tris": 9332
  },
  "Alien_Glorp": {
   "bounds": {
    "max": [
     0.944,
-    2.32,
+    2.336,
     0.897
    ],
    "min": [
     -0.944,
     -0.02,
-    -0.976
+    -0.972
    ]
   },
   "kind": "alien",
@@ -798,7 +2042,7 @@
     "parent": "Body"
    }
   },
-  "tris": 6060
+  "tris": 8824
  },
  "Alien_LunarSlug": {
   "bounds": {
@@ -864,7 +2108,720 @@
     "parent": "Tail"
    }
   },
-  "tris": 4092
+  "tris": 5568
+ },
+ "Alien_MagmaAstroAxolotl": {
+  "bounds": {
+   "max": [
+    1.08,
+    1.81,
+    1.9
+   ],
+   "min": [
+    -1.08,
+    -0.011,
+    -1.399
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_MagmaAstroAxolotl",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.55,
+     1.05,
+     -0.8
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "EarL_Glow": {
+    "collide": false,
+    "glow": "FFE36E",
+    "joint": null,
+    "material": null,
+    "parent": "EarL"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.55,
+     1.05,
+     -0.8
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "EarR_Glow": {
+    "collide": false,
+    "glow": "FFE36E",
+    "joint": null,
+    "material": null,
+    "parent": "EarR"
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.75,
+     -0.55
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3456,
+     0.45,
+     0.604
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3456,
+     0.45,
+     0.604
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3456,
+     0.45,
+     -0.404
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3456,
+     0.45,
+     -0.404
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.6,
+     0.6
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "FF9A2E",
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 12950
+ },
+ "Alien_MagmaBlip": {
+  "bounds": {
+   "max": [
+    0.79,
+    1.78,
+    0.73
+   ],
+   "min": [
+    -0.79,
+    -0.02,
+    -0.822
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_MagmaBlip",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": "FFF27A",
+    "joint": [
+     -0.25,
+     1.18,
+     0.05
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": "FFF27A",
+    "joint": [
+     0.25,
+     1.18,
+     0.05
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "FF9A2E",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 8350
+ },
+ "Alien_MagmaCometCat": {
+  "bounds": {
+   "max": [
+    0.55,
+    2.296,
+    1.42
+   ],
+   "min": [
+    -0.55,
+    -0.012,
+    -1.209
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_MagmaCometCat",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.0,
+     -0.45
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.27,
+     0.6,
+     0.478
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.27,
+     0.6,
+     0.478
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.27,
+     0.6,
+     -0.278
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.27,
+     0.6,
+     -0.278
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.9,
+     0.72
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "FFB14A",
+    "joint": null,
+    "material": null,
+    "parent": "Tail"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "FF9A2E",
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 9140
+ },
+ "Alien_MagmaCraterCrab": {
+  "bounds": {
+   "max": [
+    1.52,
+    1.831,
+    0.7
+   ],
+   "min": [
+    -1.52,
+    -0.02,
+    -1.425
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_MagmaCraterCrab",
+  "parts": {
+   "ArmL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.8,
+     0.75,
+     -0.3
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "ArmR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.8,
+     0.75,
+     -0.3
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.25,
+     1.0,
+     -0.45
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.25,
+     1.0,
+     -0.45
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.675,
+     0.6,
+     0.35
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.675,
+     0.6,
+     0.35
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.765,
+     0.6,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.765,
+     0.6,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "FF9A2E",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 8848
+ },
+ "Alien_MagmaEclipseDragon": {
+  "bounds": {
+   "max": [
+    2.057,
+    2.954,
+    2.425
+   ],
+   "min": [
+    -2.057,
+    -0.016,
+    -1.85
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_MagmaEclipseDragon",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow": {
+    "collide": false,
+    "glow": "FFB43C",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.2,
+     -0.6
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.372,
+     0.85,
+     0.688
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.372,
+     0.85,
+     0.688
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.372,
+     0.85,
+     -0.488
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.372,
+     0.85,
+     -0.488
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.0,
+     0.9
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.5,
+     1.5,
+     -0.1
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.5,
+     1.5,
+     -0.1
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "FF9A2E",
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 11066
+ },
+ "Alien_MagmaLunarSlug": {
+  "bounds": {
+   "max": [
+    0.6,
+    1.54,
+    1.45
+   ],
+   "min": [
+    -0.6,
+    -0.01,
+    -1.3
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_MagmaLunarSlug",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.2,
+     0.95,
+     -0.55
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.2,
+     0.95,
+     -0.55
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.4,
+     0.25
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "9BFFF5",
+    "joint": null,
+    "material": null,
+    "parent": "Tail"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "FF9A2E",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   }
+  },
+  "tris": 5610
+ },
+ "Alien_MagmaVoidKing": {
+  "bounds": {
+   "max": [
+    1.17,
+    3.79,
+    0.75
+   ],
+   "min": [
+    -1.17,
+    0.0,
+    -0.72
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_MagmaVoidKing",
+  "parts": {
+   "ArmL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.65,
+     1.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "ArmR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.65,
+     1.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     2.0,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Head_Glow": {
+    "collide": false,
+    "glow": "C85AFF",
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   },
+   "LegL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.32,
+     0.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.32,
+     0.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "FF9A2E",
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   }
+  },
+  "tris": 6250
  },
  "Alien_MoonMite": {
   "bounds": {
@@ -876,7 +2833,7 @@
    "min": [
     -0.722,
     -0.02,
-    -1.09
+    -1.083
    ]
   },
   "kind": "alien",
@@ -967,7 +2924,7 @@
     "parent": "Body"
    }
   },
-  "tris": 7320
+  "tris": 9588
  },
  "Alien_Nebby": {
   "bounds": {
@@ -979,7 +2936,7 @@
    "min": [
     -0.92,
     0.46,
-    -0.964
+    -0.963
    ]
   },
   "float": true,
@@ -1045,19 +3002,19 @@
     "parent": "Body"
    }
   },
-  "tris": 7704
+  "tris": 9332
  },
  "Alien_NovaQueen": {
   "bounds": {
    "max": [
-    1.115,
+    1.113,
     3.67,
-    0.75
+    0.85
    ],
    "min": [
-    -1.115,
-    0.8,
-    -0.75
+    -1.113,
+    0.835,
+    -0.85
    ]
   },
   "float": true,
@@ -1134,7 +3091,7 @@
     "parent": "Body"
    }
   },
-  "tris": 4834
+  "tris": 8368
  },
  "Alien_Orbo": {
   "bounds": {
@@ -1190,17 +3147,17 @@
     "parent": "Body"
    }
   },
-  "tris": 3428
+  "tris": 4040
  },
  "Alien_QuasarPup": {
   "bounds": {
    "max": [
-    0.721,
+    0.722,
     1.95,
     1.26
    ],
    "min": [
-    -0.721,
+    -0.722,
     -0.013,
     -1.39
    ]
@@ -1318,19 +3275,739 @@
     "parent": "Body"
    }
   },
-  "tris": 8168
+  "tris": 11232
+ },
+ "Alien_ShadowDusty": {
+  "bounds": {
+   "max": [
+    0.816,
+    2.22,
+    0.729
+   ],
+   "min": [
+    -0.816,
+    -0.01,
+    -0.888
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_ShadowDusty",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.28,
+     1.35,
+     0.05
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.28,
+     1.35,
+     0.05
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3,
+     0.3,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3,
+     0.3,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "B45AFF",
+    "joint": null,
+    "material": null,
+    "parent": "Zone"
+   }
+  },
+  "tris": 8228
+ },
+ "Alien_ShadowGalaxyGus": {
+  "bounds": {
+   "max": [
+    1.05,
+    2.82,
+    0.725
+   ],
+   "min": [
+    -1.05,
+    0.0,
+    -0.68
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_ShadowGalaxyGus",
+  "parts": {
+   "ArmL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.6,
+     1.3,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "ArmR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.6,
+     1.3,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.55,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Head_Glass": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": "Glass",
+    "parent": "Head"
+   },
+   "LegL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3,
+     0.55,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3,
+     0.55,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "B45AFF",
+    "joint": null,
+    "material": null,
+    "parent": "Zone"
+   }
+  },
+  "tris": 11412
+ },
+ "Alien_ShadowNebby": {
+  "bounds": {
+   "max": [
+    0.92,
+    3.155,
+    0.92
+   ],
+   "min": [
+    -0.92,
+    0.46,
+    -0.963
+   ]
+  },
+  "float": true,
+  "kind": "alien",
+  "name": "Alien_ShadowNebby",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow": {
+    "collide": false,
+    "glow": "D7B4FF",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Tent1": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3182,
+     1.75,
+     0.3182
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tent2": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3182,
+     1.75,
+     0.3182
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tent3": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3182,
+     1.75,
+     -0.3182
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tent4": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3182,
+     1.75,
+     -0.3182
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "B45AFF",
+    "joint": null,
+    "material": null,
+    "parent": "Zone"
+   }
+  },
+  "tris": 11412
+ },
+ "Alien_ShadowQuasarPup": {
+  "bounds": {
+   "max": [
+    0.722,
+    2.282,
+    1.26
+   ],
+   "min": [
+    -0.722,
+    -0.013,
+    -1.39
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_ShadowQuasarPup",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.45,
+     1.72,
+     -0.7
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "EarL_Glow": {
+    "collide": false,
+    "glow": "5AFFF0",
+    "joint": null,
+    "material": null,
+    "parent": "EarL"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.45,
+     1.72,
+     -0.7
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "EarR_Glow": {
+    "collide": false,
+    "glow": "5AFFF0",
+    "joint": null,
+    "material": null,
+    "parent": "EarR"
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.05,
+     -0.5
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3,
+     0.62,
+     0.52
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegBR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3,
+     0.62,
+     0.52
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.3,
+     0.62,
+     -0.32
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegFR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.3,
+     0.62,
+     -0.32
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.0,
+     0.8
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "B45AFF",
+    "joint": null,
+    "material": null,
+    "parent": "Zone"
+   }
+  },
+  "tris": 13312
+ },
+ "Alien_ShadowStarWhale": {
+  "bounds": {
+   "max": [
+    1.582,
+    3.673,
+    2.291
+   ],
+   "min": [
+    -1.582,
+    1.3,
+    -1.534
+   ]
+  },
+  "float": true,
+  "kind": "alien",
+  "name": "Alien_ShadowStarWhale",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow": {
+    "collide": false,
+    "glow": "FFF5A0",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Tail": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     2.25,
+     1.3
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.75,
+     2.05,
+     -0.1
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.75,
+     2.05,
+     -0.1
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "B45AFF",
+    "joint": null,
+    "material": null,
+    "parent": "Zone"
+   }
+  },
+  "tris": 7968
+ },
+ "Alien_ShadowZib": {
+  "bounds": {
+   "max": [
+    0.64,
+    2.61,
+    0.55
+   ],
+   "min": [
+    -0.64,
+    0.0,
+    -0.55
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_ShadowZib",
+  "parts": {
+   "ArmL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.34,
+     1.0,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "ArmR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.34,
+     1.0,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "EarL": {
+    "collide": false,
+    "glow": "FF5AD2",
+    "joint": [
+     -0.18,
+     2.0,
+     0
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "EarR": {
+    "collide": false,
+    "glow": "FF5AD2",
+    "joint": [
+     0.18,
+     2.0,
+     0
+    ],
+    "material": null,
+    "parent": "Head"
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.1,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.16,
+     0.45,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.16,
+     0.45,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "B45AFF",
+    "joint": null,
+    "material": null,
+    "parent": "Zone"
+   }
+  },
+  "tris": 11384
+ },
+ "Alien_ShadowZorblax": {
+  "bounds": {
+   "max": [
+    1.0,
+    3.158,
+    0.45
+   ],
+   "min": [
+    -1.0,
+    0.0,
+    -0.622
+   ]
+  },
+  "kind": "alien",
+  "name": "Alien_ShadowZorblax",
+  "parts": {
+   "ArmL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.48,
+     1.3,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "ArmR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.48,
+     1.3,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow": {
+    "collide": false,
+    "glow": "5AFFE0",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Head": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.5,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.25,
+     0.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "LegR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0.25,
+     0.6,
+     0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Zone": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Head"
+   },
+   "Zone_Glow": {
+    "collide": false,
+    "glow": "B45AFF",
+    "joint": null,
+    "material": null,
+    "parent": "Zone"
+   }
+  },
+  "tris": 11022
  },
  "Alien_StarWhale": {
   "bounds": {
    "max": [
-    1.581,
+    1.582,
     3.15,
-    2.287
+    2.291
    ],
    "min": [
-    -1.581,
+    -1.582,
     1.3,
-    -1.586
+    -1.534
    ]
   },
   "float": true,
@@ -1385,7 +4062,7 @@
     "parent": "Body"
    }
   },
-  "tris": 4108
+  "tris": 5888
  },
  "Alien_VoidKing": {
   "bounds": {
@@ -1397,7 +4074,7 @@
    "min": [
     -1.17,
     0.0,
-    -0.6
+    -0.72
    ]
   },
   "kind": "alien",
@@ -1473,7 +4150,7 @@
     "parent": "Body"
    }
   },
-  "tris": 3620
+  "tris": 6208
  },
  "Alien_Zib": {
   "bounds": {
@@ -1576,7 +4253,7 @@
     "parent": "Body"
    }
   },
-  "tris": 6768
+  "tris": 9304
  },
  "Alien_Zorblax": {
   "bounds": {
@@ -1588,7 +4265,7 @@
    "min": [
     -1.0,
     0.0,
-    -0.644
+    -0.622
    ]
   },
   "kind": "alien",
@@ -1664,17 +4341,17 @@
     "parent": "Body"
    }
   },
-  "tris": 6602
+  "tris": 8942
  },
  "BaseArch": {
   "bounds": {
    "max": [
-    8.25,
-    12.9,
+    9.25,
+    13.25,
     1.0
    ],
    "min": [
-    -8.25,
+    -9.25,
     0.0,
     -1.0
    ]
@@ -1688,13 +4365,6 @@
     "joint": null,
     "material": null,
     "parent": null
-   },
-   "Body_Glow": {
-    "collide": false,
-    "glow": "5AFFC8",
-    "joint": null,
-    "material": null,
-    "parent": "Body"
    }
   },
   "sign": [
@@ -1702,7 +4372,7 @@
    11.4,
    -0.3
   ],
-  "tris": 660
+  "tris": 2132
  },
  "Crystal_Blue": {
   "bounds": {
@@ -2075,14 +4745,14 @@
  "Fence": {
   "bounds": {
    "max": [
-    4.28,
-    3.18,
-    0.28
+    4.283,
+    3.125,
+    0.283
    ],
    "min": [
-    -4.28,
+    -4.283,
     0.0,
-    -0.28
+    -0.283
    ]
   },
   "kind": "prop",
@@ -2096,7 +4766,7 @@
     "parent": null
    }
   },
-  "tris": 704
+  "tris": 660
  },
  "Flag": {
   "bounds": {
@@ -2161,7 +4831,7 @@
   "bounds": {
    "max": [
     9.0,
-    2.2,
+    1.9,
     9.0
    ],
    "min": [
@@ -2179,28 +4849,21 @@
     "joint": null,
     "material": null,
     "parent": null
-   },
-   "Body_Glow": {
-    "collide": false,
-    "glow": "5AFFC8",
-    "joint": null,
-    "material": null,
-    "parent": "Body"
    }
   },
-  "tris": 1280
+  "tris": 2488
  },
  "Incubator": {
   "bounds": {
    "max": [
-    1.576,
-    4.85,
-    1.6
+    1.2,
+    6.15,
+    1.2
    ],
    "min": [
-    -1.576,
+    -1.2,
     0.0,
-    -1.6
+    -1.2
    ]
   },
   "kind": "prop",
@@ -2213,40 +4876,33 @@
     "material": null,
     "parent": null
    },
-   "Body_Glass": {
-    "collide": false,
-    "glow": null,
-    "joint": null,
-    "material": "Glass",
-    "parent": "Body"
-   },
    "Body_Glow": {
     "collide": false,
-    "glow": "5AFFC8",
+    "glow": "FFD68C",
     "joint": null,
     "material": null,
     "parent": "Body"
    }
   },
-  "tris": 492
+  "tris": 486
  },
  "Lamp": {
   "bounds": {
    "max": [
-    0.6,
-    8.15,
-    0.6
+    0.7,
+    8.175,
+    0.7
    ],
    "min": [
-    -0.6,
+    -0.7,
     0.0,
-    -1.8
+    -1.618
    ]
   },
   "kind": "prop",
   "light": [
    0,
-   7.5,
+   6.8,
    -1.3
   ],
   "name": "Lamp",
@@ -2260,13 +4916,13 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "FFF0C8",
+    "glow": "FFD68C",
     "joint": null,
     "material": null,
     "parent": "Body"
    }
   },
-  "tris": 380
+  "tris": 566
  },
  "Mushroom_Glow": {
   "bounds": {
@@ -2755,12 +5411,12 @@
    "max": [
     0.75,
     0.262,
-    2.22
+    2.45
    ],
    "min": [
     -0.75,
     -0.262,
-    -2.68
+    -2.7
    ]
   },
   "grip": [
@@ -2779,17 +5435,17 @@
     "parent": null
    }
   },
-  "tris": 506
+  "tris": 1098
  },
  "Tool_LeafBlower": {
   "bounds": {
    "max": [
-    0.35,
+    0.36,
     0.55,
     1.2
    ],
    "min": [
-    -0.44,
+    -0.47,
     -0.55,
     -1.85
    ]
@@ -2810,19 +5466,19 @@
     "parent": null
    }
   },
-  "tris": 616
+  "tris": 1128
  },
  "Tool_Mop": {
   "bounds": {
    "max": [
-    0.696,
-    0.666,
-    2.1
+    0.713,
+    0.697,
+    2.23
    ],
    "min": [
-    -0.696,
-    -0.666,
-    -2.63
+    -0.713,
+    -0.697,
+    -2.84
    ]
   },
   "grip": [
@@ -2841,7 +5497,7 @@
     "parent": null
    }
   },
-  "tris": 2480
+  "tris": 5672
  },
  "Tool_ShopVac": {
   "bounds": {
@@ -2851,8 +5507,8 @@
     1.475
    ],
    "min": [
-    -0.5,
-    -0.64,
+    -0.517,
+    -0.74,
     -1.975
    ]
   },
@@ -2872,18 +5528,18 @@
     "parent": null
    }
   },
-  "tris": 640
+  "tris": 2596
  },
  "Tool_Toothbrush": {
   "bounds": {
    "max": [
-    0.16,
-    0.16,
+    0.18,
+    0.19,
     1.41
    ],
    "min": [
-    -0.16,
-    -0.31,
+    -0.18,
+    -0.48,
     -1.55
    ]
   },
@@ -2903,7 +5559,7 @@
     "parent": null
    }
   },
-  "tris": 1368
+  "tris": 6092
  },
  "Tool_TurboVacuum": {
   "bounds": {
@@ -3045,14 +5701,14 @@
  "Vehicle_DustTruck": {
   "bounds": {
    "max": [
-    4.52,
+    4.61,
     6.777,
-    6.075
+    6.885
    ],
    "min": [
-    -4.52,
-    -0.081,
-    -8.384
+    -4.61,
+    -0.027,
+    -8.302
    ]
   },
   "kind": "vehicle",
@@ -3089,6 +5745,13 @@
     ],
     "material": null,
     "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "FF3A4A",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
@@ -3096,19 +5759,19 @@
    3.78,
    1.35
   ],
-  "tris": 2556
+  "tris": 9984
  },
  "Vehicle_HoverSweeper": {
   "bounds": {
    "max": [
     5.25,
     5.987,
-    7.037
+    7.65
    ],
    "min": [
     -5.25,
-    -0.09,
-    -9.315
+    0.0,
+    -9.225
    ]
   },
   "kind": "vehicle",
@@ -3145,6 +5808,13 @@
     ],
     "material": null,
     "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "FF3A4A",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
@@ -3152,19 +5822,19 @@
    4.2,
    1.5
   ],
-  "tris": 2176
+  "tris": 5840
  },
  "Vehicle_MoonBuggy": {
   "bounds": {
    "max": [
-    3.84,
+    3.92,
     6.44,
-    5.175
+    5.865
    ],
    "min": [
-    -3.84,
-    -0.069,
-    -7.142
+    -3.92,
+    -0.023,
+    -7.073
    ]
   },
   "kind": "vehicle",
@@ -3201,6 +5871,13 @@
     ],
     "material": null,
     "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "FF3A4A",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
@@ -3208,19 +5885,19 @@
    3.22,
    1.15
   ],
-  "tris": 3500
+  "tris": 11060
  },
  "Vehicle_MoonCrawler": {
   "bounds": {
    "max": [
     6.28,
     11.34,
-    8.1
+    9.18
    ],
    "min": [
     -6.28,
-    -0.108,
-    -11.178
+    -0.036,
+    -11.07
    ]
   },
   "kind": "vehicle",
@@ -3257,6 +5934,13 @@
     ],
     "material": null,
     "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "FF3A4A",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
@@ -3264,7 +5948,7 @@
    5.04,
    1.8
   ],
-  "tris": 2432
+  "tris": 10296
  },
  "Vehicle_RocketSweeper": {
   "bounds": {
@@ -3275,8 +5959,8 @@
    ],
    "min": [
     -10.956,
-    -0.132,
-    -13.662
+    -0.044,
+    -13.53
    ]
   },
   "kind": "vehicle",
@@ -3313,6 +5997,13 @@
     ],
     "material": null,
     "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "FF3A4A",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
@@ -3320,19 +6011,19 @@
    6.16,
    2.2
   ],
-  "tris": 2302
+  "tris": 9882
  },
  "Vehicle_SolarRover": {
   "bounds": {
    "max": [
     12.2,
     11.6,
-    9.0
+    10.2
    ],
    "min": [
     -12.2,
-    -0.12,
-    -12.42
+    -0.04,
+    -12.3
    ]
   },
   "kind": "vehicle",
@@ -3369,6 +6060,13 @@
     ],
     "material": null,
     "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "FF3A4A",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
@@ -3376,19 +6074,19 @@
    5.6,
    2.0
   ],
-  "tris": 2108
+  "tris": 11448
  },
  "Vehicle_SweeperCart": {
   "bounds": {
    "max": [
-    3.33,
+    3.402,
     5.425,
-    4.5
+    5.1
    ],
    "min": [
-    -3.33,
-    -0.06,
-    -6.21
+    -3.402,
+    -0.02,
+    -6.15
    ]
   },
   "kind": "vehicle",
@@ -3425,6 +6123,13 @@
     ],
     "material": null,
     "parent": "Body"
+   },
+   "Tail_Glow": {
+    "collide": false,
+    "glow": "FF3A4A",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
@@ -3432,7 +6137,7 @@
    2.8,
    1.0
   ],
-  "tris": 1824
+  "tris": 9384
  },
  "ZoneGate": {
   "bounds": {

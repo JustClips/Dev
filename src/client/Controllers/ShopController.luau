@@ -98,7 +98,7 @@ local function toolItems(data): { Item }
 		local def = Tools.get(tier)
 		local desc = `Radius {def.Radius} · Power {def.Power} · Holds {Format.number(def.Capacity)}`
 		if tier <= data.ToolTier then
-			table.insert(items, { Name = def.Name, Desc = desc, Price = "Owned", Color = GREY, Enabled = false, Icon = "Icon_Tool" })
+			table.insert(items, { Name = def.Name, Desc = desc, Price = "Owned", Color = GREY, Enabled = false, Icon = "Icon_Tool_" .. def.Id })
 		elseif tier == data.ToolTier + 1 then
 			local affordable = BigNum.gte(data.Cash, def.Price)
 			table.insert(items, {
@@ -107,12 +107,12 @@ local function toolItems(data): { Item }
 				Price = Format.cash(def.Price),
 				Color = if affordable then GREEN else GREY,
 				Enabled = true,
-				Icon = "Icon_Tool",
+				Icon = "Icon_Tool_" .. def.Id,
 				OnBuy = function()
 					toast(Net.func("BuyNextTool"):InvokeServer())
 				end,
 			})
-			local skip = robuxItem("ToolSkip" .. tier, "Skip the grind: get it right now.", "Icon_Tool")
+			local skip = robuxItem("ToolSkip" .. tier, "Skip the grind: get it right now.", "Icon_Tool_" .. def.Id)
 			if skip then
 				table.insert(items, skip)
 			end
