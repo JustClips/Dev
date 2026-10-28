@@ -131,22 +131,19 @@ def toothbrush(a):
     deform(head, lambda v: Vector((v.x, -1.25 + (v.y + 1.25) * 2.4, v.z)))
     p.append(head)
     a.part("Handle", p)
-    # bristles: a dense block of round tufts (4 columns x 7 rows) that overlap into one brush,
-    # white at the root and blue at the tips, slightly taller in the middle
-    tufts = []
-    for i in range(7):
-        y = -1.52 + i * 0.09
-        for x in (-0.105, -0.035, 0.035, 0.105):
-            h = 0.28 + (0.03 if abs(x) < 0.05 else 0) + (0.02 if 2 <= i <= 4 else 0)
-            tufts.append(cyl(white, loc=(x, y, -0.03 - h / 2), r=0.05, h=h, verts=8))
-            tufts.append(cyl(blue if i % 2 else "9ED8FF", loc=(x, y, -0.03 - h + 0.03), r=0.052, h=0.08, verts=8))
-    # toothpaste: a striped swirl sitting on the bristle tips
-    paste = []
-    for k in range(6):
-        y = -1.48 + k * 0.085
-        col = (mint, "FFFFFF", "FF7AB4")[k % 3]
-        paste.append(sphere(col, loc=(0, y, -0.39 - 0.03 * (k % 2)), scale=(0.12, 0.075, 0.07), seg=12, rings=8))
-    paste.append(sphere(mint, loc=(0, -1.0, -0.36), scale=(0.075, 0.07, 0.065), seg=10, rings=6))
+    # bristles: one rounded block (white roots, blue tips) with shallow grooves between rows
+    L, Wd, H = 0.66, 0.34, 0.3
+    yc, z0 = -1.25, -0.03
+    tufts = [box(white, loc=(0, yc, z0 - H * 0.35), size=(Wd, L, H * 0.7), bevel=0.06, smooth=True),
+             box(blue, loc=(0, yc, z0 - H * 0.82), size=(Wd + 0.01, L + 0.01, H * 0.36), bevel=0.08, smooth=True)]
+    for k in range(1, 6):
+        tufts.append(box("C9D6E6", loc=(0, yc - L / 2 + k * L / 6, z0 - H * 0.35), size=(Wd + 0.02, 0.025, H * 0.6)))
+    # toothpaste: a striped swirl lying along the bristle tips (mint with a white stripe)
+    tip = z0 - H - 0.05
+    pts = [(0.02 * math.sin(t * 2.2), yc + 0.27 - t * 0.09, tip - 0.02 * math.sin(t * 1.3)) for t in range(7)]
+    paste = [tube(mint, pts, 0.085, seg=10),
+             tube("FFFFFF", [(x + 0.03, y, z - 0.05) for x, y, z in pts], 0.035, seg=8),
+             sphere(mint, loc=(pts[0][0], pts[0][1] + 0.02, tip - 0.06), scale=(0.07, 0.06, 0.08), seg=10, rings=6)]
     a.part("Bristles", tufts + paste, parent="Handle")
 
 
