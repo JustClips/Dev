@@ -1,6 +1,7 @@
 # GameDev
 
-Source for the Roblox experience **GameDev**, with cloud live sync into Roblox Studio.
+Source for the Roblox experience **Sweep the Moon for Alien Eggs**, with cloud live sync into Roblox Studio.
+Game code overview: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Playtest checklist: [docs/PLAYTEST.md](docs/PLAYTEST.md).
 
 ## How it works
 
