@@ -123,7 +123,15 @@ class Asset:
 
 
 def reset_scene():
-    bpy.ops.wm.read_factory_settings(use_empty=True)
+    if bpy.app.background:
+        bpy.ops.wm.read_factory_settings(use_empty=True)
+        return
+    # In Blender's window a factory reset breaks the running script's context,
+    # so clear the scene's data instead.
+    for coll in (bpy.data.objects, bpy.data.meshes, bpy.data.materials, bpy.data.images,
+                 bpy.data.cameras, bpy.data.lights):
+        for block in list(coll):
+            coll.remove(block)
 
 
 def build_palette_image(name, colors):
@@ -181,17 +189,17 @@ def _finish(obj, color, smooth=True, loc=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 
 
 def sphere(color, loc=(0, 0, 0), scale=1, rot=(0, 0, 0), seg=20, rings=12, smooth=True):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=seg, ring_count=rings, radius=1)
-    return _finish(bpy.context.object, color, smooth, loc, rot, scale)
+    return _finish(bpy.context.view_layer.objects.active, color, smooth, loc, rot, scale)
 
 
 def ico(color, loc=(0, 0, 0), scale=1, rot=(0, 0, 0), sub=1, smooth=False):
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=sub, radius=1)
-    return _finish(bpy.context.object, color, smooth, loc, rot, scale)
+    return _finish(bpy.context.view_layer.objects.active, color, smooth, loc, rot, scale)
 
 
 def box(color, loc=(0, 0, 0), size=(1, 1, 1), rot=(0, 0, 0), bevel=0.0, smooth=False):
     bpy.ops.mesh.primitive_cube_add(size=1)
-    o = bpy.context.object
+    o = bpy.context.view_layer.objects.active
     o.scale = size
     bpy.ops.object.transform_apply(scale=True)
     if bevel > 0:
@@ -214,7 +222,7 @@ def cyl(color, loc=(0, 0, 0), r=1, h=1, rot=(0, 0, 0), verts=16, r2=None, smooth
     else:
         bpy.ops.mesh.primitive_cone_add(vertices=verts, radius1=r, radius2=r2, depth=h,
                                         end_fill_type="NGON" if cap else "NOTHING")
-    o = bpy.context.object
+    o = bpy.context.view_layer.objects.active
     o2 = _finish(o, color, smooth, loc, rot, 1)
     if smooth:
         # keep the caps flat-looking: mark cap faces flat
@@ -230,7 +238,7 @@ def cone(color, loc=(0, 0, 0), r=1, h=1, rot=(0, 0, 0), verts=16, smooth=True):
 
 def torus(color, loc=(0, 0, 0), R=1, r=0.25, rot=(0, 0, 0), seg=24, mseg=8):
     bpy.ops.mesh.primitive_torus_add(major_radius=R, minor_radius=r, major_segments=seg, minor_segments=mseg)
-    return _finish(bpy.context.object, color, True, loc, rot, 1)
+    return _finish(bpy.context.view_layer.objects.active, color, True, loc, rot, 1)
 
 
 def capsule(color, a, b, r, seg=12):
@@ -240,7 +248,7 @@ def capsule(color, a, b, r, seg=12):
     length = d.length
     mid = (a + b) / 2
     bpy.ops.mesh.primitive_cylinder_add(vertices=seg, radius=r, depth=max(length, 0.001), end_fill_type="NOTHING")
-    c = bpy.context.object
+    c = bpy.context.view_layer.objects.active
     s1 = sphere(color, loc=a, scale=r, seg=seg, rings=8)
     s2 = sphere(color, loc=b, scale=r, seg=seg, rings=8)
     rot = d.to_track_quat("Z", "Y").to_euler()
@@ -285,7 +293,7 @@ def eye(loc, size, look=(0, -1, 0), white="FFFFFF", pupil="1B1530", shine=True, 
 def arc(color, loc, R, r, rot=(90, 0, 0), keep="below", seg=20):
     """Half a torus: a smile line (keep='below') or a frown/brow (keep='above')."""
     bpy.ops.mesh.primitive_torus_add(major_radius=R, minor_radius=r, major_segments=seg, minor_segments=6)
-    o = bpy.context.object
+    o = bpy.context.view_layer.objects.active
     bm = bmesh.new()
     bm.from_mesh(o.data)
     cut = [v for v in bm.verts if (v.co.y > r * 0.3 if keep == "below" else v.co.y < -r * 0.3)]
@@ -306,7 +314,7 @@ def join(pieces, name):
     bpy.context.view_layer.objects.active = pieces[0]
     if len(pieces) > 1:
         bpy.ops.object.join()
-    o = bpy.context.object
+    o = bpy.context.view_layer.objects.active
     o.name = name
     o.data.name = name
     return o
@@ -318,7 +326,7 @@ def mirror_x(obj, name=None):
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.duplicate()
-    d = bpy.context.object
+    d = bpy.context.view_layer.objects.active
     d.scale = (-1, 1, 1)
     bpy.ops.object.transform_apply(scale=True)
     bpy.ops.object.mode_set(mode="EDIT")
@@ -336,7 +344,7 @@ def copy(obj):
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.duplicate()
-    return bpy.context.object
+    return bpy.context.view_layer.objects.active
 
 
 def deform(obj, fn):

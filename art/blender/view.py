@@ -57,7 +57,7 @@ def main():
     asset.export(OUT)
     # a ground plane so the model doesn't float
     bpy.ops.mesh.primitive_plane_add(size=60, location=(0, 0, 0))
-    ground = bpy.context.object
+    ground = bpy.context.view_layer.objects.active
     ground.name = "Ground (not exported)"
     mat = bpy.data.materials.new("Ground")
     mat.diffuse_color = (0.55, 0.56, 0.6, 1)
