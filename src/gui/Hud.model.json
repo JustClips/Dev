@@ -2691,11 +2691,11 @@
     "Size": [
      [
       0,
-      300
+      220
      ],
      [
       0,
-      200
+      180
      ]
     ],
     "Position": [
@@ -2729,7 +2729,7 @@
      "properties": {
       "Padding": [
        0,
-       8
+       2
       ],
       "FillDirection": "Vertical",
       "HorizontalAlignment": "Right",
@@ -2739,7 +2739,7 @@
     },
     {
      "name": "Template",
-     "className": "TextLabel",
+     "className": "TextButton",
      "properties": {
       "Size": [
        [
@@ -2748,7 +2748,7 @@
        ],
        [
         0,
-        46
+        26
        ]
       ],
       "Position": [
@@ -2766,41 +2766,33 @@
        0
       ],
       "BorderSizePixel": 0,
-      "BackgroundColor3": "#141A33",
+      "BackgroundTransparency": 1,
       "Text": "",
       "TextColor3": "#FFFFFF",
-      "TextSize": 24,
+      "TextSize": 17,
       "FontFace": {
        "family": "rbxasset://fonts/families/Montserrat.json",
        "weight": "Heavy",
        "style": "Normal"
       },
       "AutomaticSize": "X",
+      "AutoButtonColor": false,
       "Visible": false,
-      "ZIndex": 2
+      "ZIndex": 2,
+      "TextXAlignment": "Right"
      },
      "children": [
-      {
-       "name": "Stroke",
-       "className": "UIStroke",
-       "properties": {
-        "Color": "#1B1F3A",
-        "Thickness": 3,
-        "ApplyStrokeMode": "Border",
-        "LineJoinMode": "Round"
-       }
-      },
       {
        "name": "Padding",
        "className": "UIPadding",
        "properties": {
         "PaddingLeft": [
          0,
-         50
+         28
         ],
         "PaddingRight": [
          0,
-         12
+         2
         ],
         "PaddingTop": [
          0,
@@ -2817,7 +2809,7 @@
        "className": "UIStroke",
        "properties": {
         "Color": "#1B1F3A",
-        "Thickness": 2.5,
+        "Thickness": 2,
         "ApplyStrokeMode": "Contextual",
         "LineJoinMode": "Round"
        }
@@ -2829,17 +2821,17 @@
         "Size": [
          [
           0,
-          52
+          26
          ],
          [
           0,
-          52
+          26
          ]
         ],
         "Position": [
          [
           0,
-          -52
+          0
          ],
          [
           0.5,
@@ -2858,6 +2850,200 @@
        }
       }
      ]
+    }
+   ]
+  },
+  {
+   "name": "BoostTip",
+   "className": "Frame",
+   "properties": {
+    "Size": [
+     [
+      0,
+      260
+     ],
+     [
+      0,
+      0
+     ]
+    ],
+    "Position": [
+     [
+      1,
+      -14
+     ],
+     [
+      1,
+      -200
+     ]
+    ],
+    "AnchorPoint": [
+     1,
+     1
+    ],
+    "BorderSizePixel": 0,
+    "AutomaticSize": "Y",
+    "Visible": false,
+    "ZIndex": 8,
+    "BackgroundTransparency": 0,
+    "BackgroundColor3": "#141A33"
+   },
+   "children": [
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": "#1B1F3A",
+      "Thickness": 3,
+      "ApplyStrokeMode": "Border",
+      "LineJoinMode": "Round"
+     }
+    },
+    {
+     "name": "AutoScale",
+     "className": "UIScale",
+     "properties": {
+      "Scale": 1
+     }
+    },
+    {
+     "name": "Padding",
+     "className": "UIPadding",
+     "properties": {
+      "PaddingLeft": [
+       0,
+       10
+      ],
+      "PaddingRight": [
+       0,
+       10
+      ],
+      "PaddingTop": [
+       0,
+       8
+      ],
+      "PaddingBottom": [
+       0,
+       8
+      ]
+     }
+    },
+    {
+     "name": "Layout",
+     "className": "UIListLayout",
+     "properties": {
+      "Padding": [
+       0,
+       2
+      ],
+      "FillDirection": "Vertical",
+      "HorizontalAlignment": "Left",
+      "VerticalAlignment": "Top",
+      "SortOrder": "LayoutOrder"
+     }
+    },
+    {
+     "name": "Title",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        24
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "",
+      "TextColor3": "#FFC83C",
+      "TextSize": 19,
+      "TextXAlignment": "Left",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "ZIndex": 9,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/Montserrat.json",
+       "weight": "Heavy",
+       "style": "Normal"
+      },
+      "LayoutOrder": 1
+     },
+     "children": [
+      {
+       "name": "TextStroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#1B1F3A",
+        "Thickness": 2,
+        "ApplyStrokeMode": "Contextual",
+        "LineJoinMode": "Round"
+       }
+      }
+     ]
+    },
+    {
+     "name": "Text",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "",
+      "TextColor3": "#FFFFFF",
+      "TextSize": 15,
+      "TextXAlignment": "Left",
+      "TextYAlignment": "Top",
+      "TextWrapped": true,
+      "ZIndex": 9,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/Montserrat.json",
+       "weight": "ExtraBold",
+       "style": "Normal"
+      },
+      "AutomaticSize": "Y",
+      "LayoutOrder": 2
+     }
     }
    ]
   },

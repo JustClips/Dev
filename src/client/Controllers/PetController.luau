@@ -17,6 +17,7 @@ local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
+local Weights = require(Shared.Config.Weights)
 local World = require(Shared.Config.World)
 
 local PARK_SCALE = 1.4
@@ -131,6 +132,7 @@ local function tag(model: Model, alienId: string, mutation: string?, income: num
 	cash.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	cash.TextSize = 17
 	cash.TextColor3 = Color3.fromRGB(124, 245, 140)
+	cash.Name = "Cash"
 	cash.Text = `+{Format.cash(income)}/s`
 	local stroke2 = stroke:Clone()
 	stroke2.Parent = cash
@@ -187,9 +189,23 @@ local function spawnPet(park: Park, key: string, entry: Folder, fresh: boolean, 
 	local alienId = entry:GetAttribute("AlienId") :: string
 	local mutation = entry:GetAttribute("Mutation") :: string?
 	local huge = entry:GetAttribute("Huge") == true
+	local weightMult = entry:GetAttribute("WeightMult") or 1
 	local model = AssetLibrary.alien(alienId, mutation)
-	model:ScaleTo(PARK_SCALE * (if huge then Aliens.HugeScale else 1))
+	-- Heavier pets are drawn a bit bigger.
+	model:ScaleTo(PARK_SCALE * (if huge then Aliens.HugeScale else 1) * Weights.visualScale(weightMult))
 	model:SetAttribute("DisplayName", (if huge then "Huge " else "") .. AlienModel.displayName(alienId, mutation))
+	-- Read by HoverController for the hover card.
+	model:SetAttribute("AlienId", alienId)
+	model:SetAttribute("Mutation", mutation)
+	model:SetAttribute("Huge", huge)
+	model:SetAttribute("Weight", entry:GetAttribute("Weight"))
+	model:SetAttribute("WeightMult", weightMult)
+	model:SetAttribute("Income", entry:GetAttribute("Income") or 0)
+	for _, part in model:GetDescendants() do
+		if part:IsA("BasePart") and part ~= model.PrimaryPart then
+			part.CanQuery = true -- so the mouse can find it
+		end
+	end
 	local meta = AssetLibrary.meta("Alien_" .. alienId)
 	local start = randomSpot(nil) or (World.Base.ParkMin + World.Base.ParkMax) / 2
 	local _, size = model:GetBoundingBox()
@@ -252,8 +268,20 @@ local function sync(park: Park, base: Instance, initial: boolean)
 		end
 	end
 	for key, entry in wanted do
-		if not park.pets[key] then
+		local pet = park.pets[key]
+		if not pet then
 			spawnPet(park, key, entry, not initial, owned)
+		else
+			-- Income changes with boosts: refresh the tag in place (no respawn).
+			local income = entry:GetAttribute("Income") or 0
+			if pet.model:GetAttribute("Income") ~= income then
+				pet.model:SetAttribute("Income", income)
+				local tagGui = pet.model:FindFirstChild("Tag")
+				local cash = tagGui and tagGui:FindFirstChild("Cash") :: TextLabel?
+				if cash then
+					cash.Text = `+{Format.cash(income)}/s`
+				end
+			end
 		end
 	end
 end

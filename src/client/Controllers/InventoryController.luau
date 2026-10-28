@@ -2,7 +2,8 @@
 -- Backpack (hotbar slot 3, key 3 or B), styled like Roblox's own backpack: a see-through
 -- grid above the hotbar with Pets / Eggs / Items tabs on its left (tap the lit tab again
 -- for All Items) and a search box. Pick a card to get an action card on the right: place
--- or pick up a pet, sell it, place an egg in an incubator, use a potion. Equip Best and
+-- or pick up a pet, sell it, hold an egg and put it in your pet park, use a potion. Every
+-- pet and egg shows its weight (Config/Weights). Equip Best and
 -- the egg buttons live in the Pets / Eggs panels (BasePanelsController).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -21,6 +22,7 @@ local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
+local Weights = require(Shared.Config.Weights)
 local Zones = require(Shared.Config.Zones)
 
 local TABS = { "Pets", "Eggs", "Items" }
@@ -83,6 +85,16 @@ local function petName(pet): string
 	return (if pet.Huge then "Huge " else "") .. AlienModel.displayName(pet.Id, pet.Mutation)
 end
 
+local function eggName(egg): string
+	local size = egg.Size or "Normal"
+	return (if size ~= "Normal" then size .. " " else "") .. `{egg.Rarity} Egg`
+end
+
+local function petWeight(pet): number
+	local def = Aliens.ById[pet.Id]
+	return pet.Weight or Weights.petKg(def and def.Rarity or "Common")
+end
+
 local function matches(name: string): boolean
 	local q = string.lower(searchBox.Text)
 	return q == "" or string.find(string.lower(name), q, 1, true) ~= nil
@@ -103,8 +115,9 @@ local function entries(data): { Entry }
 	end
 	if currentTab == "All" or currentTab == "Eggs" then
 		for uid, egg in data.Eggs or {} do
-			if matches(egg.Rarity .. " Egg") then
-				table.insert(list, { kind = "Egg", key = uid, order = 2e9 - Eggs.order(egg.Rarity) })
+			if matches(eggName(egg)) then
+				local mult = Weights.eggMult(egg.Rarity, egg.Weight)
+				table.insert(list, { kind = "Egg", key = uid, order = 2e9 - Eggs.order(egg.Rarity) * 100 - math.min(mult, 99) })
 			end
 		end
 	end
@@ -194,7 +207,8 @@ local function renderDetail()
 		nameLabel.Text = petName(pet)
 		setChip(chip, def.Rarity, rarity.Color)
 		local income = Aliens.income(pet) * (data.CashMultiplier or 1)
-		info.Text = `+{Format.cash(income)}/s on your base\nFrom {zoneName(def.Zone)}`
+		local class = Weights.classFor(Weights.incomeMult(def.Rarity, pet.Weight))
+		info.Text = `{Weights.format(petWeight(pet))} ({class.Name}) · +{Format.cash(income)}/s\nFrom {zoneName(def.Zone)}`
 		if pet.Placed then
 			setButton(primary, "Pick up", BLUE)
 			primaryAction = function()
@@ -217,15 +231,24 @@ local function renderDetail()
 	elseif entry.kind == "Egg" then
 		local egg = data.Eggs[entry.key]
 		local rarity = Eggs.ByName[egg.Rarity]
-		nameLabel.Text = `{egg.Rarity} Egg`
+		nameLabel.Text = eggName(egg)
 		setChip(chip, egg.Rarity, rarity.Color)
-		info.Text = `Found in {zoneName(egg.Zone)}\nHatches in {Format.time(rarity.HatchSeconds)}`
+		local low, high = Weights.petRange(egg.Rarity, egg.Rarity, egg.Weight)
+		info.Text = `{Weights.format(egg.Weight or Weights.eggKg(egg.Rarity))} · pets {Weights.format(low)}-{Weights.format(high)}\nHatches in {Format.time(rarity.HatchSeconds)}`
 		local free = data.Incubators - #data.Hatching
-		setButton(primary, if free > 0 then "Place in incubator" else "Incubators full", if free > 0 then GREEN else GREY)
+		setButton(primary, if free > 0 then "Hold & place" else `Eggs full ({data.Incubators})`, if free > 0 then GREEN else GREY)
 		primaryAction = function()
+			if free > 0 then
+				Ui.close("Inventory")
+				C.PlacementController:Hold(entry.key)
+			else
+				C.HudController:Toast(`Only {data.Incubators} eggs can grow at once. Open one first!`, "Bad")
+			end
+		end
+		setButton(secondary, if free > 0 then "Auto place" else nil, BLUE)
+		secondaryAction = function()
 			act("PlaceEgg", entry.key)
 		end
-		setButton(secondary, nil)
 	else
 		local def = Items.ById[entry.key]
 		nameLabel.Text = def.Name
@@ -263,10 +286,14 @@ local function cardFor(entry: Entry, data): Frame
 		nameLabel.Text = petName(pet)
 		nameLabel.TextColor3 = Eggs.ByName[def.Rarity].Color
 		placed.Visible = pet.Placed == true
+		count.Visible = true
+		count.Text = Weights.format(petWeight(pet))
 	elseif entry.kind == "Egg" then
 		local egg = data.Eggs[entry.key]
-		nameLabel.Text = `{egg.Rarity} Egg`
+		nameLabel.Text = eggName(egg)
 		nameLabel.TextColor3 = Eggs.ByName[egg.Rarity].Color
+		count.Visible = true
+		count.Text = Weights.format(egg.Weight or Weights.eggKg(egg.Rarity))
 	else
 		local def = Items.ById[entry.key]
 		nameLabel.Text = def.Name

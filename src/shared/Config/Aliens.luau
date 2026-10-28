@@ -6,6 +6,7 @@
 -- zone's set. Income is cash per second before multipliers.
 local Types = require(script.Parent.Parent.Types)
 local Eggs = require(script.Parent.Eggs)
+local Weights = require(script.Parent.Weights)
 
 type AlienDef = Types.AlienDef
 
@@ -131,13 +132,14 @@ function Aliens.pool(zone: string?, rarity: string): { AlienDef }
 	return Aliens.Pools.Landing[rarity] or Aliens.Pools.Landing.Common
 end
 
--- Cash per second of one pet before the player's multipliers.
-function Aliens.income(pet: { Id: string, Mutation: string?, Huge: boolean? }): number
+-- Cash per second of one pet before the player's multipliers. Heavier pets earn more
+-- (Config/Weights).
+function Aliens.income(pet: { Id: string, Mutation: string?, Huge: boolean?, Weight: number? }): number
 	local def = Aliens.ById[pet.Id]
 	if not def then
 		return 0
 	end
-	local income = def.Income
+	local income = def.Income * Weights.incomeMult(def.Rarity, pet.Weight)
 	if pet.Mutation then
 		local mutation = Eggs.MutationByName[pet.Mutation]
 		income *= if mutation then mutation.IncomeMult else 1

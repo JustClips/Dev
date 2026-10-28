@@ -237,52 +237,122 @@ local function renderServer()
 	end
 end
 
-local function renderBoosts()
-	local template = el.BoostTemplate :: TextLabel
-	for _, child in template.Parent:GetChildren() do
-		if child:IsA("TextLabel") and child ~= template then
-			child:Destroy()
-		end
+-- Boost chips (bottom right): icon + "2x 14:52", no box. Chips are kept by key so hover
+-- survives the once-a-second refresh. Hover (or tap on a phone) explains the boost.
+type BoostEntry = { key: string, image: string, label: string, endsAt: number, title: string, text: string }
+local boostChips: { [string]: TextButton } = {}
+local boostInfo: { [string]: BoostEntry } = {}
+local tipKey: string? = nil
+local tipUntil = 0
+
+local function renderTip()
+	local tip = el.BoostTip :: Frame
+	local entry = tipKey and boostInfo[tipKey]
+	if not entry or (tipUntil > 0 and os.clock() > tipUntil) then
+		tip.Visible = false
+		tipKey = nil
+		return
 	end
-	-- Short chips: icon, multiplier, time left ("4x 5:00").
+	tip.Visible = true
+	;(tip:FindFirstChild("Title") :: TextLabel).Text = entry.title
+	;(tip:FindFirstChild("Text") :: TextLabel).Text = `{entry.text}\n{Format.countdown(entry.endsAt - State.now())} left`
+	-- Sit just above the chips (below them on phones, where the chips are top right).
+	local top, bottom, right = math.huge, -math.huge, 0
+	for _, chip in boostChips do
+		top = math.min(top, chip.AbsolutePosition.Y)
+		bottom = math.max(bottom, chip.AbsolutePosition.Y + chip.AbsoluteSize.Y)
+		right = math.max(right, chip.AbsolutePosition.X + chip.AbsoluteSize.X)
+	end
+	if top == math.huge then
+		return
+	end
+	if UserInputService.TouchEnabled then
+		tip.AnchorPoint = Vector2.new(1, 0)
+		tip.Position = UDim2.fromOffset(right, bottom + 6)
+	else
+		tip.AnchorPoint = Vector2.new(1, 1)
+		tip.Position = UDim2.fromOffset(right, top - 6)
+	end
+end
+
+local function renderBoosts()
+	local template = el.BoostTemplate :: TextButton
 	local now = State.now()
-	local entries: { { string } } = {}
-	local function add(image: string, label: string, endsAt: number)
-		table.insert(entries, { `{label}  {Format.countdown(endsAt - now)}`, image })
+	local entries: { BoostEntry } = {}
+	local function add(key: string, image: string, label: string, endsAt: number, title: string, text: string)
+		table.insert(entries, { key = key, image = image, label = label, endsAt = endsAt, title = title, text = text })
 	end
 	for _, tier in LUCK_TIERS do -- highest first
 		local ends = State.server("Luck" .. tier) or 0
 		if ends > now then
-			add("Icon_Luck", `{tier}x`, ends) -- only the best server luck counts
+			-- only the best server luck counts
+			add("ServerLuck", "Icon_Luck", `{tier}x`, ends, `{tier}x Server Luck`, `Everyone on this server finds rarer eggs, mutations and Huge pets {tier}x more often.`)
 			break
 		end
 	end
 	local event = Rewards.activeEvent(now)
 	if event then
-		add("Icon_Event", `{event.LuckMult}x`, event.EndsAt)
+		add("Event", "Icon_Event", `{event.LuckMult}x`, event.EndsAt, event.Name, `Live event: {event.LuckMult}x egg luck for everyone.`)
 	end
 	local data = State.data
 	if data and (data.Boosts.Cash2x or 0) > now then
-		add("Icon_Cash", "2x", data.Boosts.Cash2x)
+		add("Cash2x", "Icon_Cash", "2x", data.Boosts.Cash2x, "2x Cash", "Your pets and selling earn double cash.")
 	end
 	if data and (data.Boosts.Luck2x or 0) > now then
-		add("Icon_PotionLuck", `{Items.LuckMult}x`, data.Boosts.Luck2x)
+		add("Luck2x", "Icon_PotionLuck", `{Items.LuckMult}x`, data.Boosts.Luck2x, "Luck Potion", `Your eggs hatch rarer pets {Items.LuckMult}x more often, and you find bigger eggs.`)
 	end
 	if data and (data.Boosts.Speed or 0) > now then
-		add("Icon_PotionSpeed", `+{Items.SpeedBonus}`, data.Boosts.Speed)
+		add("Speed", "Icon_PotionSpeed", `+{Items.SpeedBonus}`, data.Boosts.Speed, "Speed Potion", `You run {Items.SpeedBonus} faster.`)
 	end
+	local seen = {}
 	for i, entry in entries do
-		local label = template:Clone()
-		label.Name = "Boost"
-		label.Text = entry[1]
-		local icon = label:FindFirstChild("Icon") :: ImageLabel?
-		if icon then
-			icon.Image = AssetLibrary.image(entry[2])
+		seen[entry.key] = true
+		boostInfo[entry.key] = entry
+		local chip = boostChips[entry.key]
+		if not chip then
+			local newChip = template:Clone() :: TextButton
+			newChip.Name = entry.key
+			newChip.Visible = true
+			local key = entry.key
+			newChip.MouseEnter:Connect(function()
+				tipKey, tipUntil = key, 0
+				renderTip()
+			end)
+			newChip.MouseLeave:Connect(function()
+				if tipKey == key and tipUntil == 0 then
+					tipKey = nil
+					renderTip()
+				end
+			end)
+			newChip.Activated:Connect(function()
+				-- Tap on phones: show for a few seconds (tap again to hide).
+				if tipKey == key and tipUntil > 0 then
+					tipKey = nil
+				else
+					tipKey, tipUntil = key, os.clock() + 4
+				end
+				renderTip()
+			end)
+			newChip.Parent = template.Parent
+			boostChips[entry.key] = newChip
+			chip = newChip
 		end
-		label.LayoutOrder = i
-		label.Visible = true
-		label.Parent = template.Parent
+		local c = chip :: TextButton
+		c.Text = `{entry.label} {Format.countdown(entry.endsAt - now)}`
+		c.LayoutOrder = i
+		local icon = c:FindFirstChild("Icon") :: ImageLabel?
+		if icon then
+			icon.Image = AssetLibrary.image(entry.image)
+		end
 	end
+	for key, chip in boostChips do
+		if not seen[key] then
+			chip:Destroy()
+			boostChips[key] = nil
+			boostInfo[key] = nil
+		end
+	end
+	renderTip()
 end
 
 local function teleport(target: string)
@@ -334,6 +404,7 @@ function HudController:Init(controllers)
 	el.Announcement = Ui.find(hud, "Announcement")
 	el.AnnouncementText = Ui.find(hud, "Announcement.Text")
 	el.BoostTemplate = Ui.find(hud, "Boosts.Template")
+	el.BoostTip = Ui.find(hud, "BoostTip")
 	el.NextTool = Ui.find(hud, "Right.NextTool")
 	el.NextToolButton = Ui.find(hud, "Right.NextTool.Button")
 	el.NextToolHint = Ui.find(hud, "Right.NextTool.Hint")

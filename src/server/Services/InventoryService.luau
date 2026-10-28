@@ -1,9 +1,10 @@
 --!strict
 -- The inventory (Steal an Egg style): eggs you brought home, pets you hatched and items
--- (potions). Nothing hatches or gets placed on its own: players place eggs in incubators
--- (HatchService), open them when ready, and place or pick up pets on their base.
--- One remote, Inventory(action, arg), handles every button in the inventory window and
--- the prompts on the base.
+-- (potions). Nothing hatches or gets placed on its own: players hold an egg and put it
+-- down in their pet park (HatchService), open it when ready, and place or pick up pets on
+-- their base. Eggs get their size and weight (Config/Weights) when they're added.
+-- One remote, Inventory(action, arg, position?), handles every button in the inventory
+-- window and the prompts on the base.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -14,10 +15,12 @@ local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
+local Weights = require(Shared.Config.Weights)
 
 local InventoryService = {}
 
 local S: any
+local rng = Random.new()
 
 local function count(map: { [string]: any }): number
 	local n = 0
@@ -60,7 +63,9 @@ function InventoryService:AddEgg(player: Player, rarity: string, zone: string?, 
 	if not force and count(data.Eggs) >= Economy.EggBagSize then
 		return false
 	end
-	data.Eggs[S.DataService:NewUid(data, "e")] = { Rarity = rarity, Zone = zone or "Landing" }
+	local luck = S.BoostService:GetServerLuck() * S.BoostService:GetPersonalLuck(player)
+	local size, weight = Weights.rollEgg(rng, rarity, luck)
+	data.Eggs[S.DataService:NewUid(data, "e")] = { Rarity = rarity, Zone = zone or "Landing", Weight = weight, Size = size }
 	InventoryService:Touch(player)
 	return true
 end
@@ -187,9 +192,23 @@ local function skipHatch(player: Player, uid: string): (boolean, string?)
 	return false, "That egg is gone"
 end
 
-local ACTIONS: { [string]: (Player, any) -> (boolean, string?) } = {
+local ACTIONS: { [string]: (Player, any, Vector3?) -> (boolean, string?) } = {
 	PlaceEgg = function(player, uid)
 		return S.HatchService:PlaceEgg(player, uid)
+	end,
+	-- Hold an egg out, then click a spot in your pet park (PlaceEggAt).
+	HoldEgg = function(player, uid)
+		return S.HatchService:Hold(player, uid)
+	end,
+	StopHolding = function(player)
+		S.HatchService:StopHolding(player)
+		return true, nil
+	end,
+	PlaceEggAt = function(player, uid, position)
+		if not position then
+			return false, "Bad request"
+		end
+		return S.HatchService:PlaceEgg(player, uid, position)
 	end,
 	PlaceBestEggs = function(player)
 		local placed = S.HatchService:PlaceBest(player)
@@ -199,7 +218,7 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string?) } = {
 		if InventoryService:EggCount(player) == 0 then
 			return false, "No eggs in your bag. Sweep dust to find some!"
 		end
-		return false, "All incubators are busy!"
+		return false, "Your park is full of eggs! Open one first."
 	end,
 	OpenEgg = function(player, uid)
 		return S.HatchService:Open(player, uid)
@@ -231,15 +250,18 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string?) } = {
 
 function InventoryService:Init(services)
 	S = services
-	Net.onInvoke("Inventory", function(player, action, arg)
+	Net.onInvoke("Inventory", function(player, action, arg, position)
 		if type(action) ~= "string" or (arg ~= nil and type(arg) ~= "string") then
+			return false, "Bad request"
+		end
+		if position ~= nil and (typeof(position) ~= "Vector3" or position.Magnitude ~= position.Magnitude) then
 			return false, "Bad request"
 		end
 		local handler = ACTIONS[action]
 		if not handler then
 			return false, "Bad request"
 		end
-		return handler(player, arg)
+		return handler(player, arg, position)
 	end)
 end
 

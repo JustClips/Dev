@@ -12,6 +12,8 @@ local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
+local Weights = require(Shared.Config.Weights)
+local World = require(Shared.Config.World)
 
 local FOLLOWER_COUNT = 3
 
@@ -129,6 +131,8 @@ function AlienService:RefreshBase(player: Player)
 			entry:SetAttribute("Mutation", pet.Mutation)
 			entry:SetAttribute("Huge", pet.Huge == true)
 			entry:SetAttribute("Income", alienIncome(pet) * mult)
+			entry:SetAttribute("Weight", pet.Weight or Weights.petKg(def.Rarity))
+			entry:SetAttribute("WeightMult", Weights.incomeMult(def.Rarity, pet.Weight))
 			entry.Parent = aliens
 			table.insert(placed, pet)
 		end
@@ -136,51 +140,52 @@ function AlienService:RefreshBase(player: Player)
 	aliens:SetAttribute("OwnerUserId", player.UserId)
 	aliens.Parent = base
 
-	-- Incubating eggs on the hatchery pad. The owner's client adds Skip / Open prompts.
+	-- Growing eggs where the player put them in the park, each on a little straw nest. The
+	-- owner's client adds Skip / Open prompts; every client shows the hover info.
+	S.HatchService:EnsureSpots(data)
 	local hatching = Instance.new("Folder")
 	hatching.Name = "Hatching"
 	hatching:SetAttribute("OwnerUserId", player.UserId)
+	hatching:SetAttribute("Limit", S.HatchService:GetIncubatorCount(player))
+	local baseCf = World.baseCFrame(index)
 	for _, entry in data.Hatching do
 		local rarity = Eggs.ByName[entry.Rarity]
-		local spot = S.WorldService:GetHatchSpot(index, entry.Spot)
+		local spot = baseCf * CFrame.new(entry.X or 0, 0.2, entry.Z or 0)
+		local scale = Weights.visualScale(Weights.eggMult(entry.Rarity, entry.Weight))
 		local egg = AssetLibrary.egg(entry.Rarity)
 		egg.Name = entry.Uid
-		egg:PivotTo(spot)
+		egg:ScaleTo(scale * 1.25)
+		egg:PivotTo(spot * CFrame.new(0, 0.35, 0))
 		egg:SetAttribute("Uid", entry.Uid)
 		egg:SetAttribute("Rarity", entry.Rarity)
 		egg:SetAttribute("Zone", entry.Zone)
 		egg:SetAttribute("EndsAt", entry.EndsAt)
+		egg:SetAttribute("Weight", entry.Weight or Weights.eggKg(entry.Rarity))
+		egg:SetAttribute("Size", entry.Size or "Normal")
 		egg:SetAttribute("OwnerUserId", player.UserId)
 		CollectionService:AddTag(egg, "HatchingEgg")
+		for _, part in egg:GetDescendants() do
+			if part:IsA("BasePart") then
+				part.CanQuery = true -- hover card
+			end
+		end
+		local nest = Instance.new("Part")
+		nest.Name = "Nest"
+		nest.Shape = Enum.PartType.Cylinder
+		nest.Size = Vector3.new(0.5, 3.4 * scale, 3.4 * scale)
+		nest.CFrame = spot * CFrame.new(0, 0.25, 0) * CFrame.Angles(0, 0, math.rad(90))
+		nest.Color = Color3.fromRGB(245, 210, 110)
+		nest.Material = Enum.Material.Fabric
+		nest.Anchored = true
+		nest.CanCollide = false
+		nest.CanQuery = false
+		nest.CanTouch = false
+		nest.Parent = egg
 		local primary = egg.PrimaryPart or egg:FindFirstChildWhichIsA("BasePart")
 		if primary then
-			label(primary, "", rarity.Color, 3.4, "HatchTimer", entry.EndsAt)
+			label(primary, "", rarity.Color, 3.4 * scale, "HatchTimer", entry.EndsAt)
 		end
 		egg.Parent = hatching
-	end
-	-- Empty incubators show a glowing nest, so players see how many eggs fit.
-	local used = {}
-	for _, entry in data.Hatching do
-		used[entry.Spot] = true
-	end
-	for spot = 1, S.HatchService:GetIncubatorCount(player) do
-		if not used[spot] then
-			local nest = Instance.new("Part")
-			nest.Name = "Nest"
-			nest.Shape = Enum.PartType.Cylinder
-			nest.Size = Vector3.new(0.3, 3.2, 3.2)
-			nest.CFrame = S.WorldService:GetHatchSpot(index, spot) * CFrame.new(0, -0.75, 0) * CFrame.Angles(0, 0, math.rad(90))
-			nest.Color = Color3.fromRGB(124, 245, 200)
-			nest.Material = Enum.Material.Neon
-			nest.Transparency = 0.45
-			nest.Anchored = true
-			nest.CanCollide = false
-			nest.CanQuery = false
-			nest.CanTouch = false
-			nest.CastShadow = false
-			nest:SetAttribute("Spot", spot)
-			nest.Parent = hatching
-		end
 	end
 	hatching.Parent = base
 

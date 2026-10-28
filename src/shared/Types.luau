@@ -145,12 +145,15 @@ export type PetInstance = {
 	Mutation: Mutation?,
 	Huge: boolean?,
 	Placed: boolean?,
+	Weight: number?, -- kg (Config/Weights); nil on pets from before weights = average
 }
 
 -- An unhatched egg in your inventory, keyed by uid ("e7") in ProfileData.Eggs.
 export type EggInstance = {
 	Rarity: Rarity,
 	Zone: string, -- where it was found: decides which pets it can hatch
+	Weight: number?, -- kg; bigger eggs hatch heavier pets (Config/Weights)
+	Size: string?, -- size class: Normal, Big, Heavy, Giant, Colossal
 }
 
 -- An egg placed in an incubator on your base. Ready to open once EndsAt has passed.
@@ -158,7 +161,11 @@ export type HatchEntry = {
 	Uid: string,
 	Rarity: Rarity,
 	Zone: string,
-	Spot: number, -- incubator spot on the hatchery pad
+	Spot: number, -- legacy incubator spot (eggs placed before free placement)
+	X: number?, -- where the egg sits in the pet park (base local studs)
+	Z: number?,
+	Weight: number?,
+	Size: string?,
 	EndsAt: number,
 }
 

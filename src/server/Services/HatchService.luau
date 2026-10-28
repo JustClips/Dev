@@ -1,16 +1,23 @@
 --!strict
--- Incubators on your base's hatchery pad (Steal an Egg style). You place eggs from your
--- inventory; each one is saved with its spot and a unix EndsAt, so the timer keeps running
--- while you're offline. When it's ready you open it (prompt on the egg, or Open All in the
--- inventory) and the pet goes to your inventory. Mutations and Huge roll at opening and
--- scale with luck.
+-- Growing eggs in your pet park (Steal an Egg style). You hold an egg from your inventory
+-- and put it down anywhere in your park (or let Place Eggs pick spots). Only so many eggs
+-- can grow at once (GetIncubatorCount: 4, +1 per 2 rebirths, max 8). Each one is saved
+-- with its spot and a unix EndsAt, so the timer keeps running while you're offline. When
+-- it's ready you open it and the pet goes to your inventory. Pet weight, mutations and
+-- Huge roll at opening and scale with luck.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
+local EggSpots = require(Shared.EggSpots)
 local Aliens = require(Shared.Config.Aliens)
 local Economy = require(Shared.Config.Economy)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
+local Weights = require(Shared.Config.Weights)
+local World = require(Shared.Config.World)
+
+local PLACE_REACH = 60 -- how far from the spot the player may stand
 
 local HatchService = {}
 
@@ -31,16 +38,29 @@ function HatchService:GetIncubatorCount(player: Player): number
 end
 
 local function freeSpot(player: Player, data): number?
+	if #data.Hatching >= HatchService:GetIncubatorCount(player) then
+		return nil
+	end
 	local used = {}
 	for _, entry in data.Hatching do
 		used[entry.Spot] = true
 	end
-	for spot = 1, HatchService:GetIncubatorCount(player) do
+	for spot = 1, Economy.MaxIncubators do
 		if not used[spot] then
 			return spot
 		end
 	end
 	return nil
+end
+
+-- Gives eggs from before free placement a park spot (once).
+function HatchService:EnsureSpots(data)
+	for _, entry in data.Hatching do
+		if not entry.X then
+			local x, z = EggSpots.auto(data.Hatching, entry.Uid)
+			entry.X, entry.Z = x or 0, z or 0
+		end
+	end
 end
 
 local function hatchSeconds(data, rarity: string): number
@@ -57,24 +77,59 @@ local function changed(player: Player)
 	S.StateService:Mark(player)
 end
 
--- Moves an egg from the inventory into a free incubator. Returns ok, message.
-function HatchService:PlaceEgg(player: Player, uid: string): (boolean, string?)
-	local data = S.DataService:GetData(player)
+-- Puts an egg from the inventory down in the pet park to grow. `position` is where the
+-- player clicked (world space); without it a free spot is picked. Returns ok, message.
+function HatchService:PlaceEgg(player: Player, uid: string, position: Vector3?): (boolean, string?)
+	local session = S.DataService:GetSession(player)
+	local data = session and session.Data
 	local egg = data and data.Eggs[uid]
-	if not data or not egg then
+	if not session or not data or not egg then
 		return false, "That egg is gone"
 	end
 	local spot = freeSpot(player, data)
 	if not spot then
-		return false, "All incubators are busy! Open or wait for an egg first."
+		return false, `Only {HatchService:GetIncubatorCount(player)} eggs can grow at once! Open one first.`
+	end
+	local x, z
+	if position then
+		local index = session.Runtime.BaseIndex
+		if not index then
+			return false, "You don't have a base yet"
+		end
+		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if not root or (root.Position - position).Magnitude > PLACE_REACH then
+			return false, "Walk closer to your pet park"
+		end
+		local localPos = World.baseCFrame(index):PointToObjectSpace(position)
+		x, z = localPos.X, localPos.Z
+		local problem = EggSpots.problem(data.Hatching, x, z)
+		if problem then
+			return false, problem
+		end
+	else
+		x, z = EggSpots.auto(data.Hatching)
+		if not x then
+			return false, "No room left in your pet park"
+		end
 	end
 	data.Eggs[uid] = nil
+	HatchService:StopHolding(player)
 	local seconds = hatchSeconds(data, egg.Rarity)
 	if (data.Flags.FreeSkips or 0) > 0 then
 		data.Flags.FreeSkips -= 1
 		seconds = 0
 	end
-	table.insert(data.Hatching, { Uid = uid, Rarity = egg.Rarity, Zone = egg.Zone, Spot = spot, EndsAt = os.time() + seconds })
+	table.insert(data.Hatching, {
+		Uid = uid,
+		Rarity = egg.Rarity,
+		Zone = egg.Zone,
+		Spot = spot,
+		X = x,
+		Z = z,
+		Weight = egg.Weight,
+		Size = egg.Size,
+		EndsAt = os.time() + seconds,
+	})
 	changed(player)
 	if Eggs.order(egg.Rarity) >= Eggs.order("Rare") and seconds > 0 then
 		S.OfferService:OnRareHatchStarted(player, egg.Rarity)
@@ -149,7 +204,8 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	local isNew = not data.Index[def.Id]
 	data.Index[def.Id] = true
 	local petUid = S.DataService:NewUid(data, "p")
-	local pet = { Id = def.Id, Mutation = mutation, Huge = if huge then true else nil }
+	local weight = Weights.rollPet(rng, def.Rarity, entry.Rarity, entry.Weight)
+	local pet = { Id = def.Id, Mutation = mutation, Huge = if huge then true else nil, Weight = weight }
 	data.Pets[petUid] = pet
 	data.Stats.Hatches += 1
 
@@ -164,6 +220,9 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 			Rarity = def.Rarity,
 			IsNew = isNew,
 			Income = Aliens.income(pet),
+			Weight = weight,
+			X = entry.X,
+			Z = entry.Z,
 			FreeSlot = S.AlienService:PlacedCount(player) < S.AlienService:GetSlotCount(player),
 		})
 	end
@@ -259,6 +318,56 @@ function HatchService:SpeedUp(player: Player, seconds: number): number
 		changed(player)
 	end
 	return count
+end
+
+-------------------------------------------------------------------------- holding an egg
+
+-- The player holds an egg out in front of them while choosing where to put it (others see
+-- it too). The client shows the ghost egg and sends PlaceEggAt.
+function HatchService:Hold(player: Player, uid: string): (boolean, string?)
+	local session = S.DataService:GetSession(player)
+	local egg = session and session.Data.Eggs[uid]
+	local character = player.Character
+	local hand = character and (character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")) :: BasePart?
+	if not session or not egg then
+		return false, "That egg is gone"
+	end
+	HatchService:StopHolding(player)
+	session.Runtime.HeldEgg = uid
+	if not hand or not character then
+		return true, nil
+	end
+	local model = AssetLibrary.egg(egg.Rarity)
+	model.Name = "HeldEgg"
+	model:ScaleTo(Weights.visualScale(Weights.eggMult(egg.Rarity, egg.Weight)) * 0.8)
+	local _, size = model:GetBoundingBox()
+	model:PivotTo(hand.CFrame * CFrame.new(0, -hand.Size.Y / 2 - size.Y * 0.2, -size.Z * 0.6))
+	for _, part in model:GetDescendants() do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.CanCollide = false
+			part.CanQuery = false
+			part.CanTouch = false
+			part.Massless = true
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = hand
+			weld.Part1 = part
+			weld.Parent = part
+		end
+	end
+	model.Parent = character
+	return true, nil
+end
+
+function HatchService:StopHolding(player: Player)
+	local session = S.DataService:GetSession(player)
+	if session then
+		session.Runtime.HeldEgg = nil
+	end
+	local held = player.Character and player.Character:FindFirstChild("HeldEgg")
+	if held then
+		held:Destroy()
+	end
 end
 
 function HatchService:Init(services)

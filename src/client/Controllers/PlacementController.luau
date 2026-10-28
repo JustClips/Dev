@@ -1,0 +1,353 @@
+--!strict
+-- Holding an egg to put it down in your pet park (Steal an Egg style). Hold(uid) asks the
+-- server to put the egg in your hands, then a see-through ghost egg follows the mouse (or
+-- your finger) with a ring that is green where the egg may go and red where it may not
+-- (Shared/EggSpots, the same rules the server checks). Click or tap to place it. If you
+-- still have eggs and room, the next best egg is in your hands right away. Q, Backspace,
+-- Cancel or equipping a tool puts it away.
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+
+local Client = script.Parent.Parent
+local State = require(Client.State)
+local Ui = require(Client.Ui)
+
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
+local EggSpots = require(Shared.EggSpots)
+local Eggs = require(Shared.Config.Eggs)
+local Net = require(Shared.Net)
+local Weights = require(Shared.Config.Weights)
+local World = require(Shared.Config.World)
+
+local GOOD = Color3.fromRGB(61, 220, 90)
+local BAD = Color3.fromRGB(255, 77, 94)
+local NEAR_BASE = 80 -- studs from the park centre to place by clicking
+local PARK_TOP = 0.2
+
+local PlacementController = {}
+
+local C: any
+local gui: ScreenGui
+local titleLabel: TextLabel
+local subLabel: TextLabel
+local goBase: GuiButton
+local icon: ImageLabel
+
+local holding: string? = nil
+local ghost: Model? = nil
+local ring: BasePart? = nil
+local ghostOffset = 0
+local spotOk = false
+local spotWorld: Vector3? = nil
+local stepConn: RBXScriptConnection? = nil
+local busy = false
+local pointer: Vector2? = nil -- last touch position (touch screens)
+
+local function toast(text: string, kind: string)
+	C.HudController:Toast(text, kind)
+end
+
+local function invoke(action: string, arg: string?, position: Vector3?): (boolean, string?)
+	return Net.func("Inventory"):InvokeServer(action, arg, position)
+end
+
+local function baseCFrame(): CFrame?
+	local data = State.data
+	if not data or not data.BaseIndex or data.BaseIndex == 0 then
+		return nil
+	end
+	return World.baseCFrame(data.BaseIndex)
+end
+
+local function parkCentre(cf: CFrame): Vector3
+	local c = (World.Base.ParkMin + World.Base.ParkMax) / 2
+	return cf * Vector3.new(c.X, 0, c.Y)
+end
+
+local function clearGhost()
+	if ghost then
+		ghost:Destroy()
+		ghost = nil
+	end
+	if ring then
+		ring:Destroy()
+		ring = nil
+	end
+end
+
+local function makeGhost(egg)
+	clearGhost()
+	local model = AssetLibrary.egg(egg.Rarity)
+	local scale = Weights.visualScale(Weights.eggMult(egg.Rarity, egg.Weight))
+	model:ScaleTo(scale * 1.25)
+	for _, d in model:GetDescendants() do
+		if d:IsA("BasePart") then
+			d.Anchored = true
+			d.CanCollide = false
+			d.CanQuery = false
+			d.CanTouch = false
+			d.CastShadow = false
+			d.Transparency = math.max(d.Transparency, 0.35)
+		end
+	end
+	model.Parent = Workspace
+	ghost = model
+	ghostOffset = 0.35
+	local r = Instance.new("Part")
+	r.Name = "PlaceRing"
+	r.Shape = Enum.PartType.Cylinder
+	r.Size = Vector3.new(0.15, EggSpots.Spacing, EggSpots.Spacing)
+	r.Anchored = true
+	r.CanCollide = false
+	r.CanQuery = false
+	r.CanTouch = false
+	r.CastShadow = false
+	r.Material = Enum.Material.SmoothPlastic
+	r.Transparency = 0.35
+	r.Parent = Workspace
+	ring = r
+end
+
+local function screenPoint(): Vector2
+	if pointer then
+		return pointer
+	end
+	return UserInputService:GetMouseLocation()
+end
+
+-- Finds the park spot under the mouse / finger and colours the ring.
+local function update()
+	local camera = Workspace.CurrentCamera
+	local cf = baseCFrame()
+	local data = State.data
+	if not camera or not cf or not data or not ghost or not ring then
+		return
+	end
+	local character = Players.LocalPlayer.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local far = root == nil or (root.Position - parkCentre(cf)).Magnitude > NEAR_BASE
+	goBase.Visible = far
+	if far then
+		titleLabel.Text = "Go to your base to place it"
+	else
+		titleLabel.Text = if UserInputService.TouchEnabled then "Tap a spot in your pet park" else "Click a spot in your pet park"
+	end
+
+	local point = screenPoint()
+	local ray = camera:ViewportPointToRay(point.X, point.Y)
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	local exclude: { Instance } = { ghost :: Model, ring :: BasePart }
+	if character then
+		table.insert(exclude, character)
+	end
+	local parks = Workspace:FindFirstChild("PetParks")
+	if parks then
+		table.insert(exclude, parks)
+	end
+	params.FilterDescendantsInstances = exclude
+	local hit = Workspace:Raycast(ray.Origin, ray.Direction * 500, params)
+	if not hit then
+		spotOk, spotWorld = false, nil
+		ring.Transparency = 1
+		return
+	end
+	local localPos = cf:PointToObjectSpace(hit.Position)
+	local problem = EggSpots.problem(data.Hatching, localPos.X, localPos.Z)
+	local snapped = cf * CFrame.new(localPos.X, PARK_TOP, localPos.Z)
+	spotOk = problem == nil and not far
+	spotWorld = snapped.Position
+	ring.Transparency = 0.35
+	ring.Color = if spotOk then GOOD else BAD
+	ring.CFrame = snapped * CFrame.new(0, 0.1, 0) * CFrame.Angles(0, 0, math.rad(90))
+	local bob = math.sin(os.clock() * 4) * 0.25
+	ghost:PivotTo(snapped * CFrame.new(0, ghostOffset + 1 + bob, 0))
+end
+
+local function nextEgg(data, skip: { [string]: boolean }): string?
+	local best, bestScore = nil, -math.huge
+	for uid, egg in data.Eggs or {} do
+		if not skip[uid] then
+			local score = Eggs.order(egg.Rarity) * 100 + Weights.eggMult(egg.Rarity, egg.Weight)
+			if score > bestScore then
+				best, bestScore = uid, score
+			end
+		end
+	end
+	return best
+end
+
+function PlacementController:IsHolding(): boolean
+	return holding ~= nil
+end
+
+function PlacementController:Stop(silent: boolean?)
+	if not holding then
+		return
+	end
+	holding = nil
+	pointer = nil
+	clearGhost()
+	if stepConn then
+		stepConn:Disconnect()
+		stepConn = nil
+	end
+	gui.Enabled = false
+	if not silent then
+		task.spawn(invoke, "StopHolding")
+	end
+end
+
+function PlacementController:Hold(uid: string)
+	local data = State.data
+	local egg = data and data.Eggs and data.Eggs[uid]
+	if not data or not egg then
+		return
+	end
+	if #data.Hatching >= data.Incubators then
+		toast(`Only {data.Incubators} eggs can grow at once. Open one first!`, "Bad")
+		return
+	end
+	local character = Players.LocalPlayer.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:UnequipTools()
+	end
+	holding = uid
+	makeGhost(egg)
+	local left = 0
+	for _ in data.Eggs do
+		left += 1
+	end
+	local size = egg.Size or "Normal"
+	subLabel.Text = `{if size ~= "Normal" then size .. " " else ""}{egg.Rarity} Egg · {Weights.format(egg.Weight or Weights.eggKg(egg.Rarity))} · {left} in bag`
+	subLabel.TextColor3 = Eggs.ByName[egg.Rarity].Color
+	icon.Image = AssetLibrary.image("Icon_Egg")
+	gui.Enabled = true
+	Ui.popIn(gui)
+	if not stepConn then
+		stepConn = RunService.RenderStepped:Connect(update)
+	end
+	task.spawn(function()
+		local ok, message = invoke("HoldEgg", uid)
+		if not ok and holding == uid then
+			PlacementController:Stop(true)
+			if message then
+				toast(message, "Bad")
+			end
+		end
+	end)
+end
+
+local placedThisRun: { [string]: boolean } = {}
+
+local function place()
+	local uid = holding
+	if not uid or busy then
+		return
+	end
+	if not spotOk or not spotWorld then
+		toast("You can't put it there. Find a green spot in your pet park!", "Bad")
+		return
+	end
+	busy = true
+	local ok, message = invoke("PlaceEggAt", uid, spotWorld)
+	busy = false
+	if not ok then
+		toast(message or "Can't place it there", "Bad")
+		return
+	end
+	Ui.sound("Egg")
+	placedThisRun[uid] = true
+	PlacementController:Stop(true)
+	-- Keep going with the next best egg while there's room.
+	task.delay(0.35, function()
+		local data = State.data
+		if not data or holding then
+			return
+		end
+		local growing = #data.Hatching
+		if growing >= data.Incubators then
+			toast(`Your park is growing {growing} eggs, that's the max! Open them when they're ready.`, "Info")
+			return
+		end
+		local nextUid = nextEgg(data, placedThisRun)
+		if nextUid then
+			PlacementController:Hold(nextUid)
+		end
+	end)
+end
+
+function PlacementController:Init(controllers)
+	C = controllers
+	gui = Ui.screen("Placing")
+	titleLabel = Ui.find(gui, "Bar.Title")
+	subLabel = Ui.find(gui, "Bar.Sub")
+	goBase = Ui.find(gui, "Bar.GoBase")
+	icon = Ui.find(gui, "Bar.Icon")
+end
+
+function PlacementController:Start()
+	Ui.button(Ui.find(gui, "Bar.Cancel"), function()
+		PlacementController:Stop()
+	end)
+	Ui.button(goBase, function()
+		Net.func("Teleport"):InvokeServer("Base")
+	end)
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if not holding then
+			return
+		end
+		if input.KeyCode == Enum.KeyCode.Q or input.KeyCode == Enum.KeyCode.Backspace then
+			PlacementController:Stop()
+			return
+		end
+		if processed then
+			return
+		end
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			pointer = nil
+			place()
+		elseif input.UserInputType == Enum.UserInputType.Touch then
+			pointer = Vector2.new(input.Position.X, input.Position.Y)
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input, processed)
+		if holding and not processed and input.UserInputType == Enum.UserInputType.Touch and pointer then
+			-- Tap: the ghost has moved under the finger; place there.
+			update()
+			place()
+		end
+	end)
+	-- Equipping a tool or respawning puts the egg away.
+	local function watch(character: Model)
+		character.ChildAdded:Connect(function(child)
+			if child:IsA("Tool") and holding then
+				PlacementController:Stop()
+			end
+		end)
+		local humanoid = character:WaitForChild("Humanoid", 10) :: Humanoid?
+		if humanoid then
+			humanoid.Died:Connect(function()
+				PlacementController:Stop(true)
+			end)
+		end
+	end
+	local player = Players.LocalPlayer
+	if player.Character then
+		watch(player.Character)
+	end
+	player.CharacterAdded:Connect(watch)
+	State.Changed:Connect(function(data)
+		-- The egg left the bag some other way (auto place, sold...).
+		if holding and data.Eggs and not data.Eggs[holding] then
+			PlacementController:Stop(true)
+		end
+	end)
+end
+
+return PlacementController

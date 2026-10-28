@@ -290,14 +290,24 @@ def hud():
     ])
     # Active boosts (server luck, 2x cash): chips stacked in the bottom-right corner.
     # Phones move them to the top right (HudController), clear of the jump button.
-    boosts = frame("Boosts", U(0, 300, 0, 200), U(1, -14, 1, -14), (1, 1), children=[
-        autoscale(), vlist(8, "Right", "Bottom"),
-        # Short chip: big icon, then "4x 5:00".
-        node("Template", "TextLabel", base(U(0, 0, 0, 46), BackgroundColor3=BG, Text="", TextColor3=WHITE, TextSize=24, FontFace=DISPLAY,
-                                          AutomaticSize="X", Visible=False, ZIndex=2),
-             [corner(), border(INK, 3), padding(50, 12, 0), text_stroke(2.5),
-              icon("Icon", "Luck", 52, U(0, -52, 0.5, 0), (0, 0.5))]),
+    # Boost chips: no box, just a small icon and "2x 14:52". Hover (or tap) shows what the
+    # boost does in BoostTip.
+    boosts = frame("Boosts", U(0, 220, 0, 180), U(1, -14, 1, -14), (1, 1), children=[
+        autoscale(), vlist(2, "Right", "Bottom"),
+        node("Template", "TextButton", base(U(0, 0, 0, 26), BackgroundTransparency=1, Text="", TextColor3=WHITE, TextSize=17,
+                                           FontFace=DISPLAY, AutomaticSize="X", AutoButtonColor=False, Visible=False, ZIndex=2,
+                                           TextXAlignment="Right"),
+             [padding(28, 2, 0), text_stroke(2),
+              icon("Icon", "Luck", 26, U(0, 0, 0.5, 0), (0, 0.5))]),
     ])
+    boost_tip = plate("BoostTip", U(0, 260, 0, 0), U(1, -14, 1, -200), (1, 1), BG, stud=None, stroke=3, AutomaticSize="Y",
+                      Visible=False, ZIndex=8, children=[
+                          autoscale(), padding(10, 10, 8, 8), vlist(2, "Left", "Top"),
+                          text("Title", "", U(1, 0, 0, 24), ts=19, color=PREMIUM, display=True, stroke=2, xa="Left", LayoutOrder=1,
+                               ZIndex=9),
+                          text("Text", "", U(1, 0, 0, 0), ts=15, color=WHITE, heavy=True, xa="Left", ya="Top", AutomaticSize="Y",
+                               LayoutOrder=2, ZIndex=9),
+                      ])
     toasts = frame("Toasts", U(0, 520, 0, 200), U(0.5, 0, 0, 156), (0.5, 0), children=[
         autoscale(), vlist(6),
         node("Template", "TextLabel", base(U(0, 0, 0, 38), BackgroundColor3=BG, Text="", TextColor3=WHITE, TextSize=20, FontFace=BODY_HEAVY,
@@ -372,7 +382,7 @@ def hud():
         ]),
         text("Label", "COMBO x1.0", U(1, 0, 1, -10), ts=22, color=PREMIUM, display=True, stroke=2.5),
     ])
-    write("Hud", screen([rail, pills, moon, boosts, toasts, announcement, wallet, right, sweep, hotbar, hint, combo, picker], order=1))
+    write("Hud", screen([rail, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, sweep, hotbar, hint, combo, picker], order=1))
 
 
 # ---------------------------------------------------------------- Shop
@@ -501,7 +511,8 @@ def inventory():
         frame("Placed", U(0, 20, 0, 20), U(0, 3, 0, 3), bg=SUCCESS, Visible=False, ZIndex=4, children=[
             border(INK, 2), text("Label", "E", U(1, 0, 1, 0), ts=14, display=True, stroke=1.5, ZIndex=5),
         ]),
-        text("Count", "", U(0, 40, 0, 20), U(1, -4, 0, 2), (1, 0), ts=16, display=True, stroke=2, xa="Right", Visible=False, ZIndex=4),
+        text("Count", "", U(0, 66, 0, 18), U(1, -3, 0, 2), (1, 0), ts=14, display=True, stroke=2, xa="Right", Visible=False, ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 8})]),
         node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=6)),
     ])
     grid = scroller("Grid", U(1, -24, 1, -74), U(0, 12, 0, 66), [
@@ -587,6 +598,37 @@ def base_panels():
         [button("Action", U(0, 124, 0, 48), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="Open", ts=19)],
         button("PlaceEggs", U(1, -20, 0, 54), U(0.5, 0, 1, -12), (0.5, 1), color="#4C8DFF", label="Place Eggs", ts=24))
     write("BasePanels", screen([buttons, active, growing], order=4))
+
+
+# ---------------------------------------------------------------- Hover card (pets and eggs in parks)
+def hover():
+    line = lambda name, order, ts, color: text(name, "", U(1, 0, 0, ts + 6), ts=ts, color=color, display=True, stroke=2,
+                                               xa="Left", LayoutOrder=order, TextWrapped=False)
+    card = frame("Card", U(0, 250, 0, 0), bg=BG, BackgroundTransparency=0.08, AutomaticSize="Y", Visible=False, ZIndex=10, children=[
+        autoscale(), border(INK, 3), padding(12, 12, 8, 10), vlist(2, "Left", "Top"),
+        line("Name", 1, 22, WHITE),
+        line("Weight", 2, 18, WHITE),
+        line("Income", 3, 18, "#7CFF8C"),
+        line("Extra", 4, 15, "#C8D0E8"),
+    ])
+    tree = screen([card], order=30, inset=True)
+    tree["properties"]["ScreenInsets"] = "None"
+    write("Hover", tree)
+
+
+# ---------------------------------------------------------------- Egg placement banner
+def placing():
+    """Shown while holding an egg: what you're placing, Cancel, and Go to Base when far."""
+    bar_ = plate("Bar", U(0, 520, 0, 92), U(0.5, 0, 1, -112), (0.5, 1), BG, stud=0.5, children=[
+        autoscale(),
+        icon("Icon", "Egg", 76, U(0, 6, 0.5, 0), (0, 0.5)),
+        text("Title", "Click a spot in your pet park", U(1, -250, 0, 32), U(0, 88, 0, 12), ts=22, color=WHITE, display=True,
+             stroke=2.5, xa="Left", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 10})]),
+        text("Sub", "", U(1, -250, 0, 26), U(0, 88, 0, 50), ts=17, color=ACCENT, heavy=True, xa="Left", stroke=2),
+        button("GoBase", U(0, 140, 0, 44), U(1, -10, 0, 8), (1, 0), color=SUCCESS, label="Go to Base", ts=18, Visible=False),
+        button("Cancel", U(0, 140, 0, 34), U(1, -10, 1, -8), (1, 1), color=DANGER, label="Cancel (Q)", ts=16),
+    ])
+    write("Placing", screen([bar_], order=8, enabled=False))
 
 
 # ---------------------------------------------------------------- Rewards (daily, playtime, group, event)
@@ -794,6 +836,8 @@ def main():
     index()
     inventory()
     base_panels()
+    placing()
+    hover()
     rewards()
     rebirth()
     offer()
