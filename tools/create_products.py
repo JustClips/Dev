@@ -27,7 +27,7 @@ PASS_ICONS = {"Cash2x": "Cash", "AutoSweep": "Auto", "ExtraSlots": "Alien", "Car
               "VIP": "Star", "FasterHatch": "Timer"}
 KIND_ICONS = {"StarterPack": "Gift", "ServerLuck": "Luck", "MeteorShower": "Meteor", "SkipHatch": "Timer",
               "EggPack": "Egg", "ToolSkip": "Tool", "VehicleUnlock": "Vehicle", "VehicleRental": "Vehicle",
-              "CashPack": "Cash", "SkipRebirth": "Rebirth", "DoubleOffline": "Cash"}
+              "CashPack": "Cash", "SkipRebirth": "Rebirth", "DoubleOffline": "Cash", "GiftPass": "Gift"}
 KIND_TEXT = {
     "StarterPack": "A bundle to kick off your Moon sweeping run.",
     "ServerLuck": "Boosts egg luck for everyone in the server.",
@@ -40,6 +40,7 @@ KIND_TEXT = {
     "CashPack": "A pile of cash that grows with your progress.",
     "SkipRebirth": "Rebirth now without meeting the cash goal.",
     "DoubleOffline": "Doubles your welcome-back offline earnings.",
+    "GiftPass": "Gifts this gamepass to a friend in your server. It unlocks for them for good.",
 }
 
 LINE = re.compile(r'\{ Key = "(?P<key>\w+)", Id = (?P<id>\d+), Price = (?P<price>\d+), Name = "(?P<name>[^"]*)"(?P<rest>[^\n]*)')

@@ -96,6 +96,11 @@ function ShopService:OfferCashFor(player: Player, shortfall: any)
 	MarketplaceService:PromptProductPurchase(player, pick.Id)
 end
 
+local function applyPassEffects(player: Player)
+	S.AlienService:RefreshBase(player)
+	S.StateService:Mark(player)
+end
+
 -- What each product does. Runs without yielding so a receipt can't be granted twice.
 local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> () } = {
 	StarterPack = function(_product, _buyer, recipient)
@@ -160,6 +165,23 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 	SkipRebirth = function(_product, _buyer, recipient)
 		S.RebirthService:DoRebirth(recipient, false)
 	end,
+	GiftPass = function(product, _buyer, recipient)
+		local data = S.DataService:GetData(recipient)
+		local pass = Products.PassByKey[product.Pass or ""]
+		if not pass then
+			error(`gift product {product.Key} has no pass`)
+		end
+		if data.Gamepasses[pass.Key] then
+			-- Already owned (e.g. the friend left and the gift came back to the buyer): pay out in cash.
+			local amount = cashPackAmount(recipient, { Seconds = 1800, FloorFactor = 1.5 })
+			S.BackpackService:GiveCash(recipient, amount, product.Key, Enum.AnalyticsEconomyTransactionType.IAP)
+			notify(recipient, `You already had {pass.Name}, so you got +{Format.cash(amount)} cash instead!`)
+			return
+		end
+		data.GiftedPasses[pass.Key] = true
+		data.Gamepasses[pass.Key] = true
+		applyPassEffects(recipient)
+	end,
 	DoubleOffline = function(_product, _buyer, recipient)
 		local session = S.DataService:GetSession(recipient)
 		local amount = session.Runtime.OfflineReward or (S.AlienService:GetIncomePerSec(recipient) * 600)
@@ -218,11 +240,6 @@ local function processReceipt(info): Enum.ProductPurchaseDecision
 	return Enum.ProductPurchaseDecision.NotProcessedYet
 end
 
-local function applyPassEffects(player: Player)
-	S.AlienService:RefreshBase(player)
-	S.StateService:Mark(player)
-end
-
 local function checkPasses(player: Player)
 	local data = S.DataService:GetData(player)
 	if not data then
@@ -232,7 +249,9 @@ local function checkPasses(player: Player)
 		if pass.Id ~= 0 then
 			local ok, owns = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, pass.Id)
 			if ok then
-				data.Gamepasses[pass.Key] = owns or nil
+				data.Gamepasses[pass.Key] = (owns or data.GiftedPasses[pass.Key]) or nil
+			elseif data.GiftedPasses[pass.Key] then
+				data.Gamepasses[pass.Key] = true
 			end
 		end
 	end
@@ -265,6 +284,9 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 	end
 
 	local recipient = player
+	if product.Kind == "GiftPass" and giftToUserId == nil then
+		return false, "Pick a friend to gift this to"
+	end
 	if giftToUserId ~= nil then
 		if type(giftToUserId) ~= "number" or not product.Giftable then
 			return false, "This can't be gifted"
@@ -291,6 +313,8 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		if car and targetData.Rebirths < car.RequiredRebirths then
 			return false, `Rebirth {car.RequiredRebirths} needed for the {car.Name}`
 		end
+	elseif product.Kind == "GiftPass" and targetData.Gamepasses[product.Pass or ""] then
+		return false, `{recipient.DisplayName} already owns this`
 	elseif product.Kind == "SkipRebirth" then
 		-- Only the price tier for the recipient's current rebirth can be bought.
 		local current = Products.skipRebirthFor(targetData.Rebirths)

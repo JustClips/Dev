@@ -170,6 +170,8 @@ local function passItems(data): { Item }
 				OnBuy = function()
 					prompt(pass.Key)
 				end,
+				-- Passes can't be gifted on Roblox; each has a gift product instead.
+				GiftKey = if Products.passGift(pass.Key) then "Gift" .. pass.Key else nil,
 			})
 		end
 	end

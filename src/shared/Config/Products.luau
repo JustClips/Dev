@@ -76,6 +76,15 @@ local Products: { ProductDef } = {
 	{ Key = "SkipRebirth6", Id = 3723367635, Price = 849, Name = "Skip to Rebirth 6", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 6 },
 	{ Key = "SkipRebirth7", Id = 3723367645, Price = 1199, Name = "Skip to Rebirth 7+", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 7 },
 	{ Key = "DoubleOffline", Id = 3723359071, Price = 49, Name = "Double Offline Reward", Kind = "DoubleOffline", Category = "Special", Giftable = false },
+
+	-- Gamepass gifts: Roblox can't gift a gamepass, so each pass has a product you buy for a
+	-- friend. It unlocks the pass for them for good (data.GiftedPasses). Gift only.
+	{ Key = "GiftCash2x", Id = 3723394046, Price = 99, Name = "Gift: 2x Cash", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "Cash2x" },
+	{ Key = "GiftAutoSweep", Id = 3723394058, Price = 149, Name = "Gift: Auto Sweep", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "AutoSweep" },
+	{ Key = "GiftExtraSlots", Id = 3723394066, Price = 199, Name = "Gift: +3 Pet Slots", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "ExtraSlots" },
+	{ Key = "GiftCarry3", Id = 3723394082, Price = 129, Name = "Gift: Carry 3 Eggs", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "Carry3" },
+	{ Key = "GiftVIP", Id = 3723394088, Price = 249, Name = "Gift: VIP", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "VIP" },
+	{ Key = "GiftFasterHatch", Id = 3723394096, Price = 229, Name = "Gift: Faster Hatch", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "FasterHatch" },
 }
 
 local Config = {
@@ -104,6 +113,12 @@ end
 
 function Config.isLive(def: { Id: number }): boolean
 	return def.Id ~= 0
+end
+
+-- The gift product for a gamepass, if it exists and is live.
+function Config.passGift(passKey: string): ProductDef?
+	local def = Config.ProductByKey["Gift" .. passKey]
+	return if def and def.Id ~= 0 and def.Kind == "GiftPass" then def else nil
 end
 
 -- The Skip Rebirth product for a player who has `rebirths` rebirths now.

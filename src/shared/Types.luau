@@ -109,6 +109,7 @@ export type ProductKind =
 	| "SkipRebirth"
 	| "DoubleOffline"
 	| "MeteorShower"
+	| "GiftPass"
 
 export type ProductDef = {
 	Key: string,
@@ -128,6 +129,7 @@ export type ProductDef = {
 	Seconds: number?,
 	FloorFactor: number?,
 	Rebirth: number?,
+	Pass: string?,
 }
 
 export type GamepassDef = {
@@ -190,6 +192,8 @@ export type ProfileData = {
 	Index: { [string]: boolean },
 	Boosts: { [string]: number },
 	Gamepasses: { [string]: boolean },
+	-- Passes a friend gifted (gift products); count as owned for good.
+	GiftedPasses: { [string]: boolean },
 	Daily: { Streak: number, LastDay: number },
 	ReceiptsGranted: { [string]: string },
 	ReceiptOrder: { string },
