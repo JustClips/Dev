@@ -115,19 +115,18 @@ World.Teleports = {
 
 -- Terrain materials per area (colours are set at runtime).
 World.TerrainColors = {
-	Sand = Color3.fromRGB(176, 174, 168), -- moon regolith
-	Slate = Color3.fromRGB(118, 132, 164), -- crater
-	Basalt = Color3.fromRGB(62, 50, 88), -- dark side
-	Sandstone = Color3.fromRGB(178, 92, 62), -- mars
-	Glacier = Color3.fromRGB(170, 214, 240), -- europa ice
-	Grass = Color3.fromRGB(88, 196, 160), -- alien moss in pet parks
-	Concrete = Color3.fromRGB(196, 202, 214), -- base floors
-	Pavement = Color3.fromRGB(120, 128, 148), -- paths
-	Rock = Color3.fromRGB(132, 130, 126), -- moon mountains
+	Grass = Color3.fromRGB(104, 192, 72), -- backyard lawn, pet parks, hills
+	LeafyGrass = Color3.fromRGB(86, 170, 62), -- park
+	Sand = Color3.fromRGB(240, 216, 156), -- beach
+	Sandstone = Color3.fromRGB(214, 180, 120), -- beach dunes
+	Asphalt = Color3.fromRGB(84, 88, 96), -- city streets
+	Snow = Color3.fromRGB(244, 248, 255), -- snowy peaks
+	Glacier = Color3.fromRGB(196, 226, 246), -- snowy peaks hills
+	Concrete = Color3.fromRGB(206, 210, 218), -- base floors, city
+	Pavement = Color3.fromRGB(196, 186, 168), -- garden paths
+	Rock = Color3.fromRGB(140, 136, 128), -- mountain tops
+	Ground = Color3.fromRGB(150, 110, 72), -- dirt
 }
 
--- Far away in the sky, built by each client.
-World.EarthPosition = Vector3.new(-650, 420, -1100)
-World.EarthScale = 22
 
 return World

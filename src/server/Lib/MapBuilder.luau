@@ -1,6 +1,6 @@
 --!strict
 -- Builds the map at server start from Config/World:
---   buildTerrain     moon ground, crater bowl, paved walkways, mountains
+--   buildTerrain     grass and per-zone ground (park, beach, city, snow), walkways, hills
 --   buildStructures  part-built pieces that need no uploaded models: the launch pad,
 --                    base platforms + name signs, garage, upgrade station, sell signs
 --   buildProps       every Blender prop (rocket, arches, hatcheries, fences, trees, rocks)
@@ -70,20 +70,20 @@ function MapBuilder.buildTerrain()
 	end
 	local rng = Random.new(42)
 
-	-- Moon ground everywhere (surface y = 0), with a colour band per zone.
-	slab(terrain, CFrame.new(0, 0, -410), 1000, 1860, 0, M.Sand, 36)
-	rect(terrain, -500, -1340, 500, -976, 0, M.Glacier) -- Europa and beyond
-	rect(terrain, -500, -976, 500, -720, 0, M.Sandstone) -- Mars band
-	rect(terrain, -500, -720, 500, -472, 0, M.Basalt) -- Dark Side band
-	rect(terrain, -500, -472, 500, -212, 0, M.Slate) -- Crater band
+	-- Grass everywhere (surface y = 0), with a ground band per zone.
+	slab(terrain, CFrame.new(0, 0, -410), 1000, 1860, 0, M.Grass, 36)
+	rect(terrain, -500, -1340, 500, -976, 0, M.Snow) -- Snowy Peaks and beyond
+	rect(terrain, -500, -976, 500, -720, 0, M.Asphalt) -- City band
+	rect(terrain, -500, -720, 500, -472, 0, M.Sand) -- Beach band
+	rect(terrain, -500, -472, 500, -212, 0, M.LeafyGrass) -- Park band
 
-	-- Crater bowl: floor 8 studs down, raised rims on both sides.
+	-- Park dip (zone id Crater): floor 8 studs down, raised banks on both sides.
 	local crater = Zones.ById.Crater
 	local cMin, cMax = crater.Min, crater.Max
 	carve(terrain, cMin.X, cMin.Y, cMax.X, cMax.Y, -16, 12)
-	rect(terrain, cMin.X, cMin.Y, cMax.X, cMax.Y, crater.GroundY, M.Slate, 24)
-	rect(terrain, cMin.X - 28, cMin.Y - 28, cMin.X, cMax.Y + 28, 4, M.Slate, 12)
-	rect(terrain, cMax.X, cMin.Y - 28, cMax.X + 28, cMax.Y + 28, 4, M.Slate, 12)
+	rect(terrain, cMin.X, cMin.Y, cMax.X, cMax.Y, crater.GroundY, M.LeafyGrass, 24)
+	rect(terrain, cMin.X - 28, cMin.Y - 28, cMin.X, cMax.Y + 28, 4, M.Grass, 12)
+	rect(terrain, cMax.X, cMin.Y - 28, cMax.X + 28, cMax.Y + 28, 4, M.Grass, 12)
 
 	-- Corridors between zones: paved, with a ramp where the height changes.
 	for _, c in World.Corridors do
@@ -93,7 +93,7 @@ function MapBuilder.buildTerrain()
 			-- The ramp half sits on the low side (next to the crater).
 			local z0, z1 = if c.FromY > c.ToY then c.Min.Y else mid, if c.FromY > c.ToY then mid + 2 else c.Max.Y
 			carve(terrain, -12, z0, 12, z1, -16, 12)
-			rect(terrain, -12, z0, 12, z1, math.min(c.FromY, c.ToY), M.Slate, 24)
+			rect(terrain, -12, z0, 12, z1, math.min(c.FromY, c.ToY), M.Grass, 24)
 		end
 	end
 
@@ -112,17 +112,17 @@ function MapBuilder.buildTerrain()
 
 	-- Mountains around everything.
 	local hubX = World.BaseInner + World.BaseSize.Y + 2
-	ridge(terrain, rng, Vector2.new(-hubX - 53, 250), Vector2.new(-hubX - 53, -210), M.Rock, 24, 22, 36, -6)
-	ridge(terrain, rng, Vector2.new(hubX + 53, 250), Vector2.new(hubX + 53, -210), M.Rock, 24, 22, 36, -6)
-	ridge(terrain, rng, Vector2.new(-hubX - 53, 258), Vector2.new(hubX + 53, 258), M.Rock, 24, 22, 36, -6)
+	ridge(terrain, rng, Vector2.new(-hubX - 53, 250), Vector2.new(-hubX - 53, -210), M.Grass, 24, 22, 36, -6)
+	ridge(terrain, rng, Vector2.new(hubX + 53, 250), Vector2.new(hubX + 53, -210), M.Grass, 24, 22, 36, -6)
+	ridge(terrain, rng, Vector2.new(-hubX - 53, 258), Vector2.new(hubX + 53, 258), M.Grass, 24, 22, 36, -6)
 	-- passes between zones
 	for _, c in World.Corridors do
 		local z = (c.Min.Y + c.Max.Y) / 2
 		-- thin ridges so they never cover dust in the zones on either side
-		ridge(terrain, rng, Vector2.new(30, z), Vector2.new(170, z), M.Rock, 10, 8, 11, 0)
-		ridge(terrain, rng, Vector2.new(-30, z), Vector2.new(-170, z), M.Rock, 10, 8, 11, 0)
+		ridge(terrain, rng, Vector2.new(30, z), Vector2.new(170, z), M.Grass, 10, 8, 11, 0)
+		ridge(terrain, rng, Vector2.new(-30, z), Vector2.new(-170, z), M.Grass, 10, 8, 11, 0)
 	end
-	local zoneMaterial = { Crater = M.Slate, DarkSide = M.Basalt, Mars = M.Sandstone, Europa = M.Glacier }
+	local zoneMaterial = { Crater = M.LeafyGrass, DarkSide = M.Sandstone, Mars = M.Concrete, Europa = M.Glacier }
 	for _, zone in Zones.List do
 		local material = zoneMaterial[zone.Id]
 		if material then
@@ -132,7 +132,7 @@ function MapBuilder.buildTerrain()
 	end
 	-- Back wall behind the last zone.
 	local last = Zones.List[#Zones.List]
-	ridge(terrain, rng, Vector2.new(last.Min.X - 60, last.Min.Y - 58), Vector2.new(last.Max.X + 60, last.Min.Y - 58), zoneMaterial[last.Id] or M.Rock, 24, 22, 36, -4)
+	ridge(terrain, rng, Vector2.new(last.Min.X - 60, last.Min.Y - 58), Vector2.new(last.Max.X + 60, last.Min.Y - 58), zoneMaterial[last.Id] or M.Grass, 24, 22, 36, -4)
 end
 
 -- Lighting -----------------------------------------------------------------------
@@ -149,55 +149,60 @@ local function effect(className: string, name: string): Instance
 	return inst
 end
 
--- Bright lunar day under a black, starry sky.
+-- Sunny afternoon under a blue sky with clouds (Sweep the World).
 function MapBuilder.setupLighting()
-	Lighting.ClockTime = 14.2
-	Lighting.GeographicLatitude = 20
-	Lighting.Brightness = 1.9
-	Lighting.Ambient = Color3.fromRGB(64, 70, 104)
-	Lighting.OutdoorAmbient = Color3.fromRGB(100, 106, 150)
-	Lighting.ColorShift_Top = Color3.fromRGB(255, 244, 228)
+	Lighting.ClockTime = 14.5
+	Lighting.GeographicLatitude = 35
+	Lighting.Brightness = 2.6
+	Lighting.Ambient = Color3.fromRGB(110, 110, 120)
+	Lighting.OutdoorAmbient = Color3.fromRGB(150, 150, 160)
+	Lighting.ColorShift_Top = Color3.fromRGB(255, 247, 232)
 	Lighting.ColorShift_Bottom = Color3.fromRGB(0, 0, 0)
-	Lighting.EnvironmentDiffuseScale = 0.5
-	Lighting.EnvironmentSpecularScale = 0.5
+	Lighting.EnvironmentDiffuseScale = 0.6
+	Lighting.EnvironmentSpecularScale = 0.4
 	Lighting.GlobalShadows = true
-	Lighting.ShadowSoftness = 0.25
-	Lighting.ExposureCompensation = -0.15
+	Lighting.ShadowSoftness = 0.3
+	Lighting.ExposureCompensation = 0
 
-	local atmosphere = effect("Atmosphere", "MoonAtmosphere") :: Atmosphere
-	atmosphere.Density = 0.22
-	atmosphere.Offset = 0.05
-	atmosphere.Color = Color3.fromRGB(120, 130, 190)
-	atmosphere.Decay = Color3.fromRGB(40, 44, 90)
-	atmosphere.Glare = 0
-	atmosphere.Haze = 0.6
+	local atmosphere = effect("Atmosphere", "WorldAtmosphere") :: Atmosphere
+	atmosphere.Density = 0.28
+	atmosphere.Offset = 0.1
+	atmosphere.Color = Color3.fromRGB(199, 226, 255)
+	atmosphere.Decay = Color3.fromRGB(110, 150, 196)
+	atmosphere.Glare = 0.15
+	atmosphere.Haze = 1
 
-	local bloom = effect("BloomEffect", "MoonBloom") :: BloomEffect
-	bloom.Intensity = 0.45
+	local bloom = effect("BloomEffect", "WorldBloom") :: BloomEffect
+	bloom.Intensity = 0.3
 	bloom.Size = 24
-	bloom.Threshold = 1.7
+	bloom.Threshold = 2
 
-	local grade = effect("ColorCorrectionEffect", "MoonGrade") :: ColorCorrectionEffect
-	grade.Saturation = 0.15
-	grade.Contrast = 0.08
+	local grade = effect("ColorCorrectionEffect", "WorldGrade") :: ColorCorrectionEffect
+	grade.Saturation = 0.18
+	grade.Contrast = 0.06
 	grade.Brightness = 0.02
+	grade.TintColor = Color3.fromRGB(255, 252, 245)
 
 	local rays = Lighting:FindFirstChildOfClass("SunRaysEffect")
 	if rays then
-		rays.Intensity = 0.04
+		rays.Intensity = 0.06
 	end
 
-	local sky = effect("Sky", "MoonSky") :: Sky
-	local stars = AssetLibrary.image("Sky_Stars")
-	if stars ~= "" then
-		for _, face in { "Bk", "Dn", "Ft", "Lf", "Rt", "Up" } do
-			(sky :: any)["Skybox" .. face] = stars
-		end
+	-- Roblox's own daytime sky (blue with soft clouds), no stars.
+	local sky = effect("Sky", "WorldSky") :: Sky
+	for _, face in { "Bk", "Dn", "Ft", "Lf", "Rt", "Up" } do
+		(sky :: any)["Skybox" .. face] = `rbxasset://textures/sky/sky512_{string.lower(face)}.tex`
 	end
-	sky.StarCount = 3000
+	sky.StarCount = 0
 	sky.CelestialBodiesShown = true
-	sky.SunAngularSize = 11
-	sky.MoonAngularSize = 0
+	sky.SunAngularSize = 14
+	sky.MoonAngularSize = 8
+
+	local clouds = Workspace.Terrain:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
+	clouds.Cover = 0.55
+	clouds.Density = 0.6
+	clouds.Color = Color3.fromRGB(255, 255, 255)
+	clouds.Parent = Workspace.Terrain
 end
 
 -- Part helpers --------------------------------------------------------------------

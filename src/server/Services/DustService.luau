@@ -22,6 +22,7 @@ local parts: { [number]: BasePart } = {}
 local hp: { [number]: number } = {}
 local zoneOf: { [number]: any } = {} -- id -> ZoneDef
 local baseColor: { [number]: Color3 } = {}
+local baseMaterial: { [number]: Enum.Material } = {}
 local zoneTiles: { [string]: { number } } = {}
 -- Golden dust piles: a few per zone at a time, worth Economy.Golden.Mult x cash.
 local golden: { [number]: boolean } = {}
@@ -55,11 +56,15 @@ local function buildTiles()
 			part.CanQuery = false
 			part.CanTouch = false
 			part.CastShadow = false
-			part.Material = Enum.Material.Sand
-			-- Slight checker variation so the field doesn't look flat.
+			part.Material = zone.DustMaterial or Enum.Material.Sand
+			-- Each tile takes a colour from the zone's palette (a mix of leaves), with a
+			-- slight checker shade so the field doesn't look flat.
+			local palette = zone.DustPalette
+			local color = if palette then palette[((id * 1103515245 + 12345) // 65536) % #palette + 1] else zone.DustColor
 			local shade = if (index + (index // zg.Cols)) % 2 == 0 then 1 else 0.94
-			part.Color = Color3.new(zone.DustColor.R * shade, zone.DustColor.G * shade, zone.DustColor.B * shade)
+			part.Color = Color3.new(color.R * shade, color.G * shade, color.B * shade)
 			baseColor[id] = part.Color
+			baseMaterial[id] = part.Material
 			zoneTiles[zone.Id] = zoneTiles[zone.Id] or {}
 			table.insert(zoneTiles[zone.Id], id)
 			part.TopSurface = Enum.SurfaceType.Smooth
@@ -103,7 +108,7 @@ local function setGolden(id: number, on: boolean)
 	golden[id] = if on then true else nil
 	goldenCount[zone.Id] = (goldenCount[zone.Id] or 0) + (if on then 1 else -1)
 	part.Color = if on then GOLD else baseColor[id]
-	part.Material = if on then Enum.Material.Foil else Enum.Material.Sand
+	part.Material = if on then Enum.Material.Foil else baseMaterial[id]
 	local sparkle = part:FindFirstChild("Gold")
 	if on and not sparkle then
 		local e = Instance.new("ParticleEmitter")

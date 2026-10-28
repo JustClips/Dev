@@ -67,6 +67,9 @@ export type ZoneDef = {
 	MaxRarity: Rarity,
 	RegrowSeconds: number,
 	DustColor: Color3,
+	-- What lies on the ground: tiles pick a colour from DustPalette (leaves, litter, snow...).
+	DustMaterial: Enum.Material?,
+	DustPalette: { Color3 }?,
 	Exclusions: { Exclusion },
 }
 
