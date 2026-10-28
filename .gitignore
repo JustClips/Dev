@@ -3,3 +3,6 @@ node_modules/
 *.rbxlx
 *.lock
 sourcemap.json
+art/out/*
+!art/out/meta.json
+__pycache__/

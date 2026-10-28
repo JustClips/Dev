@@ -14,6 +14,7 @@ local State = require(Client.State)
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
 local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
 local Grid = require(Shared.Grid)
@@ -36,6 +37,8 @@ local emitterPart: Part
 local numberPool: { { attachment: Attachment, gui: BillboardGui, label: TextLabel } } = {}
 local nextNumber = 1
 local tickCount = 0
+local sweepTrack: AnimationTrack? = nil
+local trackHumanoid: Humanoid? = nil
 
 local function character(): (Model?, BasePart?, Humanoid?)
 	local char = player.Character
@@ -48,6 +51,30 @@ end
 local function toolEquipped(char: Model): boolean
 	local tool = char:FindFirstChildOfClass("Tool")
 	return tool ~= nil and tool:GetAttribute("SweepTool") == true
+end
+
+-- Plays the sweeping arm swing while you sweep with a hand tool.
+local function setSweepAnimation(on: boolean)
+	local char, _, humanoid = character()
+	if humanoid ~= trackHumanoid then
+		if sweepTrack then
+			sweepTrack:Stop(0)
+		end
+		sweepTrack = nil
+		trackHumanoid = humanoid
+	end
+	if on and not sweepTrack and char and humanoid then
+		sweepTrack = AssetLibrary.loadTrack(humanoid, "Player_Sweep")
+	end
+	local track = sweepTrack
+	if not track then
+		return
+	end
+	if on and not track.IsPlaying then
+		track:Play(0.15)
+	elseif not on and track.IsPlaying then
+		track:Stop(0.25)
+	end
 end
 
 local function shouldSweep(): (boolean, Vector3?)
@@ -180,7 +207,7 @@ local function onSweepResult(result)
 	end
 	if result.Full and os.clock() > fullWarnAt then
 		fullWarnAt = os.clock() + 6
-		C.HudController:Toast("Backpack full! Sell at the Rocket 🚀", "Bad")
+		C.HudController:Toast("Backpack full! Tap Sell to fly to the Rocket", "Bad")
 	end
 end
 
@@ -259,6 +286,9 @@ function SweepController:Start()
 		end
 		acc = 0
 		local active, position = shouldSweep()
+		local char, _, humanoid = character()
+		local onFoot = humanoid ~= nil and humanoid.SeatPart == nil
+		setSweepAnimation(active and onFoot and char ~= nil and toolEquipped(char :: Model))
 		if active and position then
 			Net.event("SweepTick"):FireServer(position)
 			tickCount += 1

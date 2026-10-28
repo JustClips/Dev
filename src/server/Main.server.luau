@@ -9,6 +9,7 @@ local Net = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Net")
 Net.setup()
 
 local ORDER = {
+	"AssetService",
 	"DataService",
 	"AnalyticsService",
 	"StateService",

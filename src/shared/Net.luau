@@ -28,6 +28,7 @@ local FUNCTIONS: { [string]: number } = {
 	PromptPurchase = 4, -- (productKey, giftToUserId?) -> ok, message
 	ToggleVehicle = 3,
 	EquipTool = 4,
+	Teleport = 2, -- ("Base" | "Rocket" | zoneId) -> ok, message
 }
 
 local FOLDER_NAME = "Remotes"

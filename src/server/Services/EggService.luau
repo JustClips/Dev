@@ -5,6 +5,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
+local AssetLibrary = require(Shared.AssetLibrary)
 local Eggs = require(Shared.Config.Eggs)
 local Zones = require(Shared.Config.Zones)
 local Net = require(Shared.Net)
@@ -82,23 +83,23 @@ local function refreshCarryVisual(player: Player)
 	local folder = Instance.new("Folder")
 	folder.Name = "CarriedEggs"
 	for i, rarity in carried do
-		local egg = Instance.new("Part")
-		egg.Name = "Egg"
-		egg.Size = Vector3.new(1.4, 1.8, 1.4)
-		egg.Color = Eggs.ByName[rarity].Color
-		egg.Material = Enum.Material.Neon
-		egg.CanCollide = false
-		egg.CanQuery = false
-		egg.CanTouch = false
-		egg.Massless = true
-		local mesh = Instance.new("SpecialMesh")
-		mesh.MeshType = Enum.MeshType.Sphere
-		mesh.Parent = egg
-		egg.CFrame = head.CFrame * CFrame.new(0, 1.6 + (i - 1) * 1.7, 0)
-		local weld = Instance.new("WeldConstraint")
-		weld.Part0 = head
-		weld.Part1 = egg
-		weld.Parent = egg
+		-- A smaller copy of the egg model, welded above the head.
+		local egg = AssetLibrary.egg(rarity)
+		egg:ScaleTo(0.6)
+		egg:PivotTo(head.CFrame * CFrame.new(0, 0.8 + (i - 1) * 1.6, 0))
+		for _, part in egg:GetDescendants() do
+			if part:IsA("BasePart") then
+				part.Anchored = false
+				part.Massless = true
+				part.CanCollide = false
+				part.CanQuery = false
+				part.CanTouch = false
+				local weld = Instance.new("WeldConstraint")
+				weld.Part0 = head
+				weld.Part1 = part
+				weld.Parent = part
+			end
+		end
 		egg.Parent = folder
 	end
 	folder.Parent = character
@@ -146,18 +147,18 @@ end
 -- Spawns a physical egg. owner gets it exclusively for EggOwnerSeconds.
 function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?): BasePart
 	local def = Eggs.ByName[rarity]
+	-- The egg entity is an invisible touch box; the Blender egg model sits inside it.
 	local egg = Instance.new("Part")
 	egg.Name = rarity .. "Egg"
-	egg.Size = Vector3.new(2.2, 2.9, 2.2)
-	egg.CFrame = CFrame.new(position + Vector3.new(0, 1.5, 0))
+	egg.Size = Vector3.new(3, 3.4, 3)
+	egg.CFrame = CFrame.new(position + Vector3.new(0, 1.7, 0))
 	egg.Anchored = true
 	egg.CanCollide = false
 	egg.CanQuery = false
-	egg.Material = Enum.Material.Neon
-	egg.Color = def.Color
-	local mesh = Instance.new("SpecialMesh")
-	mesh.MeshType = Enum.MeshType.Sphere
-	mesh.Parent = egg
+	egg.Transparency = 1
+	local visual = AssetLibrary.egg(rarity)
+	visual:PivotTo(CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0))
+	visual.Parent = egg
 	local light = Instance.new("PointLight")
 	light.Color = def.Color
 	light.Range = 10

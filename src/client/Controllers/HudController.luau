@@ -1,6 +1,8 @@
 --!strict
--- Main HUD: cash, backpack, Moon bar + event, boost timers, menu buttons, next-tool
--- button, toasts and server announcements.
+-- Main HUD (stud style, see docs/UI_STYLE.md): left rail (Shop / Index / Rebirth),
+-- top teleport pills (Base / Sell / Zones), Moon Clean bar + event, boost chips,
+-- wallet (cash + backpack) bottom-left, upgrade card + Drive/Auto on the right,
+-- the mobile SWEEP button, toasts and server announcements.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -10,21 +12,30 @@ local State = require(Client.State)
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local Tools = require(Shared.Config.Tools)
+local Zones = require(Shared.Config.Zones)
 
 local MAX_TOASTS = 4
 local TOAST_SECONDS = 3
 local TOAST_COLORS: { [string]: Color3 } = {
-	Good = Color3.fromRGB(140, 255, 170),
-	Bad = Color3.fromRGB(255, 140, 140),
-	Sell = Color3.fromRGB(255, 220, 90),
-	Egg = Color3.fromRGB(255, 200, 255),
-	Info = Color3.fromRGB(200, 220, 255),
+	Good = Color3.fromRGB(124, 245, 200),
+	Bad = Color3.fromRGB(255, 120, 130),
+	Sell = Color3.fromRGB(255, 200, 60),
+	Egg = Color3.fromRGB(255, 190, 255),
+	Info = Color3.fromRGB(255, 255, 255),
 }
 local LUCK_TIERS = { 16, 8, 4, 2 }
+local GREEN = Color3.fromRGB(61, 220, 90)
+local GREY = Color3.fromRGB(166, 174, 194)
+local DANGER = Color3.fromRGB(255, 77, 94)
+local SAND = Color3.fromRGB(233, 201, 139)
+local NAVY = Color3.fromRGB(20, 26, 51)
+local MINT = Color3.fromRGB(124, 245, 200)
+local ZONE_ORDER = { "Landing", "Crater", "DarkSide", "Mars" }
 
 local HudController = {}
 
@@ -35,6 +46,9 @@ local toasts: { TextLabel } = {}
 local pulseTween: Tween? = nil
 
 function HudController:Toast(text: string, kind: string?)
+	if text == "" then
+		return
+	end
 	local template = el.ToastTemplate :: TextLabel
 	local toast = template:Clone()
 	toast.Name = "Toast"
@@ -47,11 +61,21 @@ function HudController:Toast(text: string, kind: string?)
 	while #toasts > MAX_TOASTS do
 		table.remove(toasts, 1):Destroy()
 	end
+	if not Ui.reducedMotion() then
+		local pop = Instance.new("UIScale")
+		pop.Scale = 0.7
+		pop.Parent = toast
+		TweenService:Create(pop, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	end
 	task.delay(TOAST_SECONDS, function()
 		if toast.Parent then
-			local tween = TweenService:Create(toast, TweenInfo.new(0.4), { TextTransparency = 1, BackgroundTransparency = 1 })
-			tween:Play()
-			tween.Completed:Wait()
+			local stroke = toast:FindFirstChildOfClass("UIStroke")
+			local fade = TweenInfo.new(0.35)
+			TweenService:Create(toast, fade, { TextTransparency = 1, BackgroundTransparency = 1 }):Play()
+			if stroke then
+				TweenService:Create(stroke, fade, { Transparency = 1 }):Play()
+			end
+			task.wait(0.35)
 			local i = table.find(toasts, toast)
 			if i then
 				table.remove(toasts, i)
@@ -65,19 +89,17 @@ local announceToken = 0
 local function announce(text: string)
 	announceToken += 1
 	local token = announceToken
-	local label = el.Announcement :: TextLabel
-	label.Text = text
-	label.Visible = true
-	label.TextTransparency = 0
+	el.AnnouncementText.Text = text
+	el.Announcement.Visible = true
 	Ui.sound("Announce")
 	task.delay(5, function()
 		if token == announceToken then
-			label.Visible = false
+			el.Announcement.Visible = false
 		end
 	end)
 end
 
--- Pulses a HUD button (tutorial pointer for UI targets).
+-- Pulses a HUD element (tutorial pointer for UI targets).
 local highlighted: string? = nil
 function HudController:Highlight(name: string?)
 	if name == highlighted then
@@ -88,11 +110,39 @@ function HudController:Highlight(name: string?)
 		pulseTween:Cancel()
 		pulseTween = nil
 	end
-	local button = el.NextToolButton :: TextButton
+	local button = el.NextToolButton :: GuiButton
 	button.Rotation = 0
-	if name == "NextTool" then
-		pulseTween = TweenService:Create(button, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Rotation = 3 })
+	if name == "NextTool" and not Ui.reducedMotion() then
+		pulseTween = TweenService:Create(button, TweenInfo.new(0.45, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Rotation = 3 })
 		pulseTween:Play()
+	end
+end
+
+local function setButton(button: GuiButton, enabled: boolean, color: Color3)
+	-- Stays clickable: the server answers "need $X" which is more useful than nothing.
+	button.BackgroundColor3 = if enabled then color else GREY
+end
+
+local function renderZones(data)
+	for _, zoneId in ZONE_ORDER do
+		local row = el.ZoneRows[zoneId]
+		local zone = Zones.ById[zoneId]
+		if row and zone then
+			local unlocked = zoneId == "Landing" or data.ZonesUnlocked[zoneId] == true
+			local price = row:FindFirstChild("Price") :: TextLabel
+			local rowIcon = row:FindFirstChild("Icon") :: ImageLabel
+			rowIcon.Image = AssetLibrary.image(if unlocked then "Icon_Zones" else "Icon_Lock")
+			if unlocked then
+				price.Text = "Go!"
+				price.TextColor3 = Color3.fromRGB(30, 158, 58)
+			elseif zone.RequiredRebirths > data.Rebirths then
+				price.Text = `Rebirth {zone.RequiredRebirths}`
+				price.TextColor3 = DANGER
+			else
+				price.Text = Format.cash(zone.UnlockCost)
+				price.TextColor3 = if BigNum.gte(data.Cash, zone.UnlockCost) then Color3.fromRGB(30, 158, 58) else DANGER
+			end
+		end
 	end
 end
 
@@ -101,28 +151,37 @@ local function render(data)
 	el.Income.Text = `+{Format.cash(data.IncomePerSec)}/s`
 
 	local fraction = if data.Capacity > 0 then math.clamp(data.Backpack / data.Capacity, 0, 1) else 0
-	el.BackpackFill.Size = UDim2.fromScale(fraction, 1)
+	el.BackpackFill.Size = UDim2.fromScale(math.max(fraction, 0.04), 1)
 	el.BackpackAmount.Text = `{Format.number(data.Backpack)} / {Format.number(data.Capacity)}`
 	el.BackpackFull.Visible = fraction >= 1
-	el.BackpackFill.BackgroundColor3 = if fraction >= 1 then Color3.fromRGB(255, 120, 110) else Color3.fromRGB(233, 201, 139)
+	el.BackpackFill.BackgroundColor3 = if fraction >= 1 then DANGER else SAND
 
 	local nextTier = data.ToolTier + 1
 	if nextTier <= Tools.MaxTier then
 		local def = Tools.get(nextTier)
 		local affordable = BigNum.gte(data.Cash, def.Price)
 		el.NextTool.Visible = true
-		el.NextToolButton.Text = `Buy {def.Name}  {Format.cash(def.Price)}`
-		el.NextToolButton.BackgroundColor3 = if affordable then Color3.fromRGB(60, 203, 114) else Color3.fromRGB(90, 96, 120)
-		el.NextToolHint.Text = if def.IsVehicle then `Next: vehicle! radius {def.Radius}` else `Next tool: radius {def.Radius}, holds {Format.number(def.Capacity)}`
+		el.NextToolName.Text = def.Name
+		el.NextToolIcon.Image = AssetLibrary.image(if def.IsVehicle then "Icon_Vehicle" else "Icon_Tool")
+		Ui.setText(el.NextToolButton, `Buy {Format.cash(def.Price)}`)
+		setButton(el.NextToolButton, affordable, GREEN)
+		el.NextToolHint.Text = if def.IsVehicle
+			then `A vehicle! Sweeps {def.Radius} wide`
+			else `Sweeps {def.Radius} wide, holds {Format.number(def.Capacity)}`
 	else
 		el.NextTool.Visible = false
 	end
 
 	local current = Tools.get(data.EffectiveTier)
 	el.DriveButton.Visible = current.IsVehicle
-	el.DriveButton.Text = if data.InVehicle then "Exit" else "🚗 Drive"
+	Ui.setText(el.DriveButton, if data.InVehicle then "Get out" else "Drive")
 	el.AutoButton.Visible = data.Gamepasses.AutoSweep == true
-	el.AutoButton.Text = if data.AutoSweep then "Auto: ON" else "Auto: OFF"
+	Ui.setText(el.AutoButton, if data.AutoSweep then "Auto: ON" else "Auto: OFF")
+	el.AutoButton.BackgroundColor3 = if data.AutoSweep then Color3.fromRGB(30, 158, 120) else NAVY
+
+	if el.ZonePicker.Visible then
+		renderZones(data)
+	end
 end
 
 local function renderServer()
@@ -130,15 +189,21 @@ local function renderServer()
 	local endsAt = State.server("EventEndsAt") or 0
 	local left = math.max(0, endsAt - State.now())
 	if eventState == "Countdown" then
-		el.MoonLabel.Text = `☄️ Meteor Shower in {Format.time(left)}`
+		el.MoonLabel.Text = `Meteor Shower in {Format.time(left)}`
 		el.MoonFill.Size = UDim2.fromScale(1, 1)
+		el.MoonFill.BackgroundColor3 = Color3.fromRGB(255, 154, 60)
+		el.MoonIcon.Image = AssetLibrary.image("Icon_Meteor")
 	elseif eventState == "Shower" then
-		el.MoonLabel.Text = `☄️ METEOR SHOWER {Format.time(left)}`
+		el.MoonLabel.Text = `METEOR SHOWER {Format.time(left)}`
 		el.MoonFill.Size = UDim2.fromScale(math.clamp(left / 60, 0, 1), 1)
+		el.MoonFill.BackgroundColor3 = Color3.fromRGB(255, 154, 60)
+		el.MoonIcon.Image = AssetLibrary.image("Icon_Meteor")
 	else
 		local clean = State.server("MoonClean") or 0
-		el.MoonLabel.Text = `🌙 Moon Clean {Format.percent(clean)}`
-		el.MoonFill.Size = UDim2.fromScale(clean, 1)
+		el.MoonLabel.Text = `Moon Clean {Format.percent(clean)}`
+		el.MoonFill.Size = UDim2.fromScale(math.max(clean, 0.03), 1)
+		el.MoonFill.BackgroundColor3 = MINT
+		el.MoonIcon.Image = AssetLibrary.image("Icon_Star")
 	end
 end
 
@@ -154,12 +219,12 @@ local function renderBoosts()
 	for _, tier in LUCK_TIERS do
 		local ends = State.server("Luck" .. tier) or 0
 		if ends > now then
-			table.insert(entries, `🍀 {tier}x Luck {Format.time(ends - now)}`)
+			table.insert(entries, `{tier}x Luck  {Format.time(ends - now)}`)
 		end
 	end
 	local data = State.data
 	if data and (data.Boosts.Cash2x or 0) > now then
-		table.insert(entries, `💰 2x Cash {Format.time(data.Boosts.Cash2x - now)}`)
+		table.insert(entries, `2x Cash  {Format.time(data.Boosts.Cash2x - now)}`)
 	end
 	for i, text in entries do
 		local label = template:Clone()
@@ -171,43 +236,98 @@ local function renderBoosts()
 	end
 end
 
+local function teleport(target: string)
+	el.ZonePicker.Visible = false
+	local ok, message = Net.func("Teleport"):InvokeServer(target)
+	if message and message ~= "" then
+		HudController:Toast(message, if ok then "Info" else "Bad")
+	end
+end
+
+-- Phones: the move thumbstick owns the bottom-left corner, so the wallet goes top-left.
+local function layoutForTouch()
+	if not UserInputService.TouchEnabled then
+		return
+	end
+	el.Wallet.AnchorPoint = Vector2.new(0, 0)
+	el.Wallet.Position = UDim2.new(0, 14, 0, 6)
+	local layout = el.Wallet:FindFirstChildOfClass("UIListLayout")
+	if layout then
+		layout.VerticalAlignment = Enum.VerticalAlignment.Top
+	end
+	el.Rail.Position = UDim2.new(0, 14, 0.58, 0)
+	el.SweepButton.Visible = true
+end
+
 function HudController:Init(controllers)
 	C = controllers
 	hud = Ui.screen("Hud")
-	el.Cash = Ui.find(hud, "CashPanel.Cash")
-	el.Income = Ui.find(hud, "CashPanel.Income")
-	el.BackpackFill = Ui.find(hud, "BackpackPanel.Bar.Fill")
-	el.BackpackAmount = Ui.find(hud, "BackpackPanel.Bar.Amount")
-	el.BackpackFull = Ui.find(hud, "BackpackPanel.Full")
+	el.Rail = Ui.find(hud, "Rail")
+	el.Wallet = Ui.find(hud, "Wallet")
+	el.Cash = Ui.find(hud, "Wallet.CashPanel.Cash")
+	el.Income = Ui.find(hud, "Wallet.CashPanel.Income")
+	el.PlusButton = Ui.find(hud, "Wallet.CashPanel.PlusButton")
+	el.BackpackFill = Ui.find(hud, "Wallet.BackpackPanel.Bar.Fill")
+	el.BackpackAmount = Ui.find(hud, "Wallet.BackpackPanel.Bar.Amount")
+	el.BackpackFull = Ui.find(hud, "Wallet.BackpackPanel.Full")
 	el.MoonLabel = Ui.find(hud, "MoonPanel.Label")
 	el.MoonFill = Ui.find(hud, "MoonPanel.Bar.Fill")
+	el.MoonIcon = Ui.find(hud, "MoonPanel.Icon")
 	el.Announcement = Ui.find(hud, "Announcement")
+	el.AnnouncementText = Ui.find(hud, "Announcement.Text")
 	el.BoostTemplate = Ui.find(hud, "Boosts.Template")
-	el.NextTool = Ui.find(hud, "NextTool")
-	el.NextToolButton = Ui.find(hud, "NextTool.Button")
-	el.NextToolHint = Ui.find(hud, "NextTool.Hint")
-	el.DriveButton = Ui.find(hud, "Actions.DriveButton")
-	el.AutoButton = Ui.find(hud, "Actions.AutoButton")
-	el.SweepButton = Ui.find(hud, "Actions.SweepButton")
+	el.NextTool = Ui.find(hud, "Right.NextTool")
+	el.NextToolButton = Ui.find(hud, "Right.NextTool.Button")
+	el.NextToolHint = Ui.find(hud, "Right.NextTool.Hint")
+	el.NextToolName = Ui.find(hud, "Right.NextTool.ToolName")
+	el.NextToolIcon = Ui.find(hud, "Right.NextTool.Icon")
+	el.DriveButton = Ui.find(hud, "Right.DriveButton")
+	el.AutoButton = Ui.find(hud, "Right.AutoButton")
+	el.SweepButton = Ui.find(hud, "SweepButton")
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
+	el.ZonePicker = Ui.find(hud, "ZonePicker")
+	el.ZoneRows = {}
+	for _, zoneId in ZONE_ORDER do
+		el.ZoneRows[zoneId] = Ui.find(hud, "ZonePicker.Zone_" .. zoneId)
+	end
 end
 
-function HudController:GetSweepButton(): TextButton
+function HudController:GetSweepButton(): GuiButton
 	return el.SweepButton
 end
 
 function HudController:Start()
-	el.SweepButton.Visible = UserInputService.TouchEnabled
+	layoutForTouch()
 
-	Ui.button(Ui.find(hud, "Menu.ShopButton"), function()
+	Ui.button(Ui.find(hud, "Rail.ShopButton"), function()
 		C.ShopController:Toggle()
 	end)
-	Ui.button(Ui.find(hud, "Menu.IndexButton"), function()
+	Ui.button(Ui.find(hud, "Rail.IndexButton"), function()
 		C.IndexController:Toggle()
 	end)
-	Ui.button(Ui.find(hud, "Menu.RebirthButton"), function()
+	Ui.button(Ui.find(hud, "Rail.RebirthButton"), function()
 		C.RebirthController:Toggle()
 	end)
+	Ui.button(el.PlusButton, function()
+		C.ShopController:Open("Cash")
+	end)
+	Ui.button(Ui.find(hud, "Pills.BaseButton"), function()
+		teleport("Base")
+	end)
+	Ui.button(Ui.find(hud, "Pills.SellButton"), function()
+		teleport("Rocket")
+	end)
+	Ui.button(Ui.find(hud, "Pills.ZonesButton"), function()
+		el.ZonePicker.Visible = not el.ZonePicker.Visible
+		if el.ZonePicker.Visible and State.data then
+			renderZones(State.data)
+		end
+	end)
+	for zoneId, row in el.ZoneRows do
+		Ui.button(row, function()
+			teleport(if zoneId == "Landing" then "Rocket" else zoneId)
+		end)
+	end
 	Ui.button(el.NextToolButton, function()
 		local ok, message = Net.func("BuyNextTool"):InvokeServer()
 		HudController:Toast(message or "", if ok then "Good" else "Bad")

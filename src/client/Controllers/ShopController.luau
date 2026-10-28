@@ -1,6 +1,8 @@
 --!strict
--- Shop screen: tools (cash + Robux skips + vehicle rentals), boosts, eggs, gamepasses, cash.
--- Robux items whose ID is still 0 are hidden. Giftable items have a gift button.
+-- Shop screen: deals (featured Starter Pack + server luck), tools (cash + Robux skips +
+-- vehicle rentals), eggs, gamepasses, cash. Cash prices are green buttons, Robux prices are
+-- gold with the Robux glyph. Robux items whose ID is still 0 are hidden.
+-- Giftable items have a pink gift button.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -9,16 +11,23 @@ local State = require(Client.State)
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
+local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 local Tools = require(Shared.Config.Tools)
 
-local TABS = { "Tools", "Boosts", "Eggs", "Passes", "Cash" }
-local GREEN = Color3.fromRGB(60, 203, 114)
-local GREY = Color3.fromRGB(90, 96, 120)
-local ROBUX = Color3.fromRGB(46, 170, 90)
+local TABS = { "Deals", "Tools", "Eggs", "Passes", "Cash" }
+local GREEN = Color3.fromRGB(61, 220, 90)
+local GREY = Color3.fromRGB(166, 174, 194)
+local ROBUX = Color3.fromRGB(255, 200, 60)
+local WHITE = Color3.new(1, 1, 1)
+local INK = Color3.fromRGB(27, 31, 58)
+local MINT = Color3.fromRGB(124, 245, 200)
+local LIST_TOP = 80
+local FEATURED_HEIGHT = 160
 
 type Item = {
 	Name: string,
@@ -28,6 +37,7 @@ type Item = {
 	Enabled: boolean,
 	OnBuy: (() -> ())?,
 	GiftKey: string?,
+	Icon: string?,
 }
 
 local ShopController = {}
@@ -37,11 +47,12 @@ local gui: ScreenGui
 local list: ScrollingFrame
 local template: Frame
 local emptyLabel: TextLabel
+local featured: Frame
 local giftPicker: Frame
 local giftList: ScrollingFrame
 local giftTemplate: TextButton
 local giftEmpty: TextLabel
-local currentTab = "Tools"
+local currentTab = "Deals"
 local tabButtons: { [string]: TextButton } = {}
 
 local function toast(ok: boolean, message: string?)
@@ -57,7 +68,11 @@ local function prompt(key: string, giftTo: number?)
 	end
 end
 
-local function robuxItem(key: string, desc: string?): Item?
+local function robuxPrice(price: number): string
+	return `{Ui.ROBUX} {price}`
+end
+
+local function robuxItem(key: string, desc: string?, iconName: string?): Item?
 	local def = Products.ProductByKey[key]
 	if not def or def.Id == 0 then
 		return nil
@@ -65,7 +80,8 @@ local function robuxItem(key: string, desc: string?): Item?
 	return {
 		Name = def.Name,
 		Desc = desc or "",
-		Price = `R$ {def.Price}`,
+		Price = robuxPrice(def.Price),
+		Icon = iconName,
 		Color = ROBUX,
 		Enabled = true,
 		OnBuy = function()
@@ -80,8 +96,9 @@ local function toolItems(data): { Item }
 	for tier = 2, Tools.MaxTier do
 		local def = Tools.get(tier)
 		local desc = `Radius {def.Radius} · Power {def.Power} · Holds {Format.number(def.Capacity)}` .. (if def.IsVehicle then " · Vehicle!" else "")
+		local toolIcon = if def.IsVehicle then "Icon_Vehicle" else "Icon_Tool"
 		if tier <= data.ToolTier then
-			table.insert(items, { Name = def.Name, Desc = desc, Price = "Owned", Color = GREY, Enabled = false })
+			table.insert(items, { Name = def.Name, Desc = desc, Price = "Owned", Color = GREY, Enabled = false, Icon = toolIcon })
 		elseif tier == data.ToolTier + 1 then
 			local affordable = BigNum.gte(data.Cash, def.Price)
 			table.insert(items, {
@@ -90,22 +107,23 @@ local function toolItems(data): { Item }
 				Price = Format.cash(def.Price),
 				Color = if affordable then GREEN else GREY,
 				Enabled = true,
+				Icon = toolIcon,
 				OnBuy = function()
 					toast(Net.func("BuyNextTool"):InvokeServer())
 				end,
 			})
-			local skip = robuxItem("ToolSkip" .. tier, "Skip the grind: get it right now.")
+			local skip = robuxItem("ToolSkip" .. tier, "Skip the grind: get it right now.", toolIcon)
 			if skip then
 				table.insert(items, skip)
 			end
 		else
-			table.insert(items, { Name = def.Name, Desc = desc, Price = "Locked", Color = GREY, Enabled = false })
+			table.insert(items, { Name = def.Name, Desc = desc, Price = "Locked", Color = GREY, Enabled = false, Icon = "Icon_Lock" })
 		end
 	end
 	for _, key in { "RentSweeperCart", "RentDustTruck", "RentMoonCrawler" } do
 		local def = Products.ProductByKey[key]
 		if def and (def.Tier or 0) > data.EffectiveTier then
-			local item = robuxItem(key, "Drive it until you rebirth or leave.")
+			local item = robuxItem(key, "Drive it until you rebirth or leave.", "Icon_Vehicle")
 			if item then
 				table.insert(items, item)
 			end
@@ -114,21 +132,20 @@ local function toolItems(data): { Item }
 	return items
 end
 
-local function boostItems(data): { Item }
+local function starterPackOnSale(data): boolean
+	local def = Products.ProductByKey.StarterPack
+	return def ~= nil and def.Id ~= 0 and not data.Flags.StarterPackBought
+end
+
+local function dealItems(_data): { Item }
 	local items: { Item } = {}
-	if not data.Flags.StarterPackBought then
-		local item = robuxItem("StarterPack", "$500 + Uncommon egg + 10 min 2x cash. Once only!")
-		if item then
-			table.insert(items, item)
-		end
-	end
 	for _, key in { "ServerLuck2", "ServerLuck4", "ServerLuck8", "ServerLuck16" } do
-		local item = robuxItem(key, "Better eggs and mutations for EVERYONE here. Time stacks.")
+		local item = robuxItem(key, "Better eggs and mutations for EVERYONE here. Time stacks.", "Icon_Luck")
 		if item then
 			table.insert(items, item)
 		end
 	end
-	local shower = robuxItem("MeteorShower", "Start a Meteor Shower for the whole server!")
+	local shower = robuxItem("MeteorShower", "Start a Meteor Shower for the whole server!", "Icon_Meteor")
 	if shower then
 		table.insert(items, shower)
 	end
@@ -138,7 +155,7 @@ end
 local function eggItems(data): { Item }
 	local items: { Item } = {}
 	for _, key in { "CosmicEgg1", "CosmicEgg3" } do
-		local item = robuxItem(key, "Hatches Cosmo the Infinite, the event alien!")
+		local item = robuxItem(key, "Hatches Cosmo the Infinite, the event alien!", "Icon_Egg")
 		if item then
 			table.insert(items, item)
 		end
@@ -147,7 +164,7 @@ local function eggItems(data): { Item }
 	for _, entry in data.Hatching do
 		if not seen[entry.EggRarity] then
 			seen[entry.EggRarity] = true
-			local item = robuxItem("SkipHatch" .. entry.EggRarity, `Finish your {entry.EggRarity} egg right now.`)
+			local item = robuxItem("SkipHatch" .. entry.EggRarity, `Finish your {entry.EggRarity} egg right now.`, "Icon_Timer")
 			if item then
 				table.insert(items, item)
 			end
@@ -164,9 +181,10 @@ local function passItems(data): { Item }
 			table.insert(items, {
 				Name = pass.Name,
 				Desc = pass.Description,
-				Price = if owned then "Owned" else `R$ {pass.Price}`,
+				Price = if owned then "Owned" else robuxPrice(pass.Price),
 				Color = if owned then GREY else ROBUX,
 				Enabled = not owned,
+				Icon = "Icon_Star",
 				OnBuy = function()
 					prompt(pass.Key)
 				end,
@@ -179,19 +197,19 @@ end
 local function cashItems(_data): { Item }
 	local items: { Item } = {}
 	for _, key in { "Cash1", "Cash2", "Cash3", "Cash4", "Cash5" } do
-		local item = robuxItem(key, "Scales with your progress.")
+		local item = robuxItem(key, "Scales with your progress.", "Icon_Cash")
 		if item then
 			table.insert(items, item)
 		end
 	end
-	local skip = robuxItem("SkipRebirth", "Rebirth now without paying the cash cost.")
+	local skip = robuxItem("SkipRebirth", "Rebirth now without paying the cash cost.", "Icon_Rebirth")
 	if skip then
 		table.insert(items, skip)
 	end
 	return items
 end
 
-local BUILDERS = { Tools = toolItems, Boosts = boostItems, Eggs = eggItems, Passes = passItems, Cash = cashItems }
+local BUILDERS = { Deals = dealItems, Tools = toolItems, Eggs = eggItems, Passes = passItems, Cash = cashItems }
 
 local function openGiftPicker(key: string)
 	for _, child in giftList:GetChildren() do
@@ -205,7 +223,7 @@ local function openGiftPicker(key: string)
 			count += 1
 			local button = giftTemplate:Clone()
 			button.Name = "Player"
-			button.Text = other.DisplayName
+			Ui.setText(button, other.DisplayName)
 			button.Visible = true
 			button.Parent = giftList
 			Ui.button(button, function()
@@ -216,6 +234,21 @@ local function openGiftPicker(key: string)
 	end
 	giftEmpty.Visible = count == 0
 	giftPicker.Visible = true
+end
+
+-- The featured well (Deals tab): the Starter Pack while it's for sale.
+local function renderFeatured(data): boolean
+	local show = currentTab == "Deals" and starterPackOnSale(data)
+	featured.Visible = show
+	if show then
+		local def = Products.ProductByKey.StarterPack
+		local pack = Economy.StarterPack
+		Ui.find(featured, "Desc").Text = `{Format.cash(pack.Cash)} + {pack.EggRarity} egg + {pack.Cash2xMinutes} min 2x cash`
+		Ui.setText(Ui.find(featured, "Buy"), robuxPrice(def.Price))
+	end
+	list.Position = UDim2.new(list.Position.X, UDim.new(0, if show then LIST_TOP + FEATURED_HEIGHT else LIST_TOP))
+	list.Size = UDim2.new(list.Size.X, UDim.new(1, if show then -(LIST_TOP + FEATURED_HEIGHT + 12) else -(LIST_TOP + 12)))
+	return show
 end
 
 local function render()
@@ -229,8 +262,10 @@ local function render()
 		end
 	end
 	for name, button in tabButtons do
-		button.BackgroundColor3 = if name == currentTab then Color3.fromRGB(79, 195, 247) else Color3.fromRGB(33, 42, 74)
+		local selected = name == currentTab
+		button.BackgroundColor3 = if selected then MINT else WHITE
 	end
+	local hasFeatured = renderFeatured(data)
 	local items = BUILDERS[currentTab](data)
 	for i, item in items do
 		local row = template:Clone()
@@ -239,10 +274,20 @@ local function render()
 		row.Visible = true
 		;(row:FindFirstChild("Name") :: TextLabel).Text = item.Name
 		;(row:FindFirstChild("Desc") :: TextLabel).Text = item.Desc
+		local rowIcon = row:FindFirstChild("Icon") :: ImageLabel
+		rowIcon.Image = AssetLibrary.image(item.Icon or "Icon_Shop")
 		local buy = row:FindFirstChild("Buy") :: TextButton
-		buy.Text = item.Price
+		Ui.setText(buy, item.Price)
 		buy.BackgroundColor3 = item.Color
-		buy.AutoButtonColor = item.Enabled
+		local label = buy:FindFirstChild("Label") :: TextLabel?
+		if label then
+			-- Dark text on gold, white text on green/grey.
+			label.TextColor3 = if item.Color == ROBUX then INK else WHITE
+			local stroke = label:FindFirstChildOfClass("UIStroke")
+			if stroke then
+				stroke.Enabled = item.Color ~= ROBUX
+			end
+		end
 		local onBuy = item.OnBuy
 		if item.Enabled and onBuy then
 			Ui.button(buy, onBuy)
@@ -257,10 +302,15 @@ local function render()
 		end
 		row.Parent = list
 	end
-	emptyLabel.Visible = #items == 0
+	emptyLabel.Visible = #items == 0 and not hasFeatured
 end
 
 function ShopController:Toggle()
+	local data = State.data
+	if not gui.Enabled and data then
+		-- Lead with the featured deal while there is one, otherwise the next upgrade.
+		currentTab = if starterPackOnSale(data) then "Deals" else "Tools"
+	end
 	Ui.toggle("Shop")
 	giftPicker.Visible = false
 	render()
@@ -279,6 +329,7 @@ function ShopController:Init(controllers)
 	list = Ui.find(gui, "Window.List")
 	template = Ui.find(gui, "Window.List.Template")
 	emptyLabel = Ui.find(gui, "Window.Empty")
+	featured = Ui.find(gui, "Window.Featured")
 	giftPicker = Ui.find(gui, "Window.GiftPicker")
 	giftList = Ui.find(gui, "Window.GiftPicker.List")
 	giftTemplate = Ui.find(gui, "Window.GiftPicker.List.Template")
@@ -294,6 +345,9 @@ function ShopController:Start()
 	end)
 	Ui.button(Ui.find(gui, "Dim"), function()
 		Ui.close("Shop")
+	end)
+	Ui.button(Ui.find(gui, "Window.Featured.Buy"), function()
+		prompt("StarterPack")
 	end)
 	Ui.button(Ui.find(gui, "Window.GiftPicker.Close"), function()
 		giftPicker.Visible = false

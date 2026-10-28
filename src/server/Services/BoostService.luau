@@ -44,7 +44,7 @@ function BoostService:AddServerLuck(mult: number, minutes: number, buyer: Player
 	luckEnds[mult] = math.max(luckEnds[mult] or 0, now) + minutes * 60
 	publish()
 	local who = if buyer then buyer.DisplayName else "Someone"
-	Net.fireAll("Announce", `🍀 {who} activated {mult}x Server Luck for {minutes} min!`, "Luck")
+	Net.fireAll("Announce", `{who} activated {mult}x Server Luck for {minutes} min!`, "Luck")
 end
 
 -- Personal timed boost (stacks time). Stored as an expiry unix time in the profile.

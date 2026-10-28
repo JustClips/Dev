@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
@@ -49,6 +50,53 @@ function ToolService:GetSweepTool(player: Player)
 	return Tools.get(tier)
 end
 
+-- Grip for the Blender tools (head at -Z, grip point near +Z). Checked on a real server with
+-- an R15 rig in the Player_Sweep pose: the head lands on the ground ~3.5 studs in front.
+local GRIP_ANGLE = math.rad(32)
+local GRIP_ROTATION = CFrame.fromMatrix(
+	Vector3.zero,
+	Vector3.new(-1, 0, 0),
+	Vector3.new(0, -math.sin(GRIP_ANGLE), math.cos(GRIP_ANGLE)),
+	Vector3.new(0, math.cos(GRIP_ANGLE), math.sin(GRIP_ANGLE))
+):Inverse()
+local REACH = 3.9 -- grip-to-head length that reaches the ground from the hand
+
+local function buildMeshTool(tool: Tool, def): boolean
+	local model = AssetLibrary.get("Tool_" .. def.Id)
+	local meta = AssetLibrary.meta("Tool_" .. def.Id)
+	local handle = model and model:FindFirstChild("Handle") :: BasePart?
+	if not model or not meta or not handle then
+		return false
+	end
+	local gripPoint: Vector3 = meta.grip or handle.Position
+	-- Short tools (toothbrush, vacuums) are scaled up so they still touch the ground.
+	local length = gripPoint.Z - meta.bounds.min.Z
+	local scale = if length > 0 then math.clamp(REACH / length, 1, 1.6) else 1
+	if scale > 1 then
+		model:ScaleTo(scale)
+		gripPoint *= scale
+	end
+	for _, part in model:GetChildren() do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.CanCollide = false
+			part.CanQuery = false
+			part.CanTouch = false
+			part.Massless = true
+			if part ~= handle then
+				local weld = Instance.new("WeldConstraint")
+				weld.Part0 = handle
+				weld.Part1 = part
+				weld.Parent = part
+			end
+			part.Parent = tool
+		end
+	end
+	model:Destroy()
+	tool.Grip = CFrame.new(handle.CFrame:PointToObjectSpace(gripPoint)) * GRIP_ROTATION
+	return true
+end
+
 local function buildTool(def): Tool
 	local tool = Instance.new("Tool")
 	tool.Name = def.Name
@@ -57,6 +105,9 @@ local function buildTool(def): Tool
 	tool.ToolTip = `Hold to sweep (radius {def.Radius})`
 	tool:SetAttribute("SweepTool", true)
 	tool:SetAttribute("Tier", def.Tier)
+	if buildMeshTool(tool, def) then
+		return tool
+	end
 
 	local scale = def.Scale
 	local handle = Instance.new("Part")
@@ -183,6 +234,44 @@ local function buildVehicle(player: Player, def): Model
 	align.MaxTorque = math.huge
 	align.Responsiveness = 40
 	align.Parent = chassis
+
+	-- Blender body on top of the physics box. Its origin sits on the ground under the wheels.
+	local visual = AssetLibrary.get("Vehicle_" .. def.Id)
+	local meta = AssetLibrary.meta("Vehicle_" .. def.Id)
+	if visual then
+		local base = chassis.CFrame * CFrame.new(0, -1.4 * s, 0)
+		visual:PivotTo(base)
+		for _, part in visual:GetDescendants() do
+			if part:IsA("BasePart") then
+				part.Anchored = false
+				part.CanCollide = false
+				part.CanQuery = false
+				part.CanTouch = false
+				part.Massless = true
+				local weld = Instance.new("WeldConstraint")
+				weld.Part0 = chassis
+				weld.Part1 = part
+				weld.Parent = part
+			end
+		end
+		visual.Name = "Visual"
+		visual.Parent = model
+		for _, part in model:GetChildren() do
+			if part:IsA("BasePart") then
+				part.Transparency = 1
+			end
+		end
+		if meta and meta.seat then
+			local seatWeld = seat:FindFirstChildOfClass("WeldConstraint")
+			if seatWeld then
+				seatWeld.Enabled = false
+			end
+			seat.CFrame = base * CFrame.new(meta.seat)
+			if seatWeld then
+				seatWeld.Enabled = true
+			end
+		end
+	end
 	return model
 end
 

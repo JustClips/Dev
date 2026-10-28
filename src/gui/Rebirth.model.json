@@ -4,8 +4,9 @@
   "ResetOnSpawn": false,
   "ZIndexBehavior": "Sibling",
   "Enabled": false,
-  "DisplayOrder": 5,
-  "IgnoreGuiInset": false
+  "DisplayOrder": 10,
+  "IgnoreGuiInset": false,
+  "ScreenInsets": "CoreUISafeInsets"
  },
  "children": [
   {
@@ -22,11 +23,26 @@
       0
      ]
     ],
-    "BackgroundColor3": "#000000",
-    "BackgroundTransparency": 0.45,
+    "Position": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      0
+     ]
+    ],
+    "AnchorPoint": [
+     0,
+     0
+    ],
     "BorderSizePixel": 0,
+    "BackgroundColor3": "#141A33",
+    "BackgroundTransparency": 0.45,
     "Text": "",
-    "AutoButtonColor": false
+    "AutoButtonColor": false,
+    "ZIndex": 0
    }
   },
   {
@@ -36,11 +52,11 @@
     "Size": [
      [
       0,
-      440
+      520
      ],
      [
       0,
-      380
+      392
      ]
     ],
     "Position": [
@@ -57,9 +73,9 @@
      0.5,
      0.5
     ],
-    "BackgroundColor3": "#151B33",
-    "BackgroundTransparency": 0.02,
-    "BorderSizePixel": 0
+    "BorderSizePixel": 0,
+    "BackgroundTransparency": 0,
+    "BackgroundColor3": "#E9EEF7"
    },
    "children": [
     {
@@ -68,7 +84,7 @@
      "properties": {
       "CornerRadius": [
        0,
-       18
+       10
       ]
      }
     },
@@ -76,11 +92,70 @@
      "name": "Stroke",
      "className": "UIStroke",
      "properties": {
-      "Color": "#6FD3FF",
-      "Thickness": 2,
-      "Transparency": 0.25,
-      "ApplyStrokeMode": "Border"
+      "Color": "#1B1F3A",
+      "Thickness": 4,
+      "ApplyStrokeMode": "Border",
+      "LineJoinMode": "Round"
      }
+    },
+    {
+     "name": "Studs",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        1,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "rbxassetid://117181516497135",
+      "ScaleType": "Tile",
+      "TileSize": [
+       [
+        0,
+        64
+       ],
+       [
+        0,
+        64
+       ]
+      ],
+      "ImageColor3": "#E9EEF7",
+      "ImageTransparency": 0,
+      "ZIndex": 0
+     },
+     "children": [
+      {
+       "name": "Corner",
+       "className": "UICorner",
+       "properties": {
+        "CornerRadius": [
+         0,
+         10
+        ]
+       }
+      }
+     ]
     },
     {
      "name": "AutoScale",
@@ -90,81 +165,36 @@
      }
     },
     {
-     "name": "Title",
-     "className": "TextLabel",
+     "name": "Header",
+     "className": "Frame",
      "properties": {
       "Size": [
        [
         1,
-        -90
+        0
        ],
        [
         0,
-        44
+        64
        ]
       ],
       "Position": [
        [
         0,
-        20
+        0
        ],
        [
         0,
-        8
+        0
        ]
       ],
       "AnchorPoint": [
        0,
        0
       ],
-      "BackgroundTransparency": 1,
       "BorderSizePixel": 0,
-      "Text": "Rebirth",
-      "TextColor3": "#FFFFFF",
-      "TextSize": 32,
-      "Font": "FredokaOne",
-      "TextXAlignment": "Left",
-      "TextYAlignment": "Center",
-      "TextWrapped": true
-     }
-    },
-    {
-     "name": "Close",
-     "className": "TextButton",
-     "properties": {
-      "Size": [
-       [
-        0,
-        48
-       ],
-       [
-        0,
-        48
-       ]
-      ],
-      "Position": [
-       [
-        1,
-        -10
-       ],
-       [
-        0,
-        10
-       ]
-      ],
-      "AnchorPoint": [
-       1,
-       0
-      ],
-      "BackgroundColor3": "#FF5A5F",
-      "BorderSizePixel": 0,
-      "Text": "X",
-      "TextColor3": "#FFFFFF",
-      "TextSize": 26,
-      "Font": "FredokaOne",
-      "AutoButtonColor": true,
-      "TextWrapped": true,
-      "TextStrokeTransparency": 0.6
+      "BackgroundTransparency": 0,
+      "BackgroundColor3": "#9B6BFF"
      },
      "children": [
       {
@@ -173,7 +203,7 @@
        "properties": {
         "CornerRadius": [
          0,
-         14
+         10
         ]
        }
       },
@@ -181,51 +211,325 @@
        "name": "Stroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#000000",
-        "Thickness": 2,
-        "Transparency": 0.6,
-        "ApplyStrokeMode": "Border"
+        "Color": "#1B1F3A",
+        "Thickness": 4,
+        "ApplyStrokeMode": "Border",
+        "LineJoinMode": "Round"
        }
+      },
+      {
+       "name": "Studs",
+       "className": "ImageLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          0
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Image": "rbxassetid://117181516497135",
+        "ScaleType": "Tile",
+        "TileSize": [
+         [
+          0,
+          64
+         ],
+         [
+          0,
+          64
+         ]
+        ],
+        "ImageColor3": "#9B6BFF",
+        "ImageTransparency": 0,
+        "ZIndex": 0
+       },
+       "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0,
+           10
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "name": "Icon",
+       "className": "ImageLabel",
+       "properties": {
+        "Size": [
+         [
+          0,
+          64
+         ],
+         [
+          0,
+          64
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          -6
+         ],
+         [
+          0.5,
+          -2
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0.5
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Image": "rbxassetid://123318389212674",
+        "ScaleType": "Fit",
+        "ZIndex": 3
+       }
+      },
+      {
+       "name": "Title",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -150
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          66
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Text": "Rebirth",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 34,
+        "TextXAlignment": "Left",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "ZIndex": 2,
+        "Font": "FredokaOne"
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 3,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        }
+       ]
       }
      ]
     },
     {
-     "name": "Info",
-     "className": "TextLabel",
+     "name": "Close",
+     "className": "TextButton",
      "properties": {
       "Size": [
        [
-        1,
-        -40
+        0,
+        52
        ],
        [
         0,
-        84
+        52
+       ]
+      ],
+      "Position": [
+       [
+        1,
+        -6
+       ],
+       [
+        0,
+        6
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0.5
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundColor3": "#FF4D5E",
+      "Text": "",
+      "AutoButtonColor": false,
+      "ZIndex": 5
+     },
+     "children": [
+      {
+       "name": "Corner",
+       "className": "UICorner",
+       "properties": {
+        "CornerRadius": [
+         0,
+         10
+        ]
+       }
+      },
+      {
+       "name": "Stroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#1B1F3A",
+        "Thickness": 4,
+        "ApplyStrokeMode": "Border",
+        "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Shine",
+       "className": "UIGradient",
+       "properties": {
+        "Color": {
+         "keypoints": [
+          [
+           0,
+           "#FFFFFF"
+          ],
+          [
+           0.55,
+           "#FFFFFF"
+          ],
+          [
+           1,
+           "#BCC4D4"
+          ]
+         ]
+        },
+        "Rotation": 90
+       }
+      },
+      {
+       "name": "Label",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -12
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          6
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Text": "X",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 30,
+        "TextXAlignment": "Center",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "ZIndex": 2,
+        "Font": "FredokaOne"
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 2.5,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Big",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        110
+       ],
+       [
+        0,
+        110
        ]
       ],
       "Position": [
        [
         0,
-        20
+        22
        ],
        [
         0,
-        58
+        80
        ]
       ],
       "AnchorPoint": [
        0,
        0
       ],
-      "BackgroundTransparency": 1,
       "BorderSizePixel": 0,
-      "Text": "Resets your cash and tools.\nKeeps your aliens and zones.\n+50% cash forever, +1 slot every 2 rebirths.",
-      "TextColor3": "#AFC3E6",
-      "TextSize": 17,
-      "Font": "Gotham",
-      "TextXAlignment": "Center",
-      "TextYAlignment": "Center",
-      "TextWrapped": true
+      "BackgroundTransparency": 1,
+      "Image": "rbxassetid://123318389212674",
+      "ScaleType": "Fit",
+      "ZIndex": 3
      }
     },
     {
@@ -235,36 +539,81 @@
       "Size": [
        [
         1,
-        -40
+        -160
        ],
        [
         0,
-        34
+        44
        ]
       ],
       "Position": [
        [
         0,
-        20
+        140
        ],
        [
         0,
-        146
+        86
        ]
       ],
       "AnchorPoint": [
        0,
        0
       ],
-      "BackgroundTransparency": 1,
       "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
       "Text": "Cash x1 → x1.5",
-      "TextColor3": "#FFD54A",
-      "TextSize": 24,
-      "Font": "FredokaOne",
-      "TextXAlignment": "Center",
+      "TextColor3": "#1B1F3A",
+      "TextSize": 34,
+      "TextXAlignment": "Left",
       "TextYAlignment": "Center",
-      "TextWrapped": true
+      "TextWrapped": true,
+      "ZIndex": 2,
+      "Font": "FredokaOne"
+     }
+    },
+    {
+     "name": "Info",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        -160
+       ],
+       [
+        0,
+        50
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        140
+       ],
+       [
+        0,
+        132
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "Resets your cash, tools and backpack.\nKeeps your aliens, index and zones.",
+      "TextColor3": "#4A5170",
+      "TextSize": 17,
+      "TextXAlignment": "Left",
+      "TextYAlignment": "Top",
+      "TextWrapped": true,
+      "ZIndex": 2,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/BuilderSans.json",
+       "weight": "Bold",
+       "style": "Normal"
+      }
      }
     },
     {
@@ -278,32 +627,37 @@
        ],
        [
         0,
-        28
+        30
        ]
       ],
       "Position": [
        [
-        0,
-        20
+        0.5,
+        0
        ],
        [
         0,
-        182
+        202
        ]
       ],
       "AnchorPoint": [
-       0,
+       0.5,
        0
       ],
-      "BackgroundTransparency": 1,
       "BorderSizePixel": 0,
-      "Text": "Cost: $1M",
-      "TextColor3": "#FFFFFF",
-      "TextSize": 20,
-      "Font": "GothamBold",
+      "BackgroundTransparency": 1,
+      "Text": "Cost: $0",
+      "TextColor3": "#1B1F3A",
+      "TextSize": 22,
       "TextXAlignment": "Center",
       "TextYAlignment": "Center",
-      "TextWrapped": true
+      "TextWrapped": true,
+      "ZIndex": 2,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/BuilderSans.json",
+       "weight": "ExtraBold",
+       "style": "Normal"
+      }
      }
     },
     {
@@ -313,7 +667,7 @@
       "Size": [
        [
         0,
-        280
+        300
        ],
        [
         0,
@@ -327,22 +681,18 @@
        ],
        [
         0,
-        222
+        244
        ]
       ],
       "AnchorPoint": [
        0.5,
        0
       ],
-      "BackgroundColor3": "#A47CFF",
       "BorderSizePixel": 0,
-      "Text": "REBIRTH",
-      "TextColor3": "#FFFFFF",
-      "TextSize": 28,
-      "Font": "FredokaOne",
-      "AutoButtonColor": true,
-      "TextWrapped": true,
-      "TextStrokeTransparency": 0.6
+      "BackgroundColor3": "#3DDC5A",
+      "Text": "",
+      "AutoButtonColor": false,
+      "ZIndex": 1
      },
      "children": [
       {
@@ -351,7 +701,7 @@
        "properties": {
         "CornerRadius": [
          0,
-         14
+         10
         ]
        }
       },
@@ -359,11 +709,86 @@
        "name": "Stroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#000000",
-        "Thickness": 2,
-        "Transparency": 0.6,
-        "ApplyStrokeMode": "Border"
+        "Color": "#1B1F3A",
+        "Thickness": 4,
+        "ApplyStrokeMode": "Border",
+        "LineJoinMode": "Round"
        }
+      },
+      {
+       "name": "Shine",
+       "className": "UIGradient",
+       "properties": {
+        "Color": {
+         "keypoints": [
+          [
+           0,
+           "#FFFFFF"
+          ],
+          [
+           0.55,
+           "#FFFFFF"
+          ],
+          [
+           1,
+           "#BCC4D4"
+          ]
+         ]
+        },
+        "Rotation": 90
+       }
+      },
+      {
+       "name": "Label",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -12
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          6
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Text": "Rebirth!",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 32,
+        "TextXAlignment": "Center",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "ZIndex": 2,
+        "Font": "FredokaOne"
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 2.5,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        }
+       ]
       }
      ]
     },
@@ -374,11 +799,11 @@
       "Size": [
        [
         0,
-        280
+        300
        ],
        [
         0,
-        48
+        50
        ]
       ],
       "Position": [
@@ -388,22 +813,18 @@
        ],
        [
         0,
-        296
+        318
        ]
       ],
       "AnchorPoint": [
        0.5,
        0
       ],
-      "BackgroundColor3": "#3CCB72",
       "BorderSizePixel": 0,
-      "Text": "Skip for R$79",
-      "TextColor3": "#FFFFFF",
-      "TextSize": 20,
-      "Font": "FredokaOne",
-      "AutoButtonColor": true,
-      "TextWrapped": true,
-      "TextStrokeTransparency": 0.6
+      "BackgroundColor3": "#FFC83C",
+      "Text": "",
+      "AutoButtonColor": false,
+      "ZIndex": 1
      },
      "children": [
       {
@@ -412,7 +833,7 @@
        "properties": {
         "CornerRadius": [
          0,
-         14
+         10
         ]
        }
       },
@@ -420,10 +841,73 @@
        "name": "Stroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#000000",
-        "Thickness": 2,
-        "Transparency": 0.6,
-        "ApplyStrokeMode": "Border"
+        "Color": "#1B1F3A",
+        "Thickness": 4,
+        "ApplyStrokeMode": "Border",
+        "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Shine",
+       "className": "UIGradient",
+       "properties": {
+        "Color": {
+         "keypoints": [
+          [
+           0,
+           "#FFFFFF"
+          ],
+          [
+           0.55,
+           "#FFFFFF"
+          ],
+          [
+           1,
+           "#BCC4D4"
+          ]
+         ]
+        },
+        "Rotation": 90
+       }
+      },
+      {
+       "name": "Label",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -12
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          6
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Text": "Skip",
+        "TextColor3": "#1B1F3A",
+        "TextSize": 24,
+        "TextXAlignment": "Center",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "ZIndex": 2,
+        "Font": "FredokaOne"
        }
       }
      ]

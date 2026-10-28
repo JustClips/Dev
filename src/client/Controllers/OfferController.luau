@@ -39,9 +39,9 @@ local function showOffer(offer)
 	current = { Key = offer.Key, Product = offer.Product }
 	showToken += 1
 	local token = showToken
-	Ui.find(offerGui, "Window.Title").Text = offer.Title
+	Ui.find(offerGui, "Window.Header.Title").Text = offer.Title
 	Ui.find(offerGui, "Window.Text").Text = offer.Text
-	Ui.find(offerGui, "Window.Buy").Text = `R$ {offer.Price}`
+	Ui.setText(Ui.find(offerGui, "Window.Buy"), `{Ui.ROBUX} {offer.Price}`)
 	offerGui.Enabled = true
 	Ui.popIn(offerGui)
 	task.delay(AUTO_HIDE_SECONDS, function()
@@ -58,7 +58,7 @@ local function showWelcome(info)
 	local doubleButton = Ui.find(welcomeGui, "Window.Double") :: TextButton
 	doubleButton.Visible = double ~= nil and double.Id ~= 0
 	if double then
-		doubleButton.Text = `2x for R$ {double.Price}`
+		Ui.setText(doubleButton, `2x for {Ui.ROBUX} {double.Price}`)
 	end
 	welcomeGui.Enabled = true
 	Ui.popIn(welcomeGui)
@@ -80,6 +80,9 @@ function OfferController:Start()
 		if offer then
 			prompt(offer.Product)
 		end
+	end)
+	Ui.button(Ui.find(welcomeGui, "Window.Close"), function()
+		welcomeGui.Enabled = false
 	end)
 	Ui.button(Ui.find(welcomeGui, "Window.Collect"), function()
 		welcomeGui.Enabled = false

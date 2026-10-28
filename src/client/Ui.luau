@@ -1,6 +1,7 @@
 --!strict
 -- Small UI helpers shared by controllers. Layouts live in src/gui (*.model.json);
 -- controllers only find elements by name, so the art can be swapped freely.
+local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
@@ -14,7 +15,9 @@ local playerGui = player:WaitForChild("PlayerGui") :: PlayerGui
 
 -- Modal screens: only one is open at a time.
 local MODALS = { "Shop", "Index", "Rebirth" }
-local POP = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local POP = TweenInfo.new(0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local PRESS = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local HOVER = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 local Ui = {}
 
@@ -54,22 +57,63 @@ function Ui.find(root: Instance, path: string): any
 	return current
 end
 
--- Activated + a little press bounce.
+-- The Robux glyph (renders as the Robux icon in Roblox fonts).
+Ui.ROBUX = utf8.char(0xE002)
+
+function Ui.reducedMotion(): boolean
+	return GuiService.ReducedMotionEnabled
+end
+
+-- Buttons keep their text in a child "Label" (so the button outline and the text
+-- stroke don't fight over one UIStroke). Falls back to the object's own Text.
+function Ui.setText(object: Instance, value: string)
+	local label = object:FindFirstChild("Label")
+	if label and label:IsA("TextLabel") then
+		label.Text = value
+	elseif object:IsA("TextLabel") or object:IsA("TextButton") then
+		object.Text = value
+	end
+end
+
+local function pressScale(button: GuiButton): UIScale?
+	-- A button can only have one UIScale; buttons that already scale with the screen
+	-- (AutoScale) don't get the press bounce.
+	local existing = button:FindFirstChildOfClass("UIScale")
+	if existing then
+		return if existing.Name == "Press" then existing else nil
+	end
+	local s = Instance.new("UIScale")
+	s.Name = "Press"
+	s.Parent = button
+	return s
+end
+
+-- Activated + press squash, hover pop on PC, click sound.
 function Ui.button(button: GuiButton, fn: () -> ())
-	-- A button can only have one UIScale; top-level buttons already use AutoScale.
-	local scale: UIScale? = nil
-	if not button:FindFirstChildOfClass("UIScale") then
-		local s = Instance.new("UIScale")
-		s.Name = "Press"
-		s.Parent = button
-		scale = s
+	local scale = pressScale(button)
+	if scale then
+		local function to(value: number, info: TweenInfo)
+			if Ui.reducedMotion() then
+				scale.Scale = 1
+			else
+				TweenService:Create(scale, info, { Scale = value }):Play()
+			end
+		end
+		button.MouseEnter:Connect(function()
+			to(1.06, HOVER)
+		end)
+		button.MouseLeave:Connect(function()
+			to(1, HOVER)
+		end)
+		button.MouseButton1Down:Connect(function()
+			to(0.94, PRESS)
+		end)
+		button.MouseButton1Up:Connect(function()
+			to(1, POP)
+		end)
 	end
 	button.Activated:Connect(function()
 		Ui.sound("Click")
-		if scale then
-			scale.Scale = 0.9
-			TweenService:Create(scale, POP, { Scale = 1 }):Play()
-		end
 		fn()
 	end)
 end
@@ -78,7 +122,11 @@ local function popIn(gui: ScreenGui)
 	local window = gui:FindFirstChild("Window")
 	local scale = window and window:FindFirstChild("AutoScale") :: UIScale?
 	if scale then
-		scale.Scale = currentScale * 0.6
+		if Ui.reducedMotion() then
+			scale.Scale = currentScale
+			return
+		end
+		scale.Scale = currentScale * 0.85
 		TweenService:Create(scale, POP, { Scale = currentScale }):Play()
 	end
 end

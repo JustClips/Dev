@@ -122,9 +122,9 @@ local function processReceipt(info): Enum.ProductPurchaseDecision
 	S.StateService:Mark(recipient)
 	S.AnalyticsService:Custom(buyer, "RobuxPurchase", product.Price, { Product = product.Key, Gift = tostring(recipient ~= buyer) })
 	if recipient ~= buyer then
-		notify(recipient, `🎁 {buyer.DisplayName} gifted you {product.Name}!`)
+		notify(recipient, `{buyer.DisplayName} gifted you {product.Name}!`)
 		notify(buyer, `Gift sent to {recipient.DisplayName}!`)
-		Net.fireAll("Announce", `🎁 {buyer.DisplayName} gifted {product.Name} to {recipient.DisplayName}!`, "Gift")
+		Net.fireAll("Announce", `{buyer.DisplayName} gifted {product.Name} to {recipient.DisplayName}!`, "Gift")
 		S.DataService:SaveNow(recipient)
 	end
 	if S.DataService:SaveNow(buyer) then
@@ -227,7 +227,7 @@ function ShopService:Start()
 			applyPassEffects(player)
 			notify(player, `{pass.Name} is yours!`)
 			S.AnalyticsService:Custom(player, "GamepassPurchase", pass.Price, { Pass = pass.Key })
-			Net.fireAll("Announce", `⭐ {player.DisplayName} got {pass.Name}!`, "Gift")
+			Net.fireAll("Announce", `{player.DisplayName} got {pass.Name}!`, "Gift")
 		end
 	end)
 

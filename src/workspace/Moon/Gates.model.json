@@ -7,35 +7,55 @@
    "properties": {
     "Anchored": true,
     "Size": [
-     24,
-     18,
-     1.5
+     22,
+     14,
+     1
     ],
-    "Color": "#58C7FF",
-    "Material": "Neon",
+    "Color": "#78C8FF",
+    "Material": "ForceField",
     "TopSurface": "Smooth",
     "BottomSurface": "Smooth",
-    "Position": [
-     0,
-     7,
-     -105
-    ],
-    "Transparency": 0.35,
+    "CFrame": {
+     "position": [
+      0,
+      7,
+      -205
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 0.15,
     "CastShadow": false
    },
    "children": [
     {
-     "name": "SignFront",
-     "className": "SurfaceGui",
+     "name": "Label",
+     "className": "BillboardGui",
      "properties": {
-      "Face": "Front",
-      "SizingMode": "PixelsPerStud",
-      "PixelsPerStud": 20,
+      "Size": [
+       [
+        0,
+        300
+       ],
+       [
+        0,
+        70
+       ]
+      ],
+      "StudsOffset": [
+       0,
+       11,
+       0
+      ],
+      "MaxDistance": 220,
       "LightInfluence": 0
      },
      "children": [
       {
-       "name": "Label",
+       "name": "Text",
        "className": "TextLabel",
        "properties": {
         "Size": [
@@ -51,43 +71,10 @@
         "BackgroundTransparency": 1,
         "Text": "Crater",
         "TextScaled": true,
-        "TextColor3": "#FFFFFF",
+        "TextColor3": "#78C8FF",
         "Font": "FredokaOne",
-        "TextStrokeTransparency": 0.2
-       }
-      }
-     ]
-    },
-    {
-     "name": "SignBack",
-     "className": "SurfaceGui",
-     "properties": {
-      "Face": "Back",
-      "SizingMode": "PixelsPerStud",
-      "PixelsPerStud": 20,
-      "LightInfluence": 0
-     },
-     "children": [
-      {
-       "name": "Label",
-       "className": "TextLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "BackgroundTransparency": 1,
-        "Text": "Crater",
-        "TextScaled": true,
-        "TextColor3": "#FFFFFF",
-        "Font": "FredokaOne",
-        "TextStrokeTransparency": 0.2
+        "TextStrokeTransparency": 0,
+        "TextStrokeColor3": "#1B1F3A"
        }
       }
      ]
@@ -100,35 +87,55 @@
    "properties": {
     "Anchored": true,
     "Size": [
-     24,
-     18,
-     1.5
+     22,
+     14,
+     1
     ],
-    "Color": "#58C7FF",
-    "Material": "Neon",
+    "Color": "#B478FF",
+    "Material": "ForceField",
     "TopSurface": "Smooth",
     "BottomSurface": "Smooth",
-    "Position": [
-     0,
-     7,
-     -268
-    ],
-    "Transparency": 0.35,
+    "CFrame": {
+     "position": [
+      0,
+      7,
+      -479
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 0.15,
     "CastShadow": false
    },
    "children": [
     {
-     "name": "SignFront",
-     "className": "SurfaceGui",
+     "name": "Label",
+     "className": "BillboardGui",
      "properties": {
-      "Face": "Front",
-      "SizingMode": "PixelsPerStud",
-      "PixelsPerStud": 20,
+      "Size": [
+       [
+        0,
+        300
+       ],
+       [
+        0,
+        70
+       ]
+      ],
+      "StudsOffset": [
+       0,
+       11,
+       0
+      ],
+      "MaxDistance": 220,
       "LightInfluence": 0
      },
      "children": [
       {
-       "name": "Label",
+       "name": "Text",
        "className": "TextLabel",
        "properties": {
         "Size": [
@@ -142,45 +149,12 @@
          ]
         ],
         "BackgroundTransparency": 1,
-        "Text": "Dark Side",
+        "Text": "DarkSide",
         "TextScaled": true,
-        "TextColor3": "#FFFFFF",
+        "TextColor3": "#B478FF",
         "Font": "FredokaOne",
-        "TextStrokeTransparency": 0.2
-       }
-      }
-     ]
-    },
-    {
-     "name": "SignBack",
-     "className": "SurfaceGui",
-     "properties": {
-      "Face": "Back",
-      "SizingMode": "PixelsPerStud",
-      "PixelsPerStud": 20,
-      "LightInfluence": 0
-     },
-     "children": [
-      {
-       "name": "Label",
-       "className": "TextLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "BackgroundTransparency": 1,
-        "Text": "Dark Side",
-        "TextScaled": true,
-        "TextColor3": "#FFFFFF",
-        "Font": "FredokaOne",
-        "TextStrokeTransparency": 0.2
+        "TextStrokeTransparency": 0,
+        "TextStrokeColor3": "#1B1F3A"
        }
       }
      ]
@@ -193,35 +167,55 @@
    "properties": {
     "Anchored": true,
     "Size": [
-     24,
-     18,
-     1.5
+     22,
+     14,
+     1
     ],
-    "Color": "#58C7FF",
-    "Material": "Neon",
+    "Color": "#FF8C5A",
+    "Material": "ForceField",
     "TopSurface": "Smooth",
     "BottomSurface": "Smooth",
-    "Position": [
-     0,
-     7,
-     -418
-    ],
-    "Transparency": 0.35,
+    "CFrame": {
+     "position": [
+      0,
+      7,
+      -713
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 0.15,
     "CastShadow": false
    },
    "children": [
     {
-     "name": "SignFront",
-     "className": "SurfaceGui",
+     "name": "Label",
+     "className": "BillboardGui",
      "properties": {
-      "Face": "Front",
-      "SizingMode": "PixelsPerStud",
-      "PixelsPerStud": 20,
+      "Size": [
+       [
+        0,
+        300
+       ],
+       [
+        0,
+        70
+       ]
+      ],
+      "StudsOffset": [
+       0,
+       11,
+       0
+      ],
+      "MaxDistance": 220,
       "LightInfluence": 0
      },
      "children": [
       {
-       "name": "Label",
+       "name": "Text",
        "className": "TextLabel",
        "properties": {
         "Size": [
@@ -235,45 +229,12 @@
          ]
         ],
         "BackgroundTransparency": 1,
-        "Text": "Mars Plains",
+        "Text": "Mars",
         "TextScaled": true,
-        "TextColor3": "#FFFFFF",
+        "TextColor3": "#FF8C5A",
         "Font": "FredokaOne",
-        "TextStrokeTransparency": 0.2
-       }
-      }
-     ]
-    },
-    {
-     "name": "SignBack",
-     "className": "SurfaceGui",
-     "properties": {
-      "Face": "Back",
-      "SizingMode": "PixelsPerStud",
-      "PixelsPerStud": 20,
-      "LightInfluence": 0
-     },
-     "children": [
-      {
-       "name": "Label",
-       "className": "TextLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "BackgroundTransparency": 1,
-        "Text": "Mars Plains",
-        "TextScaled": true,
-        "TextColor3": "#FFFFFF",
-        "Font": "FredokaOne",
-        "TextStrokeTransparency": 0.2
+        "TextStrokeTransparency": 0,
+        "TextStrokeColor3": "#1B1F3A"
        }
       }
      ]

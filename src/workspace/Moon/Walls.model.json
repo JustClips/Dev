@@ -2,360 +2,960 @@
  "className": "Model",
  "children": [
   {
-   "name": "LandingBack",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     216,
-     44,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     0,
-     20,
-     107
-    ]
-   }
-  },
-  {
-   "name": "LandingLeft",
+   "name": "HubWest",
    "className": "Part",
    "properties": {
     "Anchored": true,
     "Size": [
      2,
-     44,
+     70,
+     400
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -152.0,
+      25.0,
+      0.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "HubEast",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
+     400
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      152.0,
+      25.0,
+      0.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "HubSouth",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     304,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      0.0,
+      25.0,
+      200.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "HubNorthW",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     140,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -82.0,
+      25.0,
+      -200.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "HubNorthE",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     140,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      82.0,
+      25.0,
+      -200.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CorridorCraterW",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
+     36
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -13.0,
+      15.0,
+      -214.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CorridorCraterE",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
+     36
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      13.0,
+      15.0,
+      -214.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CorridorDarkSideW",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
+     36
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -13.0,
+      15.0,
+      -470.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CorridorDarkSideE",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
+     36
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      13.0,
+      15.0,
+      -470.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CorridorMarsW",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
+     36
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -13.0,
+      15.0,
+      -722.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CorridorMarsE",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
+     36
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      13.0,
+      15.0,
+      -722.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CraterWest",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
+     220
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -121.0,
+      17.0,
+      -342.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CraterEast",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
+     220
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      121.0,
+      17.0,
+      -342.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CraterSouthW",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -66.0,
+      17.0,
+      -231.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CraterSouthE",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      66.0,
+      17.0,
+      -231.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CraterNorthW",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -66.0,
+      17.0,
+      -453.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "CraterNorthE",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      66.0,
+      17.0,
+      -453.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "DarkSideWest",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     70,
      216
     ],
-    "Color": "#55585F",
-    "Material": "Rock",
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
     "TopSurface": "Smooth",
     "BottomSurface": "Smooth",
-    "Position": [
-     -107,
-     20,
-     0
-    ]
+    "CFrame": {
+     "position": [
+      -121.0,
+      25.0,
+      -596.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
    }
   },
   {
-   "name": "LandingRight",
+   "name": "DarkSideEast",
    "className": "Part",
    "properties": {
     "Anchored": true,
     "Size": [
      2,
-     44,
+     70,
      216
     ],
-    "Color": "#55585F",
-    "Material": "Rock",
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
     "TopSurface": "Smooth",
     "BottomSurface": "Smooth",
-    "Position": [
-     107,
-     20,
-     0
-    ]
+    "CFrame": {
+     "position": [
+      121.0,
+      25.0,
+      -596.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
    }
   },
   {
-   "name": "CraterLeft",
+   "name": "DarkSideSouthW",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -66.0,
+      25.0,
+      -487.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "DarkSideSouthE",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      66.0,
+      25.0,
+      -487.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "DarkSideNorthW",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -66.0,
+      25.0,
+      -705.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "DarkSideNorthE",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      66.0,
+      25.0,
+      -705.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "MarsWest",
    "className": "Part",
    "properties": {
     "Anchored": true,
     "Size": [
      2,
-     50,
-     163
+     70,
+     216
     ],
-    "Color": "#55585F",
-    "Material": "Rock",
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
     "TopSurface": "Smooth",
     "BottomSurface": "Smooth",
-    "Position": [
-     -87,
-     17,
-     -186.5
-    ]
+    "CFrame": {
+     "position": [
+      -121.0,
+      25.0,
+      -848.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
    }
   },
   {
-   "name": "CraterRight",
+   "name": "MarsEast",
    "className": "Part",
    "properties": {
     "Anchored": true,
     "Size": [
      2,
-     50,
-     163
+     70,
+     216
     ],
-    "Color": "#55585F",
-    "Material": "Rock",
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
     "TopSurface": "Smooth",
     "BottomSurface": "Smooth",
-    "Position": [
-     87,
-     17,
-     -186.5
-    ]
+    "CFrame": {
+     "position": [
+      121.0,
+      25.0,
+      -848.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
    }
   },
   {
-   "name": "OuterLeft",
+   "name": "MarsSouthW",
    "className": "Part",
    "properties": {
     "Anchored": true,
     "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      -66.0,
+      25.0,
+      -739.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "MarsSouthE",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     108,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      66.0,
+      25.0,
+      -739.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "MarsNorth",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     240,
+     70,
+     2
+    ],
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      0.0,
+      25.0,
+      -957.0
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
+   }
+  },
+  {
+   "name": "SafetyFloor",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     1200,
      2,
-     46,
-     302
+     1700
     ],
-    "Color": "#55585F",
-    "Material": "Rock",
+    "Color": "#000000",
+    "Material": "SmoothPlastic",
     "TopSurface": "Smooth",
     "BottomSurface": "Smooth",
-    "Position": [
-     -87,
-     20,
-     -419
-    ]
-   }
-  },
-  {
-   "name": "OuterRight",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     2,
-     46,
-     302
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     87,
-     20,
-     -419
-    ]
-   }
-  },
-  {
-   "name": "MarsBack",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     176,
-     46,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     0,
-     20,
-     -570
-    ]
-   }
-  },
-  {
-   "name": "CraterWallL",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     96,
-     50,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     -60.0,
-     19.0,
-     -105
-    ]
-   }
-  },
-  {
-   "name": "CraterWallR",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     96,
-     50,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     60.0,
-     19.0,
-     -105
-    ]
-   }
-  },
-  {
-   "name": "CraterLintel",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     24,
-     28,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     0,
-     30,
-     -105
-    ]
-   }
-  },
-  {
-   "name": "DarkSideWallL",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     76,
-     50,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     -50.0,
-     19.0,
-     -268
-    ]
-   }
-  },
-  {
-   "name": "DarkSideWallR",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     76,
-     50,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     50.0,
-     19.0,
-     -268
-    ]
-   }
-  },
-  {
-   "name": "DarkSideLintel",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     24,
-     28,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     0,
-     30,
-     -268
-    ]
-   }
-  },
-  {
-   "name": "MarsWallL",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     76,
-     44,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     -50.0,
-     22.0,
-     -418
-    ]
-   }
-  },
-  {
-   "name": "MarsWallR",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     76,
-     44,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     50.0,
-     22.0,
-     -418
-    ]
-   }
-  },
-  {
-   "name": "MarsLintel",
-   "className": "Part",
-   "properties": {
-    "Anchored": true,
-    "Size": [
-     24,
-     28,
-     2
-    ],
-    "Color": "#55585F",
-    "Material": "Rock",
-    "TopSurface": "Smooth",
-    "BottomSurface": "Smooth",
-    "Position": [
-     0,
-     30,
-     -418
-    ]
+    "CFrame": {
+     "position": [
+      0,
+      -60,
+      -380
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 1,
+    "CanCollide": true,
+    "CanQuery": false,
+    "CanTouch": false,
+    "CastShadow": false
    }
   }
  ]

@@ -1,0 +1,380 @@
+{
+ "anims": {
+  "Pet_Happy": {
+   "id": 104759341584430,
+   "sha": "a40b382a682d5bbe2a05a20293135b58a33f9b5b32f5201c252f27f3cb3f9e0c"
+  },
+  "Pet_Idle": {
+   "id": 101236842457827,
+   "sha": "a37b4088aeeffe6631113b7bd60045dbc1b98baa4b023f6b1333729c73fc9c3e"
+  },
+  "Pet_Walk": {
+   "id": 73735245537498,
+   "sha": "ad47f99c332b11e7c8f783440d09d967255f50b80812e8eee7d3d6e24008fd9e"
+  },
+  "Player_Sweep": {
+   "id": 109139357549233,
+   "sha": "f19e9b411f5b05a1cc09b66ec9f6786bf1a446e168d731606b6d9dee134c166b"
+  }
+ },
+ "images": {
+  "BannerLuck": {
+   "id": 81303789977135,
+   "sha": "9f0f70eb8c240c3fe925c0f3a4e845f0a55885211679f75f338db52245279489"
+  },
+  "BannerStarter": {
+   "id": 115565610992968,
+   "sha": "3f7b389bf687cfcd35b9b8d7cf37dd4728fc8838fbb602e191b2401be2400b71"
+  },
+  "Icon_Alien": {
+   "id": 83533057452875,
+   "sha": "d735e17960f220df8f887068602563f5f6e97780d779978e0ebf694d6464dca6"
+  },
+  "Icon_Auto": {
+   "id": 80501368660104,
+   "sha": "e41c90fc5b3875eaf1fb4229aaf11f72667c5e67d3212e7d29d26f0918edd26a"
+  },
+  "Icon_Base": {
+   "id": 112675748899807,
+   "sha": "4d5e2f9858e33a99ebd6e674700eb81aaebbb0fa86432f0af074717662945302"
+  },
+  "Icon_Boost": {
+   "id": 130476359014682,
+   "sha": "081a0f000918e2dc1c5ab5b1510e6e2de3c30414f374fe3729226fd074e47591"
+  },
+  "Icon_Cash": {
+   "id": 97162376641747,
+   "sha": "e645b740c49db731cbb21a30b7751ab3b558ec31198624a719eb86cf60349898"
+  },
+  "Icon_Dust": {
+   "id": 138279084558407,
+   "sha": "0cc0c74d44b09e627dd2a23b72c4ca81a16d91113c99e822f5f380498638dcd9"
+  },
+  "Icon_Egg": {
+   "id": 112566110974126,
+   "sha": "d3bce5663808ff4ac2b59fd01dfefb1a9fed2a83fcad810d02e2ca204ca1a731"
+  },
+  "Icon_Gift": {
+   "id": 115929423807651,
+   "sha": "5ed1030e5b1baa800152cfb7a646d306617c728adcaaaab8597c7fcf2eaca462"
+  },
+  "Icon_Index": {
+   "id": 106172070228513,
+   "sha": "bf7e84f5ea59073eb483a41486acb90f03e7a53e1e5b46bc515fafd82adf91ac"
+  },
+  "Icon_Lock": {
+   "id": 139489090570588,
+   "sha": "8b8f310345fff6f82541e42b940aa4a4b101f766aebd2294709c46a55a3c5d26"
+  },
+  "Icon_Luck": {
+   "id": 111161424728854,
+   "sha": "6ae1418a52cc6f16e2a0df18f6abb1dbc4c2ce302ad9bb09904456226f0e792c"
+  },
+  "Icon_Meteor": {
+   "id": 91146035560756,
+   "sha": "54efe00c279ba02d3496e441c1360519b2ff974df8dce2e097cf62b8be4ab273"
+  },
+  "Icon_Rebirth": {
+   "id": 123318389212674,
+   "sha": "93348ef7654c1a2e9cfaef1711e100568b312e7419cb2191bc4173410ed5b248"
+  },
+  "Icon_Sell": {
+   "id": 139947903068700,
+   "sha": "8f6f53d7361262091e582eacc9a260a9906b38a67b4b63ac612e18357eed58c5"
+  },
+  "Icon_Shop": {
+   "id": 138356455761581,
+   "sha": "4ef1f3368d193d1181bddb6ce2c3d0182ada47bd452d48d3a630cb19c675de6c"
+  },
+  "Icon_Star": {
+   "id": 109096345540865,
+   "sha": "cf42b4ebfd8b3cf57f31bd901b5c9367b66d25057601db4216b331d051fa1b36"
+  },
+  "Icon_Timer": {
+   "id": 129183860846157,
+   "sha": "21b2ff8bad73e10d1fd2c183a64b0ffe348ba60b776069099d2f3016cea613af"
+  },
+  "Icon_Tool": {
+   "id": 75974417444207,
+   "sha": "204ec647175920e6dd2ede1c88960f493cd6b23550838bc1a63636df3469d5e1"
+  },
+  "Icon_Vehicle": {
+   "id": 82180106649388,
+   "sha": "c314b11f5efc3cc45681d6976b76c034c91a6da30dae86bf58130b2512457e2b"
+  },
+  "Icon_Zones": {
+   "id": 106398392258250,
+   "sha": "ca20229bfe28c2b6fe406b63493a37eb1892378d1a3a72b0d0073cd0386c66eb"
+  },
+  "Logo": {
+   "id": 91231229030895,
+   "sha": "eba0055a380538849780a078d8801a043a4f3a8d9ab4d4496303585395d5e468"
+  },
+  "Stud": {
+   "id": 117181516497135,
+   "sha": "2e9081d73b3c248de74091c495aba252063d3ecd2e80aa868a0569c6b3e31f26"
+  }
+ },
+ "models": {
+  "Alien_AstroAxolotl": {
+   "id": 107895594943303,
+   "sha": "8a143cafa346cc61346ead398fcb33907e3d38e674b3bdaa3943ff6e0bb9281e"
+  },
+  "Alien_Blip": {
+   "id": 79489100688856,
+   "sha": "d2d46128f80e31b7abfffdedb87fed7574d508ccebd888ca6cefbd0afcec949c"
+  },
+  "Alien_CometCat": {
+   "id": 115391056826226,
+   "sha": "84df8d1f3ee138da26b58a7c367045544f0d2e1eda95d1a084c1e88a5f533e29"
+  },
+  "Alien_Cosmo": {
+   "id": 113603281550176,
+   "sha": "6d4044e9526086ca77e1b8e600063f87ac5b97710ed712fdd001fd7b0e1476b4"
+  },
+  "Alien_CraterCrab": {
+   "id": 107353608462373,
+   "sha": "b219df0cbb2427e4254a0348941130e8250d6f2eb29ae5879abf0b9c903ff571"
+  },
+  "Alien_Dusty": {
+   "id": 133261758452244,
+   "sha": "d5cadf00588b8e50b2b47124b350ecb81b2759c90609143a482786ee91238cfe"
+  },
+  "Alien_EclipseDragon": {
+   "id": 76260055784937,
+   "sha": "3dfabac12787b2475e75a7becc121ee14b3e02738ffb6e8f9f9cc8c5b393662b"
+  },
+  "Alien_GalaxyGus": {
+   "id": 124659141008546,
+   "sha": "379eecbbeee41da465dd843a7fc01469d553638d52730424bf9b79a121dd0883"
+  },
+  "Alien_Glorp": {
+   "id": 128488291933128,
+   "sha": "b7fad0b637986b7b9fd73214adefdfe5034e5ff9a0ed0e5e5c4fdc556b6b5ee1"
+  },
+  "Alien_LunarSlug": {
+   "id": 125135904569865,
+   "sha": "7e7916e4e8c58975200d66f0fe560435a6fa98f7da60231082e3e33cdd338fd6"
+  },
+  "Alien_MoonMite": {
+   "id": 73288734346101,
+   "sha": "1464cfa638ad22ced266544ff3ca4a35d694bfa397b0f535e2a60288416b3cfc"
+  },
+  "Alien_Nebby": {
+   "id": 107578080275579,
+   "sha": "c50d8ad4cee193902d6b59c66fe0a41f133b07a811b9b5088babb5c6df06f374"
+  },
+  "Alien_NovaQueen": {
+   "id": 97045626328234,
+   "sha": "7c3e47a9a961e6008901d8ba11bd6de642292feffad022f047bb41cc6ac2be45"
+  },
+  "Alien_Orbo": {
+   "id": 92368580080008,
+   "sha": "559708051cfc47dc50235fe102984ca17945d30973f6735de97976f78ddc8a1a"
+  },
+  "Alien_QuasarPup": {
+   "id": 72436159225756,
+   "sha": "5274a1da9915cfb7c94bea0e7d7ecb16cd9ed3ef55f1b37652906b2002b879ae"
+  },
+  "Alien_StarWhale": {
+   "id": 131033114744337,
+   "sha": "4eddf632a9319179a734cb5108dcc20bcf39dd80103ef82b1cd103aa1d60f668"
+  },
+  "Alien_VoidKing": {
+   "id": 111317952703850,
+   "sha": "6b0084ef614127bf9a9f385c53af9216b6cf941de393061fcd14b5ef3c843071"
+  },
+  "Alien_Zib": {
+   "id": 102404816752077,
+   "sha": "fc0fa8258999a282b3f525e3c02bdf60523ef2a5399e38911c8b2901eb300310"
+  },
+  "Alien_Zorblax": {
+   "id": 127349188999331,
+   "sha": "99f39a8b849156e653e458232a8092f7f8ed269e7c7238f57e632d27d6d6f75e"
+  },
+  "BaseArch": {
+   "id": 131753565238068,
+   "sha": "77479f6ae1a9dc852b255988651cfbe8d9aee01c3163efda89051f2112def831"
+  },
+  "Crystal_Blue": {
+   "id": 96240197058912,
+   "sha": "dc7e023b10be2e66feb3ad23938aa5741344d034b641207da315e4d83e883edc"
+  },
+  "Crystal_Purple": {
+   "id": 94601935658317,
+   "sha": "a711fae691dbef2f67ebdf1cf1320623e6d32d4d95eecde6d7a4574e35a265fa"
+  },
+  "Crystal_Red": {
+   "id": 114727308175207,
+   "sha": "192d6cc561bf29687f49f1c9d890272774e4726875c4afe4f472e4f9439dba9b"
+  },
+  "Earth": {
+   "id": 114016814855287,
+   "sha": "aa649a461b4c4cb9b27df930a1fa5e8ef0d213e326943c618d3cb5115a5fe8c4"
+  },
+  "Egg_Common": {
+   "id": 77201293955950,
+   "sha": "e2dd14677718639bd5fc1b82ad172f87df55173b5df29bd5ae404d8bc65bca47"
+  },
+  "Egg_Cosmic": {
+   "id": 124873211018720,
+   "sha": "2c665521b60679ef40b774ec5abf4fcc05d601244e392bde15ca7fca4bbb7754"
+  },
+  "Egg_Epic": {
+   "id": 117066897044247,
+   "sha": "85412efc913b3c6e3bc3ae7222af7805e0b408e332a28ab5fb92629df91387d2"
+  },
+  "Egg_Legendary": {
+   "id": 111935492569857,
+   "sha": "68382a9ccabea6150fe84f466b6ff18bf4e679e6fa64dce90069297a4d55e25b"
+  },
+  "Egg_Mythic": {
+   "id": 122766918647297,
+   "sha": "dde9ab9949702a5b50abc0802fbb100b0b4ded82eb4c6ae49e3d519489c55a5f"
+  },
+  "Egg_Rare": {
+   "id": 91081142335482,
+   "sha": "f57fe05c491918f3acccd32db35f268758b34c55cb06b92035b0dacfd0f5078c"
+  },
+  "Egg_Uncommon": {
+   "id": 96171924888884,
+   "sha": "4d4c07ba749f5b9556e2060fc28f32bb8e2f9eb89bfdacd78a2c4a491b0527d0"
+  },
+  "Fence": {
+   "id": 94101631166079,
+   "sha": "57210fb7fdd48bae593fb968a15fe4e9292c4c114f483337ed2c06dbcc6a649e"
+  },
+  "Flag": {
+   "id": 105912446843923,
+   "sha": "623d76c5f9b853eb43a3bae90f6f3329f82ecbc613f8420d1170d2083b9d4c0f"
+  },
+  "Habitat": {
+   "id": 123322739580896,
+   "sha": "8d36242d8c65da7acbe21138880aebddba73cc3541f5ec2d8e3bdf13f3114bf4"
+  },
+  "Hatchery": {
+   "id": 80892667400473,
+   "sha": "adb02c8b6bd1c07ea6081843b3012fa461143b981b414ae3947fe920ed14b9b8"
+  },
+  "Incubator": {
+   "id": 118504148968378,
+   "sha": "4ddb5e628336f2c47b3841cd16acab556f918b59220266d114c64263a1d40968"
+  },
+  "Lamp": {
+   "id": 135432862094576,
+   "sha": "0863554b805d8062e0d74fde1f57776bf80265eaa67d43e6809966f0a9123561"
+  },
+  "Mushroom_Glow": {
+   "id": 95711482057834,
+   "sha": "296f7e8b75b16a0a6e45295047fd5b8c522aa38add6af2cca9adaa1ede82cc9b"
+  },
+  "Mushroom_Mars": {
+   "id": 98868216222020,
+   "sha": "bf62a4bec6b6f8d9fea353be1a96f71c9e473f910c20af2a0f3f664bc7e96a1c"
+  },
+  "Pond": {
+   "id": 119549304925368,
+   "sha": "ae384bd61f331be568f700d3f4a6e6b226c8db690589472958a8f5859cb0a5d7"
+  },
+  "Rock_Crater1": {
+   "id": 113810069760289,
+   "sha": "f1eef176c965049b711fdff67f1eb9f4d79cfe87ca09e4c63cda640fdc6ded5b"
+  },
+  "Rock_Crater2": {
+   "id": 126018567770244,
+   "sha": "a87f99787a03188b5c393ac95714f35e15330a9f28e96501b10a690d35b4465e"
+  },
+  "Rock_Dark1": {
+   "id": 139284138741095,
+   "sha": "a0748031c2cc540ff45627048a6a423966e8d27827ee144eb3dfdad8905aea62"
+  },
+  "Rock_Dark2": {
+   "id": 113038947328526,
+   "sha": "14a2a5445fdc8cd131a1e23e653cdae93be277e7cbac10d8349130418763d836"
+  },
+  "Rock_Mars1": {
+   "id": 88484412880249,
+   "sha": "6c62eece130d3b5592e44a3caaa1ba7e1bee4e435c3fcaec977fb810e1088e83"
+  },
+  "Rock_Mars2": {
+   "id": 91763938635099,
+   "sha": "3c7b059846889f5cd95c5c38158370c1e1115a4d0290ac88bfb864b475bb90f8"
+  },
+  "Rock_Moon1": {
+   "id": 138239423128238,
+   "sha": "c026471b4a98ab05479bf68ac1ad1847b41ca2c00ade7804aef780330af462ac"
+  },
+  "Rock_Moon2": {
+   "id": 88313298295244,
+   "sha": "898ec2f4b9c959efc41a7212310dfc780a83c292290e3c19463b77b33eed4cbb"
+  },
+  "Rock_Moon3": {
+   "id": 127380355988453,
+   "sha": "4b8742694f99f9fcaa4e4ee55180691bd90bf4ab79da5b1cc8f5f0cafa8ea496"
+  },
+  "Rocket": {
+   "id": 103827270379956,
+   "sha": "dd7a7a58fc5e1e462b47a8486393dac2ed3c0861fb6342ee294fd3061e83b30b"
+  },
+  "Satellite": {
+   "id": 128758326175768,
+   "sha": "39048916f2c720f261eb2c332af097b12caa781a8774883747fa1959d6801d62"
+  },
+  "Signpost": {
+   "id": 119424033297262,
+   "sha": "5c2290563c2d61d28ff4bf63c9f6f1d8f78550a0e1da0113549482939e7ee210"
+  },
+  "Tool_Broom": {
+   "id": 80325302560694,
+   "sha": "3d144b787da5dd932f8b9db398ae383bf4020a8782835215f204a534cb50e03a"
+  },
+  "Tool_LeafBlower": {
+   "id": 136713241963556,
+   "sha": "7fa10536fdaba03783c91c740728f43fb13df821321a1f25c1712ebf7b30ec28"
+  },
+  "Tool_Mop": {
+   "id": 70875734599625,
+   "sha": "61c84162f5cbc2dbfe2ea53d8c7bc37e4f121ee0dbb6ce4e8cd7f985eb93ed46"
+  },
+  "Tool_ShopVac": {
+   "id": 138719504516982,
+   "sha": "6d173aa95429336740238816f36875e7619e409941d507c81ee70d24db0ec2b7"
+  },
+  "Tool_Toothbrush": {
+   "id": 75491264781846,
+   "sha": "649e10c22d2f70457e710b0abf5c7409cb261b6363958602364a1592cb4a3c36"
+  },
+  "Tool_TurboVacuum": {
+   "id": 128091050780061,
+   "sha": "fa8a19b675999e747b74e257017c672cc27ba77ccb483946cf9b516db727c97d"
+  },
+  "Tree_Bulb": {
+   "id": 139287077927031,
+   "sha": "c6f543100cf2324b061e859bb4ecea2df31c323f9a483ed84889f47b9bb46e4d"
+  },
+  "Tree_Puff": {
+   "id": 119654173945417,
+   "sha": "2a64742dc52fe668ea2a98b90cbac94de8e2a81cd7350b265e5cc2cc143566c1"
+  },
+  "Tree_Tall": {
+   "id": 137102849905772,
+   "sha": "3f27b0fe1fa84026488ade2931bcaa8921710c0ff41ba2a44ffda7215cba2c62"
+  },
+  "Vehicle_DustTruck": {
+   "id": 94022867337786,
+   "sha": "8e452788b816c75ed98f8c9865e05c51eb20641980be43c14da14f078f07249c"
+  },
+  "Vehicle_MoonCrawler": {
+   "id": 116829281220449,
+   "sha": "e80319935f28b0ee208c32ddf78f60c300b99188f5c44b8218030bd445303c17"
+  },
+  "Vehicle_SweeperCart": {
+   "id": 92989258768239,
+   "sha": "7612fab3fb9332113be9b555d4c776e47444c36e3ad4ba1ece47f18a663d276b"
+  },
+  "ZoneGate": {
+   "id": 75151650721886,
+   "sha": "fe3621a8f55bdd9942343e09e8b579befa1da52e6bebbdd35eaa1cbadb5b6155"
+  }
+ }
+}

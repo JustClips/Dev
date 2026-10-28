@@ -116,7 +116,7 @@ local function complete(player: Player, data, entry)
 	})
 	if mutation or Eggs.order(def.Rarity) >= Eggs.order("Mythic") then
 		local label = if mutation then Eggs.MutationByName[mutation].Label .. " " else ""
-		Net.fireAll("Announce", `✨ {player.DisplayName} hatched a {label}{def.Name} ({def.Rarity})!`, "Hatch")
+		Net.fireAll("Announce", `{player.DisplayName} hatched a {label}{def.Name} ({def.Rarity})!`, "Hatch")
 	end
 	S.OfferService:OnHatch(player)
 end

@@ -3,14 +3,20 @@
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
-      "Shared": { "$path": "src/shared" }
+      "Shared": {
+        "$path": "src/shared"
+      }
     },
     "ServerScriptService": {
-      "Server": { "$path": "src/server" }
+      "Server": {
+        "$path": "src/server"
+      }
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
-        "Client": { "$path": "src/client" }
+        "Client": {
+          "$path": "src/client"
+        }
       }
     },
     "StarterGui": {
@@ -26,9 +32,21 @@
       "$properties": {
         "ClockTime": 0,
         "Brightness": 3,
-        "Ambient": [105, 112, 135],
-        "OutdoorAmbient": [95, 102, 125],
-        "ColorShift_Top": [200, 215, 255],
+        "Ambient": [
+          105,
+          112,
+          135
+        ],
+        "OutdoorAmbient": [
+          95,
+          102,
+          125
+        ],
+        "ColorShift_Top": [
+          200,
+          215,
+          255
+        ],
         "EnvironmentDiffuseScale": 0.3,
         "EnvironmentSpecularScale": 0.2,
         "ExposureCompensation": 0.4,
@@ -40,6 +58,27 @@
         "$properties": {
           "StarCount": 5000,
           "CelestialBodiesShown": false
+        }
+      },
+      "MoonBloom": {
+        "$className": "BloomEffect",
+        "$properties": {
+          "Intensity": 0.7,
+          "Size": 28,
+          "Threshold": 1.4
+        }
+      },
+      "MoonColor": {
+        "$className": "ColorCorrectionEffect",
+        "$properties": {
+          "Brightness": 0.02,
+          "Contrast": 0.08,
+          "Saturation": 0.12,
+          "TintColor": [
+            235,
+            240,
+            255
+          ]
         }
       }
     }

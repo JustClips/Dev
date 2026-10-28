@@ -30,13 +30,15 @@ local function render()
 	local now = 1 + data.Rebirths * Economy.RebirthCashBonus
 	local after = now + Economy.RebirthCashBonus
 	multLabel.Text = `Cash x{now} → x{after}`
-	costLabel.Text = `Cost: {Format.cash(data.RebirthCost)}  (you have {Format.cash(data.Cash)})`
 	local affordable = BigNum.gte(data.Cash, data.RebirthCost)
-	rebirthButton.BackgroundColor3 = if affordable then Color3.fromRGB(164, 124, 255) else Color3.fromRGB(90, 96, 120)
+	costLabel.Text = `Cost: {Format.cash(data.RebirthCost)}  (you have {Format.cash(data.Cash)})`
+	-- Can't afford: the price turns red, the button goes grey.
+	costLabel.TextColor3 = if affordable then Color3.fromRGB(27, 31, 58) else Color3.fromRGB(255, 77, 94)
+	rebirthButton.BackgroundColor3 = if affordable then Color3.fromRGB(61, 220, 90) else Color3.fromRGB(166, 174, 194)
 	local skip = Products.ProductByKey.SkipRebirth
 	skipButton.Visible = skip ~= nil and skip.Id ~= 0
 	if skip then
-		skipButton.Text = `Skip for R$ {skip.Price}`
+		Ui.setText(skipButton, `Skip for {Ui.ROBUX} {skip.Price}`)
 	end
 end
 

@@ -38,7 +38,7 @@ local function startCountdown()
 	stateName = "Countdown"
 	stateEndsAt = os.time() + Economy.Shower.CountdownSeconds
 	publish()
-	Net.fireAll("Announce", "☄️ The Moon is clean! METEOR SHOWER incoming!", "Event")
+	Net.fireAll("Announce", "The Moon is clean! METEOR SHOWER incoming!", "Event")
 end
 
 local function startShower()
@@ -46,7 +46,7 @@ local function startShower()
 	stateEndsAt = os.time() + Economy.Shower.DurationSeconds
 	publish()
 	setSky(true)
-	Net.fireAll("Announce", "☄️ Meteor Shower! Grab the rare eggs!", "Event")
+	Net.fireAll("Announce", "Meteor Shower! Grab the rare eggs!", "Event")
 end
 
 local function endShower()
@@ -72,12 +72,12 @@ end
 function EventService:TriggerShower(buyer: Player?)
 	local who = if buyer then buyer.DisplayName else "Someone"
 	if stateName == "Filling" then
-		Net.fireAll("Announce", `☄️ {who} called a Meteor Shower for the whole server!`, "Event")
+		Net.fireAll("Announce", `{who} called a Meteor Shower for the whole server!`, "Event")
 		startCountdown()
 	elseif stateName == "Shower" then
 		stateEndsAt += Economy.Shower.ExtendSecondsWhenBought
 		publish()
-		Net.fireAll("Announce", `☄️ {who} made the Meteor Shower longer!`, "Event")
+		Net.fireAll("Announce", `{who} made the Meteor Shower longer!`, "Event")
 	end
 	-- During the countdown it is already on its way; the purchase still counts.
 end

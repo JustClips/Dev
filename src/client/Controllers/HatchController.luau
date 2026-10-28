@@ -1,6 +1,7 @@
 --!strict
--- Hatch cutscene: egg shake -> crack flash -> alien reveal with rarity color and name ->
--- flies to its base slot. Also counts down the timers above hatching eggs.
+-- Hatch cutscene: egg shake -> crack flash -> the alien pops out and does its happy dance
+-- (rarity colour + name) -> flies off toward your pet park. Also counts down the timers
+-- above hatching eggs.
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -14,10 +15,12 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AlienModel = require(Shared.AlienModel)
+local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
+local World = require(Shared.Config.World)
 
 local REVEAL_SECONDS = 3
 
@@ -27,6 +30,8 @@ local gui: ScreenGui
 local stage: Frame
 local stageScale: UIScale
 local viewport: ViewportFrame
+local worldModel: WorldModel
+local glow: ImageLabel
 local flash: Frame
 local nameLabel: TextLabel
 local subLabel: TextLabel
@@ -37,23 +42,17 @@ local playing = false
 local skipRequested = false
 
 local function clearViewport()
-	for _, child in viewport:GetChildren() do
-		if not child:IsA("Camera") then
-			child:Destroy()
-		end
-	end
+	worldModel:ClearAllChildren()
 end
 
-local function slotScreenPosition(slot: number): UDim2
+-- Where your pet park is on screen (the alien flies there after the reveal).
+local function parkScreenPosition(): UDim2
 	local camera = Workspace.CurrentCamera
 	local data = State.data
-	local moon = Workspace:FindFirstChild("Moon")
-	local bases = moon and moon:FindFirstChild("Bases")
-	local base = data and bases and bases:FindFirstChild("Base" .. data.BaseIndex)
-	local slots = base and base:FindFirstChild("Slots")
-	local marker = slots and slots:FindFirstChild("Slot" .. slot) :: BasePart?
-	if camera and marker then
-		local point, visible = camera:WorldToViewportPoint(marker.Position)
+	if camera and data and data.BaseIndex then
+		local center = (World.Base.ParkMin + World.Base.ParkMax) / 2
+		local world = World.baseCFrame(data.BaseIndex) * Vector3.new(center.X, 2, center.Y)
+		local point, visible = camera:WorldToViewportPoint(world)
 		if visible then
 			return UDim2.fromOffset(point.X, point.Y)
 		end
@@ -77,16 +76,13 @@ local function play(info)
 	clearViewport()
 
 	-- 1. Egg shake
-	local egg = Instance.new("Part")
-	egg.Size = Vector3.new(2.2, 2.9, 2.2)
-	egg.Color = rarity.Color
-	egg.Material = Enum.Material.SmoothPlastic
-	egg.CFrame = CFrame.new(0, 1.45, 0)
-	local mesh = Instance.new("SpecialMesh")
-	mesh.MeshType = Enum.MeshType.Sphere
-	mesh.Parent = egg
-	egg.Parent = viewport
-	camera.CFrame = CFrame.lookAt(Vector3.new(0, 2.2, -7), Vector3.new(0, 1.4, 0))
+	local egg = AssetLibrary.egg(info.Rarity)
+	egg:PivotTo(CFrame.new())
+	egg.Parent = worldModel
+	local _, eggSize = egg:GetBoundingBox()
+	local eggHeight = math.max(eggSize.Y, 2)
+	camera.CFrame = CFrame.lookAt(Vector3.new(0, eggHeight * 0.75, -eggHeight * 2.6), Vector3.new(0, eggHeight * 0.48, 0))
+	glow.ImageColor3 = rarity.Color
 
 	nameLabel.Text = ""
 	subLabel.Text = ""
@@ -99,7 +95,7 @@ local function play(info)
 
 	for i = 1, 6 do
 		local angle = if i % 2 == 0 then 18 else -18
-		egg.CFrame = CFrame.new(0, 1.45, 0) * CFrame.Angles(0, 0, math.rad(angle * (i / 6)))
+		egg:PivotTo(CFrame.Angles(0, 0, math.rad(angle * (i / 6))))
 		task.wait(0.12)
 	end
 
@@ -109,14 +105,28 @@ local function play(info)
 	TweenService:Create(flash, TweenInfo.new(0.6), { BackgroundTransparency = 1 }):Play()
 	egg:Destroy()
 
-	-- 3. Reveal
-	local model = AlienModel.build(info.AlienId, info.Mutation)
-	model:PivotTo(CFrame.new(0, 0, 0))
-	model.Parent = viewport
-	local size = def and def.Size or 2
-	camera.CFrame = CFrame.lookAt(Vector3.new(0, size * 0.8, -size * 2.6), Vector3.new(0, size * 0.5, 0))
+	-- 3. Reveal: the alien hops out and plays its happy animation, then idles while turning.
+	local model = AssetLibrary.alien(info.AlienId, info.Mutation)
+	model:PivotTo(CFrame.new())
+	model.Parent = worldModel
+	local _, size3 = model:GetBoundingBox()
+	local size = math.max(size3.X, size3.Y, size3.Z, 1.5)
+	camera.CFrame = CFrame.lookAt(Vector3.new(size * 0.35, size * 0.7, -size * 2.4), Vector3.new(0, size * 0.42, 0))
+	local happy = AssetLibrary.loadTrack(model, "Pet_Happy")
+	local idle = AssetLibrary.loadTrack(model, "Pet_Idle")
+	if idle then
+		idle:Play()
+	end
+	if happy then
+		happy:Play(0.05)
+	end
+	local yaw = 0
 	local spin = RunService.RenderStepped:Connect(function(dt)
-		model:PivotTo(model:GetPivot() * CFrame.Angles(0, dt * 1.5, 0))
+		if happy and happy.IsPlaying then
+			return
+		end
+		yaw += dt * 1.2
+		model:PivotTo(CFrame.Angles(0, yaw, 0))
 	end)
 
 	nameLabel.Text = AlienModel.displayName(info.AlienId, info.Mutation)
@@ -131,9 +141,9 @@ local function play(info)
 	hintLabel.Visible = true
 	waitOrSkip(REVEAL_SECONDS)
 
-	-- 4. Fly to the slot
+	-- 4. Fly to the pet park
 	local fly = TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-	TweenService:Create(stage, fly, { Position = slotScreenPosition(info.Slot) }):Play()
+	TweenService:Create(stage, fly, { Position = parkScreenPosition() }):Play()
 	local shrink = TweenService:Create(stageScale, fly, { Scale = 0.05 })
 	shrink:Play()
 	shrink.Completed:Wait()
@@ -162,7 +172,7 @@ local function updateTimers()
 		if label:IsA("TextLabel") then
 			local endsAt = label:GetAttribute("EndsAt") or 0
 			local left = endsAt - now
-			label.Text = if left > 0 then `🥚 {Format.time(left)}` else "Hatching!"
+			label.Text = if left > 0 then Format.time(left) else "Hatching!"
 		end
 	end
 end
@@ -172,6 +182,10 @@ function HatchController:Init()
 	stage = Ui.find(gui, "Stage")
 	stageScale = Ui.find(gui, "Stage.AutoScale")
 	viewport = Ui.find(gui, "Stage.Viewport")
+	glow = Ui.find(gui, "Stage.Glow")
+	-- Animations only play inside a WorldModel.
+	worldModel = Instance.new("WorldModel")
+	worldModel.Parent = viewport
 	flash = Ui.find(gui, "Flash")
 	nameLabel = Ui.find(gui, "Stage.Name")
 	subLabel = Ui.find(gui, "Stage.Sub")

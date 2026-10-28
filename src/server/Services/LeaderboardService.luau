@@ -85,7 +85,7 @@ local function refresh(player: Player, data)
 	local head = character and character:FindFirstChild("Head")
 	local tag = head and head:FindFirstChild("OverheadTag")
 	if tag then
-		local vip = if data.Gamepasses.VIP then "👑 VIP · " else ""
+		local vip = if data.Gamepasses.VIP then "VIP · " else ""
 		local top = tag:FindFirstChild("Top") :: TextLabel
 		local bottom = tag:FindFirstChild("Bottom") :: TextLabel
 		top.Text = `{vip}Rebirth {data.Rebirths}`
