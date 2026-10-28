@@ -537,15 +537,21 @@ def habitat():
     for x in (-W / 2, W / 2):
         for y in (-D / 2, D / 2):
             p.append(box(WOOD_DARK, loc=(x, y, 0.8 + H / 2), size=(0.9, 0.9, H + 0.2), bevel=0.15))
-    # gable ends (triangles of planks) front and back
+    # gable ends: plank rows cut along the roof slope, so the triangle under the roof is closed
     top = 0.8 + H
     ridge = 4.2
+    rows_g = 5
+    rh = ridge / rows_g
+
+    def half_width(z):
+        return max((W / 2 + 0.25) * (1 - (z - top) / ridge), 0.05)
+
     for y in (-D / 2, D / 2):
-        for k in range(5):
-            frac = (k + 0.5) / 5
-            width = W * (1 - frac) - 0.4
-            p.append(box(WOOD if k % 2 else WOOD_LIGHT, loc=(0, y, top + frac * ridge - 0.35),
-                         size=(max(width, 0.6), 0.45, ridge / 5 - 0.05), bevel=0.08))
+        for k in range(rows_g):
+            z0, z1 = top + k * rh, top + (k + 1) * rh
+            plank = box(WOOD if k % 2 else WOOD_LIGHT, loc=(0, y, (z0 + z1) / 2), size=(W + 0.5, 0.45, rh - 0.06))
+            deform(plank, lambda v: Vector((math.copysign(half_width(v.z), v.x), v.y, v.z)))
+            p.append(plank)
     # roof: two sloped panels made of shingle rows, plus a ridge beam
     half = W / 2 + 1.0
     slope = math.degrees(math.atan2(ridge, W / 2))
