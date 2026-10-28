@@ -7638,6 +7638,7 @@
       ],
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
+      "Visible": false,
       "ZIndex": 5,
       "BackgroundColor3": "#3DDC5A"
      },

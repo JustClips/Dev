@@ -110,12 +110,18 @@ end
 local function celebrate(nextStep: Step?)
 	celebrating = true
 	Ui.sound("Tutorial")
+	-- Hidden between celebrations: a see-through label still draws its outline.
+	doneFrame.Visible = true
 	doneFrame.BackgroundTransparency = 0.05
 	doneLabel.TextTransparency = 0
 	TweenService:Create(barFill, TweenInfo.new(0.35), { Size = UDim2.fromScale(1, 1) }):Play()
 	task.wait(0.8)
 	TweenService:Create(doneFrame, TweenInfo.new(0.25), { BackgroundTransparency = 1 }):Play()
-	TweenService:Create(doneLabel, TweenInfo.new(0.25), { TextTransparency = 1 }):Play()
+	local fade = TweenService:Create(doneLabel, TweenInfo.new(0.25), { TextTransparency = 1 })
+	fade.Completed:Connect(function()
+		doneFrame.Visible = false
+	end)
+	fade:Play()
 	if nextStep then
 		showStep(nextStep)
 		Ui.popFrame(card)

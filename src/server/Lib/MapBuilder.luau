@@ -276,7 +276,8 @@ local function sign(parent: Instance, name: string, cf: CFrame, width: number, h
 	local board = block(parent, name, Vector3.new(width, height, 0.6), cf, WOOD_DARK, M.WoodPlanks)
 	block(board, "Trim", Vector3.new(width + 0.6, height + 0.6, 0.4), cf, WOOD, M.Wood, { CanCollide = false, CanQuery = false, CanTouch = false })
 	local result: Sign = { Board = board, Titles = {}, Subs = {}, Avatars = {} }
-	for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do
+	-- Text on the front only (Dev: no text on the back of signs).
+	for _, face in { Enum.NormalId.Front } do
 		local gui = make("SurfaceGui", {
 			Name = "Sign" .. face.Name,
 			Face = face,
@@ -393,10 +394,6 @@ local function launchPad()
 	block(model, "Rim", Vector3.new(0.8, r * 2 + 2, r * 2 + 2), CFrame.new(center + Vector3.new(0, -0.15, 0)) * up, WOOD_DARK, M.Wood)
 	glow(model, "SellRing", Vector3.new(0.14, World.SellRadius * 2 + 1.2, World.SellRadius * 2 + 1.2), CFrame.new(center + Vector3.new(0, 0.52, 0)) * up, Color3.fromRGB(92, 200, 92))
 	block(model, "SellFloor", Vector3.new(0.16, World.SellRadius * 2 - 0.4, World.SellRadius * 2 - 0.4), CFrame.new(center + Vector3.new(0, 0.53, 0)) * up, WOOD, M.WoodPlanks)
-	for _, z in { 12.4, -12.4 } do
-		local yaw = if z > 0 then 0 else 180
-		floorText(model, CFrame.new(center + Vector3.new(0, 0.62, z)) * CFrame.Angles(0, math.rad(yaw), 0), 16, 3.4, "SELL ZONE", MINT)
-	end
 	-- One sign per side; players arrive from the field ends and from the bases.
 	local d = World.RocketClearRadius - 2.5
 	for _, yaw in { 0, 90, 180, 270 } do

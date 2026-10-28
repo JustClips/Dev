@@ -485,7 +485,7 @@ def hud():
         frame("Bar", U(1, -84, 0, 7), U(0, 72, 1, -9), bg="#2A3260", children=[
             frame("Fill", U(0.1, 0, 1, 0), bg=ACCENT),
         ]),
-        frame("Done", U(1, 0, 1, 0), bg=SUCCESS, BackgroundTransparency=1, ZIndex=5, children=[
+        frame("Done", U(1, 0, 1, 0), bg=SUCCESS, BackgroundTransparency=1, Visible=False, ZIndex=5, children=[
             text("Label", "✓  Nice!", U(1, 0, 1, 0), ts=30, display=True, stroke=3, TextTransparency=1, ZIndex=6),
         ]),
     ])
