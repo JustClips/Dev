@@ -2790,10 +2790,10 @@ Assets.Models = {
 	Tool_Toothbrush = {
 		bounds = {
 			max = Vector3.new(0.2, 0.21, 1.655),
-			min = Vector3.new(-0.2, -0.495, -1.73),
+			min = Vector3.new(-0.2, -0.49, -1.73),
 		},
 		grip = Vector3.new(0.0, 0.0, 0.85),
-		id = 72383268829657,
+		id = 99766665744986,
 		kind = "tool",
 		parts = {
 			Bristles = {
