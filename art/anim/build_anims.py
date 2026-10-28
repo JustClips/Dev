@@ -55,7 +55,7 @@ def mat(rx, ry, rz):
 
 
 def cframe_xml(pos, rot):
-    m = mat(*rot)
+    m = rot if isinstance(rot, list) else mat(*rot)
     vals = {"X": pos[0], "Y": pos[1], "Z": pos[2]}
     for i in range(3):
         for j in range(3):
@@ -164,16 +164,43 @@ def pet_happy():
     return frames
 
 
-def player_sweep(w, t):
-    s = math.sin
+# Player broom pose (two hands on the handle, head on the ground in front). Designed with
+# r15.py forward kinematics: the right hand holds the tool 1.2 studs below the top of the
+# handle, the left hand holds the top. ToolService's GRIP_ROTATION and TOOL_REACH come from
+# the same numbers, so change them together (python3 art/anim/check_grip.py prints them).
+PLAYER_RIGHT_ARM = (28, 0, -28, 40)   # shoulder X, Y, Z, elbow X (degrees)
+PLAYER_LEFT_ARM = (3, 12, 90, 0)
+PLAYER_LEAN = -12                     # torso leans forward
+PLAYER_TWIST = -10                    # torso turned a little to the right
+SWEEP_SWING = 24                      # torso swing either side while sweeping
+
+
+def yaw_lean(yaw_deg, lean_deg):
+    """Lean forward first, then turn about the vertical axis (CFrame.Angles can't do Ry * Rx)."""
+    ry, rx = mat(0, D(yaw_deg), 0), mat(D(lean_deg), 0, 0)
+    return [[sum(ry[i][k] * rx[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
+
+
+def player_pose(twist, head_bob=0.0):
+    ra, la = PLAYER_RIGHT_ARM, PLAYER_LEFT_ARM
     return {
-        "UpperTorso": ((0, 0, 0), (D(8), D(22) * s(w), 0)),
-        "RightUpperArm": ((0, 0, 0), (D(62), 0, D(10) * s(w))),
-        "RightLowerArm": ((0, 0, 0), (D(15), 0, 0)),
-        "LeftUpperArm": ((0, 0, 0), (D(55), 0, -D(25))),
-        "LeftLowerArm": ((0, 0, 0), (D(25), 0, 0)),
-        "Head": ((0, 0, 0), (-D(6), -D(10) * s(w), 0)),
+        "UpperTorso": ((0, 0, 0), yaw_lean(twist, PLAYER_LEAN)),
+        "Head": ((0, 0, 0), (D(10 + head_bob), -D(twist) * 0.6, 0)),
+        "RightUpperArm": ((0, 0, 0), (D(ra[0]), D(ra[1]), D(ra[2]))),
+        "RightLowerArm": ((0, 0, 0), (D(ra[3]), 0, 0)),
+        "LeftUpperArm": ((0, 0, 0), (D(la[0]), D(la[1]), D(la[2]))),
+        "LeftLowerArm": ((0, 0, 0), (D(la[3]), 0, 0)),
     }
+
+
+def player_hold(w, t):
+    # Holding the tool: a slow, small sway so it doesn't look frozen.
+    return player_pose(PLAYER_TWIST + 2 * math.sin(w), head_bob=1.5 * math.sin(w))
+
+
+def player_sweep(w, t):
+    # Sweeping: the whole upper body swings the broom left and right across the ground.
+    return player_pose(PLAYER_TWIST + SWEEP_SWING * math.sin(w), head_bob=3 * math.sin(2 * w))
 
 
 def main():
@@ -182,7 +209,8 @@ def main():
         "Pet_Idle": sequence("Pet_Idle", sample(2.4, 12, pet_idle), True, 0, PET_TREE),
         "Pet_Walk": sequence("Pet_Walk", sample(0.56, 8, pet_walk), True, 1, PET_TREE),
         "Pet_Happy": sequence("Pet_Happy", pet_happy(), False, 2, PET_TREE),
-        "Player_Sweep": sequence("Player_Sweep", sample(0.7, 8, player_sweep), True, 2, R15_TREE),
+        "Player_Hold": sequence("Player_Hold", sample(2.0, 8, player_hold), True, 2, R15_TREE),
+        "Player_Sweep": sequence("Player_Sweep", sample(0.8, 12, player_sweep), True, 3, R15_TREE),
     }
     for name, xml in clips.items():
         with open(os.path.join(OUT, f"{name}.rbxmx"), "w") as f:

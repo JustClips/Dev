@@ -1666,7 +1666,8 @@ Assets.Animations = {
 	Pet_Happy = 121509518198286,
 	Pet_Idle = 92065903957406,
 	Pet_Walk = 130705289172156,
-	Player_Sweep = 79964188382249,
+	Player_Hold = 70450038284627,
+	Player_Sweep = 87735193219138,
 }
 
 -- Used instead of Assets.Animations when the primary account's models failed to load
@@ -1675,7 +1676,8 @@ Assets.AnimationFallback = {
 	Pet_Happy = 104759341584430,
 	Pet_Idle = 101236842457827,
 	Pet_Walk = 73735245537498,
-	Player_Sweep = 109139357549233,
+	Player_Hold = 129888683850993,
+	Player_Sweep = 98110507730768,
 }
 
 -- UI images (icons rendered in art/blender/icons.py, UI art from art/out/ui).

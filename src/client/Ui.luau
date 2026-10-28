@@ -119,13 +119,17 @@ function Ui.button(button: GuiButton, fn: () -> ())
 end
 
 -- Open/close motion for screens with a "Window" (and optional "Dim" backdrop):
--- the window rises 28 px and grows from 90 %, the backdrop fades in. Closing runs it
--- backwards quickly, then disables the screen. A token per screen lets a new open
--- cancel a running close (and the other way round).
-local OPEN = TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-local CLOSE = TweenInfo.new(0.13, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-local RISE = 28
-local DIM_ALPHA = 0.45
+-- the window pops up from 60 % with a small overshoot and the backdrop fades in. Closing
+-- shrinks the window away while the backdrop fades out, then disables the screen. The
+-- window never moves, only scales, so nothing slides around. A token per screen lets a
+-- new open cancel a running close (and the other way round).
+local OPEN = TweenInfo.new(0.26, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local CLOSE = TweenInfo.new(0.16, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+local FADE_IN = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local FADE_OUT = TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local OPEN_FROM = 0.6
+local CLOSE_TO = 0.05
+local DIM_ALPHA = 0.6
 
 local motionToken: { [ScreenGui]: number } = setmetatable({}, { __mode = "k" }) :: any
 local homePosition: { [GuiObject]: UDim2 } = setmetatable({}, { __mode = "k" }) :: any
@@ -169,19 +173,14 @@ function Ui.show(gui: ScreenGui)
 	if Ui.reducedMotion() then
 		return
 	end
-	local window, scale, dim = parts(gui)
-	if window then
-		local home = homePosition[window]
-		window.Position = home + UDim2.fromOffset(0, RISE)
-		TweenService:Create(window, OPEN, { Position = home }):Play()
-	end
+	local _, scale, dim = parts(gui)
 	if scale then
-		scale.Scale = currentScale * 0.9
+		scale.Scale = currentScale * OPEN_FROM
 		TweenService:Create(scale, OPEN, { Scale = currentScale }):Play()
 	end
 	if dim then
 		dim.BackgroundTransparency = 1
-		TweenService:Create(dim, OPEN, { BackgroundTransparency = DIM_ALPHA }):Play()
+		TweenService:Create(dim, FADE_IN, { BackgroundTransparency = DIM_ALPHA }):Play()
 	end
 end
 
@@ -199,15 +198,12 @@ function Ui.hide(gui: ScreenGui, instant: boolean?)
 		return
 	end
 	closing[gui] = true
-	local window, scale, dim = parts(gui)
-	if window then
-		TweenService:Create(window, CLOSE, { Position = homePosition[window] + UDim2.fromOffset(0, RISE * 0.6) }):Play()
-	end
+	local _, scale, dim = parts(gui)
 	if scale then
-		TweenService:Create(scale, CLOSE, { Scale = currentScale * 0.92 }):Play()
+		TweenService:Create(scale, CLOSE, { Scale = currentScale * CLOSE_TO }):Play()
 	end
 	if dim then
-		TweenService:Create(dim, CLOSE, { BackgroundTransparency = 1 }):Play()
+		TweenService:Create(dim, FADE_OUT, { BackgroundTransparency = 1 }):Play()
 	end
 	task.delay(CLOSE.Time, function()
 		if motionToken[gui] == token then

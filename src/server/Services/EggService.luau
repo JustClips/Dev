@@ -245,7 +245,11 @@ function EggService:OnTileCleared(player: Player, zone, position: Vector3)
 		return
 	end
 	local luck = S.BoostService:GetServerLuck() * Upgrades.multiplier(session.Data.Upgrades, "Luck")
-	if rng:NextNumber() < zone.EggChance * luck then
+	local runtime = session.Runtime
+	runtime.TilesSinceEgg = (runtime.TilesSinceEgg or 0) + 1
+	-- Pity timer: long dry streaks feel broken to new players, so one is guaranteed.
+	if rng:NextNumber() < zone.EggChance * luck or runtime.TilesSinceEgg >= Economy.EggPityTiles then
+		runtime.TilesSinceEgg = 0
 		foundEgg(player, position, EggService:RollRarity(zone.MaxRarity, luck))
 	end
 end

@@ -16,30 +16,30 @@
     "Size": [
      [
       1,
-      0
+      400
      ],
      [
       1,
-      0
+      400
      ]
     ],
     "Position": [
      [
-      0,
+      0.5,
       0
      ],
      [
-      0,
+      0.5,
       0
      ]
     ],
     "AnchorPoint": [
-     0,
-     0
+     0.5,
+     0.5
     ],
     "BorderSizePixel": 0,
-    "BackgroundColor3": "#141A33",
-    "BackgroundTransparency": 0.45,
+    "BackgroundColor3": "#0B0E1E",
+    "BackgroundTransparency": 0.6,
     "Text": "",
     "AutoButtonColor": false,
     "ZIndex": 0

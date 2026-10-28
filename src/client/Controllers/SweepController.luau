@@ -37,7 +37,7 @@ local emitterPart: Part
 local numberPool: { { attachment: Attachment, gui: BillboardGui, label: TextLabel } } = {}
 local nextNumber = 1
 local tickCount = 0
-local sweepTrack: AnimationTrack? = nil
+local tracks: { [string]: AnimationTrack } = {}
 local trackHumanoid: Humanoid? = nil
 
 local function character(): (Model?, BasePart?, Humanoid?)
@@ -53,28 +53,43 @@ local function toolEquipped(char: Model): boolean
 	return tool ~= nil and tool:GetAttribute("SweepTool") == true
 end
 
--- Plays the sweeping arm swing while you sweep with a hand tool.
-local function setSweepAnimation(on: boolean)
-	local char, _, humanoid = character()
-	if humanoid ~= trackHumanoid then
-		if sweepTrack then
-			sweepTrack:Stop(0)
+local function track(humanoid: Humanoid, name: string): AnimationTrack?
+	local t = tracks[name]
+	if not t then
+		t = AssetLibrary.loadTrack(humanoid, name)
+		if t then
+			tracks[name] = t
 		end
-		sweepTrack = nil
-		trackHumanoid = humanoid
 	end
-	if on and not sweepTrack and char and humanoid then
-		sweepTrack = AssetLibrary.loadTrack(humanoid, "Player_Sweep")
-	end
-	local track = sweepTrack
-	if not track then
+	return t
+end
+
+local function setTrack(t: AnimationTrack?, on: boolean, fadeIn: number, fadeOut: number)
+	if not t then
 		return
 	end
-	if on and not track.IsPlaying then
-		track:Play(0.15)
-	elseif not on and track.IsPlaying then
-		track:Stop(0.25)
+	if on and not t.IsPlaying then
+		t:Play(fadeIn)
+	elseif not on and t.IsPlaying then
+		t:Stop(fadeOut)
 	end
+end
+
+-- Tool in hand: the two-handed hold pose. Sweeping: the broom swings across the ground.
+local function setToolAnimation(equipped: boolean, sweeping: boolean)
+	local _, _, humanoid = character()
+	if humanoid ~= trackHumanoid then
+		for _, t in tracks do
+			t:Stop(0)
+		end
+		tracks = {}
+		trackHumanoid = humanoid
+	end
+	if not humanoid or not (equipped or next(tracks)) then
+		return
+	end
+	setTrack(track(humanoid, "Player_Hold"), equipped, 0.2, 0.2)
+	setTrack(track(humanoid, "Player_Sweep"), equipped and sweeping, 0.15, 0.3)
 end
 
 local function shouldSweep(): (boolean, Vector3?)
@@ -288,7 +303,8 @@ function SweepController:Start()
 		local active, position = shouldSweep()
 		local char, _, humanoid = character()
 		local onFoot = humanoid ~= nil and humanoid.SeatPart == nil
-		setSweepAnimation(active and onFoot and char ~= nil and toolEquipped(char :: Model))
+		local equipped = onFoot and char ~= nil and toolEquipped(char :: Model)
+		setToolAnimation(equipped, active and equipped)
 		if active and position then
 			Net.event("SweepTick"):FireServer(position)
 			tickCount += 1

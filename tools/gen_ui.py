@@ -183,8 +183,10 @@ def screen(children, order=0, enabled=True, inset=False):
 
 
 def dim():
-    return node("Dim", "TextButton", base(U(1, 0, 1, 0), BackgroundColor3=BG, BackgroundTransparency=0.45, Text="",
-                                          AutoButtonColor=False, ZIndex=0))
+    # Oversized and centred so it also covers the top bar and safe-area insets (no lighter
+    # strips around the edges).
+    return node("Dim", "TextButton", base(U(1, 400, 1, 400), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundColor3="#0B0E1E",
+                                          BackgroundTransparency=0.6, Text="", AutoButtonColor=False, ZIndex=0))
 
 
 def window(w, h, title, ico, children, header=HEADER):
@@ -279,11 +281,14 @@ def hud():
         ]),
         text("Label", "Moon Clean 0%", U(1, -48, 1, 0), U(0, 38, 0, 0), ts=19, heavy=True, stroke=2.5, ZIndex=3),
     ])
-    boosts = frame("Boosts", U(0, 600, 0, 30), U(0.5, 0, 0, 116), (0.5, 0), children=[
-        autoscale(), hlist(8),
-        node("Template", "TextLabel", base(U(0, 0, 0, 30), BackgroundColor3=BG, Text="", TextColor3=PREMIUM, TextSize=17, FontFace=BODY_HEAVY,
+    # Active boosts (server luck, 2x cash): chips stacked in the bottom-right corner.
+    # Phones move them to the top right (HudController), clear of the jump button.
+    boosts = frame("Boosts", U(0, 300, 0, 200), U(1, -14, 1, -14), (1, 1), children=[
+        autoscale(), vlist(8, "Right", "Bottom"),
+        node("Template", "TextLabel", base(U(0, 0, 0, 40), BackgroundColor3=BG, Text="", TextColor3=PREMIUM, TextSize=19, FontFace=BODY_HEAVY,
                                           AutomaticSize="X", Visible=False, ZIndex=2),
-             [corner(), border(INK, 3), padding(10, 10, 0)]),
+             [corner(), border(INK, 3), padding(46, 12, 0),
+              icon("Icon", "Luck", 40, U(0, -44, 0.5, 0), (0, 0.5))]),
     ])
     toasts = frame("Toasts", U(0, 520, 0, 200), U(0.5, 0, 0, 156), (0.5, 0), children=[
         autoscale(), vlist(6),

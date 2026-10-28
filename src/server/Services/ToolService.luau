@@ -80,16 +80,18 @@ function ToolService:GetSweepTool(player: Player): { Radius: number, Power: numb
 	return { Radius = def.Radius, Power = def.Power * mult }
 end
 
--- Grip for the Blender tools (head at -Z, grip point near +Z). Checked on a real server with
--- an R15 rig in the Player_Sweep pose: the head lands on the ground ~3.5 studs in front.
-local GRIP_ANGLE = math.rad(32)
+-- Grip for the Blender tools (head at -Z, top grip point near +Z), matched to the
+-- Player_Hold / Player_Sweep animations: the right hand holds the handle HAND_GAP studs below
+-- the top grip point (the left hand holds the top), and the head rests on the ground in front.
+-- Numbers come from art/anim/check_grip.py (R15 forward kinematics); change them together.
+local TOOL_REACH = 3.3 -- right hand to the end of the head
+local HAND_GAP = 1.2
 local GRIP_ROTATION = CFrame.fromMatrix(
 	Vector3.zero,
-	Vector3.new(-1, 0, 0),
-	Vector3.new(0, -math.sin(GRIP_ANGLE), math.cos(GRIP_ANGLE)),
-	Vector3.new(0, math.cos(GRIP_ANGLE), math.sin(GRIP_ANGLE))
+	Vector3.new(0.8880, 0.4331, 0.1544),
+	Vector3.new(-0.3791, 0.8797, -0.2871),
+	Vector3.new(-0.2601, 0.1964, 0.9454)
 ):Inverse()
-local REACH = 3.9 -- grip-to-head length that reaches the ground from the hand
 
 local function buildMeshTool(tool: Tool, def): boolean
 	local model = AssetLibrary.get("Tool_" .. def.Id)
@@ -98,14 +100,16 @@ local function buildMeshTool(tool: Tool, def): boolean
 	if not model or not meta or not handle then
 		return false
 	end
-	local gripPoint: Vector3 = meta.grip or handle.Position
-	-- Short tools (toothbrush, vacuums) are scaled up so they still touch the ground.
-	local length = gripPoint.Z - meta.bounds.min.Z
-	local scale = if length > 0 then math.clamp(REACH / length, 1, 1.6) else 1
-	if scale > 1 then
+	local topGrip: Vector3 = meta.grip or handle.Position
+	-- Every tool is scaled so that, held in the right hand, its head just reaches the ground.
+	local length = topGrip.Z - meta.bounds.min.Z
+	local scale = if length > 0 then math.clamp((TOOL_REACH + HAND_GAP) / length, 0.75, 2) else 1
+	if math.abs(scale - 1) > 0.01 then
 		model:ScaleTo(scale)
-		gripPoint *= scale
+		topGrip *= scale
+		handle = model:FindFirstChild("Handle") :: BasePart
 	end
+	local gripPoint = topGrip - Vector3.new(0, 0, HAND_GAP)
 	for _, part in model:GetChildren() do
 		if part:IsA("BasePart") then
 			part.Anchored = false
@@ -123,7 +127,7 @@ local function buildMeshTool(tool: Tool, def): boolean
 		end
 	end
 	model:Destroy()
-	tool.Grip = CFrame.new(handle.CFrame:PointToObjectSpace(gripPoint)) * GRIP_ROTATION
+	tool.Grip = handle.CFrame:ToObjectSpace(CFrame.new(gripPoint)) * GRIP_ROTATION
 	return true
 end
 

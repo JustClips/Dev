@@ -134,8 +134,11 @@ local function tag(model: Model, alienId: string, mutation: string?, income: num
 	billboard.Parent = model
 end
 
+local PARK_TOP = 0.2
+
 local function pivot(park: Park, pet: Pet, bob: number)
-	local y = if pet.floats then FLOAT_HEIGHT + bob else 0
+	-- The park lawn (MapBuilder) is 0.2 stud above the base floor.
+	local y = PARK_TOP + (if pet.floats then FLOAT_HEIGHT + bob else 0)
 	pet.model:PivotTo(park.cframe * CFrame.new(pet.position.X, y, pet.position.Y) * CFrame.Angles(0, pet.yaw, 0))
 end
 

@@ -211,21 +211,25 @@ local function renderBoosts()
 		end
 	end
 	local now = State.now()
-	local entries = {}
+	local entries: { { string } } = {}
 	for _, tier in LUCK_TIERS do
 		local ends = State.server("Luck" .. tier) or 0
 		if ends > now then
-			table.insert(entries, `{tier}x Luck  {Format.time(ends - now)}`)
+			table.insert(entries, { `{tier}x Server Luck  {Format.time(ends - now)}`, "Icon_Luck" })
 		end
 	end
 	local data = State.data
 	if data and (data.Boosts.Cash2x or 0) > now then
-		table.insert(entries, `2x Cash  {Format.time(data.Boosts.Cash2x - now)}`)
+		table.insert(entries, { `2x Cash  {Format.time(data.Boosts.Cash2x - now)}`, "Icon_Cash" })
 	end
-	for i, text in entries do
+	for i, entry in entries do
 		local label = template:Clone()
 		label.Name = "Boost"
-		label.Text = text
+		label.Text = entry[1]
+		local icon = label:FindFirstChild("Icon") :: ImageLabel?
+		if icon then
+			icon.Image = AssetLibrary.image(entry[2])
+		end
 		label.LayoutOrder = i
 		label.Visible = true
 		label.Parent = template.Parent
@@ -253,6 +257,13 @@ local function layoutForTouch()
 	end
 	el.Rail.Position = UDim2.new(0, 14, 0.58, 0)
 	el.SweepButton.Visible = true
+	local boosts = (el.BoostTemplate :: Instance).Parent :: Frame
+	boosts.AnchorPoint = Vector2.new(1, 0)
+	boosts.Position = UDim2.new(1, -14, 0, 6)
+	local boostLayout = boosts:FindFirstChildOfClass("UIListLayout")
+	if boostLayout then
+		boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+	end
 end
 
 function HudController:Init(controllers)

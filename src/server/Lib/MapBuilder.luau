@@ -151,16 +151,16 @@ end
 function MapBuilder.setupLighting()
 	Lighting.ClockTime = 14.2
 	Lighting.GeographicLatitude = 20
-	Lighting.Brightness = 2.4
+	Lighting.Brightness = 1.9
 	Lighting.Ambient = Color3.fromRGB(64, 70, 104)
-	Lighting.OutdoorAmbient = Color3.fromRGB(116, 122, 168)
+	Lighting.OutdoorAmbient = Color3.fromRGB(100, 106, 150)
 	Lighting.ColorShift_Top = Color3.fromRGB(255, 244, 228)
 	Lighting.ColorShift_Bottom = Color3.fromRGB(0, 0, 0)
 	Lighting.EnvironmentDiffuseScale = 0.5
 	Lighting.EnvironmentSpecularScale = 0.5
 	Lighting.GlobalShadows = true
 	Lighting.ShadowSoftness = 0.25
-	Lighting.ExposureCompensation = 0.1
+	Lighting.ExposureCompensation = -0.15
 
 	local atmosphere = effect("Atmosphere", "MoonAtmosphere") :: Atmosphere
 	atmosphere.Density = 0.22
@@ -171,9 +171,9 @@ function MapBuilder.setupLighting()
 	atmosphere.Haze = 0.6
 
 	local bloom = effect("BloomEffect", "MoonBloom") :: BloomEffect
-	bloom.Intensity = 0.7
-	bloom.Size = 28
-	bloom.Threshold = 1.4
+	bloom.Intensity = 0.45
+	bloom.Size = 24
+	bloom.Threshold = 1.7
 
 	local grade = effect("ColorCorrectionEffect", "MoonGrade") :: ColorCorrectionEffect
 	grade.Saturation = 0.15
@@ -244,6 +244,8 @@ local function studs(p: BasePart, color: Color3, studsPerTile: number?)
 		Color3 = color,
 	}, p)
 end
+
+local FLOOR_GREY = Color3.fromRGB(120, 126, 150)
 
 local function lighten(c: Color3, t: number): Color3
 	return c:Lerp(WHITE, t)
@@ -402,14 +404,17 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 	local w, d = World.BaseSize.X, World.BaseSize.Y
 	local floorY = World.BaseFloorY
 
-	local floor = block(model, "Floor", Vector3.new(w, floorY + 1, d), cf * CFrame.new(0, -(floorY + 1) / 2, 0), lighten(color, 0.82))
-	studs(floor, lighten(color, 0.78))
-	-- coloured border band and a ramp along the front edge
+	-- Muted floor tinted with the base colour (a near-white floor glared in daylight).
+	-- Parts that sit on the floor stay at least 0.1 stud above it so nothing flickers.
+	local floor = block(model, "Floor", Vector3.new(w, floorY + 1, d), cf * CFrame.new(0, -(floorY + 1) / 2, 0), color:Lerp(FLOOR_GREY, 0.62))
+	studs(floor, color:Lerp(WHITE, 0.35))
+	-- coloured border band (0.1 proud of the floor) and a ramp along the front edge
+	local trimH = floorY + 1.1
 	for _, side in { -1, 1 } do
-		block(model, "Trim", Vector3.new(2, floorY + 1.02, d), cf * CFrame.new(side * (w / 2 - 1), -(floorY + 1) / 2 + 0.01, 0), color)
+		block(model, "Trim", Vector3.new(2, trimH, d), cf * CFrame.new(side * (w / 2 - 1), -(floorY + 1) / 2 + 0.05, 0), color)
 	end
-	block(model, "Trim", Vector3.new(w, floorY + 1.02, 2), cf * CFrame.new(0, -(floorY + 1) / 2 + 0.01, d / 2 - 1), color)
-	block(model, "Trim", Vector3.new(w, floorY + 1.02, 2), cf * CFrame.new(0, -(floorY + 1) / 2 + 0.01, -d / 2 + 1), color)
+	block(model, "Trim", Vector3.new(w - 4, trimH, 2), cf * CFrame.new(0, -(floorY + 1) / 2 + 0.05, d / 2 - 1), color)
+	block(model, "Trim", Vector3.new(w - 4, trimH, 2), cf * CFrame.new(0, -(floorY + 1) / 2 + 0.05, -d / 2 + 1), color)
 	-- (a WedgePart's high side is its +Z, here the platform edge)
 	make("WedgePart", {
 		Name = "Ramp",
@@ -418,12 +423,12 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 		Color = color,
 	}, model)
 	-- walkway from the arch to the hatchery
-	local path = block(model, "Path", Vector3.new(10, 0.06, 14), cf * CFrame.new(0, 0.03, -35), lighten(INK, 0.35))
+	local path = block(model, "Path", Vector3.new(10, 0.2, 13), cf * CFrame.new(0, 0.1, -35), lighten(INK, 0.35))
 	path.CanCollide = false
 	-- moss park
 	local pMin, pMax = World.Base.ParkMin, World.Base.ParkMax
 	local parkCenter = (pMin + pMax) / 2
-	local park = block(model, "Park", Vector3.new(pMax.X - pMin.X, 0.2, pMax.Y - pMin.Y), cf * CFrame.new(parkCenter.X, -0.08, parkCenter.Y), World.TerrainColors.Grass, M.Grass)
+	local park = block(model, "Park", Vector3.new(pMax.X - pMin.X, 0.3, pMax.Y - pMin.Y), cf * CFrame.new(parkCenter.X, 0.05, parkCenter.Y), World.TerrainColors.Grass:Lerp(Color3.new(0, 0, 0), 0.15), M.Grass)
 	park.CanCollide = false
 	-- corner pillars with a light on top
 	for _, x in { -1, 1 } do
@@ -432,7 +437,7 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 			block(model, "Pillar", Vector3.new(2.6, 7, 2.6), at * CFrame.new(0, 3.5, 0), SURFACE)
 			block(model, "PillarBand", Vector3.new(2.8, 0.8, 2.8), at * CFrame.new(0, 1.2, 0), color)
 			local cap = glow(model, "PillarLight", Vector3.new(2.2, 1, 2.2), at * CFrame.new(0, 7.5, 0), color)
-			light(cap, color, 18, 1.2)
+			light(cap, color, 14, 0.6)
 		end
 	end
 	-- low walls on the sides and back (the front stays open)
@@ -563,7 +568,9 @@ local function corridorRamps()
 		local rot = if highAtMaxZ then CFrame.identity else CFrame.Angles(0, math.rad(180), 0)
 		make("WedgePart", {
 			Name = "Ramp",
-			Size = Vector3.new(c.Max.X - c.Min.X, high - low, length),
+			-- 3 studs wider on each side than the carved cut, so its sides tuck into the
+			-- terrain walls (smooth terrain rounds its edges and left a visible gap).
+			Size = Vector3.new(c.Max.X - c.Min.X + 6, high - low, length),
 			CFrame = CFrame.new(0, (low + high) / 2, (z0 + z1) / 2) * rot,
 			Color = World.TerrainColors.Pavement,
 			Material = M.Concrete,

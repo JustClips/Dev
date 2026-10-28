@@ -31,6 +31,7 @@ local Economy = {
 
 	-- Eggs (GAME_PLAN §4, §5.3)
 	TutorialEggTile = 12, -- guaranteed first egg on this tile cleared (must be <= 25)
+	EggPityTiles = 150, -- an egg is guaranteed after this many tiles without one
 	EggOwnerSeconds = 15,
 	EggDespawnSeconds = 120,
 	CarryLimit = 1,
