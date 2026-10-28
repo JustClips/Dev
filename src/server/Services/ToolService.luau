@@ -143,6 +143,8 @@ local function buildTool(def): Tool
 		return tool
 	end
 
+	-- Models not loaded yet (or failed): a part-built stand-in, swapped once they load.
+	tool:SetAttribute("Placeholder", true)
 	local scale = def.Scale
 	local handle = Instance.new("Part")
 	handle.Name = "Handle"
@@ -492,6 +494,20 @@ function ToolService:Init(services)
 	end)
 	S.DataService.ProfileReleasing:Connect(function(player)
 		destroyVehicle(player)
+	end)
+	-- Players who spawned before the Blender models finished loading got a stand-in tool.
+	S.AssetService.Ready:Connect(function()
+		for _, player in Players:GetPlayers() do
+			local character = player.Character
+			local backpack = player:FindFirstChildOfClass("Backpack")
+			for _, container in { character, backpack } do
+				local tool = container and container:FindFirstChildWhichIsA("Tool")
+				if tool and tool:GetAttribute("SweepTool") and tool:GetAttribute("Placeholder") then
+					giveTool(player, tool.Parent == character)
+					break
+				end
+			end
+		end
 	end)
 end
 
