@@ -1,6 +1,6 @@
 # Playtest checklist
 
-The build was checked with a simulated server run (fake Roblox runtime) and the selene linter. It has not been run in Studio yet, so the client side and anything visual still need a real playtest.
+The build was checked with a simulated server run (fake Roblox runtime), the selene linter, a script that checks every UI path the controllers use, and a real Roblox server run (Luau execution) for model loading, rigging, animation loading and the tool grip. It has not been played in Studio yet, so the client side and anything visual still need a real playtest.
 
 ## Manual steps for Dev
 
@@ -12,10 +12,19 @@ The build was checked with a simulated server run (fake Roblox runtime) and the 
 
 - `[DataService] ... Using an in-memory mock` when API access is off or the place is unpublished.
 - `[ShopService] N products/gamepasses have no ID yet` until step 2 is done.
+- `[WorldService] terrain built in X s` and `[AssetService] 65 models ready in X s` are normal info lines. If AssetService says some models failed, those show as simple placeholder shapes.
 
 Anything else in Output (red errors especially) is a bug worth reporting.
 
 ## Checklist
+
+### Look and feel (new)
+- [ ] The map has terrain: grey moon ground, mountains around the hub, the Crater bowl, a purple Dark Side, red Mars, and a big Earth in the sky.
+- [ ] Each of the 8 bases has an arch with the owner's name, a hatchery pad, a fenced green pet park with a habitat, a pond and trees.
+- [ ] Your aliens walk around your park (walk animation), stop and idle, and do a happy jump now and then. Name and $/s float above them.
+- [ ] The tool in your hand looks right (head on the ground in front of you while sweeping). The sweep arm animation plays.
+- [ ] HUD: Base / Sell / Zones pills teleport you. Zones shows prices and locks. You can't teleport while carrying an egg.
+- [ ] Shop, Index (3D aliens, silhouettes for missing ones), Rebirth and the hatch cutscene use the new stud style.
 
 ### First 2 minutes (the tutorial)
 - [ ] You spawn on a base plot, holding a Toothbrush.
@@ -23,7 +32,7 @@ Anything else in Output (red errors especially) is a bug worth reporting.
 - [ ] The arrow points you somewhere useful at each step (dust → egg → base → rocket → shop).
 - [ ] An egg appears within the first ~12 tiles. Walk into it to pick it up, and it shows above your head.
 - [ ] Walk onto your base pad: the egg starts hatching (Common, 3 s), then the hatch cutscene plays.
-- [ ] The alien stands on your base and income ticks up in the HUD.
+- [ ] The alien appears in your pet park and income ticks up in the HUD.
 - [ ] Walk onto the Rocket sell pad: the backpack empties and cash goes up.
 - [ ] Shop → Tools → buy the Broom: the tool in your hand changes and sweeping covers more ground.
 
@@ -57,9 +66,10 @@ Anything else in Output (red errors especially) is a bug worth reporting.
 
 ## Not verified here
 
-- Any client UI or controller code (no Studio here). The screens are functional placeholders. ForgeUI art comes later.
+- Client UI and controllers in a real client (layouts were checked in an HTML preview only).
+- Animation playback on screen (the tracks load on a real server, but that server doesn't step animations).
 - LiveSync parsing every `.model.json` (world and GUI) correctly.
-- Tool grip angle, vehicle handling and physics, alien models and effects.
+- Vehicle handling with the new bodies, terrain build time on a live server, prop placement by eye.
 - StreamingEnabled behaviour on far-away zones.
 - Real purchases and real DataStores.
 - Luau strict type checking (`--!strict` is on, but it wasn't run through the Studio type checker).
