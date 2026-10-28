@@ -85,7 +85,7 @@ def bush(name, seed, size, flowers=True):
         for _ in range(8):
             ang = rnd.uniform(0, 360)
             el = rnd.uniform(20, 70)
-            d = size * 1.0
+            d = size * 0.9
             x = math.cos(math.radians(ang)) * math.cos(math.radians(el)) * d
             y = math.sin(math.radians(ang)) * math.cos(math.radians(el)) * d
             z = size * 0.6 + math.sin(math.radians(el)) * d * 0.7

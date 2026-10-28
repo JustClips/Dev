@@ -2505,10 +2505,10 @@ Assets.Models = {
 	},
 	Rock_Crater1 = {
 		bounds = {
-			max = Vector3.new(1.77, 2.7, 1.787),
+			max = Vector3.new(1.712, 2.7, 1.787),
 			min = Vector3.new(-1.378, 0.0, -1.813),
 		},
-		id = 133381231334577,
+		id = 118305377113500,
 		kind = "prop",
 		parts = {
 			Body = {
