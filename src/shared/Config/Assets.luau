@@ -3141,7 +3141,7 @@ Assets.Models = {
 			max = Vector3.new(12.2, 11.6, 10.2),
 			min = Vector3.new(-12.2, -0.04, -12.3),
 		},
-		fallback = 94763121171895,
+		fallback = 134137234844886,
 		id = 133401549224983,
 		kind = "vehicle",
 		parts = {
@@ -3175,7 +3175,7 @@ Assets.Models = {
 			max = Vector3.new(3.402, 5.425, 5.1),
 			min = Vector3.new(-3.402, -0.02, -6.15),
 		},
-		fallback = 99361441529847,
+		fallback = 81737068918542,
 		id = 102448576415041,
 		kind = "vehicle",
 		parts = {
@@ -3238,8 +3238,8 @@ Assets.Animations = {
 -- (same owner rule as models). AssetService sets ReplicatedStorage.Assets.UseFallback.
 Assets.AnimationFallback = {
 	Pet_Happy = 104759341584430,
-	Pet_Idle = 101236842457827,
-	Pet_Walk = 73735245537498,
+	Pet_Idle = 90304779560671,
+	Pet_Walk = 140251033269648,
 	Player_Hold = 129888683850993,
 	Player_Sweep = 98110507730768,
 }
