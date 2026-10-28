@@ -243,15 +243,13 @@ end
 
 local animations: { [string]: Animation } = {}
 
--- Which account's animation ids to play. Unknown until AssetService finishes loading
--- models; until then the fallback ids are used if there are any.
+-- Which account's animation ids to play: the fallback account's only when AssetService
+-- had to load the models from there.
 local function useFallback(): boolean
 	local f = folder()
-	local flag = f and f:GetAttribute("UseFallback")
-	if flag == nil then
-		return true
-	end
-	return flag == true
+	-- Until AssetService has decided (models still loading) use the primary account, which
+	-- is the one that works in the live game; a track loaded this early is kept for good.
+	return f ~= nil and f:GetAttribute("UseFallback") == true
 end
 
 function AssetLibrary.animation(name: string): Animation?
