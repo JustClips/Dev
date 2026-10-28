@@ -772,7 +772,35 @@ function MapBuilder.buildProps()
 	propsFolder.Parent = Workspace
 	local rng = Random.new(7)
 
-	place("Rocket", CFrame.new(World.RocketPosition + Vector3.new(0, 0.5, 0)) * yaw(180))
+	-- The market hall where leaves are sold (asset name kept from the rocket it replaced).
+	local hallCf = CFrame.new(World.RocketPosition + Vector3.new(0, 0.5, 0)) * yaw(180)
+	local hall = place("Rocket", hallCf)
+	local meta = AssetLibrary.meta("Rocket")
+	if hall and meta and meta.sign then
+		-- Name on the blank board over the front (front = -Z in the model).
+		local board = block(hall, "MarketSign", Vector3.new(11, 2.6, 0.05), hallCf * CFrame.new(meta.sign + Vector3.new(0, 0, -0.35)), WHITE, nil, {
+			Transparency = 1,
+			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
+		})
+		local gui = make("SurfaceGui", {
+			Face = Enum.NormalId.Front,
+			SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
+			PixelsPerStud = 40,
+			LightInfluence = 0.4,
+			MaxDistance = 400,
+		}, board)
+		local label = make("TextLabel", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Text = "MARKET",
+			TextScaled = true,
+			TextColor3 = Color3.fromRGB(46, 120, 52),
+			FontFace = Font.new(MONTSERRAT, Enum.FontWeight.Heavy),
+		}, gui)
+		make("UIStroke", { Color = WHITE, Thickness = 4 }, label)
+	end
 	-- lamps along both walkways, flags and satellites on the plaza
 	local f = World.Field
 	for z = f.Min.Y + 25, f.Max.Y, 57 do
