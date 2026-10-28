@@ -1,0 +1,334 @@
+{
+ "className": "ScreenGui",
+ "properties": {
+  "ResetOnSpawn": false,
+  "ZIndexBehavior": "Sibling",
+  "Enabled": false,
+  "DisplayOrder": 9,
+  "IgnoreGuiInset": false
+ },
+ "children": [
+  {
+   "name": "Dim",
+   "className": "TextButton",
+   "properties": {
+    "Size": [
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "BackgroundColor3": "#000000",
+    "BackgroundTransparency": 0.45,
+    "BorderSizePixel": 0,
+    "Text": "",
+    "AutoButtonColor": false
+   }
+  },
+  {
+   "name": "Window",
+   "className": "Frame",
+   "properties": {
+    "Size": [
+     [
+      0,
+      400
+     ],
+     [
+      0,
+      280
+     ]
+    ],
+    "Position": [
+     [
+      0.5,
+      0
+     ],
+     [
+      0.5,
+      0
+     ]
+    ],
+    "AnchorPoint": [
+     0.5,
+     0.5
+    ],
+    "BackgroundColor3": "#151B33",
+    "BackgroundTransparency": 0,
+    "BorderSizePixel": 0
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": [
+       0,
+       18
+      ]
+     }
+    },
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": "#FFD54A",
+      "Thickness": 3,
+      "Transparency": 0,
+      "ApplyStrokeMode": "Border"
+     }
+    },
+    {
+     "name": "AutoScale",
+     "className": "UIScale",
+     "properties": {
+      "Scale": 1
+     }
+    },
+    {
+     "name": "Title",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        -20
+       ],
+       [
+        0,
+        44
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        10
+       ],
+       [
+        0,
+        10
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "Text": "Welcome back! 👽",
+      "TextColor3": "#FFFFFF",
+      "TextSize": 30,
+      "Font": "FredokaOne",
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true
+     }
+    },
+    {
+     "name": "Text",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        -40
+       ],
+       [
+        0,
+        44
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        20
+       ],
+       [
+        0,
+        56
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "Text": "Your aliens worked while you were away.",
+      "TextColor3": "#AFC3E6",
+      "TextSize": 17,
+      "Font": "Gotham",
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true
+     }
+    },
+    {
+     "name": "Amount",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        -20
+       ],
+       [
+        0,
+        54
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        10
+       ],
+       [
+        0,
+        100
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "Text": "+$0",
+      "TextColor3": "#FFD54A",
+      "TextSize": 44,
+      "Font": "FredokaOne",
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true
+     }
+    },
+    {
+     "name": "Double",
+     "className": "TextButton",
+     "properties": {
+      "Size": [
+       [
+        0,
+        170
+       ],
+       [
+        0,
+        56
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        -8
+       ],
+       [
+        1,
+        -16
+       ]
+      ],
+      "AnchorPoint": [
+       1,
+       1
+      ],
+      "BackgroundColor3": "#3CCB72",
+      "BorderSizePixel": 0,
+      "Text": "2x for R$49",
+      "TextColor3": "#FFFFFF",
+      "TextSize": 20,
+      "Font": "FredokaOne",
+      "AutoButtonColor": true,
+      "TextWrapped": true,
+      "TextStrokeTransparency": 0.6
+     },
+     "children": [
+      {
+       "name": "Corner",
+       "className": "UICorner",
+       "properties": {
+        "CornerRadius": [
+         0,
+         14
+        ]
+       }
+      },
+      {
+       "name": "Stroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#000000",
+        "Thickness": 2,
+        "Transparency": 0.6,
+        "ApplyStrokeMode": "Border"
+       }
+      }
+     ]
+    },
+    {
+     "name": "Collect",
+     "className": "TextButton",
+     "properties": {
+      "Size": [
+       [
+        0,
+        170
+       ],
+       [
+        0,
+        56
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        8
+       ],
+       [
+        1,
+        -16
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       1
+      ],
+      "BackgroundColor3": "#4FC3F7",
+      "BorderSizePixel": 0,
+      "Text": "Collect",
+      "TextColor3": "#FFFFFF",
+      "TextSize": 22,
+      "Font": "FredokaOne",
+      "AutoButtonColor": true,
+      "TextWrapped": true,
+      "TextStrokeTransparency": 0.6
+     },
+     "children": [
+      {
+       "name": "Corner",
+       "className": "UICorner",
+       "properties": {
+        "CornerRadius": [
+         0,
+         14
+        ]
+       }
+      },
+      {
+       "name": "Stroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#000000",
+        "Thickness": 2,
+        "Transparency": 0.6,
+        "ApplyStrokeMode": "Border"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

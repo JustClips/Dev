@@ -1,0 +1,1212 @@
+{
+ "className": "ScreenGui",
+ "properties": {
+  "ResetOnSpawn": false,
+  "ZIndexBehavior": "Sibling",
+  "Enabled": false,
+  "DisplayOrder": 5,
+  "IgnoreGuiInset": false
+ },
+ "children": [
+  {
+   "name": "Dim",
+   "className": "TextButton",
+   "properties": {
+    "Size": [
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "BackgroundColor3": "#000000",
+    "BackgroundTransparency": 0.45,
+    "BorderSizePixel": 0,
+    "Text": "",
+    "AutoButtonColor": false
+   }
+  },
+  {
+   "name": "Window",
+   "className": "Frame",
+   "properties": {
+    "Size": [
+     [
+      0,
+      660
+     ],
+     [
+      0,
+      460
+     ]
+    ],
+    "Position": [
+     [
+      0.5,
+      0
+     ],
+     [
+      0.5,
+      0
+     ]
+    ],
+    "AnchorPoint": [
+     0.5,
+     0.5
+    ],
+    "BackgroundColor3": "#151B33",
+    "BackgroundTransparency": 0.02,
+    "BorderSizePixel": 0
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": [
+       0,
+       18
+      ]
+     }
+    },
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": "#6FD3FF",
+      "Thickness": 2,
+      "Transparency": 0.25,
+      "ApplyStrokeMode": "Border"
+     }
+    },
+    {
+     "name": "AutoScale",
+     "className": "UIScale",
+     "properties": {
+      "Scale": 1
+     }
+    },
+    {
+     "name": "Title",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        -90
+       ],
+       [
+        0,
+        44
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        20
+       ],
+       [
+        0,
+        8
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "Text": "Shop",
+      "TextColor3": "#FFFFFF",
+      "TextSize": 32,
+      "Font": "FredokaOne",
+      "TextXAlignment": "Left",
+      "TextYAlignment": "Center",
+      "TextWrapped": true
+     }
+    },
+    {
+     "name": "Close",
+     "className": "TextButton",
+     "properties": {
+      "Size": [
+       [
+        0,
+        48
+       ],
+       [
+        0,
+        48
+       ]
+      ],
+      "Position": [
+       [
+        1,
+        -10
+       ],
+       [
+        0,
+        10
+       ]
+      ],
+      "AnchorPoint": [
+       1,
+       0
+      ],
+      "BackgroundColor3": "#FF5A5F",
+      "BorderSizePixel": 0,
+      "Text": "X",
+      "TextColor3": "#FFFFFF",
+      "TextSize": 26,
+      "Font": "FredokaOne",
+      "AutoButtonColor": true,
+      "TextWrapped": true,
+      "TextStrokeTransparency": 0.6
+     },
+     "children": [
+      {
+       "name": "Corner",
+       "className": "UICorner",
+       "properties": {
+        "CornerRadius": [
+         0,
+         14
+        ]
+       }
+      },
+      {
+       "name": "Stroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#000000",
+        "Thickness": 2,
+        "Transparency": 0.6,
+        "ApplyStrokeMode": "Border"
+       }
+      }
+     ]
+    },
+    {
+     "name": "Tabs",
+     "className": "Frame",
+     "properties": {
+      "Size": [
+       [
+        1,
+        -32
+       ],
+       [
+        0,
+        46
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        16
+       ],
+       [
+        0,
+        60
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BackgroundColor3": "#151B33",
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0
+     },
+     "children": [
+      {
+       "name": "Layout",
+       "className": "UIListLayout",
+       "properties": {
+        "Padding": [
+         0,
+         8
+        ],
+        "FillDirection": "Horizontal",
+        "HorizontalAlignment": "Left",
+        "VerticalAlignment": "Center",
+        "SortOrder": "LayoutOrder"
+       }
+      },
+      {
+       "name": "TabTools",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          0,
+          108
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BackgroundColor3": "#212A4A",
+        "BorderSizePixel": 0,
+        "Text": "🧹 Tools",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 17,
+        "Font": "FredokaOne",
+        "AutoButtonColor": true,
+        "TextWrapped": true,
+        "TextStrokeTransparency": 0.6,
+        "LayoutOrder": 1
+       },
+       "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0,
+           10
+          ]
+         }
+        },
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#000000",
+          "Thickness": 2,
+          "Transparency": 0.6,
+          "ApplyStrokeMode": "Border"
+         }
+        }
+       ]
+      },
+      {
+       "name": "TabBoosts",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          0,
+          108
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BackgroundColor3": "#212A4A",
+        "BorderSizePixel": 0,
+        "Text": "🍀 Boosts",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 17,
+        "Font": "FredokaOne",
+        "AutoButtonColor": true,
+        "TextWrapped": true,
+        "TextStrokeTransparency": 0.6,
+        "LayoutOrder": 2
+       },
+       "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0,
+           10
+          ]
+         }
+        },
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#000000",
+          "Thickness": 2,
+          "Transparency": 0.6,
+          "ApplyStrokeMode": "Border"
+         }
+        }
+       ]
+      },
+      {
+       "name": "TabEggs",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          0,
+          108
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BackgroundColor3": "#212A4A",
+        "BorderSizePixel": 0,
+        "Text": "🥚 Eggs",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 17,
+        "Font": "FredokaOne",
+        "AutoButtonColor": true,
+        "TextWrapped": true,
+        "TextStrokeTransparency": 0.6,
+        "LayoutOrder": 3
+       },
+       "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0,
+           10
+          ]
+         }
+        },
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#000000",
+          "Thickness": 2,
+          "Transparency": 0.6,
+          "ApplyStrokeMode": "Border"
+         }
+        }
+       ]
+      },
+      {
+       "name": "TabPasses",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          0,
+          108
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BackgroundColor3": "#212A4A",
+        "BorderSizePixel": 0,
+        "Text": "⭐ Passes",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 17,
+        "Font": "FredokaOne",
+        "AutoButtonColor": true,
+        "TextWrapped": true,
+        "TextStrokeTransparency": 0.6,
+        "LayoutOrder": 4
+       },
+       "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0,
+           10
+          ]
+         }
+        },
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#000000",
+          "Thickness": 2,
+          "Transparency": 0.6,
+          "ApplyStrokeMode": "Border"
+         }
+        }
+       ]
+      },
+      {
+       "name": "TabCash",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          0,
+          108
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BackgroundColor3": "#212A4A",
+        "BorderSizePixel": 0,
+        "Text": "💰 Cash",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 17,
+        "Font": "FredokaOne",
+        "AutoButtonColor": true,
+        "TextWrapped": true,
+        "TextStrokeTransparency": 0.6,
+        "LayoutOrder": 5
+       },
+       "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0,
+           10
+          ]
+         }
+        },
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#000000",
+          "Thickness": 2,
+          "Transparency": 0.6,
+          "ApplyStrokeMode": "Border"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "List",
+     "className": "ScrollingFrame",
+     "properties": {
+      "Size": [
+       [
+        1,
+        -24
+       ],
+       [
+        1,
+        -124
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        16
+       ],
+       [
+        0,
+        114
+       ]
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "ScrollBarThickness": 6,
+      "AutomaticCanvasSize": "Y",
+      "CanvasSize": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "ScrollingDirection": "Y"
+     },
+     "children": [
+      {
+       "name": "Layout",
+       "className": "UIListLayout",
+       "properties": {
+        "Padding": [
+         0,
+         8
+        ],
+        "FillDirection": "Vertical",
+        "HorizontalAlignment": "Left",
+        "VerticalAlignment": "Top",
+        "SortOrder": "LayoutOrder"
+       }
+      },
+      {
+       "name": "Template",
+       "className": "Frame",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -12
+         ],
+         [
+          0,
+          78
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BackgroundColor3": "#212A4A",
+        "BackgroundTransparency": 0,
+        "BorderSizePixel": 0,
+        "Visible": false
+       },
+       "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0,
+           12
+          ]
+         }
+        },
+        {
+         "name": "Name",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            -260
+           ],
+           [
+            0,
+            30
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            14
+           ],
+           [
+            0,
+            8
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BackgroundTransparency": 1,
+          "BorderSizePixel": 0,
+          "Text": "Item",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 22,
+          "Font": "FredokaOne",
+          "TextXAlignment": "Left",
+          "TextYAlignment": "Center",
+          "TextWrapped": true
+         }
+        },
+        {
+         "name": "Desc",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            -260
+           ],
+           [
+            0,
+            32
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            14
+           ],
+           [
+            0,
+            38
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BackgroundTransparency": 1,
+          "BorderSizePixel": 0,
+          "Text": "",
+          "TextColor3": "#AFC3E6",
+          "TextSize": 14,
+          "Font": "Gotham",
+          "TextXAlignment": "Left",
+          "TextYAlignment": "Top",
+          "TextWrapped": true
+         }
+        },
+        {
+         "name": "Buy",
+         "className": "TextButton",
+         "properties": {
+          "Size": [
+           [
+            0,
+            130
+           ],
+           [
+            0,
+            54
+           ]
+          ],
+          "Position": [
+           [
+            1,
+            -12
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           1,
+           0.5
+          ],
+          "BackgroundColor3": "#3CCB72",
+          "BorderSizePixel": 0,
+          "Text": "R$ 0",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 20,
+          "Font": "FredokaOne",
+          "AutoButtonColor": true,
+          "TextWrapped": true,
+          "TextStrokeTransparency": 0.6
+         },
+         "children": [
+          {
+           "name": "Corner",
+           "className": "UICorner",
+           "properties": {
+            "CornerRadius": [
+             0,
+             14
+            ]
+           }
+          },
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#000000",
+            "Thickness": 2,
+            "Transparency": 0.6,
+            "ApplyStrokeMode": "Border"
+           }
+          }
+         ]
+        },
+        {
+         "name": "Gift",
+         "className": "TextButton",
+         "properties": {
+          "Size": [
+           [
+            0,
+            58
+           ],
+           [
+            0,
+            54
+           ]
+          ],
+          "Position": [
+           [
+            1,
+            -152
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           1,
+           0.5
+          ],
+          "BackgroundColor3": "#FF7EB6",
+          "BorderSizePixel": 0,
+          "Text": "🎁",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 24,
+          "Font": "FredokaOne",
+          "AutoButtonColor": true,
+          "TextWrapped": true,
+          "TextStrokeTransparency": 0.6
+         },
+         "children": [
+          {
+           "name": "Corner",
+           "className": "UICorner",
+           "properties": {
+            "CornerRadius": [
+             0,
+             14
+            ]
+           }
+          },
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#000000",
+            "Thickness": 2,
+            "Transparency": 0.6,
+            "ApplyStrokeMode": "Border"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Empty",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        40
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        0
+       ],
+       [
+        0.6,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0.5
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "Text": "Coming soon!",
+      "TextColor3": "#AFC3E6",
+      "TextSize": 24,
+      "Font": "FredokaOne",
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "Visible": false
+     }
+    },
+    {
+     "name": "GiftPicker",
+     "className": "Frame",
+     "properties": {
+      "Size": [
+       [
+        0,
+        360
+       ],
+       [
+        0,
+        330
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        0
+       ],
+       [
+        0.5,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0.5
+      ],
+      "BackgroundColor3": "#0F1428",
+      "BackgroundTransparency": 0,
+      "BorderSizePixel": 0,
+      "Visible": false,
+      "ZIndex": 5
+     },
+     "children": [
+      {
+       "name": "Corner",
+       "className": "UICorner",
+       "properties": {
+        "CornerRadius": [
+         0,
+         16
+        ]
+       }
+      },
+      {
+       "name": "Stroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#FF7EB6",
+        "Thickness": 2,
+        "Transparency": 0.25,
+        "ApplyStrokeMode": "Border"
+       }
+      },
+      {
+       "name": "Title",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -70
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          16
+         ],
+         [
+          0,
+          8
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BackgroundTransparency": 1,
+        "BorderSizePixel": 0,
+        "Text": "🎁 Gift to who?",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 24,
+        "Font": "FredokaOne",
+        "TextXAlignment": "Left",
+        "TextYAlignment": "Center",
+        "TextWrapped": true
+       }
+      },
+      {
+       "name": "Close",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          0,
+          44
+         ],
+         [
+          0,
+          44
+         ]
+        ],
+        "Position": [
+         [
+          1,
+          -8
+         ],
+         [
+          0,
+          8
+         ]
+        ],
+        "AnchorPoint": [
+         1,
+         0
+        ],
+        "BackgroundColor3": "#FF5A5F",
+        "BorderSizePixel": 0,
+        "Text": "X",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 22,
+        "Font": "FredokaOne",
+        "AutoButtonColor": true,
+        "TextWrapped": true,
+        "TextStrokeTransparency": 0.6
+       },
+       "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0,
+           14
+          ]
+         }
+        },
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#000000",
+          "Thickness": 2,
+          "Transparency": 0.6,
+          "ApplyStrokeMode": "Border"
+         }
+        }
+       ]
+      },
+      {
+       "name": "List",
+       "className": "ScrollingFrame",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -24
+         ],
+         [
+          1,
+          -70
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          12
+         ],
+         [
+          0,
+          60
+         ]
+        ],
+        "BackgroundTransparency": 1,
+        "BorderSizePixel": 0,
+        "ScrollBarThickness": 6,
+        "AutomaticCanvasSize": "Y",
+        "CanvasSize": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ]
+       },
+       "children": [
+        {
+         "name": "Layout",
+         "className": "UIListLayout",
+         "properties": {
+          "Padding": [
+           0,
+           6
+          ],
+          "FillDirection": "Vertical",
+          "HorizontalAlignment": "Center",
+          "VerticalAlignment": "Top",
+          "SortOrder": "LayoutOrder"
+         }
+        },
+        {
+         "name": "Template",
+         "className": "TextButton",
+         "properties": {
+          "Size": [
+           [
+            1,
+            -10
+           ],
+           [
+            0,
+            50
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            0
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BackgroundColor3": "#212A4A",
+          "BorderSizePixel": 0,
+          "Text": "Player",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 20,
+          "Font": "FredokaOne",
+          "AutoButtonColor": true,
+          "TextWrapped": true,
+          "TextStrokeTransparency": 0.6,
+          "Visible": false
+         },
+         "children": [
+          {
+           "name": "Corner",
+           "className": "UICorner",
+           "properties": {
+            "CornerRadius": [
+             0,
+             14
+            ]
+           }
+          },
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#000000",
+            "Thickness": 2,
+            "Transparency": 0.6,
+            "ApplyStrokeMode": "Border"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "Empty",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -20
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "Position": [
+         [
+          0.5,
+          0
+         ],
+         [
+          0.5,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0.5,
+         0.5
+        ],
+        "BackgroundTransparency": 1,
+        "BorderSizePixel": 0,
+        "Text": "Nobody else is here yet.",
+        "TextColor3": "#AFC3E6",
+        "TextSize": 18,
+        "Font": "GothamBold",
+        "TextXAlignment": "Center",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "Visible": false
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

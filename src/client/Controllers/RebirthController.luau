@@ -1,0 +1,84 @@
+--!strict
+-- Rebirth screen: cost, multiplier now -> after, rebirth button and the Robux skip.
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Client = script.Parent.Parent
+local State = require(Client.State)
+local Ui = require(Client.Ui)
+
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local BigNum = require(Shared.BigNum)
+local Economy = require(Shared.Config.Economy)
+local Format = require(Shared.Format)
+local Net = require(Shared.Net)
+local Products = require(Shared.Config.Products)
+
+local RebirthController = {}
+
+local C: any
+local gui: ScreenGui
+local multLabel: TextLabel
+local costLabel: TextLabel
+local rebirthButton: TextButton
+local skipButton: TextButton
+
+local function render()
+	local data = State.data
+	if not data then
+		return
+	end
+	local now = 1 + data.Rebirths * Economy.RebirthCashBonus
+	local after = now + Economy.RebirthCashBonus
+	multLabel.Text = `Cash x{now} → x{after}`
+	costLabel.Text = `Cost: {Format.cash(data.RebirthCost)}  (you have {Format.cash(data.Cash)})`
+	local affordable = BigNum.gte(data.Cash, data.RebirthCost)
+	rebirthButton.BackgroundColor3 = if affordable then Color3.fromRGB(164, 124, 255) else Color3.fromRGB(90, 96, 120)
+	local skip = Products.ProductByKey.SkipRebirth
+	skipButton.Visible = skip ~= nil and skip.Id ~= 0
+	if skip then
+		skipButton.Text = `Skip for R$ {skip.Price}`
+	end
+end
+
+function RebirthController:Toggle()
+	Ui.toggle("Rebirth")
+	render()
+end
+
+function RebirthController:Init(controllers)
+	C = controllers
+	gui = Ui.screen("Rebirth")
+	multLabel = Ui.find(gui, "Window.Mult")
+	costLabel = Ui.find(gui, "Window.Cost")
+	rebirthButton = Ui.find(gui, "Window.RebirthButton")
+	skipButton = Ui.find(gui, "Window.SkipButton")
+end
+
+function RebirthController:Start()
+	Ui.button(Ui.find(gui, "Window.Close"), function()
+		Ui.close("Rebirth")
+	end)
+	Ui.button(Ui.find(gui, "Dim"), function()
+		Ui.close("Rebirth")
+	end)
+	Ui.button(rebirthButton, function()
+		local ok, message = Net.func("Rebirth"):InvokeServer()
+		C.HudController:Toast(message or "", if ok then "Good" else "Bad")
+		if ok then
+			Ui.close("Rebirth")
+		end
+	end)
+	Ui.button(skipButton, function()
+		local ok, message = Net.func("PromptPurchase"):InvokeServer("SkipRebirth")
+		if not ok and message then
+			C.HudController:Toast(message, "Bad")
+		end
+	end)
+	State.Changed:Connect(function()
+		if gui.Enabled then
+			render()
+		end
+	end)
+end
+
+return RebirthController

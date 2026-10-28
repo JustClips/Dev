@@ -1,0 +1,267 @@
+{
+ "className": "ScreenGui",
+ "properties": {
+  "ResetOnSpawn": false,
+  "ZIndexBehavior": "Sibling",
+  "Enabled": false,
+  "DisplayOrder": 10,
+  "IgnoreGuiInset": true
+ },
+ "children": [
+  {
+   "name": "Flash",
+   "className": "Frame",
+   "properties": {
+    "Size": [
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "BackgroundColor3": "#FFFFFF",
+    "BackgroundTransparency": 1,
+    "BorderSizePixel": 0,
+    "ZIndex": 3
+   }
+  },
+  {
+   "name": "Stage",
+   "className": "Frame",
+   "properties": {
+    "Size": [
+     [
+      0,
+      380
+     ],
+     [
+      0,
+      460
+     ]
+    ],
+    "Position": [
+     [
+      0.5,
+      0
+     ],
+     [
+      0.5,
+      0
+     ]
+    ],
+    "AnchorPoint": [
+     0.5,
+     0.5
+    ],
+    "BackgroundColor3": "#151B33",
+    "BackgroundTransparency": 1,
+    "BorderSizePixel": 0
+   },
+   "children": [
+    {
+     "name": "AutoScale",
+     "className": "UIScale",
+     "properties": {
+      "Scale": 1
+     }
+    },
+    {
+     "name": "Viewport",
+     "className": "ViewportFrame",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        320
+       ]
+      ],
+      "BackgroundTransparency": 1,
+      "Ambient": [
+       200,
+       200,
+       220
+      ],
+      "LightColor": [
+       255,
+       255,
+       255
+      ],
+      "LightDirection": [
+       -1,
+       -1,
+       -1
+      ]
+     }
+    },
+    {
+     "name": "New",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        120
+       ],
+       [
+        0,
+        34
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        0
+       ],
+       [
+        0,
+        8
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "Text": "NEW!",
+      "TextColor3": "#FFD54A",
+      "TextSize": 26,
+      "Font": "FredokaOne",
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "Visible": false,
+      "TextStrokeTransparency": 0.2
+     }
+    },
+    {
+     "name": "Name",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        50
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        320
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "Text": "",
+      "TextColor3": "#FFFFFF",
+      "TextSize": 40,
+      "Font": "FredokaOne",
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "TextStrokeTransparency": 0.2
+     }
+    },
+    {
+     "name": "Sub",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        30
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        372
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "Text": "",
+      "TextColor3": "#AFC3E6",
+      "TextSize": 22,
+      "Font": "FredokaOne",
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "TextStrokeTransparency": 0.3
+     }
+    },
+    {
+     "name": "Hint",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        24
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        410
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "Text": "Tap to continue",
+      "TextColor3": "#AFC3E6",
+      "TextSize": 16,
+      "Font": "GothamBold",
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "Visible": false
+     }
+    }
+   ]
+  }
+ ]
+}
