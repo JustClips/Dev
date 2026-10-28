@@ -255,7 +255,11 @@ local function update()
 	checkReadyEggs(data)
 	local key = data.TutorialStep
 	local step = STEPS[STEP_INDEX[key] or 0]
+	-- The step card steps aside while a hatch show or an offer popup is on screen.
 	local holding = C.PlacementController:IsHolding()
+		or C.HatchController:IsBusy()
+		or Ui.isOpen(Ui.screen("Offer"))
+		or Ui.isOpen(Ui.screen("WelcomeBack"))
 
 	if step then
 		if key == "Place" then

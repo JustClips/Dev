@@ -38,6 +38,22 @@ local function prompt(productKey: string)
 	end
 end
 
+-- Popups that can't share the screen with an offer.
+local function screenBusy(): boolean
+	if C.HatchController:IsBusy() or Ui.anyWindowOpen() or Ui.isOpen(welcomeGui) then
+		return true
+	end
+	for _, name in { "TutorialDone", "Hatch" } do
+		local gui = Ui.screen(name)
+		if gui.Enabled then
+			return true
+		end
+	end
+	return false
+end
+
+local pendingOffer: any = nil
+
 local function showOffer(offer)
 	specials[offer.Key] = {
 		Key = offer.Key,
@@ -48,6 +64,12 @@ local function showOffer(offer)
 		Expires = os.clock() + KEEP_IN_SHOP_SECONDS,
 	}
 	C.ShopController:Refresh()
+	-- Wait for the hatch show, tutorial reward or open window to finish first.
+	if screenBusy() then
+		pendingOffer = offer
+		return
+	end
+	pendingOffer = nil
 	current = { Key = offer.Key, Product = offer.Product }
 	showToken += 1
 	local token = showToken
@@ -126,6 +148,17 @@ function OfferController:Start()
 		prompt("DoubleOffline")
 	end)
 	Net.event("ShowOffer").OnClientEvent:Connect(showOffer)
+	task.spawn(function()
+		while true do
+			task.wait(0.5)
+			if pendingOffer and not screenBusy() then
+				task.wait(1) -- a short breather after the hatch show
+				if pendingOffer and not screenBusy() then
+					showOffer(pendingOffer)
+				end
+			end
+		end
+	end)
 	Net.event("WelcomeBack").OnClientEvent:Connect(showWelcome)
 end
 

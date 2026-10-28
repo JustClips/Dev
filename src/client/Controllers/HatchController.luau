@@ -839,6 +839,11 @@ end
 
 ------------------------------------------------------------------ lifecycle
 
+-- True while a hatch show is playing or more eggs are waiting for theirs.
+function HatchController:IsBusy(): boolean
+	return playing or #queue > 0
+end
+
 function HatchController:Init(controllers)
 	C = controllers
 	gui = Ui.screen("Hatch")

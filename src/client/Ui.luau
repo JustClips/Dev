@@ -268,6 +268,17 @@ function Ui.open(name: string)
 	end
 end
 
+-- True while any full window (shop, inventory, panels...) is open.
+function Ui.anyWindowOpen(): boolean
+	for _, name in MODALS do
+		local gui = playerGui:FindFirstChild(name) :: ScreenGui?
+		if gui and Ui.isOpen(gui) then
+			return true
+		end
+	end
+	return false
+end
+
 function Ui.close(name: string)
 	local gui = playerGui:FindFirstChild(name) :: ScreenGui?
 	if gui then
