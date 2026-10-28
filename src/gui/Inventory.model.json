@@ -53,7 +53,7 @@
      "name": "Stroke",
      "className": "UIStroke",
      "properties": {
-      "Color": "#1B1F3A",
+      "Color": "#17191E",
       "Thickness": 3,
       "ApplyStrokeMode": "Border",
       "LineJoinMode": "Round"
@@ -107,7 +107,7 @@
        "name": "TextStroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#1B1F3A",
+        "Color": "#17191E",
         "Thickness": 2.5,
         "ApplyStrokeMode": "Contextual",
         "LineJoinMode": "Round"
@@ -163,7 +163,7 @@
        "name": "TextStroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#1B1F3A",
+        "Color": "#17191E",
         "Thickness": 2,
         "ApplyStrokeMode": "Contextual",
         "LineJoinMode": "Round"
@@ -272,7 +272,7 @@
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
       "ScrollBarThickness": 8,
-      "ScrollBarImageColor3": "#1B1F3A",
+      "ScrollBarImageColor3": "#17191E",
       "CanvasSize": [
        [
         0,
@@ -507,7 +507,7 @@
            "name": "TextStroke",
            "className": "UIStroke",
            "properties": {
-            "Color": "#1B1F3A",
+            "Color": "#17191E",
             "Thickness": 2,
             "ApplyStrokeMode": "Contextual",
             "LineJoinMode": "Round"
@@ -562,7 +562,7 @@
            "name": "Stroke",
            "className": "UIStroke",
            "properties": {
-            "Color": "#1B1F3A",
+            "Color": "#17191E",
             "Thickness": 2,
             "ApplyStrokeMode": "Border",
             "LineJoinMode": "Round"
@@ -616,7 +616,7 @@
              "name": "TextStroke",
              "className": "UIStroke",
              "properties": {
-              "Color": "#1B1F3A",
+              "Color": "#17191E",
               "Thickness": 1.5,
               "ApplyStrokeMode": "Contextual",
               "LineJoinMode": "Round"
@@ -676,7 +676,7 @@
            "name": "TextStroke",
            "className": "UIStroke",
            "properties": {
-            "Color": "#1B1F3A",
+            "Color": "#17191E",
             "Thickness": 2,
             "ApplyStrokeMode": "Contextual",
             "LineJoinMode": "Round"
@@ -862,7 +862,7 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
+          "Color": "#17191E",
           "Thickness": 3,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Round"
@@ -939,7 +939,7 @@
            "name": "TextStroke",
            "className": "UIStroke",
            "properties": {
-            "Color": "#1B1F3A",
+            "Color": "#17191E",
             "Thickness": 2,
             "ApplyStrokeMode": "Contextual",
             "LineJoinMode": "Round"
@@ -1025,7 +1025,7 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
+          "Color": "#17191E",
           "Thickness": 3,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Round"
@@ -1102,7 +1102,7 @@
            "name": "TextStroke",
            "className": "UIStroke",
            "properties": {
-            "Color": "#1B1F3A",
+            "Color": "#17191E",
             "Thickness": 2,
             "ApplyStrokeMode": "Contextual",
             "LineJoinMode": "Round"
@@ -1188,7 +1188,7 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
+          "Color": "#17191E",
           "Thickness": 3,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Round"
@@ -1265,7 +1265,7 @@
            "name": "TextStroke",
            "className": "UIStroke",
            "properties": {
-            "Color": "#1B1F3A",
+            "Color": "#17191E",
             "Thickness": 2,
             "ApplyStrokeMode": "Contextual",
             "LineJoinMode": "Round"
@@ -1350,7 +1350,7 @@
        "name": "Stroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#1B1F3A",
+        "Color": "#17191E",
         "Thickness": 3,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Round"
@@ -1481,7 +1481,7 @@
          "name": "TextStroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
@@ -1545,7 +1545,7 @@
          "name": "TextStroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
+          "Color": "#17191E",
           "Thickness": 2,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
@@ -1637,7 +1637,7 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
+          "Color": "#17191E",
           "Thickness": 4,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Round"
@@ -1714,7 +1714,7 @@
            "name": "TextStroke",
            "className": "UIStroke",
            "properties": {
-            "Color": "#1B1F3A",
+            "Color": "#17191E",
             "Thickness": 2.5,
             "ApplyStrokeMode": "Contextual",
             "LineJoinMode": "Round"
@@ -1764,7 +1764,7 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
+          "Color": "#17191E",
           "Thickness": 4,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Round"
@@ -1841,7 +1841,7 @@
            "name": "TextStroke",
            "className": "UIStroke",
            "properties": {
-            "Color": "#1B1F3A",
+            "Color": "#17191E",
             "Thickness": 2.5,
             "ApplyStrokeMode": "Contextual",
             "LineJoinMode": "Round"

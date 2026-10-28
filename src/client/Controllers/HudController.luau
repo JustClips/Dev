@@ -399,28 +399,55 @@ local function teleport(target: string)
 	end
 end
 
--- Phones: the move thumbstick owns the bottom-left corner, so the wallet goes top-left.
-local function layoutForTouch()
-	if not UserInputService.TouchEnabled then
-		return
-	end
-	el.Wallet.AnchorPoint = Vector2.new(0, 0)
-	el.Wallet.Position = UDim2.new(0, 14, 0, 6)
-	local layout = el.Wallet:FindFirstChildOfClass("UIListLayout")
-	if layout then
-		layout.VerticalAlignment = Enum.VerticalAlignment.Top
-	end
-	-- Phones are short: the rail sits right under the wallet.
-	el.Rail.AnchorPoint = Vector2.new(0, 0)
-	el.Rail.Position = UDim2.new(0, 14, 0, math.floor(6 + 140 * Ui.scale()))
-	el.SweepButton.Visible = true
+-- Places the HUD clusters for the current scale. Offsets are not scaled by UIScale, so
+-- stacked pieces (pills -> clean bar -> toasts) are spaced by scale here.
+-- Phones (Ui.compact): the thumbstick owns the bottom-left corner and the jump button the
+-- bottom-right, so the wallet goes top-left with the rail under it, the Eggs/Pets
+-- buttons go top-right (BasePanelsController) with the boost chips under them, and the
+-- round SWEEP button sits left of the jump button.
+local function layout(s: number, compact: boolean)
+	local top = 6
+	local pillsH = math.ceil(52 * s)
+	el.Pills.Position = UDim2.new(0.5, 0, 0, top)
+	local barY = top + pillsH + math.ceil(8 * s)
+	el.MoonPanel.Position = UDim2.new(0.5, 0, 0, barY)
+	el.ZonePicker.Position = UDim2.new(0.5, 0, 0, barY)
+	el.Toasts.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(60 * s))
+	local hotbarTop = 12 + math.ceil(88 * s)
+	el.Hint.Position = UDim2.new(0.5, 0, 1, -(hotbarTop + math.ceil(12 * s)))
+	local walletLayout = el.Wallet:FindFirstChildOfClass("UIListLayout")
 	local boosts = (el.BoostTemplate :: Instance).Parent :: Frame
-	boosts.AnchorPoint = Vector2.new(1, 0)
-	boosts.Position = UDim2.new(1, -14, 0, 6)
 	local boostLayout = boosts:FindFirstChildOfClass("UIListLayout")
-	if boostLayout then
-		boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+	if compact then
+		el.Wallet.AnchorPoint = Vector2.new(0, 0)
+		el.Wallet.Position = UDim2.new(0, 14, 0, top)
+		if walletLayout then
+			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+		end
+		el.Rail.AnchorPoint = Vector2.new(0, 0)
+		el.Rail.Position = UDim2.new(0, 14, 0, top + math.ceil(140 * s))
+		boosts.AnchorPoint = Vector2.new(1, 0)
+		boosts.Position = UDim2.new(1, -14, 0, 8 + math.ceil(100 * s))
+		if boostLayout then
+			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+		end
+		el.SweepButton.Position = UDim2.new(1, -math.ceil(170 * s + 40), 1, -14)
+	else
+		el.Wallet.AnchorPoint = Vector2.new(0, 1)
+		el.Wallet.Position = UDim2.new(0, 14, 1, -14)
+		if walletLayout then
+			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+		end
+		el.Rail.AnchorPoint = Vector2.new(0, 0.5)
+		el.Rail.Position = UDim2.new(0, 14, 0.5, -30)
+		boosts.AnchorPoint = Vector2.new(1, 1)
+		boosts.Position = UDim2.new(1, -14, 1, -14)
+		if boostLayout then
+			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+		end
+		el.SweepButton.Position = UDim2.new(1, -196, 1, -28)
 	end
+	el.SweepButton.Visible = UserInputService.TouchEnabled
 end
 
 function HudController:Init(controllers)
@@ -453,6 +480,10 @@ function HudController:Init(controllers)
 	el.SweepButton = Ui.find(hud, "SweepButton")
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
+	el.Pills = Ui.find(hud, "Pills")
+	el.MoonPanel = Ui.find(hud, "MoonPanel")
+	el.Toasts = Ui.find(hud, "Toasts")
+	el.Hint = Ui.find(hud, "Hint")
 	el.Combo = Ui.find(hud, "Combo")
 	el.ComboFill = Ui.find(hud, "Combo.Bar.Fill")
 	el.ComboScale = Ui.find(hud, "Combo.AutoScale")
@@ -526,7 +557,7 @@ function HudController:GetSweepButton(): GuiButton
 end
 
 function HudController:Start()
-	layoutForTouch()
+	Ui.onScale(layout)
 	-- Per frame: the shine sliding across the Moon bar, the combo timer running down.
 	RunService.RenderStepped:Connect(function()
 		local t = (os.clock() % 2.6) / 2.6

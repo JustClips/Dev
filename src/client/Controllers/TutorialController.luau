@@ -123,6 +123,14 @@ local function celebrate(nextStep: Step?)
 	celebrating = false
 end
 
+-- How far above the screen bottom the step card sits: just above the hotbar, or higher
+-- when the arrow points at the hotbar (matches HudController's layout).
+local function cardLift(onHotbar: boolean): number
+	local s = Ui.scale()
+	local lift = 12 + math.ceil(88 * s) + math.ceil(12 * s)
+	return if onHotbar then lift + math.ceil(62 * s) else lift
+end
+
 local function pointAt(target: GuiObject?)
 	if target ~= pointerTarget and target then
 		spot.Visible = true
@@ -270,13 +278,13 @@ local function update()
 			pointAt(nil)
 		end
 		-- Make room for the arrow when it points at the hotbar.
-		card.Position = UDim2.new(0.5, 0, 1, if onHotbar then -184 else -122)
+		card.Position = UDim2.new(0.5, 0, 1, -cardLift(onHotbar))
 		return
 	end
 
 	-- Tutorial finished.
 	pointAt(nil)
-	card.Position = UDim2.new(0.5, 0, 1, -122)
+	card.Position = UDim2.new(0.5, 0, 1, -cardLift(false))
 	glow.Enabled = false
 	glow.Adornee = nil
 	if shownStep and shownStep ~= "Done" and not celebrating then

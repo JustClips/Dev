@@ -1,5 +1,6 @@
 --!strict
--- The two side panels from Steal an Egg, opened from the Eggs / Pets buttons on the right:
+-- The two panels from Steal an Egg, opened from the Eggs / Pets buttons on the right. Each
+-- is a normal window (PetsPanel / EggsPanel screens, same size as every other window):
 --   Pets ("3/4 Active"): pets on your base with Unequip, then pets in your bag with Equip,
 --     + Slots (the slots pass, or rebirth once you own it) and Equip Best.
 --   Eggs ("Growing Eggs"): every egg in an incubator with its timer, Open when ready or
@@ -30,8 +31,12 @@ local MAX_ROWS = 60
 
 local BasePanelsController = {}
 
+local SCREENS = { Active = "PetsPanel", Growing = "EggsPanel" }
+
 local C: any
 local gui: ScreenGui
+local buttons: Frame
+local screens: { [string]: ScreenGui } = {}
 local panels: { [string]: Frame } = {}
 local templates: { [string]: Frame } = {}
 local lists: { [string]: ScrollingFrame } = {}
@@ -238,10 +243,7 @@ local function renderBadges(data)
 			waiting += 1
 		end
 	end
-	local shown = if ready > 0 then ready else waiting
-	eggsBadge.Visible = shown > 0
-	eggsBadge.BackgroundColor3 = if ready > 0 then GOLD else RED
-	Ui.setText(eggsBadge, tostring(math.min(shown, 99)))
+	Ui.setBadge(eggsBadge, if ready > 0 then ready else waiting)
 	local bagPets = 0
 	for _, pet in data.Pets or {} do
 		if not pet.Placed then
@@ -249,8 +251,7 @@ local function renderBadges(data)
 		end
 	end
 	local canPlace = math.min(bagPets, data.Slots - data.PlacedCount)
-	petsBadge.Visible = canPlace > 0
-	Ui.setText(petsBadge, tostring(canPlace))
+	Ui.setBadge(petsBadge, canPlace)
 end
 
 local function render()
@@ -268,14 +269,40 @@ end
 
 function BasePanelsController:Show(name: string?)
 	open = name
-	for key, panel in panels do
-		panel.Visible = key == name
-		if key == name then
-			Ui.popFrame(panel)
+	if name then
+		Ui.open(SCREENS[name])
+	else
+		for _, screenName in SCREENS do
+			Ui.close(screenName)
 		end
 	end
 	table.clear(signatures)
 	render()
+end
+
+-- Phones: the two buttons sit in a row at the top right (HudController puts the boost
+-- chips under them); PC: stacked on the right edge above the next-tool card.
+local function layoutButtons(_scale: number, compact: boolean)
+	local list = buttons:FindFirstChildOfClass("UIListLayout")
+	if compact then
+		buttons.AnchorPoint = Vector2.new(1, 0)
+		buttons.Position = UDim2.new(1, -14, 0, 8)
+		buttons.Size = UDim2.fromOffset(188, 80)
+		if list then
+			list.FillDirection = Enum.FillDirection.Horizontal
+			list.Padding = UDim.new(0, 16)
+			list.VerticalAlignment = Enum.VerticalAlignment.Top
+		end
+	else
+		buttons.AnchorPoint = Vector2.new(1, 1)
+		buttons.Position = UDim2.new(1, -14, 0.5, -130)
+		buttons.Size = UDim2.fromOffset(80, 216)
+		if list then
+			list.FillDirection = Enum.FillDirection.Vertical
+			list.Padding = UDim.new(0, 28)
+			list.VerticalAlignment = Enum.VerticalAlignment.Bottom
+		end
+	end
 end
 
 function BasePanelsController:Toggle(name: string)
@@ -285,11 +312,13 @@ end
 function BasePanelsController:Init(controllers)
 	C = controllers
 	gui = Ui.screen("BasePanels")
-	for _, name in { "Active", "Growing" } do
-		panels[name] = Ui.find(gui, name)
-		lists[name] = Ui.find(gui, name .. ".List")
-		templates[name] = Ui.find(gui, name .. ".List.Template")
-		empties[name] = Ui.find(gui, name .. ".Empty")
+	buttons = Ui.find(gui, "Buttons")
+	for name, screenName in SCREENS do
+		screens[name] = Ui.screen(screenName)
+		panels[name] = Ui.find(screens[name], "Window")
+		lists[name] = Ui.find(panels[name], "List")
+		templates[name] = Ui.find(panels[name], "List.Template")
+		empties[name] = Ui.find(panels[name], "Empty")
 	end
 	eggsBadge = Ui.find(gui, "Buttons.EggsButton.Badge")
 	petsBadge = Ui.find(gui, "Buttons.PetsButton.Badge")
@@ -302,10 +331,26 @@ function BasePanelsController:Start()
 	Ui.button(Ui.find(gui, "Buttons.EggsButton"), function()
 		BasePanelsController:Toggle("Growing")
 	end)
-	Ui.button(Ui.find(gui, "Active.EquipBest"), function()
+	for name, screen in screens do
+		local function close()
+			if open == name then
+				BasePanelsController:Show(nil)
+			end
+		end
+		Ui.button(Ui.find(screen, "Window.Close"), close)
+		Ui.button(Ui.find(screen, "Dim"), close)
+		-- Another window opening closes this one (Ui.open); keep `open` in step.
+		screen:GetPropertyChangedSignal("Enabled"):Connect(function()
+			if not screen.Enabled and open == name then
+				open = nil
+			end
+		end)
+	end
+	Ui.onScale(layoutButtons)
+	Ui.button(Ui.find(panels.Active, "EquipBest"), function()
 		act("EquipBest")
 	end)
-	Ui.button(Ui.find(gui, "Active.Header.AddSlot"), function()
+	Ui.button(Ui.find(panels.Active, "AddSlot"), function()
 		local data = State.data
 		if data and not data.Gamepasses.ExtraSlots then
 			Net.func("PromptPurchase"):InvokeServer("ExtraSlots")
@@ -314,10 +359,10 @@ function BasePanelsController:Start()
 			C.RebirthController:Toggle()
 		end
 	end)
-	Ui.button(Ui.find(gui, "Growing.Header.OpenAll"), function()
+	Ui.button(Ui.find(panels.Growing, "OpenAll"), function()
 		act("OpenReady")
 	end)
-	Ui.button(Ui.find(gui, "Growing.PlaceEggs"), function()
+	Ui.button(Ui.find(panels.Growing, "PlaceEggs"), function()
 		act("PlaceBestEggs")
 	end)
 	State.Changed:Connect(render)

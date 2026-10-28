@@ -14,7 +14,7 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui") :: PlayerGui
 
 -- Modal screens: only one is open at a time.
-local MODALS = { "Shop", "Index", "Rebirth", "Garage", "Upgrades", "Inventory", "Daily", "Playtime", "Events", "Settings" }
+local MODALS = { "Shop", "Index", "Rebirth", "Garage", "Upgrades", "Inventory", "Daily", "Playtime", "Events", "Settings", "PetsPanel", "EggsPanel" }
 local POP = TweenInfo.new(0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PRESS = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local HOVER = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -22,7 +22,11 @@ local HOVER = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Ou
 local Ui = {}
 
 local soundCache: { [string]: Sound } = {}
+-- HUD scale (edge clusters) and window scale (modals); see rescale() at the bottom.
 local currentScale = 1
+local windowScale = 1
+local compactLayout = false
+local scaleListeners: { (number, boolean) -> () } = {}
 
 -- The "SFX" and "Music" sound groups (volume sliders in the settings window).
 function Ui.soundGroup(name: string): SoundGroup
@@ -165,6 +169,7 @@ local homePosition: { [GuiObject]: UDim2 } = setmetatable({}, { __mode = "k" }) 
 local closing: { [ScreenGui]: boolean } = setmetatable({}, { __mode = "k" }) :: any
 
 local function parts(gui: ScreenGui): (GuiObject?, UIScale?, GuiObject?)
+	-- Modal windows use the window scale (they fit the screen), not the HUD scale.
 	local window = gui:FindFirstChild("Window") :: GuiObject?
 	local scale = window and window:FindFirstChild("AutoScale") :: UIScale?
 	local dim = gui:FindFirstChild("Dim") :: GuiObject?
@@ -186,7 +191,7 @@ local function settle(gui: ScreenGui)
 		window.Position = homePosition[window]
 	end
 	if scale then
-		scale.Scale = currentScale
+		scale.Scale = windowScale
 	end
 	if dim then
 		dim.BackgroundTransparency = DIM_ALPHA
@@ -204,8 +209,8 @@ function Ui.show(gui: ScreenGui)
 	end
 	local _, scale, dim = parts(gui)
 	if scale then
-		scale.Scale = currentScale * OPEN_FROM
-		TweenService:Create(scale, OPEN, { Scale = currentScale }):Play()
+		scale.Scale = windowScale * OPEN_FROM
+		TweenService:Create(scale, OPEN, { Scale = windowScale }):Play()
 	end
 	if dim then
 		dim.BackgroundTransparency = 1
@@ -229,7 +234,7 @@ function Ui.hide(gui: ScreenGui, instant: boolean?)
 	closing[gui] = true
 	local _, scale, dim = parts(gui)
 	if scale then
-		TweenService:Create(scale, CLOSE, { Scale = currentScale * CLOSE_TO }):Play()
+		TweenService:Create(scale, CLOSE, { Scale = windowScale * CLOSE_TO }):Play()
 	end
 	if dim then
 		TweenService:Create(dim, FADE_OUT, { BackgroundTransparency = 1 }):Play()
@@ -283,14 +288,109 @@ function Ui.scale(): number
 	return currentScale
 end
 
--- Small pop for dropdowns (a frame with an AutoScale UIScale).
+-- Scale of modal windows (shop, settings...): they fit the screen on phones.
+function Ui.windowScale(): number
+	return windowScale
+end
+
+-- True on short screens (phones in landscape): HUD clusters move to their phone spots.
+function Ui.compact(): boolean
+	return compactLayout
+end
+
+-- Calls fn(hudScale, compact) now and every time the screen size changes.
+function Ui.onScale(fn: (number, boolean) -> ())
+	table.insert(scaleListeners, fn)
+	task.spawn(fn, currentScale, compactLayout)
+end
+
+local function isModal(scale: UIScale): boolean
+	local parent = scale.Parent
+	return parent ~= nil and (parent.Name == "Window" or parent:GetAttribute("Modal") == true)
+end
+
+-- Count badges (red square, white outline, white number). Ui.setBadge shows the count
+-- (nil/0 hides it, a string such as "!" shows as is), widens the badge for 2-3 digits and
+-- pops it when the count goes up. Every few seconds visible badges give a little wiggle
+-- so they catch the eye.
+local BADGE_PX = 30
+local badgeCounts: { [GuiObject]: string } = setmetatable({}, { __mode = "k" }) :: any
+local wiggleStarted = false
+
+local function badgePop(badge: GuiObject)
+	if Ui.reducedMotion() then
+		return
+	end
+	local pop = badge:FindFirstChild("Pop") :: UIScale?
+	if not pop then
+		local s = Instance.new("UIScale")
+		s.Name = "Pop"
+		s.Parent = badge
+		pop = s
+	end
+	local scale = pop :: UIScale
+	scale.Scale = 1.6
+	TweenService:Create(scale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+end
+
+local function startWiggle()
+	if wiggleStarted then
+		return
+	end
+	wiggleStarted = true
+	task.spawn(function()
+		while true do
+			task.wait(3.5)
+			if not Ui.reducedMotion() then
+				for badge in badgeCounts do
+					if badge.Parent and badge.Visible then
+						badge.Rotation = -14
+						TweenService:Create(badge, TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), { Rotation = 0 }):Play()
+					end
+				end
+			end
+		end
+	end)
+end
+
+function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
+	if not badge then
+		return
+	end
+	local shown: string? = nil
+	if type(count) == "string" then
+		shown = count
+	elseif type(count) == "number" and count > 0 then
+		shown = if count > 99 then "99+" else tostring(math.floor(count))
+	end
+	if not shown then
+		badge.Visible = false
+		badgeCounts[badge] = nil
+		return
+	end
+	local label = badge:FindFirstChild("Label") :: TextLabel?
+	if label then
+		label.Text = shown
+	end
+	badge.Size = UDim2.fromOffset(BADGE_PX + math.max(0, #shown - 1) * 10, BADGE_PX)
+	local before = badgeCounts[badge]
+	badgeCounts[badge] = shown
+	badge.Visible = true
+	if before ~= shown and (before == nil or (tonumber(shown) or 0) > (tonumber(before) or 0)) then
+		badgePop(badge)
+	end
+	startWiggle()
+end
+
+-- Small pop for dropdowns and panels (a frame with an AutoScale UIScale).
 function Ui.popFrame(frame: GuiObject)
 	local scale = frame:FindFirstChild("AutoScale") :: UIScale?
 	if not scale or Ui.reducedMotion() then
 		return
 	end
-	scale.Scale = currentScale * 0.85
-	TweenService:Create(scale, OPEN, { Scale = currentScale }):Play()
+	local target = if isModal(scale) then windowScale else currentScale
+	scale.Scale = target * 0.85
+	TweenService:Create(scale, OPEN, { Scale = target }):Play()
 end
 
 -- Kept for older callers: same as Ui.show on an already enabled screen.
@@ -298,20 +398,48 @@ function Ui.popIn(gui: ScreenGui)
 	Ui.show(gui)
 end
 
--- Scales every UIScale named "AutoScale" with the screen height (phones get smaller UI,
--- but layouts use 64+ px buttons so taps stay >= 44 px).
+-- The layouts are drawn for a 1456 x 820 screen (gen_ui.py). Every UIScale named
+-- "AutoScale" follows the screen:
+--   HUD clusters: the smaller of height / 820 and width / 1456, clamped. Short screens
+--     (phones in landscape) get 25% more so buttons stay tappable, and Ui.compact() is
+--     true so the HUD can move clusters to their phone spots.
+--   Modal windows (named "Window", or with the Modal attribute): as big as the HUD scale
+--     on PC, but never bigger than what fits under the Roblox top bar. One scale for all
+--     of them, so every window is the same size on screen.
+local DESIGN_W, DESIGN_H = 1456, 820
+local WINDOW_W, WINDOW_H = 820, 520 -- gen_ui.py WIN_W / WIN_H
+local COMPACT_BELOW = 560
+
 local function rescale()
 	local camera = Workspace.CurrentCamera
 	if not camera then
 		return
 	end
-	local s = math.clamp(camera.ViewportSize.Y / 820, 0.7, 1.15)
-	currentScale = s
+	local view = camera.ViewportSize
+	if view.X < 2 or view.Y < 2 then
+		return
+	end
+	local inset = GuiService.TopbarInset.Height
+	local compact = view.Y < COMPACT_BELOW
+	local s = math.min(view.Y / DESIGN_H, view.X / DESIGN_W)
+	if compact then
+		s *= 1.25
+	end
+	s = math.clamp(s, 0.4, 1.15)
+	local fit = math.min((view.Y - inset - 16) / WINDOW_H, (view.X - 32) / WINDOW_W)
+	local w = math.max(0.3, math.min(fit, math.max(s, 1)))
+	local changed = s ~= currentScale or w ~= windowScale or compact ~= compactLayout
+	currentScale, windowScale, compactLayout = s, w, compact
 	for _, gui in playerGui:GetChildren() do
 		for _, d in gui:GetDescendants() do
 			if d:IsA("UIScale") and d.Name == "AutoScale" then
-				d.Scale = s
+				d.Scale = if isModal(d) then w else s
 			end
+		end
+	end
+	if changed then
+		for _, fn in scaleListeners do
+			task.spawn(fn, s, compact)
 		end
 	end
 end
@@ -322,6 +450,7 @@ function Ui.initScaling()
 	if camera then
 		camera:GetPropertyChangedSignal("ViewportSize"):Connect(rescale)
 	end
+	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(rescale)
 	playerGui.ChildAdded:Connect(function()
 		task.defer(rescale)
 	end)

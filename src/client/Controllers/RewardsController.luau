@@ -182,7 +182,7 @@ local function renderBottom(info)
 	local event = Rewards.currentOrNextEvent(info.Now + (os.clock() - playtimeAt))
 	eventFrame.Visible = event ~= nil
 	-- With no group reward the event panel takes the whole row.
-	eventFrame.Size = if group.Visible then UDim2.new(0.5, -18, 0, 84) else UDim2.new(1, -24, 0, 84)
+	eventFrame.Size = if group.Visible then UDim2.new(0.5, -18, 0, 100) else UDim2.new(1, -24, 0, 100)
 	if event then
 		local t = info.Now + (os.clock() - playtimeAt)
 		;(eventFrame:FindFirstChild("Name") :: TextLabel).Text = event.Name
@@ -203,11 +203,9 @@ local function render()
 	if not info then
 		return
 	end
-	badge.Visible = info.DailyReady
-	Ui.setText(badge, "1")
+	Ui.setBadge(badge, if info.DailyReady then 1 else nil)
 	local ready, nextIn = giftStatus(info)
-	giftsBadge.Visible = ready > 0
-	Ui.setText(giftsBadge, tostring(ready))
+	Ui.setBadge(giftsBadge, ready)
 	-- The Gifts button counts down to the next gift.
 	Ui.setText(giftsButton, if ready > 0 then "Claim!" elseif nextIn then Format.time(nextIn) else "Gifts")
 	if Ui.isOpen(gui) then

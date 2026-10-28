@@ -1,5 +1,6 @@
-"""Writes src/gui/*.model.json: every ScreenGui in the game, in the stud style from
-docs/UI_STYLE.md (white spacesuit stud panels, blue stud headers, thick navy outline).
+"""Writes src/gui/*.model.json: every ScreenGui in the game, in the style from
+docs/UI_STYLE.md (clean bright simulator style: white panels, colour headers, thick dark
+outline, square corners).
 
 Controllers only look elements up by name, so names here are the contract with
 src/client/Controllers. Image ids come from src/shared/Config/Assets.luau.
@@ -14,16 +15,16 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 OUT = os.path.join(ROOT, "src", "gui")
 
 # ---------------------------------------------------------------- tokens (UI_STYLE.md)
-BG = "#141A33"        # night navy: dim overlay, dark plates
-SURFACE = "#E9EEF7"   # spacesuit white stud panels
-HEADER = "#3B4FA8"    # header stud strip
-INK = "#1B1F3A"       # outline, dark text
-SUB = "#4A5170"       # secondary text on white
-ACCENT = "#7CF5C8"    # alien mint: selected tab, Moon bar
+BG = "#272B34"        # charcoal: dim overlay, dark plates (clean bar, tips)
+SURFACE = "#F7F8FA"   # white panels
+HEADER = "#2F9BFF"    # sky blue header strip
+INK = "#17191E"       # outline, dark text
+SUB = "#5B6070"       # secondary text on white
+ACCENT = "#8BE04E"    # leaf green: selected tab, World Clean bar
 SUCCESS = "#3DDC5A"   # buy with cash, claim, go
 PREMIUM = "#FFC83C"   # Robux, rare
 DANGER = "#FF4D5E"    # close, full
-MUTED = "#A6AEC2"     # disabled / owned
+MUTED = "#B5BAC6"     # disabled / owned
 WHITE = "#FFFFFF"
 PILL_BASE = "#3DDC5A"
 PILL_SELL = "#FF9A3C"
@@ -31,6 +32,7 @@ PILL_ZONES = "#4C8DFF"
 REBIRTH = "#9B6BFF"
 
 RADIUS = 0  # square corners everywhere (Dev: rounded corners looked bad)
+STUD_TEXTURE = False  # Dev moved the game to a normal Earth style (2026-10-28)
 STROKE = 4
 STUD_TILE = 64
 MONTSERRAT = "rbxasset://fonts/families/Montserrat.json"
@@ -122,14 +124,18 @@ def frame(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), bg=None, children=None, 
 
 
 def studs(tint, transparency=0, tile=STUD_TILE, r=RADIUS):
+    # The stud texture belonged to the old space style; panels are flat now.
+    if not STUD_TEXTURE:
+        return None
     return node("Studs", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("Stud"), ScaleType="Tile",
                                            TileSize=U(0, tile, 0, tile), ImageColor3=tint, ImageTransparency=transparency, ZIndex=0),
                 [corner(r)])
 
 
 def plate(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), tint=SURFACE, children=None, stud=0, r=RADIUS, stroke=STROKE, **extra):
-    """Stud panel: tinted stud texture, thick navy outline, one corner radius."""
-    kids = [corner(r), border(INK, stroke) if stroke else None]
+    """Panel: flat fill with a soft top-to-bottom shade and a thick dark outline."""
+    kids = [corner(r), border(INK, stroke) if stroke else None,
+            node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#DCE0E7"]]}, "Rotation": 90})]
     if stud is not None:
         kids.append(studs(tint, stud, r=r))
     return frame(name, size, pos, anchor, bg=tint, children=kids + (children or []), **extra)
@@ -174,6 +180,18 @@ def button(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), color=SUCCESS, label=No
     return node(name, "TextButton", p, kids + (children or []))
 
 
+BADGE_RED = "#FF2E4D"
+
+
+def badge(z=6, px=30):
+    """Count badge (Pet Sim style but square): red, white outline, white number. Controllers
+    set it with Ui.setBadge, which widens it for 2-3 digits and pops it when it changes."""
+    return frame("Badge", U(0, px, 0, px), U(1, 9, 0, -9), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, children=[
+        node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2.5, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
+        text("Label", "1", U(1, 0, 1, 0), ts=px - 11, display=True, stroke=2, ZIndex=z + 1),
+    ])
+
+
 def close_button():
     return button("Close", U(0, 52, 0, 52), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=30, ZIndex=5)
 
@@ -192,9 +210,67 @@ def dim():
                                           BackgroundTransparency=0.6, Text="", AutoButtonColor=False, ZIndex=0))
 
 
-def window(w, h, title, ico, children, header=HEADER):
-    """Modal window: white stud body, coloured stud header strip, red X top-right."""
-    return plate("Window", U(0, w, 0, h), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, [
+WIN_W, WIN_H = 820, 520  # every modal window is this size (Dev: mixed sizes looked off)
+POP_W, POP_H = 480, 360  # small popups (Welcome back, Tutorial done)
+
+
+def recentre(children, w, h, W, H):
+    """Content laid out for a w x h window, moved so it sits centred in a W x H one: each
+    child keeps its old size and its old distance from the centre."""
+    dx, dy = (W - w) / 2, (H - h) / 2
+    out = []
+    for c in children:
+        if not c:
+            continue
+        c = json.loads(json.dumps(c))
+        p = c.get("properties", {})
+        if "Position" in p:
+            (sx, ox), (sy, oy) = p["Position"]
+            p["Position"] = [[sx, ox + dx * (1 - 2 * sx)], [sy, oy + dy * (1 - 2 * sy)]]
+        if "Size" in p:
+            (sx, ox), (sy, oy) = p["Size"]
+            p["Size"] = [[sx, ox - 2 * dx * sx], [sy, oy - 2 * dy * sy]]
+        out.append(c)
+    return out
+
+
+def zoom(children, k):
+    """Content drawn for a small window, scaled up by k (offsets, text, strokes, layouts)
+    so it fills the standard window instead of floating small in the middle."""
+    def scale_udim2(v):
+        (sx, ox), (sy, oy) = v
+        return [[sx, round(ox * k, 1)], [sy, round(oy * k, 1)]]
+
+    def walk(n):
+        n = json.loads(json.dumps(n))
+        p = n.get("properties", {})
+        for key in ("Size", "Position", "CellSize", "CellPadding"):
+            if key in p:
+                p[key] = scale_udim2(p[key])
+        for key in ("TextSize", "Thickness", "MaxTextSize", "MinTextSize"):
+            if key in p:
+                p[key] = round(p[key] * k, 1)
+        if "Padding" in p and isinstance(p["Padding"], list):
+            p["Padding"] = [p["Padding"][0], round(p["Padding"][1] * k, 1)]
+        for key in ("PaddingLeft", "PaddingRight", "PaddingTop", "PaddingBottom"):
+            if key in p:
+                p[key] = [p[key][0], round(p[key][1] * k, 1)]
+        if "children" in n:
+            n["children"] = [walk(c) for c in n["children"]]
+        return n
+    return [walk(c) for c in children if c]
+
+
+def window(w, h, title, ico, children, header=HEADER, popup=False, scale=1.0):
+    """Modal window: white stud body, coloured stud header strip, red X top-right. Always
+    WIN_W x WIN_H (or POP_W x POP_H for popups); smaller layouts are centred inside."""
+    W, H = (POP_W, POP_H) if popup else (WIN_W, WIN_H)
+    if scale != 1.0:
+        children = zoom(children, scale)
+        w, h = w * scale, h * scale
+    if (w, h) != (W, H):
+        children = recentre(children, w, h, W, H)
+    return plate("Window", U(0, W, 0, H), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, [
         autoscale(),
         plate("Header", U(1, 0, 0, 64), tint=header, children=[
             icon("Icon", ico, 64, U(0, -6, 0.5, -2), (0, 0.5)),
@@ -221,8 +297,7 @@ def rail_tile(name, label, ico, color, order):
     return button(name, U(0, 84, 0, 84), color=color, stud=0.15, LayoutOrder=order, children=[
         icon("Icon", ico, 62, U(0.5, 0, 0, 2), (0.5, 0)),
         text("Label", label, U(1, 20, 0, 24), U(0.5, 0, 1, 2), (0.5, 1), ts=17, display=True, stroke=3),
-        plate("Badge", U(0, 28, 0, 28), U(1, 6, 0, -6), (1, 0), DANGER, r=14, stroke=3, stud=None, Visible=False, ZIndex=4,
-              children=[text("Label", "!", U(1, 0, 1, 0), ts=20, display=True, ZIndex=5)]),
+        badge(),
     ])
 
 
@@ -380,8 +455,7 @@ def hud():
     ])
     # Own hotbar (the default Roblox backpack is hidden): slot 1 = tool, slot 2 = car.
     bag = hot_slot("BagSlot", "3", "Backpack", "Bag", 3)
-    bag["children"].append(plate("Badge", U(0, 30, 0, 30), U(1, 6, 0, -6), (1, 0), DANGER, stroke=3, stud=None, Visible=False, ZIndex=5,
-                                 children=[text("Label", "!", U(1, 0, 1, 0), ts=18, display=True, ZIndex=6)]))
+    bag["children"].append(badge())
     hotbar = frame("Hotbar", U(0, 290, 0, 88), U(0.5, 0, 1, -12), (0.5, 1), children=[
         autoscale(), hlist(8, "Center", "Bottom"),
         hot_slot("ToolSlot", "1", "Tool", "Toothbrush", 1),
@@ -432,41 +506,66 @@ def hud():
 
 
 # ---------------------------------------------------------------- Shop
-def shop_tab(name, label, ico, order):
-    return button("Tab" + name, U(1, 0, 0, 54), color=HEADER, label=label, ts=19, ico=ico, ico_px=40, LayoutOrder=order)
+SHOP_CELL = (250, 214)  # 3 cards per row in the 778 px wide list
 
 
 def shop():
-    tabs = frame("Tabs", U(0, 160, 1, -88), U(0, 14, 0, 76), children=[
-        vlist(8),
-        shop_tab("Deals", "Deals", "Luck", 1),
-        shop_tab("Tools", "Tools", "Tool", 2),
-        shop_tab("Eggs", "Eggs", "Egg", 3),
-        shop_tab("Passes", "Passes", "Star", 4),
-        shop_tab("Cash", "Cash", "Cash", 5),
+    """One scrolling page (Steal an Egg style): special offers on top, then server boosts,
+    gamepasses, tools, eggs and cash packs at the bottom. ShopController clones Section and
+    Card for each block and sizes each section to its rows."""
+    featured = plate("Featured", U(1, 0, 0, 160), tint=BG, stud=None, LayoutOrder=1, Visible=False, children=[
+        node("Banner", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("BannerStarter"), ScaleType="Crop", ZIndex=1)),
+        plate("Tag", U(0, 150, 0, 30), U(0, 14, 0, 12), tint=BADGE_RED, stroke=3, stud=None, ZIndex=3, children=[
+            text("Label", "SPECIAL OFFER", U(1, 0, 1, 0), ts=16, display=True, stroke=2, ZIndex=4),
+        ]),
+        text("Title", "Starter Pack", U(0.6, 0, 0, 40), U(0, 16, 0, 46), ts=34, display=True, stroke=3, xa="Left", ZIndex=3),
+        text("Desc", "", U(0.6, 0, 0, 44), U(0, 16, 0, 88), ts=18, heavy=True, stroke=2.5, xa="Left", ya="Top", ZIndex=3),
+        text("Note", "One time only", U(0, 170, 0, 22), U(1, -14, 0, 14), (1, 0), ts=16, display=True, stroke=2.5, xa="Right",
+             color=PREMIUM, ZIndex=3),
+        button("Buy", U(0, 170, 0, 56), U(1, -14, 1, -14), (1, 1), color=PREMIUM, label="", ts=28, label_color=INK, ZIndex=3),
     ])
-    featured = plate("Featured", U(1, -200, 0, 150), U(0, 186, 0, 76), tint=BG, stud=None, Visible=False, children=[
-        node("Banner", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("BannerStarter"), ScaleType="Crop", ZIndex=1),
-             [corner()]),
-        text("Title", "Starter Pack", U(0.6, 0, 0, 40), U(0, 16, 0, 12), ts=32, display=True, stroke=3, xa="Left"),
-        text("Desc", "", U(0.6, 0, 0, 44), U(0, 16, 0, 54), ts=17, heavy=True, stroke=2.5, xa="Left", ya="Top"),
-        button("Buy", U(0, 150, 0, 50), U(1, -14, 1, -14), (1, 1), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
-        plate("Tag", U(0, 120, 0, 28), U(0, 16, 1, -14), (0, 1), DANGER, stroke=3, stud=None, children=[
-            text("Label", "ONE TIME", U(1, 0, 1, 0), ts=18, display=True, stroke=2),
+    # A limited offer the game made you (backpack full, rare egg growing...): stays here for a while.
+    offer = plate("Offer", U(1, 0, 0, 108), tint="#FF5FA2", stud=0.25, Visible=False, children=[
+        node("Glow", "ImageLabel", base(U(0, 150, 0, 150), U(0, 52, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
+                                        ImageColor3=WHITE, ImageTransparency=0.35, ZIndex=1)),
+        icon("Icon", "Star", 82, U(0, 52, 0.5, 0), (0.5, 0.5)),
+        plate("Tag", U(0, 150, 0, 26), U(0, 104, 0, 10), tint=BADGE_RED, stroke=3, stud=None, ZIndex=3, children=[
+            text("Label", "LIMITED OFFER", U(1, 0, 1, 0), ts=15, display=True, stroke=2, ZIndex=4),
+        ]),
+        text("Timer", "", U(0, 120, 0, 26), U(0, 262, 0, 10), ts=17, display=True, stroke=2.5, xa="Left", color=PREMIUM, ZIndex=3),
+        text("Title", "", U(1, -310, 0, 30), U(0, 104, 0, 38), ts=24, display=True, stroke=3, xa="Left", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 24, "MinTextSize": 12})]),
+        text("Desc", "", U(1, -310, 0, 34), U(0, 104, 0, 68), ts=15, heavy=True, stroke=2, xa="Left", ya="Top", ZIndex=3),
+        button("Buy", U(0, 170, 0, 56), U(1, -14, 0.5, 0), (1, 0.5), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
+    ])
+    cw, ch = SHOP_CELL
+    section = frame("Section", U(1, 0, 0, 300), Visible=False, children=[
+        plate("Header", U(1, 0, 0, 44), tint=HEADER, stud=0.3, children=[
+            icon("Icon", "Star", 50, U(0, -4, 0.5, 0), (0, 0.5)),
+            text("Title", "Section", U(0.6, 0, 1, 0), U(0, 50, 0, 0), ts=24, display=True, stroke=3, xa="Left"),
+            text("Note", "", U(0.5, -20, 1, 0), U(1, -12, 0, 0), (1, 0), ts=15, display=True, stroke=2.5, xa="Right", color=PREMIUM),
+        ]),
+        frame("Grid", U(1, 0, 1, -54), U(0, 0, 0, 54), children=[
+            node("Layout", "UIGridLayout", {"CellSize": U(0, cw, 0, ch), "CellPadding": U(0, 12, 0, 12), "SortOrder": "LayoutOrder",
+                                            "HorizontalAlignment": "Left"}),
         ]),
     ])
-    row = plate("Template", U(1, -12, 0, 78), tint=WHITE, stud=0.2, Visible=False, children=[
-        icon("Icon", "Tool", 58, U(0, 10, 0.5, 0), (0, 0.5)),
-        text("Name", "Item", U(1, -300, 0, 28), U(0, 78, 0, 8), ts=22, color=INK, display=True, xa="Left",
-             TextWrapped=False, TextScaled=True,
-             children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 12})]),
-        text("Desc", "", U(1, -300, 0, 34), U(0, 78, 0, 38), ts=15, color=SUB, xa="Left", ya="Top"),
-        button("Buy", U(0, 150, 0, 50), U(1, -12, 0.5, 0), (1, 0.5), color=SUCCESS, label="", ts=22),
-        button("Gift", U(0, 50, 0, 50), U(1, -172, 0.5, 0), (1, 0.5), color="#FF7EB6", ico="Gift", ico_px=38, Visible=False),
+    card = plate("Card", U(0, cw, 0, ch), tint=WHITE, stud=0.2, Visible=False, children=[
+        node("Glow", "ImageLabel", base(U(0, 150, 0, 150), U(0.5, 0, 0, 56), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
+                                        ImageColor3=PREMIUM, ImageTransparency=0.45, ZIndex=1)),
+        icon("Icon", "Shop", 90, U(0.5, 0, 0, 10), (0.5, 0)),
+        plate("Tag", U(0, 110, 0, 26), U(0, 8, 0, 8), tint=BADGE_RED, stroke=3, stud=None, Visible=False, ZIndex=4, children=[
+            text("Label", "BEST", U(1, 0, 1, 0), ts=15, display=True, stroke=2, ZIndex=5),
+        ]),
+        text("Name", "Item", U(1, -16, 0, 26), U(0.5, 0, 0, 104), (0.5, 0), ts=21, color=INK, display=True,
+             TextWrapped=False, TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 21, "MinTextSize": 11})]),
+        text("Desc", "", U(1, -16, 0, 34), U(0.5, 0, 0, 130), (0.5, 0), ts=14, color=SUB, heavy=True, ya="Top"),
+        button("Buy", U(1, -20, 0, 44), U(0.5, 0, 1, -10), (0.5, 1), color=SUCCESS, label="", ts=22),
+        button("Gift", U(0, 44, 0, 44), U(1, -10, 1, -10), (1, 1), color="#FF7EB6", ico="Gift", ico_px=34, Visible=False),
     ])
-    lst = scroller("List", U(1, -200, 1, -92), U(0, 186, 0, 80), [vlist(10), padding(2, 2, 4, 4), row])
-    empty = text("Empty", "Nothing here right now. Check back soon!", U(1, -200, 0, 60), U(0, 186, 0.5, 0), ts=20, color=SUB, heavy=True,
-                 Visible=False)
+    lst = scroller("List", U(1, -24, 1, -86), U(0, 12, 0, 74), [vlist(14), padding(4, 14, 4, 10), featured, offer, section])
+    empty = text("Empty", "Nothing here right now. Check back soon!", U(1, -40, 0, 60), U(0.5, 0, 0.5, 0), (0.5, 0.5), ts=20, color=SUB,
+                 heavy=True, Visible=False)
     gift_row = button("Template", U(1, -10, 0, 46), color=HEADER, label="Player", ts=18, stroke=3, Visible=False)
     gift = plate("GiftPicker", U(0, 380, 0, 330), U(0.5, 0, 0.5, 20), (0.5, 0.5), SURFACE, Visible=False, ZIndex=10, children=[
         plate("Header", U(1, 0, 0, 52), tint="#FF7EB6", children=[
@@ -477,7 +576,7 @@ def shop():
         scroller("List", U(1, -24, 1, -72), U(0, 12, 0, 62), [vlist(8), padding(2), gift_row]),
         text("Empty", "No one else is here yet.", U(1, -24, 0, 40), U(0, 12, 0.5, 0), ts=18, color=SUB, heavy=True, Visible=False),
     ])
-    write("Shop", screen([dim(), window(780, 480, "Shop", "Shop", [tabs, featured, lst, empty, gift], header="#E9A21F")],
+    write("Shop", screen([dim(), window(WIN_W, WIN_H, "Shop", "Shop", [lst, card, empty, gift], header="#E9A21F")],
                          order=10, enabled=False))
 
 
@@ -513,17 +612,17 @@ def index():
         ]),
         bar("Progress", U(1, -410, 0, 52), U(0, 170, 1, -12), (0, 1), SUCCESS, "0/7"),
         plate("Detail", U(0, 220, 1, -20), U(1, -10, 0, 10), (1, 0), "#4A5170", stud=0.5, children=[
-            node("Viewport", "ViewportFrame", base(U(1, -16, 0, 200), U(0.5, 0, 0, 8), (0.5, 0), BackgroundTransparency=1,
+            node("Viewport", "ViewportFrame", base(U(1, -16, 0, 150), U(0.5, 0, 0, 8), (0.5, 0), BackgroundTransparency=1,
                                                    Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-            text("Name", "", U(1, -12, 0, 34), U(0.5, 0, 0, 212), (0.5, 0), ts=26, display=True, stroke=3,
+            text("Name", "", U(1, -12, 0, 32), U(0.5, 0, 0, 160), (0.5, 0), ts=26, display=True, stroke=3,
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 26, "MinTextSize": 12})]),
-            text("Rarity", "", U(1, -12, 0, 28), U(0.5, 0, 0, 246), (0.5, 0), ts=24, display=True, stroke=3),
-            text("Income", "", U(1, -12, 0, 30), U(0.5, 0, 0, 276), (0.5, 0), ts=26, color="#7CFF8C", display=True, stroke=3),
-            text("Hint", "", U(1, -16, 0, 60), U(0.5, 0, 1, -8), (0.5, 1), ts=15, color="#E0E4F0", heavy=True, ya="Bottom"),
+            text("Rarity", "", U(1, -12, 0, 26), U(0.5, 0, 0, 192), (0.5, 0), ts=22, display=True, stroke=3),
+            text("Income", "", U(1, -12, 0, 28), U(0.5, 0, 0, 220), (0.5, 0), ts=24, color="#7CFF8C", display=True, stroke=3),
+            text("Hint", "", U(1, -16, 0, 56), U(0.5, 0, 1, -8), (0.5, 1), ts=14, color="#E0E4F0", heavy=True, ya="Bottom"),
         ]),
     ])
     total = bar("Total", U(1, -24, 0, 56), U(0, 12, 1, -12), (0, 1), "#4CC3FF", "Unlocked: 0/47", ts=30)
-    write("Index", screen([dim(), window(900, 600, "Pet Index", "Index", [body, total], header="#4CC3FF")], order=10, enabled=False))
+    write("Index", screen([dim(), window(WIN_W, WIN_H, "Pet Index", "Index", [body, total], header="#4CC3FF")], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Inventory
@@ -602,48 +701,51 @@ def side_button(name, label, ico, color, order):
     return button(name, U(0, 80, 0, 80), color=color, stud=0.15, LayoutOrder=order, children=[
         icon("Icon", ico, 64, U(0.5, 0, 0, 0), (0.5, 0)),
         text("Label", label, U(1, 10, 0, 22), U(0.5, 0, 1, 2), (0.5, 1), ts=17, display=True, stroke=2.5),
-        plate("Badge", U(0, 30, 0, 30), U(1, 6, 0, -6), (1, 0), DANGER, stroke=3, stud=None, Visible=False, ZIndex=5,
-              children=[text("Label", "!", U(1, 0, 1, 0), ts=18, display=True, ZIndex=6)]),
+        badge(),
     ])
 
 
-def list_panel(name, title, head_button, row_children, footer):
-    row = plate("Template", U(1, -8, 0, 78), tint="#2A3050", stud=0.6, stroke=3, Visible=False, children=[
+def list_window(screen_name, title, ico, header_color, head_button, row_children, footer):
+    """Pets / Eggs: a normal window (same size as every other) with a 2-column list."""
+    row = plate("Template", U(0, 0, 0, 0), tint="#2E3340", stroke=3, Visible=False, children=[
         node("Viewport", "ViewportFrame", base(U(0, 70, 0, 70), U(0, 4, 0.5, 0), (0, 0.5), BackgroundTransparency=1,
                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-        text("Name", "", U(1, -220, 0, 28), U(0, 80, 0, 10), ts=21, display=True, stroke=2.5, xa="Left",
+        text("Name", "", U(1, -214, 0, 28), U(0, 80, 0, 10), ts=21, display=True, stroke=2.5, xa="Left",
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 21, "MinTextSize": 10})]),
-        text("Sub", "", U(1, -220, 0, 24), U(0, 80, 0, 40), ts=18, color="#7CFF8C", display=True, stroke=2, xa="Left"),
+        text("Sub", "", U(1, -214, 0, 24), U(0, 80, 0, 40), ts=18, color="#7CFF8C", display=True, stroke=2, xa="Left"),
     ] + row_children)
-    return plate(name, U(0, 400, 0, 430), U(1, -110, 0.5, 0), (1, 0.5), BG, stud=0.55, Visible=False, children=[
-        autoscale(),
-        plate("Header", U(1, 0, 0, 62), tint=SAND, stud=0.3, children=[
-            text("Title", title, U(1, -170, 1, 0), U(0, 14, 0, 0), ts=28, display=True, stroke=3, xa="Left"),
-            head_button,
+    body = [
+        head_button,
+        scroller("List", U(1, -24, 1, -164), U(0, 12, 0, 76), [
+            node("Layout", "UIGridLayout", {"CellSize": U(0, 380, 0, 84), "CellPadding": U(0, 10, 0, 10), "SortOrder": "LayoutOrder",
+                                            "HorizontalAlignment": "Left"}),
+            padding(4, 12, 4, 4), row,
         ]),
-        scroller("List", U(1, -16, 1, -146), U(0, 8, 0, 70), [vlist(8), padding(4), row]),
-        text("Empty", "", U(1, -30, 0, 80), U(0.5, 0, 0.45, 0), (0.5, 0.5), ts=19, color="#C8D0E8", heavy=True, Visible=False),
+        text("Empty", "", U(1, -60, 0, 80), U(0.5, 0, 0.45, 0), (0.5, 0.5), ts=22, color=SUB, heavy=True, Visible=False),
         footer,
-    ])
+    ]
+    write(screen_name, screen([dim(), window(WIN_W, WIN_H, title, ico, body, header=header_color)], order=10, enabled=False))
 
 
 def base_panels():
+    # Eggs / Pets buttons on the right edge (HudController moves them to the top right on phones).
     buttons = frame("Buttons", U(0, 80, 0, 216), U(1, -14, 0.5, -130), (1, 1), children=[
         autoscale(), vlist(28, "Right", "Bottom"),
         side_button("EggsButton", "Eggs", "Egg", DANGER, 1),
         side_button("PetsButton", "Pets", "Alien", "#FF9A3C", 2),
     ])
-    active = list_panel(
-        "Active", "0/4 Active",
-        button("AddSlot", U(0, 140, 0, 44), U(1, -10, 0.5, 0), (1, 0.5), color=DANGER, label="+ Slots", ts=20),
-        [button("Action", U(0, 124, 0, 48), U(1, -10, 0.5, 0), (1, 0.5), color=DANGER, label="Unequip", ts=19)],
-        button("EquipBest", U(1, -20, 0, 54), U(0.5, 0, 1, -12), (0.5, 1), color=SUCCESS, label="Equip Best", ts=26))
-    growing = list_panel(
-        "Growing", "Growing Eggs",
-        button("OpenAll", U(0, 140, 0, 44), U(1, -10, 0.5, 0), (1, 0.5), color=PREMIUM, label="Open All", ts=20, label_color=INK),
-        [button("Action", U(0, 124, 0, 48), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="Open", ts=19)],
-        button("PlaceEggs", U(1, -20, 0, 54), U(0.5, 0, 1, -12), (0.5, 1), color="#4C8DFF", label="Place Eggs", ts=24))
-    write("BasePanels", screen([buttons, active, growing], order=4))
+    write("BasePanels", screen([buttons], order=4))
+    head = dict(size=U(0, 150, 0, 44), pos=U(1, -64, 0, 32), anchor=(1, 0.5))
+    list_window(
+        "PetsPanel", "0/4 Active", "Alien", "#FF9A3C",
+        button("AddSlot", head["size"], head["pos"], head["anchor"], color=DANGER, label="+ Slots", ts=20, ZIndex=5),
+        [button("Action", U(0, 120, 0, 48), U(1, -10, 0.5, 0), (1, 0.5), color=DANGER, label="Unequip", ts=19)],
+        button("EquipBest", U(0, 320, 0, 56), U(0.5, 0, 1, -14), (0.5, 1), color=SUCCESS, label="Equip Best", ts=26))
+    list_window(
+        "EggsPanel", "Growing Eggs", "Egg", DANGER,
+        button("OpenAll", head["size"], head["pos"], head["anchor"], color=PREMIUM, label="Open All", ts=20, label_color=INK, ZIndex=5),
+        [button("Action", U(0, 120, 0, 48), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="Open", ts=19)],
+        button("PlaceEggs", U(0, 320, 0, 56), U(0.5, 0, 1, -14), (0.5, 1), color="#4C8DFF", label="Place Eggs", ts=24))
 
 
 # ---------------------------------------------------------------- Hover card (pets and eggs in parks)
@@ -692,16 +794,16 @@ def reward_card(name, top, order, w, h, ico_px):
 
 
 def rewards():
-    days = frame("Days", U(1, -24, 0, 130), U(0, 12, 0, 108), children=[
+    days = frame("Days", U(1, -24, 0, 140), U(0, 12, 0, 116), children=[
         hlist(10, "Center", "Center"),
-    ] + [reward_card(f"Day{i}", f"Day {i}", i, 92, 124, 66) for i in range(1, 8)])
-    group = plate("Group", U(0.5, -18, 0, 84), U(0, 12, 0, 318), tint="#4C8DFF", stud=0.3, stroke=3, children=[
+    ] + [reward_card(f"Day{i}", f"Day {i}", i, 102, 136, 72) for i in range(1, 8)])
+    group = plate("Group", U(0.5, -18, 0, 100), U(0, 12, 0, 358), tint="#4C8DFF", stud=0.3, stroke=3, children=[
         icon("Icon", "Group", 70, U(0, 4, 0.5, 0), (0, 0.5)),
         text("Text", "Join our group for 2 Luck Potions + cash!", U(1, -220, 1, -8), U(0, 78, 0, 4), ts=16, display=True,
              stroke=2, xa="Left"),
         button("Claim", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="Claim", ts=22),
     ])
-    event = plate("Event", U(0.5, -18, 0, 84), U(1, -12, 0, 318), (1, 0), tint="#FF78E6", stud=0.3, stroke=3, children=[
+    event = plate("Event", U(0.5, -18, 0, 100), U(1, -12, 0, 358), (1, 0), tint="#FF78E6", stud=0.3, stroke=3, children=[
         icon("Icon", "Event", 70, U(0, 4, 0.5, 0), (0, 0.5)),
         text("Name", "Meteor Weekend", U(1, -220, 0, 28), U(0, 78, 0, 6), ts=21, display=True, stroke=2.5, xa="Left",
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 10})]),
@@ -710,24 +812,24 @@ def rewards():
         button("SignUp", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color=PREMIUM, label="Sign up", ts=20, label_color=INK),
     ])
     body = [
-        text("Streak", "Streak: 0 days", U(1, -32, 0, 30), U(0.5, 0, 0, 72), (0.5, 0), ts=20, color=SUB, heavy=True),
+        text("Streak", "Streak: 0 days", U(1, -32, 0, 30), U(0.5, 0, 0, 80), (0.5, 0), ts=22, color=SUB, heavy=True),
         days,
-        button("ClaimDaily", U(0, 280, 0, 52), U(0.5, 0, 0, 250), (0.5, 0), color=SUCCESS, label="Claim Day 1", ts=24),
+        button("ClaimDaily", U(0, 300, 0, 56), U(0.5, 0, 0, 274), (0.5, 0), color=SUCCESS, label="Claim Day 1", ts=26),
         group, event,
     ]
-    write("Daily", screen([dim(), window(760, 416, "Daily Rewards", "Daily", body, header="#FF5FA2")], order=10, enabled=False))
+    write("Daily", screen([dim(), window(WIN_W, WIN_H, "Daily Rewards", "Daily", body, header="#FF5FA2")], order=10, enabled=False))
 
     # Playtime gifts: their own window (green Gifts button on the rail).
-    gifts = frame("Gifts", U(1, -24, 0, 240), U(0, 12, 0, 112), children=[
-        node("Layout", "UIGridLayout", {"CellSize": U(0, 140, 0, 112), "CellPadding": U(0, 12, 0, 12), "SortOrder": "LayoutOrder",
+    gifts = frame("Gifts", U(1, -24, 0, 340), U(0, 12, 0, 124), children=[
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 210, 0, 160), "CellPadding": U(0, 16, 0, 16), "SortOrder": "LayoutOrder",
                                         "HorizontalAlignment": "Center"}),
-    ] + [reward_card(f"Gift{i}", "5:00", i, 140, 112, 64) for i in range(1, 7)])
+    ] + [reward_card(f"Gift{i}", "5:00", i, 210, 160, 92) for i in range(1, 7)])
     gift_body = [
-        text("Info", "Free gifts the longer you play! They reset when you rejoin.", U(1, -24, 0, 30), U(0.5, 0, 0, 74), (0.5, 0),
-             ts=18, color=SUB, heavy=True),
+        text("Info", "Free gifts the longer you play! They reset when you rejoin.", U(1, -24, 0, 30), U(0.5, 0, 0, 82), (0.5, 0),
+             ts=20, color=SUB, heavy=True),
         gifts,
     ]
-    write("Playtime", screen([dim(), window(500, 372, "Playtime Gifts", "Gift", gift_body, header=SUCCESS)], order=10, enabled=False))
+    write("Playtime", screen([dim(), window(WIN_W, WIN_H, "Playtime Gifts", "Gift", gift_body, header=SUCCESS)], order=10, enabled=False))
 
     # Stay offer: pops when the player opens the Roblox menu (about to leave).
     stay = plate("Window", U(0, 440, 0, 230), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, children=[
@@ -761,7 +863,7 @@ def rebirth():
         button("RebirthButton", U(0, 300, 0, 62), U(0.5, 0, 0, 244), (0.5, 0), color=SUCCESS, label="Rebirth!", ts=32),
         button("SkipButton", U(0, 300, 0, 50), U(0.5, 0, 0, 318), (0.5, 0), color=PREMIUM, label="Skip", ts=24, label_color=INK),
     ]
-    write("Rebirth", screen([dim(), window(520, 392, "Rebirth", "Rebirth", body, header=REBIRTH)], order=10, enabled=False))
+    write("Rebirth", screen([dim(), window(520, 392, "Rebirth", "Rebirth", body, header=REBIRTH, scale=1.25)], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Offer + Welcome back
@@ -778,7 +880,7 @@ def offer():
     ])
     write("Offer", screen([win], order=12, enabled=False))
 
-    welcome = window(460, 350, "Welcome back!", "Cash", [
+    welcome = window(460, 350, "Welcome back!", "Cash", popup=True, children=[
         icon("Big", "Cash", 96, U(0.5, 0, 0, 72), (0.5, 0)),
         text("Amount", "+$0", U(1, -40, 0, 46), U(0.5, 0, 0, 166), (0.5, 0), ts=40, color="#1E9E3A", display=True),
         text("Text", "", U(1, -40, 0, 40), U(0.5, 0, 0, 218), (0.5, 0), ts=17, color=SUB),
@@ -840,7 +942,7 @@ def tutorial_done():
         rewards_row,
         button("Ok", U(0, 220, 0, 58), U(0.5, 0, 1, -16), (0.5, 1), color=SUCCESS, label="Awesome!", ts=26),
     ]
-    write("TutorialDone", screen([dim(), window(480, 360, "Tutorial done!", "Star", body, header=SUCCESS)], order=12, enabled=False))
+    write("TutorialDone", screen([dim(), window(480, 360, "Tutorial done!", "Star", body, header=SUCCESS, popup=True)], order=12, enabled=False))
 
 
 def settings():
@@ -874,7 +976,7 @@ def settings():
         row("Sfx", "Sound effects", "Speaker", 176),
         text("Track", "", U(1, -28, 0, 22), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True),
     ]
-    write("Settings", screen([dim(), window(520, 310, "Settings", "Gear", body, header="#5A6585")], order=10, enabled=False))
+    write("Settings", screen([dim(), window(520, 310, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Garage
@@ -890,7 +992,7 @@ def garage():
     lst = scroller("List", U(1, -28, 1, -128), U(0, 14, 0, 76), [vlist(10), padding(2, 2, 4, 4), row])
     hint = text("Hint", "Cars sweep a huge area and hold more dust. Spawn one here or from slot 2.", U(1, -28, 0, 36),
                 U(0, 14, 1, -10), (0, 1), ts=15, color=SUB, heavy=True)
-    write("Garage", screen([dim(), window(640, 470, "Garage", "Vehicle", [lst, hint], header="#FF9A3C")], order=10, enabled=False))
+    write("Garage", screen([dim(), window(640, 470, "Garage", "Vehicle", [lst, hint], header="#FF9A3C", scale=1.08)], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Upgrades

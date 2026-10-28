@@ -52,11 +52,11 @@
     "Size": [
      [
       0,
-      520
+      820
      ],
      [
       0,
-      392
+      520
      ]
     ],
     "Position": [
@@ -75,66 +75,37 @@
     ],
     "BorderSizePixel": 0,
     "BackgroundTransparency": 0,
-    "BackgroundColor3": "#E9EEF7"
+    "BackgroundColor3": "#F7F8FA"
    },
    "children": [
     {
      "name": "Stroke",
      "className": "UIStroke",
      "properties": {
-      "Color": "#1B1F3A",
+      "Color": "#17191E",
       "Thickness": 4,
       "ApplyStrokeMode": "Border",
       "LineJoinMode": "Round"
      }
     },
     {
-     "name": "Studs",
-     "className": "ImageLabel",
+     "name": "Shade",
+     "className": "UIGradient",
      "properties": {
-      "Size": [
-       [
-        1,
-        0
-       ],
-       [
-        1,
-        0
+      "Color": {
+       "keypoints": [
+        [
+         0,
+         "#FFFFFF"
+        ],
+        [
+         1,
+         "#DCE0E7"
+        ]
        ]
-      ],
-      "Position": [
-       [
-        0,
-        0
-       ],
-       [
-        0,
-        0
-       ]
-      ],
-      "AnchorPoint": [
-       0,
-       0
-      ],
-      "BorderSizePixel": 0,
-      "BackgroundTransparency": 1,
-      "Image": "rbxassetid://139302839809244",
-      "ScaleType": "Tile",
-      "TileSize": [
-       [
-        0,
-        64
-       ],
-       [
-        0,
-        64
-       ]
-      ],
-      "ImageColor3": "#E9EEF7",
-      "ImageTransparency": 0,
-      "ZIndex": 0
-     },
-     "children": []
+      },
+      "Rotation": 90
+     }
     },
     {
      "name": "AutoScale",
@@ -180,59 +151,30 @@
        "name": "Stroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#1B1F3A",
+        "Color": "#17191E",
         "Thickness": 4,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Round"
        }
       },
       {
-       "name": "Studs",
-       "className": "ImageLabel",
+       "name": "Shade",
+       "className": "UIGradient",
        "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
+        "Color": {
+         "keypoints": [
+          [
+           0,
+           "#FFFFFF"
+          ],
+          [
+           1,
+           "#DCE0E7"
+          ]
          ]
-        ],
-        "Position": [
-         [
-          0,
-          0
-         ],
-         [
-          0,
-          0
-         ]
-        ],
-        "AnchorPoint": [
-         0,
-         0
-        ],
-        "BorderSizePixel": 0,
-        "BackgroundTransparency": 1,
-        "Image": "rbxassetid://139302839809244",
-        "ScaleType": "Tile",
-        "TileSize": [
-         [
-          0,
-          64
-         ],
-         [
-          0,
-          64
-         ]
-        ],
-        "ImageColor3": "#9B6BFF",
-        "ImageTransparency": 0,
-        "ZIndex": 0
-       },
-       "children": []
+        },
+        "Rotation": 90
+       }
       },
       {
        "name": "Icon",
@@ -317,7 +259,7 @@
          "name": "TextStroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
+          "Color": "#17191E",
           "Thickness": 3,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
@@ -366,7 +308,7 @@
        "name": "Stroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#1B1F3A",
+        "Color": "#17191E",
         "Thickness": 4,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Round"
@@ -443,7 +385,7 @@
          "name": "TextStroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
@@ -460,21 +402,21 @@
       "Size": [
        [
         0,
-        110
+        137.5
        ],
        [
         0,
-        110
+        137.5
        ]
       ],
       "Position": [
        [
         0,
-        22
+        112.5
        ],
        [
         0,
-        80
+        115.0
        ]
       ],
       "AnchorPoint": [
@@ -495,21 +437,21 @@
       "Size": [
        [
         1,
-        -160
+        -370.0
        ],
        [
         0,
-        44
+        55.0
        ]
       ],
       "Position": [
        [
         0,
-        140
+        260.0
        ],
        [
         0,
-        86
+        122.5
        ]
       ],
       "AnchorPoint": [
@@ -519,8 +461,8 @@
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
       "Text": "Cash x1 → x1.5",
-      "TextColor3": "#1B1F3A",
-      "TextSize": 30,
+      "TextColor3": "#17191E",
+      "TextSize": 37.5,
       "TextXAlignment": "Left",
       "TextYAlignment": "Center",
       "TextWrapped": true,
@@ -539,21 +481,21 @@
       "Size": [
        [
         1,
-        -160
+        -370.0
        ],
        [
         0,
-        50
+        62.5
        ]
       ],
       "Position": [
        [
         0,
-        140
+        260.0
        ],
        [
         0,
-        132
+        180.0
        ]
       ],
       "AnchorPoint": [
@@ -563,8 +505,8 @@
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
       "Text": "Resets your cash, tools, cars and upgrades.\nKeeps your aliens, index and zones.",
-      "TextColor3": "#4A5170",
-      "TextSize": 17,
+      "TextColor3": "#5B6070",
+      "TextSize": 21.2,
       "TextXAlignment": "Left",
       "TextYAlignment": "Top",
       "TextWrapped": true,
@@ -583,21 +525,21 @@
       "Size": [
        [
         1,
-        -40
+        -220.0
        ],
        [
         0,
-        30
+        37.5
        ]
       ],
       "Position": [
        [
         0.5,
-        0
+        0.0
        ],
        [
         0,
-        202
+        267.5
        ]
       ],
       "AnchorPoint": [
@@ -607,8 +549,8 @@
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
       "Text": "Cost: $0",
-      "TextColor3": "#1B1F3A",
-      "TextSize": 22,
+      "TextColor3": "#17191E",
+      "TextSize": 27.5,
       "TextXAlignment": "Center",
       "TextYAlignment": "Center",
       "TextWrapped": true,
@@ -627,21 +569,21 @@
       "Size": [
        [
         0,
-        300
+        375.0
        ],
        [
         0,
-        62
+        77.5
        ]
       ],
       "Position": [
        [
         0.5,
-        0
+        0.0
        ],
        [
         0,
-        244
+        320.0
        ]
       ],
       "AnchorPoint": [
@@ -659,8 +601,8 @@
        "name": "Stroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#1B1F3A",
-        "Thickness": 4,
+        "Color": "#17191E",
+        "Thickness": 5.0,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Round"
        }
@@ -695,21 +637,21 @@
         "Size": [
          [
           1,
-          -12
+          -15.0
          ],
          [
           1,
-          0
+          0.0
          ]
         ],
         "Position": [
          [
           0,
-          6
+          7.5
          ],
          [
           0,
-          0
+          0.0
          ]
         ],
         "AnchorPoint": [
@@ -720,7 +662,7 @@
         "BackgroundTransparency": 1,
         "Text": "Rebirth!",
         "TextColor3": "#FFFFFF",
-        "TextSize": 32,
+        "TextSize": 40.0,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -736,8 +678,8 @@
          "name": "TextStroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#1B1F3A",
-          "Thickness": 2.5,
+          "Color": "#17191E",
+          "Thickness": 3.1,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
          }
@@ -753,21 +695,21 @@
       "Size": [
        [
         0,
-        300
+        375.0
        ],
        [
         0,
-        50
+        62.5
        ]
       ],
       "Position": [
        [
         0.5,
-        0
+        0.0
        ],
        [
         0,
-        318
+        412.5
        ]
       ],
       "AnchorPoint": [
@@ -785,8 +727,8 @@
        "name": "Stroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#1B1F3A",
-        "Thickness": 4,
+        "Color": "#17191E",
+        "Thickness": 5.0,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Round"
        }
@@ -821,21 +763,21 @@
         "Size": [
          [
           1,
-          -12
+          -15.0
          ],
          [
           1,
-          0
+          0.0
          ]
         ],
         "Position": [
          [
           0,
-          6
+          7.5
          ],
          [
           0,
-          0
+          0.0
          ]
         ],
         "AnchorPoint": [
@@ -845,8 +787,8 @@
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
         "Text": "Skip",
-        "TextColor3": "#1B1F3A",
-        "TextSize": 24,
+        "TextColor3": "#17191E",
+        "TextSize": 30.0,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,

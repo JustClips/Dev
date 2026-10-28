@@ -109,11 +109,7 @@ local function render(_: any?)
 			waiting += 1
 		end
 	end
-	local badge = bagSlot:FindFirstChild("Badge") :: Frame
-	local shown = if ready > 0 then ready else waiting
-	badge.Visible = shown > 0
-	badge.BackgroundColor3 = if ready > 0 then Color3.fromRGB(255, 200, 60) else Color3.fromRGB(255, 77, 94)
-	Ui.setText(badge, tostring(math.min(shown, 99)))
+	Ui.setBadge(bagSlot:FindFirstChild("Badge") :: Frame, if ready > 0 then ready else waiting)
 	setSelected(toolSlot, not data.InVehicle and sweepTool(player.Character) ~= nil)
 end
 

@@ -11,6 +11,8 @@ local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 
 local AUTO_HIDE_SECONDS = 15
+-- After the popup, an offer stays in the shop's special offers for this long.
+local KEEP_IN_SHOP_SECONDS = 10 * 60
 
 local OfferController = {}
 
@@ -19,6 +21,7 @@ local offerGui: ScreenGui
 local welcomeGui: ScreenGui
 local current: { Key: string, Product: string }? = nil
 local showToken = 0
+local specials: { [string]: any } = {}
 
 local function hideOffer(clicked: boolean)
 	if current then
@@ -36,6 +39,15 @@ local function prompt(productKey: string)
 end
 
 local function showOffer(offer)
+	specials[offer.Key] = {
+		Key = offer.Key,
+		Product = offer.Product,
+		Title = offer.Title,
+		Text = offer.Text,
+		Price = offer.Price,
+		Expires = os.clock() + KEEP_IN_SHOP_SECONDS,
+	}
+	C.ShopController:Refresh()
 	current = { Key = offer.Key, Product = offer.Product }
 	showToken += 1
 	local token = showToken
@@ -63,6 +75,23 @@ local function showWelcome(info)
 		Ui.setText(doubleButton, `2x for {Ui.ROBUX} {double.Price}`)
 	end
 	Ui.show(welcomeGui)
+end
+
+-- Limited offers still running (newest first), for the shop's special offers.
+function OfferController:Specials(): { any }
+	local out = {}
+	local now = os.clock()
+	for key, offer in specials do
+		if offer.Expires <= now then
+			specials[key] = nil
+		else
+			table.insert(out, offer)
+		end
+	end
+	table.sort(out, function(a, b)
+		return a.Expires > b.Expires
+	end)
+	return out
 end
 
 function OfferController:Init(controllers)
