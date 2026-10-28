@@ -566,7 +566,8 @@ def habitat():
                          rot=(0, sgn * slope, 0), bevel=0.1))
     p.append(cyl(WOOD_DARK, loc=(0, 0, top + ridge + 0.45), r=0.4, h=D + 1.8, rot=(90, 0, 0), verts=10))
     # chimney
-    p.append(box("8C8C96", loc=(W / 4, D / 4, top + ridge + 0.2), size=(1.2, 1.2, 3.0), bevel=0.15))
+    # starts inside the roof so it never floats above the slope
+    p.append(box("8C8C96", loc=(W / 4, D / 4, top + (1.0 + ridge + 1.7) / 2), size=(1.2, 1.2, ridge + 0.7), bevel=0.15))
     p.append(box("6E6E78", loc=(W / 4, D / 4, top + ridge + 1.8), size=(1.5, 1.5, 0.35), bevel=0.08))
     # porch step in front of the door
     p.append(box(WOOD_DARK, loc=(0, -D / 2 - 1.1, 0.3), size=(4.4, 1.8, 0.6), bevel=0.12))
