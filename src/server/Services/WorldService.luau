@@ -107,7 +107,7 @@ function WorldService:SetOwnerName(index: number, name: string?, userId: number?
 		title.Text = if name then `{name}'s Base` else "Free Base"
 	end
 	for _, sub in sign.Subs do
-		sub.Text = if name then "Hatching aliens" else "Claim it by joining!"
+		sub.Text = if name then "Hatching pets" else "Claim it by joining!"
 	end
 	for _, avatar in sign.Avatars do
 		avatar.Visible = userId ~= nil

@@ -18,12 +18,12 @@ local Assets = require(Shared.Config.Assets)
 
 local TIMEOUT = 45
 local TIPS = {
-	"Tip: bigger tools sweep wider and hold more dust.",
-	"Tip: sell your dust at the rocket in the middle of the map.",
-	"Tip: carry alien eggs to the hatchery on your base.",
-	"Tip: aliens on your base earn cash even while you sweep.",
+	"Tip: bigger tools sweep wider and hold more leaves.",
+	"Tip: sell your leaves at the Recycler in the middle of the map.",
+	"Tip: carry eggs to the pet park on your base.",
+	"Tip: pets on your base earn cash even while you sweep.",
 	"Tip: buy a car at the Garage and drive it from hotbar slot 2.",
-	"Tip: the Upgrade Station sells Moon Boots, Egg Luck and more.",
+	"Tip: the Upgrade Station sells Running Shoes, Egg Luck and more.",
 	"Tip: rebirth to earn a permanent cash multiplier.",
 }
 
@@ -127,12 +127,12 @@ end
 local function run()
 	local deadline = os.clock() + TIMEOUT
 
-	setProgress(0.03, "Connecting to the Moon...")
+	setProgress(0.03, "Connecting to the world...")
 	if not game:IsLoaded() then
 		game.Loaded:Wait()
 	end
 
-	setProgress(0.1, "Building the Moon surface...")
+	setProgress(0.1, "Raking up the leaves...")
 	waitFor(function()
 		return Workspace:GetAttribute("TerrainReady") == true
 	end, deadline)
@@ -163,7 +163,7 @@ local function run()
 		return State.data ~= nil
 	end, deadline)
 
-	setProgress(0.95, "Landing your astronaut...")
+	setProgress(0.95, "Getting your broom ready...")
 	waitFor(function()
 		local character = player.Character
 		return character ~= nil and character:FindFirstChild("HumanoidRootPart") ~= nil

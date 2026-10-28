@@ -132,7 +132,7 @@ local function sell(player: Player)
 	BackpackService:GiveCash(player, cash, "SellDust")
 	recordEarning(session, cash)
 	S.AnalyticsService:Funnel(player, "FirstSell")
-	Net.fire("Notify", player, `Sold dust for {Format.cash(cash)}!`, "Sell")
+	Net.fire("Notify", player, `Sold leaves for {Format.cash(cash)}!`, "Sell")
 end
 
 function BackpackService:Init(services)

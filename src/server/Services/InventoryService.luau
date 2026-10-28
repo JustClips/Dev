@@ -216,7 +216,7 @@ local ACTIONS: { [string]: (Player, any, Vector3?) -> (boolean, string?) } = {
 			return true, nil
 		end
 		if InventoryService:EggCount(player) == 0 then
-			return false, "No eggs in your bag. Sweep dust to find some!"
+			return false, "No eggs in your bag. Sweep leaves to find some!"
 		end
 		return false, "Your park is full of eggs! Open one first."
 	end,

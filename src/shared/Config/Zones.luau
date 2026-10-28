@@ -15,8 +15,8 @@ local landingExclusions: { Types.Exclusion } = {
 local List: { ZoneDef } = {
 	{
 		Id = "Landing",
-		Name = "Landing Site",
-		Planet = "Moon",
+		Name = "Backyard",
+		Planet = "Earth",
 		IsMoon = true,
 		UnlockCost = 0,
 		RequiredRebirths = 0,
@@ -35,8 +35,8 @@ local List: { ZoneDef } = {
 	},
 	{
 		Id = "Crater",
-		Name = "Crater",
-		Planet = "Moon",
+		Name = "Park",
+		Planet = "Earth",
 		IsMoon = true,
 		UnlockCost = 6_000,
 		RequiredRebirths = 0,
@@ -55,8 +55,8 @@ local List: { ZoneDef } = {
 	},
 	{
 		Id = "DarkSide",
-		Name = "Dark Side",
-		Planet = "Moon",
+		Name = "Beach",
+		Planet = "Earth",
 		IsMoon = true,
 		UnlockCost = 900_000,
 		RequiredRebirths = 0,
@@ -75,8 +75,8 @@ local List: { ZoneDef } = {
 	},
 	{
 		Id = "Mars",
-		Name = "Mars Plains",
-		Planet = "Mars",
+		Name = "City",
+		Planet = "Earth",
 		IsMoon = false,
 		UnlockCost = 400_000_000,
 		RequiredRebirths = 1,
@@ -95,8 +95,8 @@ local List: { ZoneDef } = {
 	},
 	{
 		Id = "Europa",
-		Name = "Europa Ice",
-		Planet = "Europa",
+		Name = "Snowy Peaks",
+		Planet = "Earth",
 		IsMoon = false,
 		UnlockCost = 120_000_000_000,
 		RequiredRebirths = 3,

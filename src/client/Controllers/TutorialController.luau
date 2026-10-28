@@ -36,7 +36,7 @@ local NUDGE_SECONDS = 5
 type Step = { key: string, text: string, touch: string?, icon: string }
 
 local STEPS: { Step } = {
-	{ key = "Sweep", text = "Sweep the moon dust to find an egg!", icon = "Icon_Dust" },
+	{ key = "Sweep", text = "Sweep the leaves to find an egg!", icon = "Icon_Dust" },
 	{ key = "Egg", text = "You found an egg! Walk into it to pick it up.", icon = "Icon_Egg" },
 	{ key = "Base", text = "Carry the egg home to your base!", icon = "Icon_Base" },
 	{
@@ -53,7 +53,7 @@ local STEPS: { Step } = {
 		icon = "Icon_Egg",
 	},
 	{ key = "PlacePet", text = "Put your pet in your park: open your Bag (3) and press Place.", icon = "Icon_Alien" },
-	{ key = "Sell", text = "Sell your moon dust at the Rocket for cash!", icon = "Icon_Sell" },
+	{ key = "Sell", text = "Sell your leaves at the Recycler for cash!", icon = "Icon_Sell" },
 	{ key = "Shop", text = "Buy a better tool. It sweeps faster!", icon = "Icon_Tool" },
 }
 local STEP_INDEX: { [string]: number } = {}

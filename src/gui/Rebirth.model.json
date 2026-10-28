@@ -598,7 +598,7 @@
       ],
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
-      "Text": "Resets your cash, tools, cars and upgrades.\nKeeps your aliens, index and zones.",
+      "Text": "Resets your cash, tools, cars and upgrades.\nKeeps your pets, index and zones.",
       "TextColor3": "#5B6070",
       "TextSize": 21.2,
       "TextXAlignment": "Left",

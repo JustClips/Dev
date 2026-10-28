@@ -244,14 +244,14 @@ local function renderServer()
 		TweenService:Create(fill, TweenInfo.new(0.4, Enum.EasingStyle.Quad), { Size = UDim2.fromScale(math.clamp(fraction, 0.02, 1), 1) }):Play()
 	end
 	if eventState == "Countdown" then
-		el.MoonTitle.Text = "METEOR SHOWER IN"
+		el.MoonTitle.Text = "EGG RAIN IN"
 		el.MoonTitle.TextColor3 = ORANGE
 		el.MoonValue.Text = Format.time(left)
 		setFill(1)
 		fill.BackgroundColor3 = ORANGE
 		el.MoonIcon.Image = AssetLibrary.image("Icon_Meteor")
 	elseif eventState == "Shower" then
-		el.MoonTitle.Text = "METEOR SHOWER!"
+		el.MoonTitle.Text = "EGG RAIN!"
 		el.MoonTitle.TextColor3 = ORANGE
 		el.MoonValue.Text = Format.time(left)
 		setFill(left / 60)
@@ -259,7 +259,7 @@ local function renderServer()
 		el.MoonIcon.Image = AssetLibrary.image("Icon_Meteor")
 	else
 		local clean = State.server("MoonClean") or 0
-		el.MoonTitle.Text = "MOON CLEAN"
+		el.MoonTitle.Text = "WORLD CLEAN"
 		el.MoonTitle.TextColor3 = MINT
 		el.MoonValue.Text = Format.percent(clean)
 		setFill(clean)

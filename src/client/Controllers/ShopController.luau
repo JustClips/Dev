@@ -147,7 +147,7 @@ local function boostItems(_data): { Item }
 			table.insert(items, item)
 		end
 	end
-	local shower = robuxItem("MeteorShower", "Start a Meteor Shower for the whole server!", "Icon_Meteor")
+	local shower = robuxItem("MeteorShower", "Start an Egg Rain for the whole server!", "Icon_Meteor")
 	if shower then
 		table.insert(items, shower)
 	end
@@ -221,7 +221,7 @@ end
 local function eggItems(data): { Item }
 	local items: { Item } = {}
 	for _, key in { "CosmicEgg1", "CosmicEgg3" } do
-		local item = robuxItem(key, "Hatches Cosmo the Infinite, the event alien!", "Icon_Egg")
+		local item = robuxItem(key, "Hatches Cosmo the Infinite, the event pet!", "Icon_Egg")
 		if item then
 			table.insert(items, item)
 		end

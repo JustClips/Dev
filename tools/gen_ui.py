@@ -357,11 +357,11 @@ def hud():
                        frame("List", U(1, -20, 1, -20), U(0, 10, 0, 10), children=[
                            vlist(8),
                            text("Title", "Teleport", U(1, 0, 0, 28), ts=24, color=INK, display=True, LayoutOrder=0),
-                           zone_row("Landing", "Landing Site", 1),
-                           zone_row("Crater", "Crater", 2),
-                           zone_row("DarkSide", "Dark Side", 3),
-                           zone_row("Mars", "Mars Plains", 4),
-                           zone_row("Europa", "Europa Ice", 5),
+                           zone_row("Landing", "Backyard", 1),
+                           zone_row("Crater", "Park", 2),
+                           zone_row("DarkSide", "Beach", 3),
+                           zone_row("Mars", "City", 4),
+                           zone_row("Europa", "Snowy Peaks", 5),
                        ]),
                    ])
     # Moon Clean: small title, a thick bar with a moving shine, the % on the right. Turns
@@ -369,7 +369,7 @@ def hud():
     moon = plate("MoonPanel", U(0, 380, 0, 52), U(0.5, 0, 0, 66), (0.5, 0), BG, stud=None, stroke=3, children=[
         autoscale(),
         icon("Icon", "Star", 38, U(0, 7, 0.5, 0), (0, 0.5), ZIndex=4),
-        text("Title", "MOON CLEAN", U(0, 200, 0, 16), U(0, 52, 0, 4), ts=13, color=ACCENT, display=True, xa="Left", stroke=1.5),
+        text("Title", "WORLD CLEAN", U(0, 200, 0, 16), U(0, 52, 0, 4), ts=13, color=ACCENT, display=True, xa="Left", stroke=1.5),
         text("Value", "0%", U(0, 120, 0, 16), U(1, -10, 0, 4), (1, 0), ts=13, color=WHITE, display=True, xa="Right", stroke=1.5),
         frame("Bar", U(1, -62, 0, 20), U(0, 52, 1, -8), (0, 1), bg="#0B0E1E", children=[
             border(INK, 2),
@@ -617,7 +617,7 @@ def index():
     ])
     body = plate("Body", U(1, -24, 1, -156), U(0, 12, 0, 76), tint=BG, stud=0.6, children=[
         plate("Zone", U(0, 150, 1, -84), U(0, 10, 0, 10), tint="#3B4FA8", stud=0.2, children=[
-            text("Name", "Landing Site", U(1, -10, 0, 70), U(0.5, 0, 0, 8), (0.5, 0), ts=26, display=True, stroke=3),
+            text("Name", "Backyard", U(1, -10, 0, 70), U(0.5, 0, 0, 8), (0.5, 0), ts=26, display=True, stroke=3),
             icon("Icon", "Zones", 90, U(0.5, 0, 0.5, 0), (0.5, 0.5)),
             button("Prev", U(0, 54, 0, 46), U(0, 10, 1, -10), (0, 1), color=HEADER, label="<", ts=26),
             button("Next", U(0, 54, 0, 46), U(1, -10, 1, -10), (1, 1), color=HEADER, label=">", ts=26),
@@ -703,7 +703,7 @@ def inventory():
         text("Title", "All Items", U(0, 300, 0, 32), U(0, 14, 0, 6), ts=28, display=True, stroke=2.5, xa="Left"),
         text("Count", "Pets: 0/60", U(0, 300, 0, 22), U(0, 14, 0, 38), ts=18, display=True, stroke=2, xa="Left"),
         search, grid,
-        text("Empty", "Nothing here yet. Sweep dust to find eggs!", U(1, -24, 0, 60), U(0, 12, 0.5, 10), ts=20, color="#C8D0E8",
+        text("Empty", "Nothing here yet. Sweep leaves to find eggs!", U(1, -24, 0, 60), U(0, 12, 0.5, 10), ts=20, color="#C8D0E8",
              heavy=True, Visible=False),
         tabs, detail,
     ])
@@ -823,7 +823,7 @@ def rewards():
     ])
     event = plate("Event", U(0.5, -18, 0, 100), U(1, -12, 0, 358), (1, 0), tint="#FF78E6", stud=0.3, stroke=3, children=[
         icon("Icon", "Event", 70, U(0, 4, 0.5, 0), (0, 0.5)),
-        text("Name", "Meteor Weekend", U(1, -220, 0, 28), U(0, 78, 0, 6), ts=21, display=True, stroke=2.5, xa="Left",
+        text("Name", "Egg Rain Weekend", U(1, -220, 0, 28), U(0, 78, 0, 6), ts=21, display=True, stroke=2.5, xa="Left",
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 10})]),
         text("Info", "", U(1, -220, 0, 44), U(0, 78, 0, 34), ts=14, display=True, stroke=2, xa="Left", ya="Top",
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 8})]),
@@ -875,7 +875,7 @@ def rebirth():
     body = [
         icon("Big", "Rebirth", 110, U(0, 22, 0, 80)),
         text("Mult", "Cash x1 → x1.5", U(1, -160, 0, 44), U(0, 140, 0, 86), ts=30, color=INK, display=True, xa="Left"),
-        text("Info", "Resets your cash, tools, cars and upgrades.\nKeeps your aliens, index and zones.", U(1, -160, 0, 50),
+        text("Info", "Resets your cash, tools, cars and upgrades.\nKeeps your pets, index and zones.", U(1, -160, 0, 50),
              U(0, 140, 0, 132), ts=17, color=SUB, xa="Left", ya="Top"),
         text("Cost", "Cost: $0", U(1, -40, 0, 30), U(0.5, 0, 0, 202), (0.5, 0), ts=22, color=INK, heavy=True),
         button("RebirthButton", U(0, 300, 0, 62), U(0.5, 0, 0, 244), (0.5, 0), color=SUCCESS, label="Rebirth!", ts=32),
@@ -955,7 +955,7 @@ def tutorial_done():
         reward_card("CashPotion", "Potion", 3, 120, 128, 70),
     ])
     body = [
-        text("Sub", "You're a real Moon Sweeper now. Here's a gift to get going:", U(1, -40, 0, 44), U(0.5, 0, 0, 72), (0.5, 0),
+        text("Sub", "You're a real World Sweeper now. Here's a gift to get going:", U(1, -40, 0, 44), U(0.5, 0, 0, 72), (0.5, 0),
              ts=18, color=INK, heavy=True),
         rewards_row,
         button("Ok", U(0, 220, 0, 58), U(0.5, 0, 1, -16), (0.5, 1), color=SUCCESS, label="Awesome!", ts=26),
@@ -1008,7 +1008,7 @@ def garage():
         button("Robux", U(0, 160, 0, 32), U(1, -12, 0, 56), (1, 0), color=PREMIUM, label="", ts=16, label_color=INK, Visible=False),
     ])
     lst = scroller("List", U(1, -28, 1, -128), U(0, 14, 0, 76), [vlist(10), padding(2, 2, 4, 4), row])
-    hint = text("Hint", "Cars sweep a huge area and hold more dust. Spawn one here or from slot 2.", U(1, -28, 0, 36),
+    hint = text("Hint", "Cars sweep a huge area and hold more leaves. Spawn one here or from slot 2.", U(1, -28, 0, 36),
                 U(0, 14, 1, -10), (0, 1), ts=15, color=SUB, heavy=True)
     write("Garage", screen([dim(), window(640, 470, "Garage", "Vehicle", [lst, hint], header="#FF9A3C", scale=1.08)], order=10, enabled=False))
 

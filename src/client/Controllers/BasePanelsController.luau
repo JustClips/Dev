@@ -219,7 +219,7 @@ local function renderEggs(data)
 			table.insert(eggRows, { row = row, uid = uid })
 		end
 		empties.Growing.Visible = #sorted == 0
-		empties.Growing.Text = if eggCount > 0 then "Your incubators are empty. Tap Place Eggs!" else "No eggs growing. Sweep dust to find eggs!"
+		empties.Growing.Text = if eggCount > 0 then "Your incubators are empty. Tap Place Eggs!" else "No eggs growing. Sweep leaves to find eggs!"
 	end
 	for _, item in eggRows do
 		local entry = hatchEntry(data, item.uid)

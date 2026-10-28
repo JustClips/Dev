@@ -10,7 +10,7 @@ type GamepassDef = Types.GamepassDef
 local Gamepasses: { GamepassDef } = {
 	{ Key = "Cash2x", Id = 2056961597, Price = 99, Name = "2x Cash", Description = "All cash x2, forever." },
 	{ Key = "AutoSweep", Id = 2058257553, Price = 149, Name = "Auto Sweep", Description = "Sweeps around you automatically while you move." },
-	{ Key = "ExtraSlots", Id = 2060650790, Price = 199, Name = "+3 Alien Slots", Description = "Three more aliens on your base." },
+	{ Key = "ExtraSlots", Id = 2060650790, Price = 199, Name = "+3 Pet Slots", Description = "Three more pets on your base." },
 	{ Key = "Carry3", Id = 2057249582, Price = 129, Name = "Carry 3 Eggs", Description = "Carry up to 3 eggs per trip." },
 	{ Key = "VIP", Id = 2060219551, Price = 249, Name = "VIP", Description = "+20% cash, VIP tag, 4 h offline income." },
 	{ Key = "FasterHatch", Id = 2057507586, Price = 229, Name = "Faster Hatch", Description = "All hatch timers halved." },
@@ -23,7 +23,7 @@ local Products: { ProductDef } = {
 	{ Key = "ServerLuck4", Id = 3723358741, Price = 39, Name = "4x Server Luck (15 min)", Kind = "ServerLuck", Category = "Boosts", Giftable = false, Mult = 4, Minutes = 15 },
 	{ Key = "ServerLuck8", Id = 3723358752, Price = 79, Name = "8x Server Luck (15 min)", Kind = "ServerLuck", Category = "Boosts", Giftable = false, Mult = 8, Minutes = 15 },
 	{ Key = "ServerLuck16", Id = 3723358764, Price = 159, Name = "16x Server Luck (15 min)", Kind = "ServerLuck", Category = "Boosts", Giftable = false, Mult = 16, Minutes = 15 },
-	{ Key = "MeteorShower", Id = 3723358773, Price = 199, Name = "Meteor Shower Now", Kind = "MeteorShower", Category = "Boosts", Giftable = false },
+	{ Key = "MeteorShower", Id = 3723358773, Price = 199, Name = "Egg Rain Now", Kind = "MeteorShower", Category = "Boosts", Giftable = false },
 
 	{ Key = "SkipHatchCommon", Id = 3723358783, Price = 5, Name = "Skip Hatch (Common)", Kind = "SkipHatch", Category = "Eggs", Giftable = true, Rarity = "Common" },
 	{ Key = "SkipHatchUncommon", Id = 3723358792, Price = 15, Name = "Skip Hatch (Uncommon)", Kind = "SkipHatch", Category = "Eggs", Giftable = true, Rarity = "Uncommon" },
@@ -45,26 +45,26 @@ local Products: { ProductDef } = {
 	-- Cars (sold in the Garage). Unlock = owned until rebirth; Rent = until you leave or rebirth.
 	-- Both need the car's rebirth level, so Robux can't jump ahead of the progression.
 	{ Key = "UnlockSweeperCart", Id = 3723358932, Price = 249, Name = "Unlock Sweeper Cart", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "SweeperCart" },
-	{ Key = "UnlockMoonBuggy", Id = 3723367542, Price = 349, Name = "Unlock Moon Buggy", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "MoonBuggy" },
-	{ Key = "UnlockDustTruck", Id = 3723358946, Price = 499, Name = "Unlock Dust Truck", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "DustTruck" },
-	{ Key = "UnlockHoverSweeper", Id = 3723367553, Price = 699, Name = "Unlock Hover Sweeper", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "HoverSweeper" },
-	{ Key = "UnlockMoonCrawler", Id = 3723358959, Price = 999, Name = "Unlock Moon Crawler", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "MoonCrawler" },
-	{ Key = "UnlockSolarRover", Id = 3723367560, Price = 1299, Name = "Unlock Solar Rover", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "SolarRover" },
-	{ Key = "UnlockRocketSweeper", Id = 3723367567, Price = 1699, Name = "Unlock Rocket Sweeper", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "RocketSweeper" },
+	{ Key = "UnlockMoonBuggy", Id = 3723367542, Price = 349, Name = "Unlock Golf Cart", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "MoonBuggy" },
+	{ Key = "UnlockDustTruck", Id = 3723358946, Price = 499, Name = "Unlock Garbage Truck", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "DustTruck" },
+	{ Key = "UnlockHoverSweeper", Id = 3723367553, Price = 699, Name = "Unlock Street Sweeper", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "HoverSweeper" },
+	{ Key = "UnlockMoonCrawler", Id = 3723358959, Price = 999, Name = "Unlock Lawn Tractor", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "MoonCrawler" },
+	{ Key = "UnlockSolarRover", Id = 3723367560, Price = 1299, Name = "Unlock Snow Plow", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "SolarRover" },
+	{ Key = "UnlockRocketSweeper", Id = 3723367567, Price = 1699, Name = "Unlock Mega Sweeper", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "RocketSweeper" },
 	{ Key = "RentSweeperCart", Id = 3723358973, Price = 59, Name = "Sweeper Cart (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "SweeperCart" },
-	{ Key = "RentMoonBuggy", Id = 3723367579, Price = 99, Name = "Moon Buggy (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "MoonBuggy" },
-	{ Key = "RentDustTruck", Id = 3723358981, Price = 149, Name = "Dust Truck (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "DustTruck" },
-	{ Key = "RentHoverSweeper", Id = 3723367587, Price = 199, Name = "Hover Sweeper (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "HoverSweeper" },
-	{ Key = "RentMoonCrawler", Id = 3723358993, Price = 299, Name = "Moon Crawler (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "MoonCrawler" },
-	{ Key = "RentSolarRover", Id = 3723367594, Price = 399, Name = "Solar Rover (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "SolarRover" },
-	{ Key = "RentRocketSweeper", Id = 3723367601, Price = 499, Name = "Rocket Sweeper (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "RocketSweeper" },
+	{ Key = "RentMoonBuggy", Id = 3723367579, Price = 99, Name = "Golf Cart (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "MoonBuggy" },
+	{ Key = "RentDustTruck", Id = 3723358981, Price = 149, Name = "Garbage Truck (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "DustTruck" },
+	{ Key = "RentHoverSweeper", Id = 3723367587, Price = 199, Name = "Street Sweeper (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "HoverSweeper" },
+	{ Key = "RentMoonCrawler", Id = 3723358993, Price = 299, Name = "Lawn Tractor (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "MoonCrawler" },
+	{ Key = "RentSolarRover", Id = 3723367594, Price = 399, Name = "Snow Plow (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "SolarRover" },
+	{ Key = "RentRocketSweeper", Id = 3723367601, Price = 499, Name = "Mega Sweeper (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "RocketSweeper" },
 
 	-- Cash packs scale with the player: max(Seconds of income, FloorFactor x next tool price).
 	{ Key = "Cash1", Id = 3723359007, Price = 24, Name = "Pile of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 600, FloorFactor = 0.5 },
 	{ Key = "Cash2", Id = 3723359023, Price = 59, Name = "Bag of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 1800, FloorFactor = 1.5 },
 	{ Key = "Cash3", Id = 3723359034, Price = 149, Name = "Crate of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 5400, FloorFactor = 4 },
 	{ Key = "Cash4", Id = 3723359049, Price = 399, Name = "Vault of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 14400, FloorFactor = 10 },
-	{ Key = "Cash5", Id = 3723359058, Price = 999, Name = "Moon of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 43200, FloorFactor = 25 },
+	{ Key = "Cash5", Id = 3723359058, Price = 999, Name = "Mountain of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 43200, FloorFactor = 25 },
 
 	-- Skip Rebirth gets pricier the further you are (Rebirth = the rebirth it takes you to).
 	-- Past the last one, the last price is used again. See Products.skipRebirthFor.

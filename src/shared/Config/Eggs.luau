@@ -17,7 +17,7 @@ local Rarities: { RarityDef } = {
 
 local Mutations: { MutationDef } = {
 	-- Checked rarest first.
-	{ Name = "MoonDusted", Label = "Moon-Dusted", Chance = 500, IncomeMult = 5, Color = Color3.fromRGB(220, 235, 255) },
+	{ Name = "MoonDusted", Label = "Sparkly", Chance = 500, IncomeMult = 5, Color = Color3.fromRGB(220, 235, 255) },
 	{ Name = "Rainbow", Label = "Rainbow", Chance = 100, IncomeMult = 3, Color = Color3.fromRGB(255, 120, 230) },
 	{ Name = "Golden", Label = "Golden", Chance = 20, IncomeMult = 2, Color = Color3.fromRGB(255, 205, 50) },
 }

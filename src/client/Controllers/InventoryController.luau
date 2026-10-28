@@ -78,7 +78,7 @@ end
 
 local function zoneName(zoneId: string?): string
 	local zone = Zones.ById[zoneId or "Landing"]
-	return if zone then zone.Name else "Landing Site"
+	return if zone then zone.Name else "Backyard"
 end
 
 local function petName(pet): string

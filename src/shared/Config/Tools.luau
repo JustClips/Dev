@@ -20,12 +20,12 @@ local List: { ToolDef } = {
 -- Prices come from tools/balance/sim.py (first rebirth ~2 h, rebirth 7 ~40 h).
 local Vehicles: { VehicleDef } = {
 	{ Order = 1, Id = "SweeperCart", Name = "Sweeper Cart", Radius = 14, Power = 50, Capacity = 40_000, Price = 20_000_000, RequiredRebirths = 0, Color = Color3.fromRGB(80, 200, 120), Scale = 1, Speed = 34, RentKey = "RentSweeperCart", UnlockKey = "UnlockSweeperCart" },
-	{ Order = 2, Id = "MoonBuggy", Name = "Moon Buggy", Radius = 16, Power = 90, Capacity = 90_000, Price = 50_000_000, RequiredRebirths = 0, Color = Color3.fromRGB(255, 140, 60), Scale = 1.15, Speed = 36, RentKey = "RentMoonBuggy", UnlockKey = "UnlockMoonBuggy" },
-	{ Order = 3, Id = "DustTruck", Name = "Dust Truck", Radius = 20, Power = 180, Capacity = 250_000, Price = 1_200_000_000, RequiredRebirths = 1, Color = Color3.fromRGB(255, 180, 40), Scale = 1.35, Speed = 38, RentKey = "RentDustTruck", UnlockKey = "UnlockDustTruck" },
-	{ Order = 4, Id = "HoverSweeper", Name = "Hover Sweeper", Radius = 24, Power = 400, Capacity = 700_000, Price = 20_000_000_000, RequiredRebirths = 2, Color = Color3.fromRGB(180, 120, 255), Scale = 1.5, Speed = 40, RentKey = "RentHoverSweeper", UnlockKey = "UnlockHoverSweeper" },
-	{ Order = 5, Id = "MoonCrawler", Name = "Moon Crawler", Radius = 28, Power = 900, Capacity = 2_000_000, Price = 240_000_000_000, RequiredRebirths = 3, Color = Color3.fromRGB(90, 160, 255), Scale = 1.8, Speed = 42, RentKey = "RentMoonCrawler", UnlockKey = "UnlockMoonCrawler" },
-	{ Order = 6, Id = "SolarRover", Name = "Solar Rover", Radius = 32, Power = 2_000, Capacity = 6_000_000, Price = 3_000_000_000_000, RequiredRebirths = 4, Color = Color3.fromRGB(240, 240, 245), Scale = 2, Speed = 44, RentKey = "RentSolarRover", UnlockKey = "UnlockSolarRover" },
-	{ Order = 7, Id = "RocketSweeper", Name = "Rocket Sweeper", Radius = 38, Power = 5_000, Capacity = 20_000_000, Price = 37_500_000_000_000, RequiredRebirths = 5, Color = Color3.fromRGB(255, 74, 90), Scale = 2.2, Speed = 48, RentKey = "RentRocketSweeper", UnlockKey = "UnlockRocketSweeper" },
+	{ Order = 2, Id = "MoonBuggy", Name = "Golf Cart", Radius = 16, Power = 90, Capacity = 90_000, Price = 50_000_000, RequiredRebirths = 0, Color = Color3.fromRGB(255, 140, 60), Scale = 1.15, Speed = 36, RentKey = "RentMoonBuggy", UnlockKey = "UnlockMoonBuggy" },
+	{ Order = 3, Id = "DustTruck", Name = "Garbage Truck", Radius = 20, Power = 180, Capacity = 250_000, Price = 1_200_000_000, RequiredRebirths = 1, Color = Color3.fromRGB(255, 180, 40), Scale = 1.35, Speed = 38, RentKey = "RentDustTruck", UnlockKey = "UnlockDustTruck" },
+	{ Order = 4, Id = "HoverSweeper", Name = "Street Sweeper", Radius = 24, Power = 400, Capacity = 700_000, Price = 20_000_000_000, RequiredRebirths = 2, Color = Color3.fromRGB(180, 120, 255), Scale = 1.5, Speed = 40, RentKey = "RentHoverSweeper", UnlockKey = "UnlockHoverSweeper" },
+	{ Order = 5, Id = "MoonCrawler", Name = "Lawn Tractor", Radius = 28, Power = 900, Capacity = 2_000_000, Price = 240_000_000_000, RequiredRebirths = 3, Color = Color3.fromRGB(90, 160, 255), Scale = 1.8, Speed = 42, RentKey = "RentMoonCrawler", UnlockKey = "UnlockMoonCrawler" },
+	{ Order = 6, Id = "SolarRover", Name = "Snow Plow", Radius = 32, Power = 2_000, Capacity = 6_000_000, Price = 3_000_000_000_000, RequiredRebirths = 4, Color = Color3.fromRGB(240, 240, 245), Scale = 2, Speed = 44, RentKey = "RentSolarRover", UnlockKey = "UnlockSolarRover" },
+	{ Order = 7, Id = "RocketSweeper", Name = "Mega Sweeper", Radius = 38, Power = 5_000, Capacity = 20_000_000, Price = 37_500_000_000_000, RequiredRebirths = 5, Color = Color3.fromRGB(255, 74, 90), Scale = 2.2, Speed = 48, RentKey = "RentRocketSweeper", UnlockKey = "UnlockRocketSweeper" },
 }
 
 local Tools = {

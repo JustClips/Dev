@@ -64,7 +64,7 @@ end
 
 local function showWelcome(info)
 	Ui.find(welcomeGui, "Window.Amount").Text = "+" .. Format.cash(info.Amount)
-	Ui.find(welcomeGui, "Window.Text").Text = `Your aliens worked for {Format.duration(info.Seconds)} while you were away.`
+	Ui.find(welcomeGui, "Window.Text").Text = `Your pets worked for {Format.duration(info.Seconds)} while you were away.`
 	local double = Products.ProductByKey.DoubleOffline
 	local doubleButton = Ui.find(welcomeGui, "Window.Double") :: TextButton
 	doubleButton.Visible = double ~= nil and double.Id ~= 0

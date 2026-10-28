@@ -109,7 +109,7 @@ local function renderDetail(data)
 	local zone = Zones.ById[def.Zone or "Landing"]
 	hint.Text = if known
 		then "Hatched! Golden and Rainbow ones earn even more."
-		else `Hatch a {def.Rarity} egg from {zone and zone.Name or "the Moon"} to find it.`
+		else `Hatch a {def.Rarity} egg from {zone and zone.Name or "the Backyard"} to find it.`
 end
 
 local function render(force: boolean?)

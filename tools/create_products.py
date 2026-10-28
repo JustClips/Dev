@@ -8,6 +8,8 @@ game-pass and developer-product write scopes.
 
     python3 tools/create_products.py            # create missing, write IDs
     python3 tools/create_products.py --dry-run  # show what would happen
+    python3 tools/create_products.py --sync     # also rename existing ones to match the file
+    python3 tools/create_products.py --sync --icons  # ...and re-upload their icons
 """
 import argparse
 import json
@@ -29,11 +31,11 @@ KIND_ICONS = {"StarterPack": "Gift", "ServerLuck": "Luck", "MeteorShower": "Mete
               "EggPack": "Egg", "ToolSkip": "Tool", "VehicleUnlock": "Vehicle", "VehicleRental": "Vehicle",
               "CashPack": "Cash", "SkipRebirth": "Rebirth", "DoubleOffline": "Cash", "GiftPass": "Gift"}
 KIND_TEXT = {
-    "StarterPack": "A bundle to kick off your Moon sweeping run.",
+    "StarterPack": "A bundle to kick off your sweeping run.",
     "ServerLuck": "Boosts egg luck for everyone in the server.",
-    "MeteorShower": "Starts a meteor shower right now: extra eggs fall for everyone.",
+    "MeteorShower": "Starts an Egg Rain right now: extra eggs fall for everyone.",
     "SkipHatch": "Hatches one egg instantly.",
-    "EggPack": "Cosmic eggs delivered straight to your base.",
+    "EggPack": "Rare eggs delivered straight to your bag.",
     "ToolSkip": "Unlocks the next sweeping tool right away.",
     "VehicleUnlock": "Unlocks this car in the Garage until your next rebirth.",
     "VehicleRental": "Rents this car until you leave or rebirth.",
@@ -78,6 +80,8 @@ def icon_form(name):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--sync", action="store_true")
+    parser.add_argument("--icons", action="store_true")
     args = parser.parse_args()
 
     source = open(CONFIG, encoding="utf-8").read()
@@ -129,6 +133,9 @@ def main():
         print("   ->", ids[key])
         time.sleep(0.4)
 
+    if args.sync:
+        sync(passes_src, products_src, base, pbase, args)
+
     if args.dry_run or not ids:
         return
 
@@ -144,6 +151,45 @@ def main():
                       "-- Created through Open Cloud by tools/create_products.py (universe 10773346969).\n")
     open(CONFIG, "w", encoding="utf-8").write(out)
     print(f"wrote {len(ids)} ids to {os.path.relpath(CONFIG, ROOT)}")
+
+
+def sync(passes_src, products_src, base, pbase, args):
+    """Rename (and optionally re-icon) passes and products that already exist, so the names
+    players see in purchase prompts match Products.luau."""
+    by_id = {str(p.get("gamePassId") or p.get("id")): p for p in list_all(base + "/creator", "gamePasses")}
+    for m in LINE.finditer(passes_src):
+        if m["id"] == "0":
+            continue
+        desc = re.search(r'Description = "([^"]*)"', m["rest"])
+        want = {"name": m["name"], "description": desc[1] if desc else m["name"]}
+        have = by_id.get(m["id"], {})
+        if have.get("name") == want["name"] and have.get("description") == want["description"] and not args.icons:
+            continue
+        print(f"pass {m['key']}: '{have.get('name')}' -> '{want['name']}'")
+        if args.dry_run:
+            continue
+        form = dict(want)
+        if args.icons:
+            form.update(icon_form(PASS_ICONS.get(m["key"], "Star")))
+        curl("PATCH", f"{base}/{m['id']}", form)
+        time.sleep(0.4)
+    by_id = {str(p["productId"]): p for p in list_all(pbase + "/creator", "developerProducts")}
+    for m in LINE.finditer(products_src):
+        if m["id"] == "0":
+            continue
+        kind = re.search(r'Kind = "(\w+)"', m["rest"])[1]
+        want = {"name": m["name"], "description": KIND_TEXT.get(kind, m["name"])}
+        have = by_id.get(m["id"], {})
+        if have.get("name") == want["name"] and have.get("description") == want["description"] and not args.icons:
+            continue
+        print(f"product {m['key']}: '{have.get('name')}' -> '{want['name']}'")
+        if args.dry_run:
+            continue
+        form = dict(want)
+        if args.icons:
+            form.update(icon_form(KIND_ICONS.get(kind, "Shop")))
+        curl("PATCH", f"{pbase}/{m['id']}", form)
+        time.sleep(0.4)
 
 
 if __name__ == "__main__":

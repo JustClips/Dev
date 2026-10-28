@@ -74,7 +74,7 @@ Rewards.Group = {
 Rewards.Events = {
 	{
 		Id = "MeteorWeekend1",
-		Name = "Meteor Weekend",
+		Name = "Egg Rain Weekend",
 		Description = "2x egg luck for all! Sign up for 3 free Hatch Potions.",
 		StartsAt = 1793462400, -- Sat 31 Oct 2026 16:00 UTC
 		EndsAt = 1793635200, -- Mon 2 Nov 2026 16:00 UTC

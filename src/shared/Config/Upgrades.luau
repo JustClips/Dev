@@ -15,7 +15,7 @@ local List: { UpgradeDef } = {
 		CostGrowth = 2.2,
 		PerLevel = 0.25,
 		Format = "percent",
-		Description = "Carry more dust per trip",
+		Description = "Carry more leaves per trip",
 	},
 	{
 		Id = "Power",
@@ -26,11 +26,11 @@ local List: { UpgradeDef } = {
 		CostGrowth = 2.3,
 		PerLevel = 0.2,
 		Format = "percent",
-		Description = "Clear dust faster",
+		Description = "Clear leaves faster",
 	},
 	{
 		Id = "Speed",
-		Name = "Moon Boots",
+		Name = "Running Shoes",
 		Icon = "Icon_Speed",
 		MaxLevel = 8,
 		BaseCost = 400,

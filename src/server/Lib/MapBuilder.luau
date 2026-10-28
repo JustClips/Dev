@@ -386,7 +386,7 @@ local function launchPad()
 	local d = World.RocketClearRadius - 2.5
 	for _, yaw in { 0, 90, 180, 270 } do
 		local cf = CFrame.new(center) * CFrame.Angles(0, math.rad(yaw), 0) * CFrame.new(0, 0, d)
-		signOnPosts(model, "SellSign", CFrame.lookAt(cf.Position, cf.Position + (cf.Position - center) * Vector3.new(1, 0, 1)), 13, 3.6, MINT, "SELL DUST", "Stand on the ring")
+		signOnPosts(model, "SellSign", CFrame.lookAt(cf.Position, cf.Position + (cf.Position - center) * Vector3.new(1, 0, 1)), 13, 3.6, MINT, "SELL LEAVES", "Stand on the ring")
 	end
 end
 

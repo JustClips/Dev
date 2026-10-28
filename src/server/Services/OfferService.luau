@@ -94,7 +94,7 @@ end
 
 function OfferService:OnMoonBarHigh()
 	for player in S.DataService:GetSessions() do
-		show(player, "ServerLuck", "ServerLuck2", "Meteor Shower soon!", "Boost the whole server's luck for the shower.")
+		show(player, "ServerLuck", "ServerLuck2", "Egg Rain soon!", "Boost the whole server's luck for the Egg Rain.")
 	end
 end
 
