@@ -1126,7 +1126,8 @@ Assets.Models = {
 			max = Vector3.new(1.576, 4.85, 1.6),
 			min = Vector3.new(-1.576, 0.0, -1.6),
 		},
-		id = 118504148968378,
+		fallback = 118504148968378,
+		id = 104302418696142,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1149,7 +1150,8 @@ Assets.Models = {
 			max = Vector3.new(0.6, 8.15, 0.6),
 			min = Vector3.new(-0.6, 0.0, -1.8),
 		},
-		id = 135432862094576,
+		fallback = 135432862094576,
+		id = 72580564455004,
 		kind = "prop",
 		light = Vector3.new(0.0, 7.5, -1.3),
 		parts = {
@@ -1168,7 +1170,8 @@ Assets.Models = {
 			max = Vector3.new(1.95, 5.0, 1.8),
 			min = Vector3.new(-1.8, 0.0, -1.814),
 		},
-		id = 95711482057834,
+		fallback = 95711482057834,
+		id = 106766415469362,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1186,7 +1189,8 @@ Assets.Models = {
 			max = Vector3.new(1.8, 5.0, 1.8),
 			min = Vector3.new(-1.8, 0.0, -1.8),
 		},
-		id = 98868216222020,
+		fallback = 98868216222020,
+		id = 92696092430558,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1204,7 +1208,8 @@ Assets.Models = {
 			max = Vector3.new(8.099, 1.1, 5.908),
 			min = Vector3.new(-8.252, -0.5, -5.908),
 		},
-		id = 119549304925368,
+		fallback = 119549304925368,
+		id = 107579562898691,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1222,7 +1227,8 @@ Assets.Models = {
 			max = Vector3.new(4.231, 3.972, 3.178),
 			min = Vector3.new(-4.135, 0.0, -3.233),
 		},
-		id = 113810069760289,
+		fallback = 113810069760289,
+		id = 76859513166318,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1235,7 +1241,8 @@ Assets.Models = {
 			max = Vector3.new(6.948, 5.985, 5.293),
 			min = Vector3.new(-7.227, 0.0, -4.641),
 		},
-		id = 126018567770244,
+		fallback = 126018567770244,
+		id = 126449135072824,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1248,7 +1255,8 @@ Assets.Models = {
 			max = Vector3.new(3.913, 4.781, 3.565),
 			min = Vector3.new(-4.248, 0.0, -3.511),
 		},
-		id = 139284138741095,
+		fallback = 139284138741095,
+		id = 73127252202618,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1261,7 +1269,8 @@ Assets.Models = {
 			max = Vector3.new(7.587, 7.151, 5.788),
 			min = Vector3.new(-7.353, 0.0, -6.076),
 		},
-		id = 113038947328526,
+		fallback = 113038947328526,
+		id = 90940143443386,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1274,7 +1283,8 @@ Assets.Models = {
 			max = Vector3.new(4.145, 3.721, 3.01),
 			min = Vector3.new(-4.17, 0.0, -2.877),
 		},
-		id = 88484412880249,
+		fallback = 88484412880249,
+		id = 98160642007469,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1287,7 +1297,8 @@ Assets.Models = {
 			max = Vector3.new(7.574, 6.56, 5.253),
 			min = Vector3.new(-7.921, 0.0, -5.558),
 		},
-		id = 91763938635099,
+		fallback = 91763938635099,
+		id = 95224626577369,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1300,7 +1311,8 @@ Assets.Models = {
 			max = Vector3.new(3.377, 3.002, 2.622),
 			min = Vector3.new(-3.443, 0.0, -2.577),
 		},
-		id = 138239423128238,
+		fallback = 138239423128238,
+		id = 102063810498044,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1313,7 +1325,8 @@ Assets.Models = {
 			max = Vector3.new(5.904, 5.016, 4.611),
 			min = Vector3.new(-6.023, 0.0, -4.792),
 		},
-		id = 88313298295244,
+		fallback = 88313298295244,
+		id = 107168236509107,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1326,7 +1339,8 @@ Assets.Models = {
 			max = Vector3.new(1.567, 1.6, 1.383),
 			min = Vector3.new(-1.545, 0.0, -1.326),
 		},
-		id = 127380355988453,
+		fallback = 127380355988453,
+		id = 131515484225299,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1339,7 +1353,8 @@ Assets.Models = {
 			max = Vector3.new(9.6, 36.0, 9.6),
 			min = Vector3.new(-9.6, 0.0, -11.239),
 		},
-		id = 103827270379956,
+		fallback = 103827270379956,
+		id = 80597499549256,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1357,7 +1372,8 @@ Assets.Models = {
 			max = Vector3.new(3.0, 7.425, 1.189),
 			min = Vector3.new(-3.0, -0.1, -2.593),
 		},
-		id = 128758326175768,
+		fallback = 128758326175768,
+		id = 75518010227206,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1375,7 +1391,8 @@ Assets.Models = {
 			max = Vector3.new(2.0, 4.3, 0.2),
 			min = Vector3.new(-2.0, 0.0, -0.2),
 		},
-		id = 119424033297262,
+		fallback = 119424033297262,
+		id = 101489742697474,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1389,8 +1406,9 @@ Assets.Models = {
 			max = Vector3.new(0.75, 0.262, 2.22),
 			min = Vector3.new(-0.75, -0.262, -2.68),
 		},
+		fallback = 80325302560694,
 		grip = Vector3.new(0.0, 0.0, 1.4),
-		id = 80325302560694,
+		id = 92674663690267,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1403,8 +1421,9 @@ Assets.Models = {
 			max = Vector3.new(0.35, 0.55, 1.2),
 			min = Vector3.new(-0.44, -0.55, -1.85),
 		},
+		fallback = 136713241963556,
 		grip = Vector3.new(0.0, 0.45, 0.7),
-		id = 136713241963556,
+		id = 130569732797474,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1417,8 +1436,9 @@ Assets.Models = {
 			max = Vector3.new(0.696, 0.666, 2.1),
 			min = Vector3.new(-0.696, -0.666, -2.63),
 		},
+		fallback = 70875734599625,
 		grip = Vector3.new(0.0, 0.0, 1.4),
-		id = 70875734599625,
+		id = 91304897272976,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1431,8 +1451,9 @@ Assets.Models = {
 			max = Vector3.new(0.5, 0.44, 1.475),
 			min = Vector3.new(-0.5, -0.64, -1.975),
 		},
+		fallback = 138719504516982,
 		grip = Vector3.new(0.0, 0.35, 0.9),
-		id = 138719504516982,
+		id = 125558326295758,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1445,8 +1466,9 @@ Assets.Models = {
 			max = Vector3.new(0.16, 0.16, 1.41),
 			min = Vector3.new(-0.16, -0.31, -1.55),
 		},
+		fallback = 75491264781846,
 		grip = Vector3.new(0.0, 0.0, 0.85),
-		id = 75491264781846,
+		id = 134880869544045,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1459,8 +1481,9 @@ Assets.Models = {
 			max = Vector3.new(0.51, 0.51, 1.62),
 			min = Vector3.new(-0.51, -0.63, -1.935),
 		},
+		fallback = 128091050780061,
 		grip = Vector3.new(0.0, 0.42, 0.75),
-		id = 128091050780061,
+		id = 97241256529735,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -1478,7 +1501,8 @@ Assets.Models = {
 			max = Vector3.new(2.5, 10.7, 2.826),
 			min = Vector3.new(-3.151, -0.85, -3.037),
 		},
-		id = 139287077927031,
+		fallback = 139287077927031,
+		id = 79314896889732,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1496,7 +1520,8 @@ Assets.Models = {
 			max = Vector3.new(2.76, 8.7, 3.134),
 			min = Vector3.new(-3.109, -0.85, -2.6),
 		},
-		id = 119654173945417,
+		fallback = 119654173945417,
+		id = 133534123002482,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1514,7 +1539,8 @@ Assets.Models = {
 			max = Vector3.new(2.736, 12.7, 2.606),
 			min = Vector3.new(-3.121, -0.85, -3.144),
 		},
-		id = 137102849905772,
+		fallback = 137102849905772,
+		id = 94189063797987,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1532,7 +1558,8 @@ Assets.Models = {
 			max = Vector3.new(4.52, 6.777, 6.075),
 			min = Vector3.new(-4.52, -0.081, -8.384),
 		},
-		id = 94022867337786,
+		fallback = 94022867337786,
+		id = 134685292058353,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1560,7 +1587,8 @@ Assets.Models = {
 			max = Vector3.new(6.28, 11.34, 8.1),
 			min = Vector3.new(-6.28, -0.108, -11.178),
 		},
-		id = 116829281220449,
+		fallback = 116829281220449,
+		id = 112298881685804,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1588,7 +1616,8 @@ Assets.Models = {
 			max = Vector3.new(3.33, 5.425, 4.5),
 			min = Vector3.new(-3.33, -0.06, -6.21),
 		},
-		id = 92989258768239,
+		fallback = 92989258768239,
+		id = 129873014032932,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1616,7 +1645,8 @@ Assets.Models = {
 			max = Vector3.new(15.5, 17.0, 2.5),
 			min = Vector3.new(-15.5, 0.0, -2.5),
 		},
-		id = 75151650721886,
+		fallback = 75151650721886,
+		id = 129715717307740,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -1633,44 +1663,47 @@ Assets.Models = {
 }
 
 Assets.Animations = {
-	Pet_Happy = 104759341584430,
-	Pet_Idle = 101236842457827,
+	Pet_Happy = 121509518198286,
+	Pet_Idle = 92065903957406,
 	Pet_Walk = 130705289172156,
-	Player_Sweep = 109139357549233,
+	Player_Sweep = 79964188382249,
 }
 
 -- Used instead of Assets.Animations when the primary account's models failed to load
 -- (same owner rule as models). AssetService sets ReplicatedStorage.Assets.UseFallback.
 Assets.AnimationFallback = {
+	Pet_Happy = 104759341584430,
+	Pet_Idle = 101236842457827,
 	Pet_Walk = 73735245537498,
+	Player_Sweep = 109139357549233,
 }
 
 -- UI images (icons rendered in art/blender/icons.py, UI art from art/out/ui).
 Assets.Images = {
-	BannerLuck = "rbxassetid://81303789977135",
-	BannerStarter = "rbxassetid://115565610992968",
-	Icon_Alien = "rbxassetid://83533057452875",
-	Icon_Auto = "rbxassetid://80501368660104",
-	Icon_Base = "rbxassetid://112675748899807",
-	Icon_Boost = "rbxassetid://130476359014682",
+	BannerLuck = "rbxassetid://80280328077497",
+	BannerStarter = "rbxassetid://140216401802209",
+	Icon_Alien = "rbxassetid://130343755563541",
+	Icon_Auto = "rbxassetid://100400998462031",
+	Icon_Base = "rbxassetid://78445407823725",
+	Icon_Boost = "rbxassetid://122729187950772",
 	Icon_Cash = "rbxassetid://77755252353039",
-	Icon_Dust = "rbxassetid://138279084558407",
-	Icon_Egg = "rbxassetid://112566110974126",
-	Icon_Gift = "rbxassetid://115929423807651",
-	Icon_Index = "rbxassetid://106172070228513",
-	Icon_Lock = "rbxassetid://139489090570588",
-	Icon_Luck = "rbxassetid://111161424728854",
-	Icon_Meteor = "rbxassetid://91146035560756",
-	Icon_Rebirth = "rbxassetid://123318389212674",
-	Icon_Sell = "rbxassetid://139947903068700",
-	Icon_Shop = "rbxassetid://138356455761581",
-	Icon_Star = "rbxassetid://109096345540865",
-	Icon_Timer = "rbxassetid://129183860846157",
-	Icon_Tool = "rbxassetid://75974417444207",
-	Icon_Vehicle = "rbxassetid://82180106649388",
-	Icon_Zones = "rbxassetid://106398392258250",
-	Logo = "rbxassetid://91231229030895",
-	Stud = "rbxassetid://117181516497135",
+	Icon_Dust = "rbxassetid://102117683884604",
+	Icon_Egg = "rbxassetid://126416972764798",
+	Icon_Gift = "rbxassetid://131227221102400",
+	Icon_Index = "rbxassetid://129110672308655",
+	Icon_Lock = "rbxassetid://98827331378055",
+	Icon_Luck = "rbxassetid://79028205861075",
+	Icon_Meteor = "rbxassetid://126446331367765",
+	Icon_Rebirth = "rbxassetid://129431956423248",
+	Icon_Sell = "rbxassetid://113142295565740",
+	Icon_Shop = "rbxassetid://105247630037745",
+	Icon_Star = "rbxassetid://70582665516009",
+	Icon_Timer = "rbxassetid://113659680582613",
+	Icon_Tool = "rbxassetid://73274476326631",
+	Icon_Vehicle = "rbxassetid://134464398158021",
+	Icon_Zones = "rbxassetid://96129567125793",
+	Logo = "rbxassetid://135332141267180",
+	Stud = "rbxassetid://139302839809244",
 }
 
 return Assets

@@ -118,7 +118,7 @@
       ],
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
-      "Image": "rbxassetid://117181516497135",
+      "Image": "rbxassetid://139302839809244",
       "ScaleType": "Tile",
       "TileSize": [
        [
@@ -216,7 +216,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://117181516497135",
+        "Image": "rbxassetid://139302839809244",
         "ScaleType": "Tile",
         "TileSize": [
          [
@@ -264,7 +264,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://106172070228513",
+        "Image": "rbxassetid://129110672308655",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -624,7 +624,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://117181516497135",
+          "Image": "rbxassetid://139302839809244",
           "ScaleType": "Tile",
           "TileSize": [
            [
@@ -712,7 +712,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://139489090570588",
+          "Image": "rbxassetid://98827331378055",
           "ScaleType": "Fit",
           "ZIndex": 3,
           "Visible": false
