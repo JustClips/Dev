@@ -31,15 +31,16 @@ Players only get a character once their profile has loaded (`CharacterAutoLoads 
 | StateService | Sends each player one `PlayerState` snapshot (at most every 0.2 s) and owns `ReplicatedStorage.ServerState` attributes (Moon %, event, luck). Also works out the tutorial step. |
 | AnalyticsService | Onboarding funnel (spawn → first sweep → sell → egg → hatch → tool → zone → rebirth), economy sources/sinks, custom offer events. |
 | AssetService | Loads every Blender model with `InsertService:LoadAsset` at start, cleans and rigs it (`AssetLibrary.prepare`), and stores it in `ReplicatedStorage.Assets` (attribute `Ready`). Failed models fall back to part-built placeholders. |
-| WorldService | Finds `Workspace.Moon`, builds the terrain at start and places all props once assets are ready (`Lib/MapBuilder`), owner signs over each base arch. |
+| WorldService | Finds `Workspace.Moon`, sets up lighting and the star sky, builds the terrain and structures (launch pad, Garage, Upgrade Station, base floors, signs) at start, then places all props once assets are ready (`Lib/MapBuilder`). Sets `Workspace` attributes `TerrainReady` and `PropsReady` for the loading screen. Owner name and avatar on each base sign. |
 | BaseService | Gives each player a base, spawns and respawns them there. |
 | BoostService | Server luck tiers (time stacks per tier, highest active wins), personal 2x cash, and the single cash multiplier formula. |
 | DustService | Tiles, HP, clearing, regrowth per zone, the Moon Clean counter, 0.1 s batches of cleared tile ids. |
 | SweepService | Validates `SweepTick(position)`: rate (10/s token bucket), distance from the character, zone unlocked. Applies tool power through the grid lookup, fills the backpack, rolls eggs. |
-| ToolService | Tool ladder, tool in hand, vehicle rentals, spawning the vehicle. |
-| BackpackService | Dust units + their cash value, selling at the Rocket, `GiveCash` / `TrySpend` helpers. |
+| ToolService | Tool ladder (tiers 1-6), tool in hand, and cars (`Tools.Vehicles`): buying with cash, Robux unlocks and rentals, spawning at your feet (hotbar slot 2) or on the Garage pad. |
+| UpgradeService | Cash upgrades from `Config/Upgrades.luau` (Bigger Backpack, Sweep Power, Moon Boots, Egg Luck), sold at the Upgrade Station. Reset on rebirth. |
+| BackpackService | Dust units + their cash value, selling (a 0.2 s distance check: stand within `World.SellRadius` of the Rocket), `GiveCash` / `TrySpend` helpers. |
 | ZoneService | Gate labels and ProximityPrompts, paid unlocks, HUD teleports (`Teleport`: Base / Rocket / zone; a locked zone sends you to its gate; no teleport while carrying an egg). |
-| EggService | Egg chance per tile, guaranteed first egg (tile 12), physical eggs (owner-only for 15 s), carrying, delivering to your base pad. |
+| EggService | Egg chance per tile, guaranteed first egg (tile 12), physical eggs (owner-only for 15 s), carrying, delivering (a distance check: walk into your base's hatchery). |
 | HatchService | Hatch timers saved as unix `EndsAt` (they keep running offline), mutations, Skip Hatch. A higher-rarity egg on a full base replaces the weakest lower-rarity alien. |
 | AlienService | Slot count, income every second, offline income on join, publishes `base.Aliens` (one Folder per alien, rendered by every client's PetController) and the hatching eggs, the top-3 followers attribute. |
 | RebirthService | Cost, reset, +50% cash per rebirth. |
@@ -50,11 +51,11 @@ Players only get a character once their profile has loaded (`CharacterAutoLoads 
 
 ## Client controllers
 
-HudController (HUD, toasts, teleport pills), ShopController, IndexController (3D viewports), RebirthController, OfferController, HatchController (egg -> alien happy dance in a WorldModel), SweepController (input, dust puffs, `Player_Sweep` animation), PetController (pets wander each base's park with Idle/Walk/Happy, only near the camera), FollowerController (top 3 follow you), VehicleController, ZoneController, ArrowController, SkyController (the Earth).
+LoadingController (loading screen until terrain, models, images, save and character are ready; 45 s timeout), HudController (HUD, toasts, teleport pills), HotbarController (our 2-slot hotbar: 1 = tool, 2 = car; the default backpack is hidden), GarageController, UpgradeController, ShopController, IndexController (3D viewports), RebirthController, OfferController, HatchController (egg -> alien happy dance in a WorldModel), SweepController (input, dust puffs, `Player_Sweep` animation), PetController (pets wander each base's park with Idle/Walk/Happy, only near the camera), FollowerController (top 3 follow you), VehicleController, ZoneController, ArrowController, SkyController (the Earth).
 
 ## Remotes (`src/shared/Net.luau`)
 
-Client → server (all rate limited): `SweepTick`, `OfferResponse`, `SetAutoSweep`, and the functions `GetState`, `BuyNextTool`, `Rebirth`, `PromptPurchase(key, giftToUserId?)`, `ToggleVehicle`, `EquipTool`, `Teleport(target)`.
+Client → server (all rate limited): `SweepTick`, `OfferResponse`, `SetAutoSweep`, and the functions `GetState`, `BuyNextTool`, `Rebirth`, `PromptPurchase(key, giftToUserId?)`, `ToggleVehicle`, `SpawnVehicle(id)`, `BuyVehicle(id)`, `BuyUpgrade(id)`, `EquipTool`, `Teleport(target)`.
 
 Server → client: `PlayerState`, `TilesCleared` (buffer of u16 ids), `SweepResult`, `Notify`, `Announce`, `HatchCompleted`, `WelcomeBack`, `ShowOffer`, `MeteorImpact`.
 
@@ -69,7 +70,7 @@ See `Types.ProfileData` and the template in `DataService`. Cash and TotalDust ar
 - **A tool:** add a row to `Config/Tools.luau` (keep tiers in order). For a Robux skip, add a `ToolSkipN` product in `Config/Products.luau`.
 - **An alien:** add a row to `Config/Aliens.luau`. It joins its rarity's hatch pool and the index automatically.
 - **A zone:** add a row to `Config/Zones.luau` with bounds that don't overlap others (keep total tiles under ~8k), add ground for it in `src/workspace/Moon/Ground.model.json`, and if it has a price add a part named `Gate_<ZoneId>` in `Gates.model.json` (ZoneService labels it and adds the prompt).
-- **A product:** add it to `Config/Products.luau` with an existing `Kind`, or add a new `Kind` to `Types.ProductKind` plus a function in `GRANTS` in `ShopService`. Put it in a shop tab in `ShopController`.
+- **A product:** add it to `Config/Products.luau` with `Id = 0` and an existing `Kind`, then run `python3 tools/create_products.py` (creates it on Roblox through Open Cloud and writes the ID back). For a new kind, add it to `Types.ProductKind` plus a function in `GRANTS` in `ShopService`. Put it in a shop tab in `ShopController`.
 - **New UI art:** edit the `.model.json` files in `src/gui`. Controllers only look up elements by name, so keep the names.
 
 ## Extension points (not built yet)

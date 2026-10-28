@@ -17,7 +17,33 @@ export type ToolDef = {
 	IsVehicle: boolean,
 	Color: Color3,
 	Scale: number, -- placeholder model size
-	VehicleSpeed: number?,
+}
+
+export type VehicleDef = {
+	Order: number,
+	Id: string,
+	Name: string,
+	Radius: number,
+	Power: number,
+	Capacity: number,
+	Price: number,
+	Color: Color3,
+	Scale: number,
+	Speed: number,
+	RentKey: string, -- Robux "this run" rental product
+	UnlockKey: string, -- Robux unlock product (until rebirth, like cash)
+}
+
+export type UpgradeDef = {
+	Id: string,
+	Name: string,
+	Icon: string,
+	MaxLevel: number,
+	BaseCost: number,
+	CostGrowth: number,
+	PerLevel: number, -- effect per level (see Config/Upgrades)
+	Format: string, -- how the effect is shown: "percent" or "plus"
+	Description: string,
 }
 
 export type Exclusion = { Center: Vector2, Radius: number }
@@ -74,6 +100,7 @@ export type ProductKind =
 	| "SkipHatch"
 	| "ToolSkip"
 	| "VehicleRental"
+	| "VehicleUnlock"
 	| "CashPack"
 	| "EggPack"
 	| "SkipRebirth"
@@ -93,6 +120,7 @@ export type ProductDef = {
 	Minutes: number?,
 	Rarity: Rarity?,
 	Tier: number?,
+	Vehicle: string?,
 	Count: number?,
 	Seconds: number?,
 	FloorFactor: number?,
@@ -127,6 +155,8 @@ export type ProfileData = {
 	BackpackValue: number,
 	ToolTier: number,
 	OwnedTools: { [number]: boolean },
+	Vehicles: { [string]: boolean },
+	Upgrades: { [string]: number },
 	ZonesUnlocked: { [string]: boolean },
 	Aliens: { AlienInstance },
 	Hatching: { HatchEntry },
@@ -148,8 +178,12 @@ export type PlayerSnapshot = {
 	Capacity: number,
 	ToolTier: number,
 	EffectiveTier: number,
-	RentedTier: number,
+	Vehicles: { [string]: boolean },
+	RentedVehicle: string?,
+	BestVehicle: string?,
 	InVehicle: boolean,
+	Upgrades: { [string]: number },
+	WalkSpeed: number,
 	Rebirths: number,
 	RebirthCost: BigNum,
 	ZonesUnlocked: { [string]: boolean },

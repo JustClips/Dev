@@ -4,8 +4,11 @@ local Client = script.Parent
 local State = require(Client:WaitForChild("State"))
 local Ui = require(Client:WaitForChild("Ui"))
 
+-- LoadingController comes first so its Init puts the loading screen up right away.
 local ORDER = {
+	"LoadingController",
 	"HudController",
+	"HotbarController",
 	"SweepController",
 	"ZoneController",
 	"ArrowController",
@@ -18,6 +21,8 @@ local ORDER = {
 	"VehicleController",
 	"PetController",
 	"SkyController",
+	"GarageController",
+	"UpgradeController",
 }
 
 local folder = Client:WaitForChild("Controllers")

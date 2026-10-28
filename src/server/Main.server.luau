@@ -18,6 +18,7 @@ local ORDER = {
 	"BoostService",
 	"DustService",
 	"ToolService",
+	"UpgradeService",
 	"BackpackService",
 	"ZoneService",
 	"EggService",

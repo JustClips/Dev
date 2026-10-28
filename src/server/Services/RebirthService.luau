@@ -1,5 +1,5 @@
 --!strict
--- Rebirth: resets cash, tools and backpack; keeps aliens, index and zones.
+-- Rebirth: resets cash, tools, cars, upgrades and backpack; keeps aliens, index and zones.
 -- Each rebirth adds +50% cash and every 2nd adds a base slot. Rebirth 1 opens the Mars gate.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -35,6 +35,7 @@ function RebirthService:DoRebirth(player: Player, paid: boolean): (boolean, stri
 	data.Backpack = 0
 	data.BackpackValue = 0
 	S.ToolService:ResetForRebirth(player)
+	S.UpgradeService:ResetForRebirth(player)
 	S.AlienService:RefreshBase(player)
 	S.AnalyticsService:Funnel(player, "FirstRebirth")
 	S.StateService:Mark(player)

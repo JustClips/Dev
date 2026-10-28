@@ -7,7 +7,7 @@
    "properties": {
     "Anchored": true,
     "Size": [
-     1.2,
+     0.2,
      30,
      30
     ],
@@ -18,7 +18,7 @@
     "CFrame": {
      "position": [
       0,
-      0.4,
+      0.62,
       0
      ],
      "orientation": [
@@ -28,8 +28,10 @@
      ]
     },
     "Shape": "Cylinder",
-    "Transparency": 0.55,
+    "Transparency": 1,
     "CanCollide": false,
+    "CanQuery": false,
+    "CanTouch": false,
     "CastShadow": false
    },
    "children": [
@@ -41,58 +43,6 @@
       "Range": 26,
       "Brightness": 1.2
      }
-    },
-    {
-     "name": "Label",
-     "className": "BillboardGui",
-     "properties": {
-      "Size": [
-       [
-        0,
-        300
-       ],
-       [
-        0,
-        70
-       ]
-      ],
-      "StudsOffset": [
-       0,
-       8,
-       0
-      ],
-      "MaxDistance": 220,
-      "LightInfluence": 0
-     },
-     "children": [
-      {
-       "name": "Text",
-       "className": "TextLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "BackgroundTransparency": 1,
-        "Text": "SELL DUST",
-        "TextScaled": true,
-        "TextColor3": "#9DFFCB",
-        "FontFace": {
-         "family": "rbxasset://fonts/families/Montserrat.json",
-         "weight": "ExtraBold",
-         "style": "Normal"
-        },
-        "TextStrokeTransparency": 0,
-        "TextStrokeColor3": "#1B1F3A"
-       }
-      }
-     ]
     }
    ]
   }

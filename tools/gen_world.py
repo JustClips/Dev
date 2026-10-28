@@ -15,6 +15,7 @@ OUT = os.path.join(ROOT, "src", "workspace", "Moon")
 
 FIELD_MIN, FIELD_MAX = (-56, -196), (56, 196)
 BASE_INNER, BASE_W, BASE_D = 62, 92, 88
+FLOOR_Y = 1  # bases sit on a 1-stud platform (World.BaseFloorY)
 HUB_X = BASE_INNER + BASE_D + 2   # 152
 HUB_Z = 200
 CORRIDOR_HALF = 12
@@ -82,14 +83,6 @@ def model(children, **props):
     return n
 
 
-def billboard(text, offset, size=(300, 70), color="#FFFFFF", dist=220):
-    return {"name": "Label", "className": "BillboardGui", "properties": {
-        "Size": [[0, size[0]], [0, size[1]]], "StudsOffset": offset, "MaxDistance": dist, "LightInfluence": 0},
-        "children": [{"name": "Text", "className": "TextLabel", "properties": {
-            "Size": [[1, 0], [1, 0]], "BackgroundTransparency": 1, "Text": text, "TextScaled": True,
-            "TextColor3": color, "FontFace": {"family": "rbxasset://fonts/families/Montserrat.json", "weight": "ExtraBold", "style": "Normal"}, "TextStrokeTransparency": 0, "TextStrokeColor3": "#1B1F3A"}}]}
-
-
 def write(name, tree):
     with open(os.path.join(OUT, name + ".model.json"), "w") as f:
         json.dump(tree, f, indent=1, ensure_ascii=False)
@@ -111,10 +104,11 @@ def main():
 
     # ---------------- Rocket + sell pad ----------------
     write("Rocket", model([
-        part("SellPad", [1.2, 30, 30], [0, 0.4, 0], "#3CFF9E", "Neon", orient=[0, 0, 90], Shape="Cylinder",
-             Transparency=0.55, CanCollide=False, CastShadow=False,
-             children=[{"name": "Light", "className": "PointLight", "properties": {"Color": "#3CFF9E", "Range": 26, "Brightness": 1.2}},
-                       billboard("SELL DUST", [0, 8, 0], color="#9DFFCB")]),
+        # The sell zone itself is a distance check (BackpackService); this marks the spot
+        # and lights it. The visible pad and signs are built by MapBuilder.
+        part("SellPad", [0.2, 30, 30], [0, 0.62, 0], "#3CFF9E", "Neon", orient=[0, 0, 90], Shape="Cylinder",
+             **invisible(), children=[{"name": "Light", "className": "PointLight",
+                                       "properties": {"Color": "#3CFF9E", "Range": 26, "Brightness": 1.2}}]),
     ]))
 
     # ---------------- Bases ----------------
@@ -128,18 +122,19 @@ def main():
         pcx, pcz = to_world(i, (pmin[0] + pmax[0]) / 2, (pmin[1] + pmax[1]) / 2)
         r = BASE_LOCAL["HatcheryRadius"]
         bases.append({"name": f"Base{i}", "className": "Model", "properties": {}, "attributes": {"BaseIndex": i}, "children": [
-            part("Plot", [BASE_W, 1, BASE_D], [x, -0.5, z], "#C4CAD6", orient=[0, yaw, 0], **invisible()),
-            part("Pad", [5, r * 2, r * 2], [hx, 2, hz], "#5AFFC8", orient=[0, 0, 90], Shape="Cylinder", **invisible(CanTouch=True)),
-            part("Spawn", [4, 1, 4], [sx, 0.5, sz], "#FFFFFF", orient=[0, yaw, 0], **invisible()),
-            part("Park", [pmax[0] - pmin[0], 1, pmax[1] - pmin[1]], [pcx, 0.5, pcz], "#58C4A0", orient=[0, yaw, 0], **invisible()),
+            part("Plot", [BASE_W, 1, BASE_D], [x, FLOOR_Y - 0.5, z], "#C4CAD6", orient=[0, yaw, 0], **invisible()),
+            part("Pad", [5, r * 2, r * 2], [hx, FLOOR_Y + 2, hz], "#5AFFC8", orient=[0, 0, 90], Shape="Cylinder", **invisible()),
+            part("Spawn", [4, 1, 4], [sx, FLOOR_Y + 0.5, sz], "#FFFFFF", orient=[0, yaw, 0], **invisible()),
+            part("Park", [pmax[0] - pmin[0], 1, pmax[1] - pmin[1]], [pcx, FLOOR_Y + 0.5, pcz], "#58C4A0", orient=[0, yaw, 0], **invisible()),
         ]})
     write("Bases", {"className": "Folder", "children": bases})
 
     # ---------------- Gates ----------------
     gates = []
     for zone, zmin, zmax, gz, gy in CORRIDORS:
+        # The sign on the barrier is built by ZoneService (name, price, lock).
         gates.append(part(f"Gate_{zone}", [CORRIDOR_HALF * 2 - 2, 14, 1], [0, gy + 7, gz], GATE_COLORS[zone], "ForceField",
-                          Transparency=0.15, CastShadow=False, children=[billboard(zone, [0, 11, 0], color=GATE_COLORS[zone])]))
+                          Transparency=0.15, CastShadow=False))
     write("Gates", model(gates))
 
     # ---------------- Walls ----------------

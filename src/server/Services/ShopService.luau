@@ -66,7 +66,17 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 		end
 	end,
 	VehicleRental = function(product, _buyer, recipient)
-		S.ToolService:Rent(recipient, product.Tier)
+		S.ToolService:Rent(recipient, product.Vehicle)
+	end,
+	VehicleUnlock = function(product, _buyer, recipient)
+		local def = Tools.vehicle(product.Vehicle)
+		if S.ToolService:GrantVehicle(recipient, product.Vehicle) then
+			notify(recipient, `{def and def.Name or "Car"} unlocked! Tap your car slot to drive.`)
+		elseif def then
+			-- Already owned: refund in cash.
+			S.BackpackService:GiveCash(recipient, def.Price, product.Key, Enum.AnalyticsEconomyTransactionType.IAP)
+			notify(recipient, "You already had that car, so you got its price in cash!")
+		end
 	end,
 	CashPack = function(product, _buyer, recipient)
 		local amount = cashPackAmount(recipient, product)
@@ -199,7 +209,7 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		return false, "Already bought"
 	elseif product.Kind == "ToolSkip" and targetData.ToolTier + 1 ~= product.Tier then
 		return false, "Not the next tool"
-	elseif product.Kind == "VehicleRental" and S.ToolService:GetEffectiveTier(recipient) >= product.Tier then
+	elseif (product.Kind == "VehicleRental" or product.Kind == "VehicleUnlock") and S.ToolService:OwnsVehicle(recipient, product.Vehicle) then
 		return false, "Already unlocked"
 	end
 	MarketplaceService:PromptProductPurchase(player, product.Id)

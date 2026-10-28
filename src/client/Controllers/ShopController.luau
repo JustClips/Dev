@@ -1,6 +1,6 @@
 --!strict
--- Shop screen: deals (featured Starter Pack + server luck), tools (cash + Robux skips +
--- vehicle rentals), eggs, gamepasses, cash. Cash prices are green buttons, Robux prices are
+-- Shop screen: deals (featured Starter Pack + server luck), tools (cash + Robux skips),
+-- eggs, gamepasses, cash. Cars are sold in the Garage (GarageController). Cash prices are green buttons, Robux prices are
 -- gold with the Robux glyph. Robux items whose ID is still 0 are hidden.
 -- Giftable items have a pink gift button.
 local Players = game:GetService("Players")
@@ -96,10 +96,9 @@ local function toolItems(data): { Item }
 	local items: { Item } = {}
 	for tier = 2, Tools.MaxTier do
 		local def = Tools.get(tier)
-		local desc = `Radius {def.Radius} · Power {def.Power} · Holds {Format.number(def.Capacity)}` .. (if def.IsVehicle then " · Vehicle!" else "")
-		local toolIcon = if def.IsVehicle then "Icon_Vehicle" else "Icon_Tool"
+		local desc = `Radius {def.Radius} · Power {def.Power} · Holds {Format.number(def.Capacity)}`
 		if tier <= data.ToolTier then
-			table.insert(items, { Name = def.Name, Desc = desc, Price = "Owned", Color = GREY, Enabled = false, Icon = toolIcon })
+			table.insert(items, { Name = def.Name, Desc = desc, Price = "Owned", Color = GREY, Enabled = false, Icon = "Icon_Tool" })
 		elseif tier == data.ToolTier + 1 then
 			local affordable = BigNum.gte(data.Cash, def.Price)
 			table.insert(items, {
@@ -108,26 +107,17 @@ local function toolItems(data): { Item }
 				Price = Format.cash(def.Price),
 				Color = if affordable then GREEN else GREY,
 				Enabled = true,
-				Icon = toolIcon,
+				Icon = "Icon_Tool",
 				OnBuy = function()
 					toast(Net.func("BuyNextTool"):InvokeServer())
 				end,
 			})
-			local skip = robuxItem("ToolSkip" .. tier, "Skip the grind: get it right now.", toolIcon)
+			local skip = robuxItem("ToolSkip" .. tier, "Skip the grind: get it right now.", "Icon_Tool")
 			if skip then
 				table.insert(items, skip)
 			end
 		else
 			table.insert(items, { Name = def.Name, Desc = desc, Price = "Locked", Color = GREY, Enabled = false, Icon = "Icon_Lock" })
-		end
-	end
-	for _, key in { "RentSweeperCart", "RentDustTruck", "RentMoonCrawler" } do
-		local def = Products.ProductByKey[key]
-		if def and (def.Tier or 0) > data.EffectiveTier then
-			local item = robuxItem(key, "Drive it until you rebirth or leave.", "Icon_Vehicle")
-			if item then
-				table.insert(items, item)
-			end
 		end
 	end
 	return items

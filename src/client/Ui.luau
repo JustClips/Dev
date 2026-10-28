@@ -14,7 +14,7 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui") :: PlayerGui
 
 -- Modal screens: only one is open at a time.
-local MODALS = { "Shop", "Index", "Rebirth" }
+local MODALS = { "Shop", "Index", "Rebirth", "Garage", "Upgrades" }
 local POP = TweenInfo.new(0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PRESS = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local HOVER = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -118,17 +118,109 @@ function Ui.button(button: GuiButton, fn: () -> ())
 	end)
 end
 
-local function popIn(gui: ScreenGui)
-	local window = gui:FindFirstChild("Window")
+-- Open/close motion for screens with a "Window" (and optional "Dim" backdrop):
+-- the window rises 28 px and grows from 90 %, the backdrop fades in. Closing runs it
+-- backwards quickly, then disables the screen. A token per screen lets a new open
+-- cancel a running close (and the other way round).
+local OPEN = TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+local CLOSE = TweenInfo.new(0.13, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+local RISE = 28
+local DIM_ALPHA = 0.45
+
+local motionToken: { [ScreenGui]: number } = setmetatable({}, { __mode = "k" }) :: any
+local homePosition: { [GuiObject]: UDim2 } = setmetatable({}, { __mode = "k" }) :: any
+local closing: { [ScreenGui]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+
+local function parts(gui: ScreenGui): (GuiObject?, UIScale?, GuiObject?)
+	local window = gui:FindFirstChild("Window") :: GuiObject?
 	local scale = window and window:FindFirstChild("AutoScale") :: UIScale?
-	if scale then
-		if Ui.reducedMotion() then
-			scale.Scale = currentScale
-			return
-		end
-		scale.Scale = currentScale * 0.85
-		TweenService:Create(scale, POP, { Scale = currentScale }):Play()
+	local dim = gui:FindFirstChild("Dim") :: GuiObject?
+	if window and not homePosition[window] then
+		homePosition[window] = window.Position
 	end
+	return window, scale, dim
+end
+
+local function bump(gui: ScreenGui): number
+	local token = (motionToken[gui] or 0) + 1
+	motionToken[gui] = token
+	return token
+end
+
+local function settle(gui: ScreenGui)
+	local window, scale, dim = parts(gui)
+	if window then
+		window.Position = homePosition[window]
+	end
+	if scale then
+		scale.Scale = currentScale
+	end
+	if dim then
+		dim.BackgroundTransparency = DIM_ALPHA
+	end
+end
+
+-- Enables a screen and plays the open motion.
+function Ui.show(gui: ScreenGui)
+	bump(gui)
+	closing[gui] = nil
+	gui.Enabled = true
+	settle(gui)
+	if Ui.reducedMotion() then
+		return
+	end
+	local window, scale, dim = parts(gui)
+	if window then
+		local home = homePosition[window]
+		window.Position = home + UDim2.fromOffset(0, RISE)
+		TweenService:Create(window, OPEN, { Position = home }):Play()
+	end
+	if scale then
+		scale.Scale = currentScale * 0.9
+		TweenService:Create(scale, OPEN, { Scale = currentScale }):Play()
+	end
+	if dim then
+		dim.BackgroundTransparency = 1
+		TweenService:Create(dim, OPEN, { BackgroundTransparency = DIM_ALPHA }):Play()
+	end
+end
+
+-- Plays the close motion, then disables the screen.
+function Ui.hide(gui: ScreenGui, instant: boolean?)
+	local token = bump(gui)
+	if not gui.Enabled then
+		closing[gui] = nil
+		return
+	end
+	if instant or Ui.reducedMotion() then
+		closing[gui] = nil
+		gui.Enabled = false
+		settle(gui)
+		return
+	end
+	closing[gui] = true
+	local window, scale, dim = parts(gui)
+	if window then
+		TweenService:Create(window, CLOSE, { Position = homePosition[window] + UDim2.fromOffset(0, RISE * 0.6) }):Play()
+	end
+	if scale then
+		TweenService:Create(scale, CLOSE, { Scale = currentScale * 0.92 }):Play()
+	end
+	if dim then
+		TweenService:Create(dim, CLOSE, { BackgroundTransparency = 1 }):Play()
+	end
+	task.delay(CLOSE.Time, function()
+		if motionToken[gui] == token then
+			closing[gui] = nil
+			gui.Enabled = false
+			settle(gui)
+		end
+	end)
+end
+
+-- True while the screen is shown and not on its way out.
+function Ui.isOpen(gui: ScreenGui): boolean
+	return gui.Enabled and not closing[gui]
 end
 
 function Ui.open(name: string)
@@ -136,27 +228,26 @@ function Ui.open(name: string)
 		if other ~= name then
 			local gui = playerGui:FindFirstChild(other) :: ScreenGui?
 			if gui then
-				gui.Enabled = false
+				Ui.hide(gui, true)
 			end
 		end
 	end
 	local gui = Ui.screen(name)
-	if not gui.Enabled then
-		gui.Enabled = true
-		popIn(gui)
+	if not Ui.isOpen(gui) then
+		Ui.show(gui)
 	end
 end
 
 function Ui.close(name: string)
 	local gui = playerGui:FindFirstChild(name) :: ScreenGui?
 	if gui then
-		gui.Enabled = false
+		Ui.hide(gui)
 	end
 end
 
 function Ui.toggle(name: string)
 	local gui = Ui.screen(name)
-	if gui.Enabled then
+	if Ui.isOpen(gui) then
 		Ui.close(name)
 	else
 		Ui.open(name)
@@ -167,8 +258,19 @@ function Ui.scale(): number
 	return currentScale
 end
 
+-- Small pop for dropdowns (a frame with an AutoScale UIScale).
+function Ui.popFrame(frame: GuiObject)
+	local scale = frame:FindFirstChild("AutoScale") :: UIScale?
+	if not scale or Ui.reducedMotion() then
+		return
+	end
+	scale.Scale = currentScale * 0.85
+	TweenService:Create(scale, OPEN, { Scale = currentScale }):Play()
+end
+
+-- Kept for older callers: same as Ui.show on an already enabled screen.
 function Ui.popIn(gui: ScreenGui)
-	popIn(gui)
+	Ui.show(gui)
 end
 
 -- Scales every UIScale named "AutoScale" with the screen height (phones get smaller UI,

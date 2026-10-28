@@ -2,6 +2,7 @@
 -- Backpack (dust carried) and selling at the Rocket. The backpack stores dust units plus
 -- their base cash value, so dust from rich zones keeps its zone multiplier until sold.
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -9,7 +10,7 @@ local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
-local Touch = require(script.Parent.Parent.Lib.Touch)
+local World = require(Shared.Config.World)
 
 local BackpackService = {}
 
@@ -97,12 +98,36 @@ function BackpackService:Init(services)
 	S = services
 end
 
+-- Selling is a distance check around the Rocket instead of Touched: Touched on a
+-- non-colliding pad was unreliable in playtests, and this also works from vehicles.
+local CHECK_EVERY = 0.2
+local SELL_HEIGHT = 14
+
+local function inSellZone(player: Player): boolean
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not root then
+		return false
+	end
+	local offset = root.Position - World.RocketPosition
+	return Vector2.new(offset.X, offset.Z).Magnitude <= World.SellRadius and math.abs(offset.Y) <= SELL_HEIGHT
+end
+
 function BackpackService:Start()
-	local pad = S.WorldService:GetSellPad()
-	pad.Touched:Connect(function(hit)
-		local player = Touch.playerFromHit(hit)
-		if player then
-			sell(player)
+	local acc = 0
+	RunService.Heartbeat:Connect(function(dt)
+		acc += dt
+		if acc < CHECK_EVERY then
+			return
+		end
+		acc = 0
+		for _, player in Players:GetPlayers() do
+			if inSellZone(player) then
+				local ok, err = pcall(sell, player)
+				if not ok then
+					warn("[BackpackService] sell failed: " .. tostring(err))
+				end
+			end
 		end
 	end)
 	Players.PlayerRemoving:Connect(function(player)

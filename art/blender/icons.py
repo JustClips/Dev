@@ -392,11 +392,46 @@ def ic_alien():
     return a, {"yaw": -12, "pitch": 10}
 
 
+def ic_upgrade():
+    a = new("Upgrade")
+    shaft = box("5AE650", loc=(0, 0, -0.45), size=(0.9, 0.55, 1.5), bevel=0.08)
+    head = cone("5AE650", loc=(0, 0, 0.75), r=1.35, h=1.1, verts=4, rot=(0, 0, 45))
+    star = star_mesh("FFD23C", r1=0.55, r2=0.25, depth=0.3)
+    star.location = (1.15, -0.3, -0.85)
+    a.part("Body", [shaft, head, star])
+    return a, {"yaw": -12, "pitch": 6}
+
+
+def ic_speed():
+    a = new("Speed")
+    sole = box("5A6478", loc=(0.15, 0, -1.05), size=(2.1, 1.0, 0.35), bevel=0.1)
+    foot = box("78E6FF", loc=(0.25, 0, -0.65), size=(1.9, 0.95, 0.6), bevel=0.2)
+    leg = box("78E6FF", loc=(-0.35, 0, 0.25), size=(0.95, 0.9, 1.4), bevel=0.2)
+    cuff = box("FFFFFF", loc=(-0.35, 0, 1.0), size=(1.1, 1.0, 0.3), bevel=0.08)
+    stripe = box("FFD23C", loc=(0.1, -0.5, -0.55), size=(1.2, 0.08, 0.2), bevel=0.03)
+    lines = [box("FFFFFF", loc=(-1.6, 0, z), size=(0.8 - k * 0.15, 0.25, 0.16), bevel=0.05)
+             for k, z in enumerate((0.4, -0.15, -0.7))]
+    a.part("Body", [sole, foot, leg, cuff, stripe] + lines)
+    return a, {"yaw": -8, "pitch": 6}
+
+
+def ic_backpack():
+    a = new("Backpack")
+    body = box("FF9A3C", loc=(0, 0, 0), size=(1.7, 1.0, 2.1), bevel=0.3)
+    flap = box("E07A1E", loc=(0, -0.05, 0.75), size=(1.75, 1.05, 0.7), bevel=0.22)
+    pocket = box("E07A1E", loc=(0, -0.55, -0.35), size=(1.2, 0.3, 0.8), bevel=0.15)
+    buckle = box("FFD23C", loc=(0, -0.6, 0.4), size=(0.35, 0.12, 0.3), bevel=0.04)
+    handle = torus("5A6478", loc=(0, 0, 1.15), R=0.35, r=0.09, rot=(90, 0, 0), seg=18, mseg=6)
+    dust = [sphere("C8CCDC", loc=(x, -0.2, 1.3), scale=0.22) for x in (-0.45, 0.45)]
+    a.part("Body", [body, flap, pocket, buckle, handle] + dust)
+    return a, {"yaw": -20, "pitch": 10}
+
+
 ICONS = {
     "Cash": ic_cash, "Dust": ic_dust, "Egg": ic_egg, "Shop": ic_shop, "Index": ic_index, "Rebirth": ic_rebirth,
     "Base": ic_base, "Sell": ic_sell, "Zones": ic_zones, "Luck": ic_luck, "Boost": ic_boost, "Gift": ic_gift,
     "Vehicle": ic_vehicle, "Tool": ic_tool, "Auto": ic_auto, "Star": ic_star, "Lock": ic_lock, "Timer": ic_timer,
-    "Meteor": ic_meteor, "Alien": ic_alien,
+    "Meteor": ic_meteor, "Alien": ic_alien, "Upgrade": ic_upgrade, "Speed": ic_speed, "Backpack": ic_backpack,
 }
 
 

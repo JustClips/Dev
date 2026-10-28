@@ -25,7 +25,7 @@ local function hideOffer(clicked: boolean)
 		Net.event("OfferResponse"):FireServer(current.Key, clicked)
 		current = nil
 	end
-	offerGui.Enabled = false
+	Ui.hide(offerGui)
 end
 
 local function prompt(productKey: string)
@@ -42,10 +42,9 @@ local function showOffer(offer)
 	Ui.find(offerGui, "Window.Header.Title").Text = offer.Title
 	Ui.find(offerGui, "Window.Text").Text = offer.Text
 	Ui.setText(Ui.find(offerGui, "Window.Buy"), `{Ui.ROBUX} {offer.Price}`)
-	offerGui.Enabled = true
-	Ui.popIn(offerGui)
+	Ui.show(offerGui)
 	task.delay(AUTO_HIDE_SECONDS, function()
-		if token == showToken and offerGui.Enabled then
+		if token == showToken and Ui.isOpen(offerGui) then
 			hideOffer(false)
 		end
 	end)
@@ -57,11 +56,13 @@ local function showWelcome(info)
 	local double = Products.ProductByKey.DoubleOffline
 	local doubleButton = Ui.find(welcomeGui, "Window.Double") :: TextButton
 	doubleButton.Visible = double ~= nil and double.Id ~= 0
+	-- Collect sits next to the 2x button, or alone in the middle when 2x isn't on sale.
+	local collect = Ui.find(welcomeGui, "Window.Collect") :: GuiObject
+	collect.Position = UDim2.new(0.5, if doubleButton.Visible then -100 else 0, 1, -16)
 	if double then
 		Ui.setText(doubleButton, `2x for {Ui.ROBUX} {double.Price}`)
 	end
-	welcomeGui.Enabled = true
-	Ui.popIn(welcomeGui)
+	Ui.show(welcomeGui)
 end
 
 function OfferController:Init(controllers)
@@ -82,16 +83,16 @@ function OfferController:Start()
 		end
 	end)
 	Ui.button(Ui.find(welcomeGui, "Window.Close"), function()
-		welcomeGui.Enabled = false
+		Ui.hide(welcomeGui)
 	end)
 	Ui.button(Ui.find(welcomeGui, "Window.Collect"), function()
-		welcomeGui.Enabled = false
+		Ui.hide(welcomeGui)
 	end)
 	Ui.button(Ui.find(welcomeGui, "Dim"), function()
-		welcomeGui.Enabled = false
+		Ui.hide(welcomeGui)
 	end)
 	Ui.button(Ui.find(welcomeGui, "Window.Double"), function()
-		welcomeGui.Enabled = false
+		Ui.hide(welcomeGui)
 		Net.event("OfferResponse"):FireServer("DoubleOffline", true)
 		prompt("DoubleOffline")
 	end)

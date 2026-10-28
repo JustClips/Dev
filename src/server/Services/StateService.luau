@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local Net = require(Shared.Net)
 local Types = require(Shared.Types)
+local Upgrades = require(Shared.Config.Upgrades)
 
 local StateService = {}
 
@@ -57,14 +58,19 @@ function StateService:Build(player: Player): Types.PlayerSnapshot?
 	end
 	local data = session.Data
 	local runtime = session.Runtime
+	local bestCar = S.ToolService:GetBestVehicle(player)
 	return {
 		Cash = data.Cash,
 		Backpack = data.Backpack,
 		Capacity = S.ToolService:GetCapacity(player),
 		ToolTier = data.ToolTier,
 		EffectiveTier = S.ToolService:GetEffectiveTier(player),
-		RentedTier = runtime.RentedTier or 0,
+		Vehicles = data.Vehicles,
+		RentedVehicle = runtime.RentedVehicle,
+		BestVehicle = if bestCar then bestCar.Id else nil,
 		InVehicle = S.ToolService:IsInVehicle(player),
+		Upgrades = data.Upgrades,
+		WalkSpeed = Upgrades.walkSpeed(data.Upgrades),
 		Rebirths = data.Rebirths,
 		RebirthCost = S.RebirthService:GetCost(data),
 		ZonesUnlocked = data.ZonesUnlocked,

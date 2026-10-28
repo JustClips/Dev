@@ -14,7 +14,6 @@ local WorldService = {}
 local S: any
 local moon: Model
 local bases: { Model } = {}
-local signs: { [number]: TextLabel } = {}
 
 local function find(parent: Instance, path: { string }): Instance
 	local current = parent
@@ -25,37 +24,6 @@ local function find(parent: Instance, path: { string }): Instance
 	return current
 end
 
--- Big owner name over the base arch (BillboardGui sized in studs, so it reads like a sign).
-local function makeSign(index: number): TextLabel
-	local anchor = Instance.new("Part")
-	anchor.Name = "SignAnchor"
-	anchor.Size = Vector3.new(1, 1, 1)
-	anchor.Transparency = 1
-	anchor.Anchored = true
-	anchor.CanCollide = false
-	anchor.CanQuery = false
-	anchor.CanTouch = false
-	anchor.CFrame = World.baseCFrame(index) * CFrame.new(World.Base.Arch + Vector3.new(0, 15.5, 0))
-	anchor.Parent = bases[index]
-	local billboard = Instance.new("BillboardGui")
-	billboard.Name = "OwnerSign"
-	billboard.Size = UDim2.new(24, 0, 4, 0)
-	billboard.MaxDistance = 260
-	billboard.LightInfluence = 0
-	billboard.Parent = anchor
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(1, 1)
-	label.BackgroundTransparency = 1
-	label.TextScaled = true
-	label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
-	label.TextColor3 = Color3.new(1, 1, 1)
-	label.TextStrokeColor3 = Color3.fromRGB(27, 31, 58)
-	label.TextStrokeTransparency = 0
-	label.Text = "Free Base"
-	label.Parent = billboard
-	return label
-end
-
 function WorldService:Init(services)
 	S = services
 	moon = Workspace:WaitForChild("Moon", 30) :: Model
@@ -63,14 +31,23 @@ function WorldService:Init(services)
 	local basesFolder = find(moon, { "Bases" })
 	for i = 1, World.BaseCount do
 		bases[i] = find(basesFolder, { "Base" .. i }) :: Model
-		signs[i] = makeSign(i)
 	end
 	local started = os.clock()
+	local okLight, errLight = pcall(MapBuilder.setupLighting)
+	if not okLight then
+		warn("[WorldService] lighting failed: " .. tostring(errLight))
+	end
 	local ok, err = pcall(MapBuilder.buildTerrain)
 	if not ok then
 		warn("[WorldService] terrain build failed: " .. tostring(err))
 	end
-	print(string.format("[WorldService] terrain built in %.1f s", os.clock() - started))
+	local okS, errS = pcall(MapBuilder.buildStructures)
+	if not okS then
+		warn("[WorldService] structures failed: " .. tostring(errS))
+	end
+	-- The loading screen waits for these.
+	Workspace:SetAttribute("TerrainReady", true)
+	print(string.format("[WorldService] terrain and structures built in %.1f s", os.clock() - started))
 end
 
 function WorldService:Start()
@@ -80,6 +57,7 @@ function WorldService:Start()
 		if not ok then
 			warn("[WorldService] props failed: " .. tostring(err))
 		end
+		Workspace:SetAttribute("PropsReady", true)
 	end)
 end
 
@@ -119,10 +97,21 @@ function WorldService:GetGate(zoneId: string): BasePart?
 	return if gates then gates:FindFirstChild("Gate_" .. zoneId) :: BasePart? else nil
 end
 
-function WorldService:SetOwnerName(index: number, name: string?)
-	local label = signs[index]
-	if label then
-		label.Text = if name then `{name}'s Base` else "Free Base"
+-- Updates the sign over a base's arch (name + avatar, or "Free Base").
+function WorldService:SetOwnerName(index: number, name: string?, userId: number?)
+	local sign = MapBuilder.getBaseSign(index)
+	if not sign then
+		return
+	end
+	for _, title in sign.Titles do
+		title.Text = if name then `{name}'s Base` else "Free Base"
+	end
+	for _, sub in sign.Subs do
+		sub.Text = if name then "Hatching aliens" else "Claim it by joining!"
+	end
+	for _, avatar in sign.Avatars do
+		avatar.Visible = userId ~= nil
+		avatar.Image = if userId then `rbxthumb://type=AvatarHeadShot&id={userId}&w=150&h=150` else ""
 	end
 end
 

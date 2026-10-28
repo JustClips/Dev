@@ -1684,6 +1684,7 @@ Assets.Images = {
 	BannerStarter = "rbxassetid://140216401802209",
 	Icon_Alien = "rbxassetid://130343755563541",
 	Icon_Auto = "rbxassetid://100400998462031",
+	Icon_Backpack = "rbxassetid://78397712725630",
 	Icon_Base = "rbxassetid://78445407823725",
 	Icon_Boost = "rbxassetid://122729187950772",
 	Icon_Cash = "rbxassetid://77755252353039",
@@ -1697,12 +1698,15 @@ Assets.Images = {
 	Icon_Rebirth = "rbxassetid://129431956423248",
 	Icon_Sell = "rbxassetid://113142295565740",
 	Icon_Shop = "rbxassetid://105247630037745",
+	Icon_Speed = "rbxassetid://92027505567695",
 	Icon_Star = "rbxassetid://70582665516009",
 	Icon_Timer = "rbxassetid://113659680582613",
 	Icon_Tool = "rbxassetid://73274476326631",
+	Icon_Upgrade = "rbxassetid://117595367687228",
 	Icon_Vehicle = "rbxassetid://134464398158021",
 	Icon_Zones = "rbxassetid://96129567125793",
 	Logo = "rbxassetid://135332141267180",
+	Sky_Stars = "rbxassetid://132647195236775",
 	Stud = "rbxassetid://139302839809244",
 }
 

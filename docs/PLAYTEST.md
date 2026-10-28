@@ -5,13 +5,12 @@ The build was checked with a simulated server run (fake Roblox runtime), the sel
 ## Manual steps for Dev
 
 1. **Enable API access in Studio:** Game Settings → Security → turn on *Enable Studio Access to API Services*. Without it, saves use an in-memory mock and are lost when you stop.
-2. **Create the products:** make the 6 gamepasses and the dev products listed in `src/shared/Config/Products.luau` on the Creator Dashboard, then paste each ID into its `Id = 0` line. Until then those shop buttons stay hidden.
+2. **Products:** all 6 gamepasses and the dev products already exist on Roblox and their IDs are in `src/shared/Config/Products.luau`. A new product added with `Id = 0` is created by `python3 tools/create_products.py`. Purchases in Studio are free test purchases.
 3. **Pull and play:** LiveSync pulls `main` into Studio. Press Play, run through the checklist below, then publish.
 
 ## Expected warnings
 
 - `[DataService] ... Using an in-memory mock` when API access is off or the place is unpublished.
-- `[ShopService] N products/gamepasses have no ID yet` until step 2 is done.
 - `[WorldService] terrain built in X s` and `[AssetService] 65 models ready in X s` are normal info lines. If AssetService says some models failed, those show as simple placeholder shapes.
 
 Anything else in Output (red errors especially) is a bug worth reporting.

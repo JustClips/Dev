@@ -14,7 +14,7 @@ local ProfileStore = require(script.Parent.Parent.Lib.ProfileStore)
 local MockDataStore = require(script.Parent.Parent.Lib.MockDataStore)
 
 local STORE_NAME = "PlayerData_v1"
-local CURRENT_VERSION = 1
+local CURRENT_VERSION = 2
 local RECEIPTS_KEPT = 100
 
 local TEMPLATE: Types.ProfileData = {
@@ -26,6 +26,8 @@ local TEMPLATE: Types.ProfileData = {
 	BackpackValue = 0,
 	ToolTier = 1,
 	OwnedTools = { true },
+	Vehicles = {},
+	Upgrades = { Backpack = 0, Power = 0, Speed = 0, Luck = 0 },
 	ZonesUnlocked = { Landing = true },
 	Aliens = {},
 	Hatching = {},
@@ -84,7 +86,21 @@ end
 
 -- Version upgrades: MIGRATIONS[n] turns a version-n profile into version n+1.
 local MIGRATIONS: { [number]: (any) -> () } = {
-	-- [1] = function(data) data.NewField = ... end,
+	-- v2: cars left the tool ladder (tiers 7-9) and became owned vehicles.
+	[1] = function(data)
+		local carTiers = { [7] = "SweeperCart", [8] = "DustTruck", [9] = "MoonCrawler" }
+		data.Vehicles = data.Vehicles or {}
+		local tier = data.ToolTier or 1
+		for t, id in carTiers do
+			if tier >= t then
+				data.Vehicles[id] = true
+			end
+		end
+		if tier > 6 then
+			data.ToolTier = 6
+			data.OwnedTools = { true, true, true, true, true, true }
+		end
+	end,
 }
 
 local function migrate(data: any)

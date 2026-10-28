@@ -1,7 +1,7 @@
 --!strict
 -- Main HUD (stud style, see docs/UI_STYLE.md): left rail (Shop / Index / Rebirth),
 -- top teleport pills (Base / Sell / Zones), Moon Clean bar + event, boost chips,
--- wallet (cash + backpack) bottom-left, upgrade card + Drive/Auto on the right,
+-- wallet (cash + backpack) bottom-left, next-tool card + Auto on the right,
 -- the mobile SWEEP button, toasts and server announcements.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -163,19 +163,14 @@ local function render(data)
 		local affordable = BigNum.gte(data.Cash, def.Price)
 		el.NextTool.Visible = true
 		el.NextToolName.Text = def.Name
-		el.NextToolIcon.Image = AssetLibrary.image(if def.IsVehicle then "Icon_Vehicle" else "Icon_Tool")
+		el.NextToolIcon.Image = AssetLibrary.image("Icon_Tool")
 		Ui.setText(el.NextToolButton, `Buy {Format.cash(def.Price)}`)
 		setButton(el.NextToolButton, affordable, GREEN)
-		el.NextToolHint.Text = if def.IsVehicle
-			then `A vehicle! Sweeps {def.Radius} wide`
-			else `Sweeps {def.Radius} wide, holds {Format.number(def.Capacity)}`
+		el.NextToolHint.Text = `Sweeps {def.Radius} wide, holds {Format.number(def.Capacity)}`
 	else
 		el.NextTool.Visible = false
 	end
 
-	local current = Tools.get(data.EffectiveTier)
-	el.DriveButton.Visible = current.IsVehicle
-	Ui.setText(el.DriveButton, if data.InVehicle then "Get out" else "Drive")
 	el.AutoButton.Visible = data.Gamepasses.AutoSweep == true
 	Ui.setText(el.AutoButton, if data.AutoSweep then "Auto: ON" else "Auto: OFF")
 	el.AutoButton.BackgroundColor3 = if data.AutoSweep then Color3.fromRGB(30, 158, 120) else NAVY
@@ -282,14 +277,13 @@ function HudController:Init(controllers)
 	el.NextToolHint = Ui.find(hud, "Right.NextTool.Hint")
 	el.NextToolName = Ui.find(hud, "Right.NextTool.ToolName")
 	el.NextToolIcon = Ui.find(hud, "Right.NextTool.Icon")
-	el.DriveButton = Ui.find(hud, "Right.DriveButton")
 	el.AutoButton = Ui.find(hud, "Right.AutoButton")
 	el.SweepButton = Ui.find(hud, "SweepButton")
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
 	el.ZoneRows = {}
 	for _, zoneId in ZONE_ORDER do
-		el.ZoneRows[zoneId] = Ui.find(hud, "ZonePicker.Zone_" .. zoneId)
+		el.ZoneRows[zoneId] = Ui.find(hud, "ZonePicker.List.Zone_" .. zoneId)
 	end
 end
 
@@ -306,6 +300,9 @@ function HudController:Start()
 	Ui.button(Ui.find(hud, "Rail.IndexButton"), function()
 		C.IndexController:Toggle()
 	end)
+	Ui.button(Ui.find(hud, "Rail.UpgradesButton"), function()
+		C.UpgradeController:Toggle()
+	end)
 	Ui.button(Ui.find(hud, "Rail.RebirthButton"), function()
 		C.RebirthController:Toggle()
 	end)
@@ -320,6 +317,9 @@ function HudController:Start()
 	end)
 	Ui.button(Ui.find(hud, "Pills.ZonesButton"), function()
 		el.ZonePicker.Visible = not el.ZonePicker.Visible
+		if el.ZonePicker.Visible then
+			Ui.popFrame(el.ZonePicker)
+		end
 		if el.ZonePicker.Visible and State.data then
 			renderZones(State.data)
 		end
@@ -332,12 +332,6 @@ function HudController:Start()
 	Ui.button(el.NextToolButton, function()
 		local ok, message = Net.func("BuyNextTool"):InvokeServer()
 		HudController:Toast(message or "", if ok then "Good" else "Bad")
-	end)
-	Ui.button(el.DriveButton, function()
-		local ok, message = Net.func("ToggleVehicle"):InvokeServer()
-		if not ok and message then
-			HudController:Toast(message, "Bad")
-		end
 	end)
 	Ui.button(el.AutoButton, function()
 		local data = State.data

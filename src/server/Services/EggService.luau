@@ -1,13 +1,15 @@
 --!strict
 -- Egg rolls on cleared tiles, egg pickups on the ground, carrying, and delivery to your base.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local AssetLibrary = require(Shared.AssetLibrary)
 local Eggs = require(Shared.Config.Eggs)
-local Zones = require(Shared.Config.Zones)
+local Upgrades = require(Shared.Config.Upgrades)
+local World = require(Shared.Config.World)
 local Net = require(Shared.Net)
 local Touch = require(script.Parent.Parent.Lib.Touch)
 
@@ -242,7 +244,7 @@ function EggService:OnTileCleared(player: Player, zone, position: Vector3)
 		foundEgg(player, position, "Common")
 		return
 	end
-	local luck = S.BoostService:GetServerLuck()
+	local luck = S.BoostService:GetServerLuck() * Upgrades.multiplier(session.Data.Upgrades, "Luck")
 	if rng:NextNumber() < zone.EggChance * luck then
 		foundEgg(player, position, EggService:RollRarity(zone.MaxRarity, luck))
 	end
@@ -294,15 +296,36 @@ function EggService:Init(services)
 	end)
 end
 
+-- Eggs are delivered by walking onto your own hatchery (a distance check, like selling).
+local DELIVER_EVERY = 0.25
+local DELIVER_COOLDOWN = 1.5
+
 function EggService:Start()
-	for index = 1, Zones.BaseCount do
-		local pad = S.WorldService:GetPad(index)
-		if pad then
-			pad.Touched:Connect(Touch.debounced(0.5, function(player)
-				deliver(player, index)
-			end))
+	local lastTry: { [Player]: number } = setmetatable({}, { __mode = "k" }) :: any
+	local acc = 0
+	RunService.Heartbeat:Connect(function(dt)
+		acc += dt
+		if acc < DELIVER_EVERY then
+			return
 		end
-	end
+		acc = 0
+		local now = os.clock()
+		for player, session in S.DataService:GetSessions() do
+			local carried = session.Runtime.Carried
+			local index = session.Runtime.BaseIndex
+			local character = player.Character
+			local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+			if not carried or #carried == 0 or not index or not root or (lastTry[player] or 0) + DELIVER_COOLDOWN > now then
+				continue
+			end
+			local center = World.baseCFrame(index) * World.Base.Hatchery
+			local offset = root.Position - center
+			if Vector2.new(offset.X, offset.Z).Magnitude <= World.Base.HatcheryRadius + 1.5 and math.abs(offset.Y) < 10 then
+				lastTry[player] = now
+				deliver(player, index)
+			end
+		end
+	end)
 end
 
 return EggService

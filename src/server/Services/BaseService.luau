@@ -65,7 +65,7 @@ function BaseService:Init(services)
 		owners[index] = player
 		session.Runtime.BaseIndex = index
 		player:SetAttribute("BaseIndex", index)
-		S.WorldService:SetOwnerName(index, player.DisplayName)
+		S.WorldService:SetOwnerName(index, player.DisplayName, player.UserId)
 
 		player.CharacterAdded:Connect(function(character)
 			onCharacter(player, character)

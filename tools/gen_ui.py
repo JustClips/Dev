@@ -225,6 +225,16 @@ def pill(name, label, ico, color, order):
     return button(name, U(0, 136, 0, 52), color=color, label=label, ts=21, ico=ico, ico_px=40, LayoutOrder=order)
 
 
+def hot_slot(name, key, ico, label, order):
+    return button(name, U(0, 92, 0, 92), color=SURFACE, stud=0.2, LayoutOrder=order, children=[
+        icon("Icon", ico, 60, U(0.5, 0, 0, 4), (0.5, 0)),
+        text("Name", label, U(1, -6, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=14, color=INK, display=True, ZIndex=4),
+        plate("Key", U(0, 26, 0, 26), U(0, -6, 0, -6), stud=None, tint=BG, stroke=3, ZIndex=4, children=[
+            text("Label", key, U(1, 0, 1, 0), ts=16, display=True, ZIndex=5),
+        ]),
+    ])
+
+
 def zone_row(zone_id, title, order):
     return button("Zone_" + zone_id, U(1, 0, 0, 50), color=HEADER, stroke=3, LayoutOrder=order, children=[
         icon("Icon", "Zones", 36, U(0, 8, 0.5, 0), (0, 0.5)),
@@ -234,11 +244,12 @@ def zone_row(zone_id, title, order):
 
 
 def hud():
-    rail = frame("Rail", U(0, 84, 0, 300), U(0, 14, 0.5, 0), (0, 0.5), children=[
+    rail = frame("Rail", U(0, 84, 0, 402), U(0, 14, 0.5, 0), (0, 0.5), children=[
         autoscale(), vlist(22),
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 2),
-        rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 3),
+        rail_tile("UpgradesButton", "Upgrades", "Upgrade", "#FF9A3C", 3),
+        rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 4),
     ])
     pills = frame("Pills", U(0, 432, 0, 52), U(0.5, 0, 0, 6), (0.5, 0), children=[
         autoscale(), hlist(12),
@@ -246,14 +257,18 @@ def hud():
         pill("SellButton", "Sell", "Sell", PILL_SELL, 2),
         pill("ZonesButton", "Zones", "Zones", PILL_ZONES, 3),
     ])
-    picker = plate("ZonePicker", U(0, 330, 0, 0), U(0.5, 0, 0, 66), (0.5, 0), SURFACE, AutomaticSize="Y", Visible=False, ZIndex=6,
+    # Fixed height: a UIListLayout directly in a plate would also stack the Studs image.
+    picker = plate("ZonePicker", U(0, 330, 0, 290), U(0.5, 0, 0, 66), (0.5, 0), SURFACE, Visible=False, ZIndex=6,
                    children=[
-                       autoscale(), padding(10), vlist(8),
-                       text("Title", "Teleport", U(1, 0, 0, 28), ts=24, color=INK, display=True, LayoutOrder=0),
-                       zone_row("Landing", "Landing Site", 1),
-                       zone_row("Crater", "Crater", 2),
-                       zone_row("DarkSide", "Dark Side", 3),
-                       zone_row("Mars", "Mars Plains", 4),
+                       autoscale(),
+                       frame("List", U(1, -20, 1, -20), U(0, 10, 0, 10), children=[
+                           vlist(8),
+                           text("Title", "Teleport", U(1, 0, 0, 28), ts=24, color=INK, display=True, LayoutOrder=0),
+                           zone_row("Landing", "Landing Site", 1),
+                           zone_row("Crater", "Crater", 2),
+                           zone_row("DarkSide", "Dark Side", 3),
+                           zone_row("Mars", "Mars Plains", 4),
+                       ]),
                    ])
     moon = plate("MoonPanel", U(0, 360, 0, 40), U(0.5, 0, 0, 68), (0.5, 0), BG, stud=0.6, children=[
         autoscale(),
@@ -303,17 +318,16 @@ def hud():
     ])
     next_tool = plate("NextTool", U(0, 230, 0, 176), tint=SURFACE, LayoutOrder=1, children=[
         plate("Header", U(1, 0, 0, 36), tint=HEADER, children=[
-            text("Title", "UPGRADE", U(1, 0, 1, 0), ts=22, display=True, stroke=2.5),
+            text("Title", "NEXT TOOL", U(1, 0, 1, 0), ts=22, display=True, stroke=2.5),
         ]),
         icon("Icon", "Tool", 54, U(0, 8, 0, 42)),
         text("ToolName", "Broom", U(1, -72, 0, 26), U(0, 66, 0, 42), ts=22, color=INK, display=True, xa="Left"),
         text("Hint", "", U(1, -72, 0, 36), U(0, 66, 0, 68), ts=14, color=SUB, xa="Left", ya="Top"),
         button("Button", U(1, -20, 0, 48), U(0.5, 0, 1, -10), (0.5, 1), color=SUCCESS, label="Buy", ts=24),
     ])
-    right = frame("Right", U(0, 230, 0, 296), U(1, -14, 0.5, 0), (1, 0.5), children=[
+    right = frame("Right", U(0, 230, 0, 240), U(1, -14, 0.5, 0), (1, 0.5), children=[
         autoscale(), vlist(10, "Right", "Center"),
         next_tool,
-        button("DriveButton", U(0, 230, 0, 50), color=PILL_ZONES, label="Drive", ts=24, ico="Vehicle", ico_px=40, LayoutOrder=2, Visible=False),
         button("AutoButton", U(0, 230, 0, 50), color=BG, label="Auto: OFF", ts=24, ico="Auto", ico_px=40, LayoutOrder=3, Visible=False,
                dark="#9AA3B8"),
     ])
@@ -322,7 +336,13 @@ def hud():
         icon("Icon", "Tool", 64, U(0.5, 0, 0, 6), (0.5, 0)),
         text("Label", "SWEEP", U(1, 0, 0, 28), U(0.5, 0, 1, -8), (0.5, 1), ts=22, display=True, stroke=2.5),
     ])
-    write("Hud", screen([rail, pills, moon, boosts, toasts, announcement, wallet, right, sweep, picker], order=1))
+    # Own hotbar (the default Roblox backpack is hidden): slot 1 = tool, slot 2 = car.
+    hotbar = frame("Hotbar", U(0, 200, 0, 96), U(0.5, 0, 1, -12), (0.5, 1), children=[
+        autoscale(), hlist(16, "Center", "Bottom"),
+        hot_slot("ToolSlot", "1", "Tool", "Toothbrush", 1),
+        hot_slot("CarSlot", "2", "Vehicle", "No car", 2),
+    ])
+    write("Hud", screen([rail, pills, moon, boosts, toasts, announcement, wallet, right, sweep, hotbar, picker], order=1))
 
 
 # ---------------------------------------------------------------- Shop
@@ -403,7 +423,7 @@ def rebirth():
     body = [
         icon("Big", "Rebirth", 110, U(0, 22, 0, 80)),
         text("Mult", "Cash x1 → x1.5", U(1, -160, 0, 44), U(0, 140, 0, 86), ts=30, color=INK, display=True, xa="Left"),
-        text("Info", "Resets your cash, tools and backpack.\nKeeps your aliens, index and zones.", U(1, -160, 0, 50),
+        text("Info", "Resets your cash, tools, cars and upgrades.\nKeeps your aliens, index and zones.", U(1, -160, 0, 50),
              U(0, 140, 0, 132), ts=17, color=SUB, xa="Left", ya="Top"),
         text("Cost", "Cost: $0", U(1, -40, 0, 30), U(0.5, 0, 0, 202), (0.5, 0), ts=22, color=INK, heavy=True),
         button("RebirthButton", U(0, 300, 0, 62), U(0.5, 0, 0, 244), (0.5, 0), color=SUCCESS, label="Rebirth!", ts=32),
@@ -458,6 +478,63 @@ def hatch():
     write("Hatch", tree)
 
 
+# ---------------------------------------------------------------- Garage
+def garage():
+    row = plate("Template", U(1, -12, 0, 92), tint=WHITE, stud=0.2, Visible=False, children=[
+        icon("Icon", "Vehicle", 74, U(0, 6, 0.5, 0), (0, 0.5)),
+        text("Name", "Car", U(1, -270, 0, 30), U(0, 86, 0, 8), ts=24, color=INK, display=True, xa="Left"),
+        text("Stats", "", U(1, -270, 0, 22), U(0, 86, 0, 40), ts=15, color=SUB, xa="Left"),
+        text("Price", "", U(1, -270, 0, 20), U(0, 86, 0, 62), ts=15, color="#1E9E3A", heavy=True, xa="Left"),
+        button("Main", U(0, 160, 0, 44), U(1, -12, 0, 6), (1, 0), color=SUCCESS, label="Buy", ts=22),
+        button("Robux", U(0, 160, 0, 32), U(1, -12, 0, 56), (1, 0), color=PREMIUM, label="", ts=16, label_color=INK, Visible=False),
+    ])
+    lst = scroller("List", U(1, -28, 1, -128), U(0, 14, 0, 76), [vlist(10), padding(2, 2, 4, 4), row])
+    hint = text("Hint", "Cars sweep a huge area and hold more dust. Spawn one here or from slot 2.", U(1, -28, 0, 36),
+                U(0, 14, 1, -10), (0, 1), ts=15, color=SUB, heavy=True)
+    write("Garage", screen([dim(), window(640, 470, "Garage", "Vehicle", [lst, hint], header="#FF9A3C")], order=10, enabled=False))
+
+
+# ---------------------------------------------------------------- Upgrades
+def upgrades():
+    row = plate("Template", U(1, -12, 0, 84), tint=WHITE, stud=0.2, Visible=False, children=[
+        icon("Icon", "Upgrade", 66, U(0, 8, 0.5, 0), (0, 0.5)),
+        text("Name", "Upgrade", U(1, -260, 0, 28), U(0, 88, 0, 6), ts=22, color=INK, display=True, xa="Left"),
+        text("Desc", "", U(1, -260, 0, 20), U(0, 88, 0, 33), ts=15, color=SUB, xa="Left"),
+        frame("Pips", U(1, -260, 0, 16), U(0, 88, 0, 59), children=[
+            hlist(4, "Left", "Center"),
+            frame("Template", U(0, 18, 0, 14), bg=MUTED, Visible=False, children=[border(INK, 2)]),
+        ]),
+        text("Effect", "", U(0, 120, 0, 20), U(1, -172, 0, 8), (1, 0), ts=16, color="#1E9E3A", heavy=True, xa="Right"),
+        button("Buy", U(0, 150, 0, 50), U(1, -12, 0.5, 0), (1, 0.5), color=SUCCESS, label="", ts=22),
+    ])
+    lst = scroller("List", U(1, -28, 1, -92), U(0, 14, 0, 76), [vlist(10), padding(2, 2, 4, 4), row])
+    write("Upgrades", screen([dim(), window(640, 500, "Upgrades", "Upgrade", [lst], header="#FF9A3C")], order=10, enabled=False))
+
+
+# ---------------------------------------------------------------- Loading
+def loading():
+    root = frame("Root", U(1, 0, 1, 0), bg=BG, children=[
+        node("Studs", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("Stud"), ScaleType="Tile",
+                                        TileSize=U(0, 96, 0, 96), ImageColor3="#2A3260", ImageTransparency=0.55, ZIndex=0)),
+        frame("Center", U(0, 560, 0, 470), U(0.5, 0, 0.5, 0), (0.5, 0.5), children=[
+            autoscale(),
+            node("Logo", "ImageLabel", base(U(0, 520, 0, 300), U(0.5, 0, 0, 0), (0.5, 0), BackgroundTransparency=1,
+                                            Image=img("Logo"), ScaleType="Fit", ZIndex=2)),
+            plate("Bar", U(0, 480, 0, 46), U(0.5, 0, 0, 322), (0.5, 0), tint=SURFACE, stud=0.2, children=[
+                frame("Track", U(1, -16, 1, -16), U(0.5, 0, 0.5, 0), (0.5, 0.5), bg="#2A3260", children=[
+                    frame("Fill", U(0.02, 0, 1, 0), bg=ACCENT),
+                ]),
+                text("Percent", "0%", U(1, 0, 1, 0), ts=20, display=True, stroke=2.5, ZIndex=4),
+            ]),
+            text("Status", "Loading...", U(1, 0, 0, 28), U(0.5, 0, 0, 380), (0.5, 0), ts=20, heavy=True, stroke=2.5),
+            text("Tip", "", U(1, 0, 0, 44), U(0.5, 0, 0, 418), (0.5, 0), ts=16, color="#C8D0E8", heavy=True),
+        ]),
+    ])
+    tree = screen([root], order=100, enabled=False, inset=True)
+    tree["properties"]["ScreenInsets"] = "None"
+    write("Loading", tree)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     missing = [n for n in ("Stud", "Icon_Shop", "BannerStarter") if n not in IMG]
@@ -469,6 +546,9 @@ def main():
     rebirth()
     offer()
     hatch()
+    garage()
+    upgrades()
+    loading()
     print("ui written to", OUT)
 
 

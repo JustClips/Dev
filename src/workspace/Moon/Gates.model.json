@@ -29,61 +29,7 @@
     },
     "Transparency": 0.15,
     "CastShadow": false
-   },
-   "children": [
-    {
-     "name": "Label",
-     "className": "BillboardGui",
-     "properties": {
-      "Size": [
-       [
-        0,
-        300
-       ],
-       [
-        0,
-        70
-       ]
-      ],
-      "StudsOffset": [
-       0,
-       11,
-       0
-      ],
-      "MaxDistance": 220,
-      "LightInfluence": 0
-     },
-     "children": [
-      {
-       "name": "Text",
-       "className": "TextLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "BackgroundTransparency": 1,
-        "Text": "Crater",
-        "TextScaled": true,
-        "TextColor3": "#78C8FF",
-        "FontFace": {
-         "family": "rbxasset://fonts/families/Montserrat.json",
-         "weight": "ExtraBold",
-         "style": "Normal"
-        },
-        "TextStrokeTransparency": 0,
-        "TextStrokeColor3": "#1B1F3A"
-       }
-      }
-     ]
-    }
-   ]
+   }
   },
   {
    "name": "Gate_DarkSide",
@@ -113,61 +59,7 @@
     },
     "Transparency": 0.15,
     "CastShadow": false
-   },
-   "children": [
-    {
-     "name": "Label",
-     "className": "BillboardGui",
-     "properties": {
-      "Size": [
-       [
-        0,
-        300
-       ],
-       [
-        0,
-        70
-       ]
-      ],
-      "StudsOffset": [
-       0,
-       11,
-       0
-      ],
-      "MaxDistance": 220,
-      "LightInfluence": 0
-     },
-     "children": [
-      {
-       "name": "Text",
-       "className": "TextLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "BackgroundTransparency": 1,
-        "Text": "DarkSide",
-        "TextScaled": true,
-        "TextColor3": "#B478FF",
-        "FontFace": {
-         "family": "rbxasset://fonts/families/Montserrat.json",
-         "weight": "ExtraBold",
-         "style": "Normal"
-        },
-        "TextStrokeTransparency": 0,
-        "TextStrokeColor3": "#1B1F3A"
-       }
-      }
-     ]
-    }
-   ]
+   }
   },
   {
    "name": "Gate_Mars",
@@ -197,61 +89,7 @@
     },
     "Transparency": 0.15,
     "CastShadow": false
-   },
-   "children": [
-    {
-     "name": "Label",
-     "className": "BillboardGui",
-     "properties": {
-      "Size": [
-       [
-        0,
-        300
-       ],
-       [
-        0,
-        70
-       ]
-      ],
-      "StudsOffset": [
-       0,
-       11,
-       0
-      ],
-      "MaxDistance": 220,
-      "LightInfluence": 0
-     },
-     "children": [
-      {
-       "name": "Text",
-       "className": "TextLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "BackgroundTransparency": 1,
-        "Text": "Mars",
-        "TextScaled": true,
-        "TextColor3": "#FF8C5A",
-        "FontFace": {
-         "family": "rbxasset://fonts/families/Montserrat.json",
-         "weight": "ExtraBold",
-         "style": "Normal"
-        },
-        "TextStrokeTransparency": 0,
-        "TextStrokeColor3": "#1B1F3A"
-       }
-      }
-     ]
-    }
-   ]
+   }
   }
  ]
 }

@@ -27,6 +27,9 @@ local FUNCTIONS: { [string]: number } = {
 	Rebirth = 2,
 	PromptPurchase = 4, -- (productKey, giftToUserId?) -> ok, message
 	ToggleVehicle = 3,
+	SpawnVehicle = 3, -- (vehicleId) -> ok, message: spawn on the Garage pad
+	BuyVehicle = 4, -- (vehicleId) -> ok, message
+	BuyUpgrade = 6, -- (upgradeId) -> ok, message
 	EquipTool = 4,
 	Teleport = 2, -- ("Base" | "Rocket" | zoneId) -> ok, message
 }

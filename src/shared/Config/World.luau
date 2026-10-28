@@ -9,35 +9,58 @@
 --   z = -488 .. -452  corridor + Gate_DarkSide
 --   z = -452 .. -232  Crater (floor y = -8) (TileSize 5)
 --   z = -232 .. -196  corridor + Gate_Crater
---   z = -196 ..  196  Landing Site field, Rocket at the origin, bases at x = +-62..150
+--   z = -196 ..  150  Landing Site dust field, Rocket launch pad at the origin
+--   z =  150 ..  198  South plaza: Garage (west) and Upgrade station (east)
+--   bases at x = +-62..150 on both sides of the field, on raised stud platforms
 --
 -- Base local frame: -Z points at the field (the entrance), +X is the base's right.
 -- tools/gen_world.py writes src/workspace/Moon from these numbers, so keep them in sync.
 
 local World = {}
 
-World.Field = { Min = Vector2.new(-56, -196), Max = Vector2.new(56, 196) }
+World.Field = { Min = Vector2.new(-56, -196), Max = Vector2.new(56, 150) }
 World.RocketPosition = Vector3.new(0, 0, 0)
 World.SellRadius = 15
-World.RocketClearRadius = 18
+World.RocketClearRadius = 20
+World.LaunchPadRadius = 18
+World.Walkway = 6 -- paved strip between the dust field and the bases
+
+-- South plaza (between the field and the hub's south wall).
+World.Plaza = { Min = Vector2.new(-62, 150), Max = Vector2.new(62, 198) }
+-- Stations face the field (-Z). Garage cars spawn on its pad and drive north.
+World.Garage = CFrame.lookAt(Vector3.new(-34, 0, 178), Vector3.new(-34, 0, 100))
+World.GarageSpawn = CFrame.lookAt(Vector3.new(-34, 0, 158), Vector3.new(-34, 0, 100))
+World.UpgradeStation = CFrame.lookAt(Vector3.new(34, 0, 178), Vector3.new(34, 0, 100))
 
 World.BaseCount = 8
 World.BaseSize = Vector2.new(92, 88) -- width (local X), depth (local Z)
 World.BaseInner = 62 -- distance from the hub centre line to a base's entrance edge
+World.BaseFloorY = 1 -- bases sit on a 1-stud stud-plate platform
+-- One colour per base: platform trim, corner lights and the name sign.
+World.BaseColors = {
+	Color3.fromRGB(76, 141, 255), -- blue
+	Color3.fromRGB(255, 120, 60), -- orange
+	Color3.fromRGB(61, 220, 90), -- green
+	Color3.fromRGB(180, 110, 255), -- purple
+	Color3.fromRGB(255, 200, 60), -- gold
+	Color3.fromRGB(255, 90, 150), -- pink
+	Color3.fromRGB(60, 210, 220), -- teal
+	Color3.fromRGB(255, 77, 94), -- red
+}
 
--- CFrame of base i at ground level, facing the field.
+-- CFrame of base i on its platform floor, facing the field.
 function World.baseCFrame(i: number): CFrame
 	local side = if i <= 4 then -1 else 1
 	local row = (i - 1) % 4
 	local z = -147 + row * 98
 	local x = side * (World.BaseInner + World.BaseSize.Y / 2)
-	local pos = Vector3.new(x, 0, z)
-	return CFrame.lookAt(pos, Vector3.new(0, 0, z))
+	local pos = Vector3.new(x, World.BaseFloorY, z)
+	return CFrame.lookAt(pos, Vector3.new(0, World.BaseFloorY, z))
 end
 
 -- Positions in the base local frame.
 World.Base = {
-	Arch = Vector3.new(0, 0, -43),
+	Arch = Vector3.new(0, 0, -42),
 	Hatchery = Vector3.new(0, 0, -28),
 	HatcheryRadius = 9,
 	Spawn = Vector3.new(-18, 0, -31),

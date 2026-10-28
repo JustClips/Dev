@@ -1,7 +1,7 @@
 --!strict
--- Tool ladder: buying tier N+1, the tool in hand, vehicle rentals and the vehicle itself.
--- Vehicle tiers (7-9): on foot you sweep with the best hand tool; in the vehicle you get
--- the vehicle's radius and power. Driving is done by the client (it owns the physics).
+-- Hand tools (the ladder, tiers 1-6, bought with the HUD card) and cars (owned separately,
+-- bought at the Garage, kept in their own HUD slot). On foot you sweep with your tool; in a
+-- car you get the car's radius and power. Driving is done by the client (it owns the physics).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -12,21 +12,46 @@ local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local Tools = require(Shared.Config.Tools)
+local Upgrades = require(Shared.Config.Upgrades)
+local World = require(Shared.Config.World)
 
 local ToolService = {}
 
 local S: any
 
+-- The hand tool tier you own.
 function ToolService:GetEffectiveTier(player: Player): number
+	local data = S.DataService:GetData(player)
+	return if data then math.clamp(data.ToolTier, 1, Tools.MaxTier) else 1
+end
+
+function ToolService:OwnsVehicle(player: Player, id: string): boolean
 	local session = S.DataService:GetSession(player)
 	if not session then
-		return 1
+		return false
 	end
-	return math.max(session.Data.ToolTier, session.Runtime.RentedTier or 0)
+	return session.Data.Vehicles[id] == true or session.Runtime.RentedVehicle == id
+end
+
+-- Best car you can drive (owned or rented), or nil.
+function ToolService:GetBestVehicle(player: Player)
+	local best = nil
+	for _, def in Tools.Vehicles do
+		if ToolService:OwnsVehicle(player, def.Id) and (best == nil or def.Order > best.Order) then
+			best = def
+		end
+	end
+	return best
 end
 
 function ToolService:GetCapacity(player: Player): number
-	return Tools.get(ToolService:GetEffectiveTier(player)).Capacity
+	local data = S.DataService:GetData(player)
+	local capacity = Tools.get(ToolService:GetEffectiveTier(player)).Capacity
+	local car = ToolService:GetBestVehicle(player)
+	if car then
+		capacity = math.max(capacity, car.Capacity)
+	end
+	return math.floor(capacity * Upgrades.multiplier(data and data.Upgrades, "Backpack"))
 end
 
 function ToolService:IsInVehicle(player: Player): boolean
@@ -41,13 +66,18 @@ function ToolService:IsInVehicle(player: Player): boolean
 	return seat ~= nil and humanoid ~= nil and seat.Occupant == humanoid
 end
 
--- The stats used for sweeping right now.
-function ToolService:GetSweepTool(player: Player)
-	local tier = ToolService:GetEffectiveTier(player)
-	if Tools.get(tier).IsVehicle and not ToolService:IsInVehicle(player) then
-		tier = math.min(tier, Tools.MaxHandTier)
+-- The stats used for sweeping right now: { Radius, Power }.
+function ToolService:GetSweepTool(player: Player): { Radius: number, Power: number }
+	local session = S.DataService:GetSession(player)
+	local mult = Upgrades.multiplier(session and session.Data.Upgrades, "Power")
+	if session and ToolService:IsInVehicle(player) then
+		local car = Tools.vehicle(session.Runtime.VehicleId or "")
+		if car then
+			return { Radius = car.Radius, Power = car.Power * mult }
+		end
 	end
-	return Tools.get(tier)
+	local def = Tools.get(ToolService:GetEffectiveTier(player))
+	return { Radius = def.Radius, Power = def.Power * mult }
 end
 
 -- Grip for the Blender tools (head at -Z, grip point near +Z). Checked on a real server with
@@ -151,7 +181,7 @@ local function giveTool(player: Player, equip: boolean)
 			end
 		end
 	end
-	local def = Tools.get(math.min(ToolService:GetEffectiveTier(player), Tools.MaxHandTier))
+	local def = Tools.get(ToolService:GetEffectiveTier(player))
 	local tool = buildTool(def)
 	tool.Parent = backpack
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -165,6 +195,7 @@ local function destroyVehicle(player: Player)
 	if session and session.Runtime.Vehicle then
 		session.Runtime.Vehicle:Destroy()
 		session.Runtime.Vehicle = nil
+		session.Runtime.VehicleId = nil
 		S.StateService:Mark(player)
 	end
 end
@@ -197,8 +228,8 @@ local function buildVehicle(player: Player, def): Model
 	seat.Size = Vector3.new(2, 1, 2)
 	seat.Color = Color3.fromRGB(40, 40, 50)
 	seat.HeadsUpDisplay = false
-	seat.MaxSpeed = def.VehicleSpeed or 30
-	seat:SetAttribute("Speed", def.VehicleSpeed or 30)
+	seat.MaxSpeed = def.Speed
+	seat:SetAttribute("Speed", def.Speed)
 	seat:SetAttribute("OwnerUserId", player.UserId)
 	attach(seat, CFrame.new(0, 0.8 * s + 0.5, 1 * s))
 
@@ -275,7 +306,9 @@ local function buildVehicle(player: Player, def): Model
 	return model
 end
 
-local function spawnVehicle(player: Player): (boolean, string?)
+-- Spawns a car you own (best one if id is nil) and seats you in it. atGarage puts it on
+-- the Garage spawn pad instead of where you stand.
+local function spawnVehicle(player: Player, id: string?, atGarage: boolean?): (boolean, string?)
 	local session = S.DataService:GetSession(player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -283,23 +316,36 @@ local function spawnVehicle(player: Player): (boolean, string?)
 	if not session or not humanoid or not root or humanoid.Health <= 0 then
 		return false, "Not ready"
 	end
-	local def = Tools.get(ToolService:GetEffectiveTier(player))
-	if not def.IsVehicle then
-		return false, "You need a vehicle first"
+	local def = if id then Tools.vehicle(id) else ToolService:GetBestVehicle(player)
+	if not def then
+		return false, "Buy a car at the Garage first!"
+	end
+	if not ToolService:OwnsVehicle(player, def.Id) then
+		return false, `You don't own the {def.Name}`
 	end
 	destroyVehicle(player)
 	local model = buildVehicle(player, def)
-	local look = root.CFrame.LookVector * Vector3.new(1, 0, 1)
-	local yaw = if look.Magnitude > 0.01 then CFrame.lookAt(Vector3.zero, look.Unit) else CFrame.identity
-	model:PivotTo(CFrame.new(root.Position + Vector3.new(0, 3 * def.Scale, 0)) * yaw)
-	local align = model.PrimaryPart:FindFirstChild("Upright") :: AlignOrientation
-	align.CFrame = yaw
+	local spot: CFrame
+	if atGarage then
+		spot = World.GarageSpawn * CFrame.new(0, 3 * def.Scale, 0)
+	else
+		local look = root.CFrame.LookVector * Vector3.new(1, 0, 1)
+		local facing = if look.Magnitude > 0.01 then CFrame.lookAt(Vector3.zero, look.Unit) else CFrame.identity
+		spot = CFrame.new(root.Position + Vector3.new(0, 3 * def.Scale, 0)) * facing
+	end
+	model:PivotTo(spot)
+	local align = (model.PrimaryPart :: BasePart):FindFirstChild("Upright") :: AlignOrientation
+	align.CFrame = spot.Rotation
 	model.Parent = Workspace
 	session.Runtime.Vehicle = model
+	session.Runtime.VehicleId = def.Id
 	local chassis = model.PrimaryPart :: BasePart
 	chassis:SetNetworkOwner(player)
 
 	local seat = model:FindFirstChild("Seat") :: VehicleSeat
+	if atGarage then
+		character:PivotTo(seat.CFrame * CFrame.new(0, 3, 0))
+	end
 	seat:Sit(humanoid)
 	-- Leaving the seat puts the vehicle away.
 	seat:GetPropertyChangedSignal("Occupant"):Connect(function()
@@ -314,6 +360,35 @@ local function spawnVehicle(player: Player): (boolean, string?)
 	end)
 	S.StateService:Mark(player)
 	return true, nil
+end
+
+local function buyVehicle(player: Player, id: string): (boolean, string)
+	local data = S.DataService:GetData(player)
+	local def = if type(id) == "string" then Tools.vehicle(id) else nil
+	if not data or not def then
+		return false, "Unknown car"
+	end
+	if data.Vehicles[def.Id] then
+		return false, "You already own it"
+	end
+	if not S.BackpackService:TrySpend(player, def.Price, "Vehicle_" .. def.Id) then
+		return false, `Need {Format.cash(def.Price)}`
+	end
+	data.Vehicles[def.Id] = true
+	S.StateService:Mark(player)
+	return true, `Got the {def.Name}! Spawn it here or from your car slot.`
+end
+
+-- Robux "unlock": owned until rebirth, same as buying it with cash.
+function ToolService:GrantVehicle(player: Player, id: string): boolean
+	local data = S.DataService:GetData(player)
+	local def = Tools.vehicle(id)
+	if not data or not def or data.Vehicles[id] then
+		return false
+	end
+	data.Vehicles[id] = true
+	S.StateService:Mark(player)
+	return true
 end
 
 -- Sets the owned tier (bought or skipped via product). Fills every tier below it.
@@ -335,15 +410,18 @@ function ToolService:SetTier(player: Player, tier: number)
 	S.StateService:Mark(player)
 end
 
-function ToolService:Rent(player: Player, tier: number)
+function ToolService:Rent(player: Player, vehicleId: string)
 	local session = S.DataService:GetSession(player)
-	if not session then
+	local def = Tools.vehicle(vehicleId)
+	if not session or not def then
 		return
 	end
-	session.Runtime.RentedTier = math.max(session.Runtime.RentedTier or 0, tier)
-	giveTool(player, false)
+	local current = Tools.vehicle(session.Runtime.RentedVehicle or "")
+	if not current or current.Order < def.Order then
+		session.Runtime.RentedVehicle = def.Id
+	end
 	S.StateService:Mark(player)
-	Net.fire("Notify", player, `{Tools.get(tier).Name} unlocked for this run! Press Drive.`, "Good")
+	Net.fire("Notify", player, `{def.Name} unlocked for this run! Tap your car slot to drive.`, "Good")
 end
 
 function ToolService:ResetForRebirth(player: Player)
@@ -351,7 +429,8 @@ function ToolService:ResetForRebirth(player: Player)
 	if not session then
 		return
 	end
-	session.Runtime.RentedTier = 0
+	session.Runtime.RentedVehicle = nil
+	session.Data.Vehicles = {}
 	destroyVehicle(player)
 	ToolService:SetTier(player, 1)
 end
@@ -385,8 +464,15 @@ function ToolService:Init(services)
 			destroyVehicle(player)
 			return true, nil
 		end
-		return spawnVehicle(player)
+		return spawnVehicle(player, nil, false)
 	end)
+	Net.onInvoke("SpawnVehicle", function(player, id)
+		if type(id) ~= "string" then
+			return false, "Unknown car"
+		end
+		return spawnVehicle(player, id, true)
+	end)
+	Net.onInvoke("BuyVehicle", buyVehicle)
 	Net.onInvoke("EquipTool", function(player)
 		giveTool(player, true)
 		return true

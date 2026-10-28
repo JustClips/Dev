@@ -5,6 +5,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local World = require(Shared.Config.World)
@@ -56,10 +57,60 @@ local function setupGate(zone)
 		return
 	end
 	gate:SetAttribute("ZoneId", zone.Id)
-	for _, gui in gate:GetDescendants() do
-		if gui:IsA("TextLabel") then
-			gui.Text = `{zone.Name}\n{priceText(zone)}`
+	-- A locked-door sign on both faces of the barrier (ZoneController hides it once open).
+	for _, gui in gate:GetChildren() do
+		if gui:IsA("SurfaceGui") then
+			gui:Destroy()
 		end
+	end
+	local accent = gate.Color
+	for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do
+		local gui = Instance.new("SurfaceGui")
+		gui.Name = "Lock" .. face.Name
+		gui.Face = face
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 30
+		gui.LightInfluence = 0
+		gui.MaxDistance = 300
+		local plate = Instance.new("Frame")
+		plate.Name = "Plate"
+		plate.AnchorPoint = Vector2.new(0.5, 0.5)
+		plate.Position = UDim2.fromScale(0.5, 0.42)
+		plate.Size = UDim2.fromScale(0.82, 0.5)
+		plate.BackgroundColor3 = Color3.fromRGB(27, 31, 58)
+		plate.Parent = gui
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = accent
+		stroke.Thickness = 8
+		stroke.Parent = plate
+		local lock = Instance.new("ImageLabel")
+		lock.Name = "Lock"
+		lock.BackgroundTransparency = 1
+		lock.Size = UDim2.new(0.26, 0, 0.84, 0)
+		lock.Position = UDim2.fromScale(0.03, 0.08)
+		lock.ScaleType = Enum.ScaleType.Fit
+		lock.Image = AssetLibrary.image("Icon_Lock")
+		lock.Parent = plate
+		local title = Instance.new("TextLabel")
+		title.Name = "Title"
+		title.BackgroundTransparency = 1
+		title.Size = UDim2.fromScale(0.66, 0.5)
+		title.Position = UDim2.fromScale(0.31, 0.06)
+		title.Text = string.upper(zone.Name)
+		title.TextScaled = true
+		title.TextXAlignment = Enum.TextXAlignment.Left
+		title.TextColor3 = Color3.new(1, 1, 1)
+		title.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+		title.Parent = plate
+		local price = title:Clone()
+		price.Name = "Price"
+		price.Size = UDim2.fromScale(0.66, 0.34)
+		price.Position = UDim2.fromScale(0.31, 0.58)
+		price.Text = priceText(zone)
+		price.TextColor3 = Color3.fromRGB(255, 200, 60)
+		price.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
+		price.Parent = plate
+		gui.Parent = gate
 	end
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = "Unlock"
