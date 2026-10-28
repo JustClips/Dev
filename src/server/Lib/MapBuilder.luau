@@ -727,6 +727,9 @@ function MapBuilder.buildBase(index: number): Model
 	return model
 end
 
+-- Bins, dumpster, hydrant, bench, beach umbrella.
+local FIXED_SIZE = { Rock_Dark1 = true, Rock_Dark2 = true, Crystal_Purple = true, Mushroom_Glow = true, Mushroom_Mars = true }
+
 local function scatter(rng: Random, zone, names: { string }, count: number)
 	for _ = 1, count do
 		local name = names[rng:NextInteger(1, #names)]
@@ -745,7 +748,9 @@ local function scatter(rng: Random, zone, names: { string }, count: number)
 			z = zone.Min.Y - rng:NextNumber(4, 18)
 		end
 		local y = if zone.Id == "Crater" then 4 else zone.GroundY
-		place(name, CFrame.new(x, y, z) * yaw(rng:NextNumber(0, 360)), rng:NextNumber(0.8, 2.0))
+		-- Street furniture stays near life size; rocks, bushes and trees vary more.
+		local scale = if FIXED_SIZE[name] then rng:NextNumber(0.9, 1.2) else rng:NextNumber(0.8, 2.0)
+		place(name, CFrame.new(x, y, z) * yaw(rng:NextNumber(0, 360)), scale)
 	end
 end
 
@@ -822,9 +827,11 @@ function MapBuilder.buildProps()
 		place("ZoneGate", CFrame.new(0, math.max(c.FromY, c.ToY), c.GateZ) * yaw(180))
 	end
 	scatter(rng, Zones.ById.Crater, { "Rock_Crater1", "Rock_Crater2", "Crystal_Blue" }, 30)
-	scatter(rng, Zones.ById.DarkSide, { "Rock_Dark1", "Rock_Dark2", "Crystal_Purple", "Mushroom_Glow" }, 30)
-	scatter(rng, Zones.ById.Mars, { "Rock_Mars1", "Rock_Mars2", "Crystal_Red", "Mushroom_Mars" }, 30)
-	scatter(rng, Zones.ById.Europa, { "Rock_Ice1", "Rock_Ice2", "Crystal_Ice", "Crystal_Blue" }, 30)
+	-- Beach (id DarkSide): sandy rocks, palms, umbrellas. City (id Mars): bins, dumpsters,
+	-- hydrants, benches. (Prop names are kept from the Moon version.)
+	scatter(rng, Zones.ById.DarkSide, { "Rock_Mars1", "Rock_Mars2", "Crystal_Red", "Mushroom_Mars" }, 30)
+	scatter(rng, Zones.ById.Mars, { "Rock_Dark1", "Rock_Dark2", "Crystal_Purple", "Mushroom_Glow" }, 30)
+	scatter(rng, Zones.ById.Europa, { "Rock_Ice1", "Rock_Ice2", "Crystal_Ice", "Crystal_Ice" }, 30)
 	hubDecor(rng)
 
 	for i = 1, World.BaseCount do
