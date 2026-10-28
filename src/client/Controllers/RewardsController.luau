@@ -1,6 +1,7 @@
 --!strict
--- Rewards window (pink gift button on the left rail): 7 daily cards with Claim, 6 playtime
--- gifts that unlock as you play, the group reward and the event sign-up. Also:
+-- Daily window (pink calendar on the left rail): 7 daily cards with Claim, the group reward
+-- and the event sign-up. Playtime window (green Gifts button, shows the time to the next
+-- gift): 6 gifts that unlock as you play. Also:
 --   the stay offer: opening the Roblox menu pops "Stay 5 more minutes for a free potion",
 --   the event board in the plaza (its prompt signs you up),
 --   the badge on the rail button when something can be claimed.
@@ -33,8 +34,11 @@ local RewardsController = {}
 
 local C: any
 local gui: ScreenGui
+local giftsGui: ScreenGui
 local stayGui: ScreenGui
 local badge: Frame
+local giftsBadge: Frame
+local giftsButton: GuiButton
 -- Session playtime on the client: the server's count plus the time since that snapshot.
 local playtimeBase = 0
 local playtimeAt = os.clock()
@@ -96,16 +100,21 @@ local function setCardColor(card: GuiButton, color: Color3)
 	end
 end
 
--- How many things can be claimed right now (badge number).
-local function claimable(info): number
-	local n = if info.DailyReady then 1 else 0
+-- Gifts ready to claim, and seconds until the next locked one (nil when all are unlocked).
+local function giftStatus(info): (number, number?)
+	local ready, nextIn = 0, nil
 	local played = playtime()
 	for i, entry in Rewards.Playtime do
-		if not info.PlaytimeClaimed[i] and played >= entry.Minutes * 60 then
-			n += 1
+		if not info.PlaytimeClaimed[i] then
+			local left = entry.Minutes * 60 - played
+			if left <= 0 then
+				ready += 1
+			elseif nextIn == nil or left < nextIn then
+				nextIn = left
+			end
 		end
 	end
-	return n
+	return ready, nextIn
 end
 
 local function renderDaily(info)
@@ -140,7 +149,7 @@ end
 local function renderGifts(info)
 	local played = playtime()
 	for i, entry in Rewards.Playtime do
-		local card = Ui.find(gui, `Window.Gifts.Gift{i}`) :: GuiButton
+		local card = Ui.find(giftsGui, `Window.Gifts.Gift{i}`) :: GuiButton
 		fillCard(card, entry.Reward)
 		local claimed = info.PlaytimeClaimed[i] == true
 		local ready = not claimed and played >= entry.Minutes * 60
@@ -194,15 +203,20 @@ local function render()
 	if not info then
 		return
 	end
-	local count = claimable(info)
-	badge.Visible = count > 0
-	Ui.setText(badge, tostring(count))
-	if not Ui.isOpen(gui) then
-		return
+	badge.Visible = info.DailyReady
+	Ui.setText(badge, "1")
+	local ready, nextIn = giftStatus(info)
+	giftsBadge.Visible = ready > 0
+	Ui.setText(giftsBadge, tostring(ready))
+	-- The Gifts button counts down to the next gift.
+	Ui.setText(giftsButton, if ready > 0 then "Claim!" elseif nextIn then Format.time(nextIn) else "Gifts")
+	if Ui.isOpen(gui) then
+		renderDaily(info)
+		renderBottom(info)
 	end
-	renderDaily(info)
-	renderGifts(info)
-	renderBottom(info)
+	if Ui.isOpen(giftsGui) then
+		renderGifts(info)
+	end
 end
 
 -------------------------------------------------------------------------- stay offer
@@ -245,11 +259,20 @@ function RewardsController:Toggle()
 	render()
 end
 
+function RewardsController:ToggleGifts()
+	Ui.toggle("Playtime")
+	render()
+end
+
 function RewardsController:Init(controllers)
 	C = controllers
 	gui = Ui.screen("Daily")
+	giftsGui = Ui.screen("Playtime")
 	stayGui = Ui.screen("Stay")
-	badge = Ui.find(Ui.screen("Hud"), "Rail.RewardsButton.Badge")
+	local hud = Ui.screen("Hud")
+	badge = Ui.find(hud, "Rail.RewardsButton.Badge")
+	giftsButton = Ui.find(hud, "Rail.GiftsButton")
+	giftsBadge = Ui.find(giftsButton, "Badge")
 end
 
 function RewardsController:Start()
@@ -265,8 +288,17 @@ function RewardsController:Start()
 	Ui.button(Ui.find(gui, "Window.ClaimDaily"), function()
 		act("ClaimDaily")
 	end)
+	Ui.button(giftsButton, function()
+		RewardsController:ToggleGifts()
+	end)
+	Ui.button(Ui.find(giftsGui, "Window.Close"), function()
+		Ui.close("Playtime")
+	end)
+	Ui.button(Ui.find(giftsGui, "Dim"), function()
+		Ui.close("Playtime")
+	end)
 	for i in Rewards.Playtime do
-		Ui.button(Ui.find(gui, `Window.Gifts.Gift{i}`), function()
+		Ui.button(Ui.find(giftsGui, `Window.Gifts.Gift{i}`), function()
 			act("ClaimPlaytime", i)
 		end)
 	end

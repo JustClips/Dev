@@ -15,6 +15,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
+local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
 local Tools = require(Shared.Config.Tools)
@@ -243,27 +244,32 @@ local function renderBoosts()
 			child:Destroy()
 		end
 	end
+	-- Short chips: icon, multiplier, time left ("4x 5:00").
 	local now = State.now()
 	local entries: { { string } } = {}
-	for _, tier in LUCK_TIERS do
+	local function add(image: string, label: string, endsAt: number)
+		table.insert(entries, { `{label}  {Format.countdown(endsAt - now)}`, image })
+	end
+	for _, tier in LUCK_TIERS do -- highest first
 		local ends = State.server("Luck" .. tier) or 0
 		if ends > now then
-			table.insert(entries, { `{tier}x Server Luck  {Format.time(ends - now)}`, "Icon_Luck" })
+			add("Icon_Luck", `{tier}x`, ends) -- only the best server luck counts
+			break
 		end
 	end
 	local event = Rewards.activeEvent(now)
 	if event then
-		table.insert(entries, { `{event.Name}: {event.LuckMult}x Luck  {Format.time(event.EndsAt - now)}`, "Icon_Event" })
+		add("Icon_Event", `{event.LuckMult}x`, event.EndsAt)
 	end
 	local data = State.data
 	if data and (data.Boosts.Cash2x or 0) > now then
-		table.insert(entries, { `2x Cash  {Format.time(data.Boosts.Cash2x - now)}`, "Icon_Cash" })
+		add("Icon_Cash", "2x", data.Boosts.Cash2x)
 	end
 	if data and (data.Boosts.Luck2x or 0) > now then
-		table.insert(entries, { `2x Egg Luck  {Format.time(data.Boosts.Luck2x - now)}`, "Icon_PotionLuck" })
+		add("Icon_PotionLuck", `{Items.LuckMult}x`, data.Boosts.Luck2x)
 	end
 	if data and (data.Boosts.Speed or 0) > now then
-		table.insert(entries, { `Speed  {Format.time(data.Boosts.Speed - now)}`, "Icon_PotionSpeed" })
+		add("Icon_PotionSpeed", `+{Items.SpeedBonus}`, data.Boosts.Speed)
 	end
 	for i, entry in entries do
 		local label = template:Clone()
@@ -298,17 +304,7 @@ local function layoutForTouch()
 	if layout then
 		layout.VerticalAlignment = Enum.VerticalAlignment.Top
 	end
-	-- Phones are short: the rail becomes two columns under the wallet.
-	local list = el.Rail:FindFirstChildOfClass("UIListLayout")
-	if list then
-		list:Destroy()
-	end
-	local grid = Instance.new("UIGridLayout")
-	grid.CellSize = UDim2.fromOffset(84, 84)
-	grid.CellPadding = UDim2.fromOffset(12, 26)
-	grid.SortOrder = Enum.SortOrder.LayoutOrder
-	grid.Parent = el.Rail
-	el.Rail.Size = UDim2.fromOffset(180, 330)
+	-- Phones are short: the rail sits right under the wallet.
 	el.Rail.AnchorPoint = Vector2.new(0, 0)
 	el.Rail.Position = UDim2.new(0, 14, 0, math.floor(6 + 140 * Ui.scale()))
 	el.SweepButton.Visible = true

@@ -247,13 +247,15 @@ def zone_row(zone_id, title, order):
 
 
 def hud():
-    rail = frame("Rail", U(0, 84, 0, 476), U(0, 14, 0.5, -24), (0, 0.5), children=[
-        autoscale(), vlist(14),
+    rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
+        autoscale(),
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 26), "SortOrder": "LayoutOrder"}),
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 2),
         rail_tile("UpgradesButton", "Upgrades", "Upgrade", "#FF9A3C", 3),
         rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 4),
-        rail_tile("RewardsButton", "Rewards", "Daily", "#FF5FA2", 5),
+        rail_tile("RewardsButton", "Daily", "Daily", "#FF5FA2", 5),
+        rail_tile("GiftsButton", "Gifts", "Gift", "#3DDC5A", 6),
     ])
     pills = frame("Pills", U(0, 432, 0, 52), U(0.5, 0, 0, 6), (0.5, 0), children=[
         autoscale(), hlist(12),
@@ -288,10 +290,11 @@ def hud():
     # Phones move them to the top right (HudController), clear of the jump button.
     boosts = frame("Boosts", U(0, 300, 0, 200), U(1, -14, 1, -14), (1, 1), children=[
         autoscale(), vlist(8, "Right", "Bottom"),
-        node("Template", "TextLabel", base(U(0, 0, 0, 40), BackgroundColor3=BG, Text="", TextColor3=PREMIUM, TextSize=19, FontFace=BODY_HEAVY,
+        # Short chip: big icon, then "4x 5:00".
+        node("Template", "TextLabel", base(U(0, 0, 0, 46), BackgroundColor3=BG, Text="", TextColor3=WHITE, TextSize=24, FontFace=DISPLAY,
                                           AutomaticSize="X", Visible=False, ZIndex=2),
-             [corner(), border(INK, 3), padding(46, 12, 0),
-              icon("Icon", "Luck", 40, U(0, -44, 0.5, 0), (0, 0.5))]),
+             [corner(), border(INK, 3), padding(50, 12, 0), text_stroke(2.5),
+              icon("Icon", "Luck", 52, U(0, -52, 0.5, 0), (0, 0.5))]),
     ])
     toasts = frame("Toasts", U(0, 520, 0, 200), U(0.5, 0, 0, 156), (0.5, 0), children=[
         autoscale(), vlist(6),
@@ -602,16 +605,13 @@ def rewards():
     days = frame("Days", U(1, -24, 0, 130), U(0, 12, 0, 108), children=[
         hlist(10, "Center", "Center"),
     ] + [reward_card(f"Day{i}", f"Day {i}", i, 92, 124, 66) for i in range(1, 8)])
-    gifts = frame("Gifts", U(1, -24, 0, 112), U(0, 12, 0, 340), children=[
-        hlist(10, "Center", "Center"),
-    ] + [reward_card(f"Gift{i}", "5:00", i, 110, 108, 56) for i in range(1, 7)])
-    group = plate("Group", U(0.5, -18, 0, 84), U(0, 12, 0, 462), tint="#4C8DFF", stud=0.3, stroke=3, children=[
+    group = plate("Group", U(0.5, -18, 0, 84), U(0, 12, 0, 318), tint="#4C8DFF", stud=0.3, stroke=3, children=[
         icon("Icon", "Group", 70, U(0, 4, 0.5, 0), (0, 0.5)),
         text("Text", "Join our group for 2 Luck Potions + cash!", U(1, -220, 1, -8), U(0, 78, 0, 4), ts=16, display=True,
              stroke=2, xa="Left"),
         button("Claim", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="Claim", ts=22),
     ])
-    event = plate("Event", U(0.5, -18, 0, 84), U(1, -12, 0, 462), (1, 0), tint="#FF78E6", stud=0.3, stroke=3, children=[
+    event = plate("Event", U(0.5, -18, 0, 84), U(1, -12, 0, 318), (1, 0), tint="#FF78E6", stud=0.3, stroke=3, children=[
         icon("Icon", "Event", 70, U(0, 4, 0.5, 0), (0, 0.5)),
         text("Name", "Meteor Weekend", U(1, -220, 0, 28), U(0, 78, 0, 6), ts=21, display=True, stroke=2.5, xa="Left",
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 10})]),
@@ -620,14 +620,24 @@ def rewards():
         button("SignUp", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color=PREMIUM, label="Sign up", ts=20, label_color=INK),
     ])
     body = [
-        text("DailyTitle", "Daily Rewards", U(1, -24, 0, 30), U(0, 16, 0, 72), ts=24, color=INK, display=True, xa="Left"),
-        text("Streak", "Streak: 0 days", U(0, 260, 0, 30), U(1, -16, 0, 72), (1, 0), ts=18, color=SUB, heavy=True, xa="Right"),
+        text("Streak", "Streak: 0 days", U(1, -32, 0, 30), U(0.5, 0, 0, 72), (0.5, 0), ts=20, color=SUB, heavy=True),
         days,
-        button("ClaimDaily", U(0, 280, 0, 52), U(0.5, 0, 0, 246), (0.5, 0), color=SUCCESS, label="Claim Day 1", ts=24),
-        text("GiftsTitle", "Playtime Gifts", U(1, -24, 0, 30), U(0, 16, 0, 306), ts=24, color=INK, display=True, xa="Left"),
-        gifts, group, event,
+        button("ClaimDaily", U(0, 280, 0, 52), U(0.5, 0, 0, 250), (0.5, 0), color=SUCCESS, label="Claim Day 1", ts=24),
+        group, event,
     ]
-    write("Daily", screen([dim(), window(760, 560, "Rewards", "Daily", body, header="#FF5FA2")], order=10, enabled=False))
+    write("Daily", screen([dim(), window(760, 416, "Daily Rewards", "Daily", body, header="#FF5FA2")], order=10, enabled=False))
+
+    # Playtime gifts: their own window (green Gifts button on the rail).
+    gifts = frame("Gifts", U(1, -24, 0, 240), U(0, 12, 0, 112), children=[
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 140, 0, 112), "CellPadding": U(0, 12, 0, 12), "SortOrder": "LayoutOrder",
+                                        "HorizontalAlignment": "Center"}),
+    ] + [reward_card(f"Gift{i}", "5:00", i, 140, 112, 64) for i in range(1, 7)])
+    gift_body = [
+        text("Info", "Free gifts the longer you play! They reset when you rejoin.", U(1, -24, 0, 30), U(0.5, 0, 0, 74), (0.5, 0),
+             ts=18, color=SUB, heavy=True),
+        gifts,
+    ]
+    write("Playtime", screen([dim(), window(500, 372, "Playtime Gifts", "Gift", gift_body, header=SUCCESS)], order=10, enabled=False))
 
     # Stay offer: pops when the player opens the Roblox menu (about to leave).
     stay = plate("Window", U(0, 440, 0, 230), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, children=[
