@@ -151,8 +151,9 @@ def text(name, value, size, pos=U(0, 0, 0, 0), anchor=(0, 0), ts=20, color=WHITE
 
 
 def icon(name, image, px, pos=U(0, 0, 0, 0), anchor=(0, 0), **extra):
+    extra.setdefault("ZIndex", 3)
     return node(name, "ImageLabel", base(U(0, px, 0, px), pos, anchor, BackgroundTransparency=1, Image=img(image),
-                                         ScaleType="Fit", ZIndex=3, **extra))
+                                         ScaleType="Fit", **extra))
 
 
 def button(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), color=SUCCESS, label=None, ts=24, label_color=WHITE,
@@ -279,14 +280,26 @@ def hud():
                            zone_row("Europa", "Europa Ice", 5),
                        ]),
                    ])
-    moon = plate("MoonPanel", U(0, 360, 0, 40), U(0.5, 0, 0, 68), (0.5, 0), BG, stud=0.6, children=[
+    # Moon Clean: small title, a thick bar with a moving shine, the % on the right. Turns
+    # orange for the Meteor Shower countdown and the shower itself (HudController).
+    moon = plate("MoonPanel", U(0, 380, 0, 52), U(0.5, 0, 0, 66), (0.5, 0), BG, stud=None, stroke=3, children=[
         autoscale(),
-        icon("Icon", "Star", 46, U(0, -12, 0.5, 0), (0, 0.5)),
-        frame("Bar", U(1, -48, 1, -14), U(0, 38, 0.5, 0), (0, 0.5), bg="#2A3260", children=[
-            corner(8),
-            frame("Fill", U(0.3, 0, 1, 0), bg=ACCENT, children=[corner(8)]),
+        icon("Icon", "Star", 50, U(0, -14, 0.5, 0), (0, 0.5), ZIndex=4),
+        text("Title", "MOON CLEAN", U(0, 200, 0, 16), U(0, 42, 0, 4), ts=13, color=ACCENT, display=True, xa="Left", stroke=1.5),
+        text("Value", "0%", U(0, 120, 0, 16), U(1, -10, 0, 4), (1, 0), ts=13, color=WHITE, display=True, xa="Right", stroke=1.5),
+        frame("Bar", U(1, -52, 0, 20), U(0, 42, 1, -8), (0, 1), bg="#0B0E1E", children=[
+            border(INK, 2),
+            frame("Fill", U(0.3, 0, 1, 0), bg=ACCENT, ClipsDescendants=True, children=[
+                node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#B8C4D8"]]}, "Rotation": 90}),
+                frame("Shine", U(0, 40, 1, 0), U(-0.2, 0, 0, 0), bg=WHITE, BackgroundTransparency=0.55, Rotation=0, ZIndex=3),
+            ]),
+            node("Ticks", "Frame", base(U(1, 0, 1, 0), BackgroundTransparency=1, ZIndex=4), [
+                frame(f"Tick{i}", U(0, 2, 1, 0), U(i / 4, -1, 0, 0), bg="#0B0E1E", BackgroundTransparency=0.4, ZIndex=4)
+                for i in (1, 2, 3)
+            ]),
         ]),
-        text("Label", "Moon Clean 0%", U(1, -48, 1, 0), U(0, 38, 0, 0), ts=19, heavy=True, stroke=2.5, ZIndex=3),
+        # Kept for older code paths that set one line of text.
+        text("Label", "", U(1, -48, 0, 16), U(0, 42, 0, 4), ts=13, display=True, Visible=False),
     ])
     # Active boosts (server luck, 2x cash): chips stacked in the bottom-right corner.
     # Phones move them to the top right (HudController), clear of the jump button.
@@ -308,11 +321,17 @@ def hud():
                           text("Text", "", U(1, 0, 0, 0), ts=15, color=WHITE, heavy=True, xa="Left", ya="Top", AutomaticSize="Y",
                                LayoutOrder=2, ZIndex=9),
                       ])
-    toasts = frame("Toasts", U(0, 520, 0, 200), U(0.5, 0, 0, 156), (0.5, 0), children=[
-        autoscale(), vlist(6),
-        node("Template", "TextLabel", base(U(0, 0, 0, 38), BackgroundColor3=BG, Text="", TextColor3=WHITE, TextSize=20, FontFace=BODY_HEAVY,
-                                          AutomaticSize="X", Visible=False, ZIndex=2),
-             [corner(), border(INK, 3), padding(14, 14, 0)]),
+    # Toasts: no box, just bold text with a thick outline and an optional icon, popping in
+    # under the Moon bar. The same message twice turns into "x2" instead of stacking.
+    toasts = frame("Toasts", U(0, 640, 0, 220), U(0.5, 0, 0, 132), (0.5, 0), children=[
+        autoscale(), vlist(2),
+        node("Template", "Frame", base(U(0, 0, 0, 34), BackgroundTransparency=1, AutomaticSize="X", Visible=False), [
+            hlist(6),
+            icon("Icon", "Cash", 30, LayoutOrder=1, Visible=False),
+            text("Text", "", U(0, 0, 1, 0), ts=24, display=True, stroke=3, AutomaticSize="X", TextWrapped=False, LayoutOrder=2),
+            text("Count", "", U(0, 0, 1, 0), ts=20, color=PREMIUM, display=True, stroke=3, AutomaticSize="X", TextWrapped=False,
+                 LayoutOrder=3, Visible=False),
+        ]),
     ])
     announcement = plate("Announcement", U(0, 0, 0, 64), U(0.5, 0, 0.3, 0), (0.5, 0.5), BG, stud=0.5, AutomaticSize="X", Visible=False,
                          children=[
@@ -397,13 +416,16 @@ def hud():
     ])
     pointer = node("Pointer", "ImageLabel", base(U(0, 56, 0, 56), anchor=(0.5, 1), BackgroundTransparency=1, Image=img("ArrowDown"),
                                                  Visible=False, ZIndex=20))
-    # Sweep combo meter (x1.0 - x3.0) above the hint.
-    combo = plate("Combo", U(0, 170, 0, 40), U(0.5, 0, 1, -176), (0.5, 1), BG, stud=0.5, Visible=False, children=[
+    # Sweep combo: a big tilted "x2.4" next to your character that pops every time it goes up,
+    # changes colour as it climbs, and a thin bar for the time left before it drops.
+    combo = frame("Combo", U(0, 200, 0, 96), U(0.5, 120, 0.5, -40), (0, 0.5), Visible=False, Rotation=-6, children=[
         autoscale(),
-        frame("Bar", U(1, -12, 0, 8), U(0.5, 0, 1, -5), (0.5, 1), bg="#2A3260", children=[
-            frame("Fill", U(0.5, 0, 1, 0), bg=PREMIUM),
+        text("Title", "COMBO", U(1, 0, 0, 22), ts=18, color=WHITE, display=True, stroke=2.5, xa="Left"),
+        text("Label", "x1.0", U(1, 0, 0, 56), U(0, 0, 0, 18), ts=52, color=PREMIUM, display=True, stroke=4, xa="Left"),
+        frame("Bar", U(0, 120, 0, 8), U(0, 2, 0, 80), bg="#0B0E1E", children=[
+            border(INK, 2),
+            frame("Fill", U(1, 0, 1, 0), bg=PREMIUM),
         ]),
-        text("Label", "COMBO x1.0", U(1, 0, 1, -10), ts=22, color=PREMIUM, display=True, stroke=2.5),
     ])
     write("Hud", screen([rail, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, sweep, hotbar, hint, combo, picker,
                          spot, pointer], order=1))

@@ -454,8 +454,8 @@
           "BackgroundTransparency": 1,
           "Image": "rbxassetid://101130746797217",
           "ScaleType": "Fit",
-          "ZIndex": 3,
-          "Visible": false
+          "Visible": false,
+          "ZIndex": 3
          }
         },
         {
@@ -1428,8 +1428,8 @@
         "BackgroundTransparency": 1,
         "Image": "rbxassetid://101130746797217",
         "ScaleType": "Fit",
-        "ZIndex": 3,
-        "Visible": false
+        "Visible": false,
+        "ZIndex": 3
        }
       },
       {

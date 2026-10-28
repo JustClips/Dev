@@ -4,6 +4,7 @@
 -- wallet (cash + backpack) bottom-left, next-tool card + Auto on the right,
 -- the mobile SWEEP button, toasts and server announcements.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -24,10 +25,10 @@ local Zones = require(Shared.Config.Zones)
 local MAX_TOASTS = 4
 local TOAST_SECONDS = 3
 local TOAST_COLORS: { [string]: Color3 } = {
-	Good = Color3.fromRGB(124, 245, 200),
-	Bad = Color3.fromRGB(255, 120, 130),
-	Sell = Color3.fromRGB(255, 200, 60),
-	Egg = Color3.fromRGB(255, 190, 255),
+	Good = Color3.fromRGB(124, 255, 140),
+	Bad = Color3.fromRGB(255, 92, 104),
+	Sell = Color3.fromRGB(255, 214, 72),
+	Egg = Color3.fromRGB(255, 170, 255),
 	Info = Color3.fromRGB(255, 255, 255),
 }
 local LUCK_TIERS = { 16, 8, 4, 2 }
@@ -45,46 +46,90 @@ local HudController = {}
 local C: any
 local hud: ScreenGui
 local el: { [string]: any } = {}
-local toasts: { TextLabel } = {}
+local toasts: { Frame } = {}
 local pulseTween: Tween? = nil
 
+local TOAST_ICONS: { [string]: string } = {
+	Sell = "Icon_Cash",
+	Egg = "Icon_Egg",
+}
+
+-- Bold outlined text under the Moon bar, with an icon for cash and eggs. The same message
+-- again while it's still up bumps a "x2" counter instead of stacking a copy.
 function HudController:Toast(text: string, kind: string?)
 	if text == "" then
 		return
 	end
-	local template = el.ToastTemplate :: TextLabel
+	local k = kind or "Info"
+	for _, existing in toasts do
+		if existing:GetAttribute("Message") == text and existing.Parent then
+			local n = (existing:GetAttribute("Count") or 1) + 1
+			existing:SetAttribute("Count", n)
+			existing:SetAttribute("Until", os.clock() + TOAST_SECONDS)
+			local count = existing:FindFirstChild("Count") :: TextLabel
+			count.Text = `x{n}`
+			count.Visible = true
+			local pop = existing:FindFirstChild("Pop") :: UIScale?
+			if pop and not Ui.reducedMotion() then
+				pop.Scale = 1.18
+				TweenService:Create(pop, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+			end
+			return
+		end
+	end
+	if k == "Bad" then
+		Ui.sound("Error")
+	end
+	local template = el.ToastTemplate :: Frame
 	local toast = template:Clone()
 	toast.Name = "Toast"
-	toast.Text = text
-	toast.TextColor3 = TOAST_COLORS[kind or "Info"] or TOAST_COLORS.Info
+	toast:SetAttribute("Message", text)
+	toast:SetAttribute("Until", os.clock() + TOAST_SECONDS)
+	local label = toast:FindFirstChild("Text") :: TextLabel
+	label.Text = text
+	label.TextColor3 = TOAST_COLORS[k] or TOAST_COLORS.Info
+	local iconName = TOAST_ICONS[k]
+	local iconLabel = toast:FindFirstChild("Icon") :: ImageLabel
+	iconLabel.Visible = iconName ~= nil
+	if iconName then
+		iconLabel.Image = AssetLibrary.image(iconName)
+	end
 	toast.Visible = true
 	toast.LayoutOrder = os.clock() * 100 // 1
+	local pop = Instance.new("UIScale")
+	pop.Name = "Pop"
+	pop.Scale = if Ui.reducedMotion() then 1 else 0.5
+	pop.Parent = toast
 	toast.Parent = template.Parent
+	TweenService:Create(pop, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 	table.insert(toasts, toast)
 	while #toasts > MAX_TOASTS do
 		table.remove(toasts, 1):Destroy()
 	end
-	if not Ui.reducedMotion() then
-		local pop = Instance.new("UIScale")
-		pop.Scale = 0.7
-		pop.Parent = toast
-		TweenService:Create(pop, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-	end
-	task.delay(TOAST_SECONDS, function()
-		if toast.Parent then
-			local stroke = toast:FindFirstChildOfClass("UIStroke")
-			local fade = TweenInfo.new(0.35)
-			TweenService:Create(toast, fade, { TextTransparency = 1, BackgroundTransparency = 1 }):Play()
-			if stroke then
-				TweenService:Create(stroke, fade, { Transparency = 1 }):Play()
-			end
-			task.wait(0.35)
-			local i = table.find(toasts, toast)
-			if i then
-				table.remove(toasts, i)
-			end
-			toast:Destroy()
+	task.spawn(function()
+		while toast.Parent and os.clock() < (toast:GetAttribute("Until") or 0) do
+			task.wait(0.1)
 		end
+		if not toast.Parent then
+			return
+		end
+		local fade = TweenInfo.new(0.3)
+		for _, child in toast:GetDescendants() do
+			if child:IsA("TextLabel") then
+				TweenService:Create(child, fade, { TextTransparency = 1 }):Play()
+			elseif child:IsA("ImageLabel") then
+				TweenService:Create(child, fade, { ImageTransparency = 1 }):Play()
+			elseif child:IsA("UIStroke") then
+				TweenService:Create(child, fade, { Transparency = 1 }):Play()
+			end
+		end
+		TweenService:Create(pop, fade, { Scale = 0.85 }):Play()
+		task.wait(0.3)
+		local i = table.find(toasts, toast)
+		if i then
+			table.remove(toasts, i)
+		end
+		toast:Destroy()
 	end)
 end
 
@@ -185,26 +230,46 @@ local function render(data)
 	-- The step card above the hotbar belongs to TutorialController.
 end
 
+local ORANGE = Color3.fromRGB(255, 154, 60)
+local lastClean = -1
+
 local function renderServer()
 	local eventState = State.server("EventState") or "Filling"
 	local endsAt = State.server("EventEndsAt") or 0
 	local left = math.max(0, endsAt - State.now())
+	local fill = el.MoonFill :: Frame
+	local function setFill(fraction: number)
+		TweenService:Create(fill, TweenInfo.new(0.4, Enum.EasingStyle.Quad), { Size = UDim2.fromScale(math.clamp(fraction, 0.02, 1), 1) }):Play()
+	end
 	if eventState == "Countdown" then
-		el.MoonLabel.Text = `Meteor Shower in {Format.time(left)}`
-		el.MoonFill.Size = UDim2.fromScale(1, 1)
-		el.MoonFill.BackgroundColor3 = Color3.fromRGB(255, 154, 60)
+		el.MoonTitle.Text = "METEOR SHOWER IN"
+		el.MoonTitle.TextColor3 = ORANGE
+		el.MoonValue.Text = Format.time(left)
+		setFill(1)
+		fill.BackgroundColor3 = ORANGE
 		el.MoonIcon.Image = AssetLibrary.image("Icon_Meteor")
 	elseif eventState == "Shower" then
-		el.MoonLabel.Text = `METEOR SHOWER {Format.time(left)}`
-		el.MoonFill.Size = UDim2.fromScale(math.clamp(left / 60, 0, 1), 1)
-		el.MoonFill.BackgroundColor3 = Color3.fromRGB(255, 154, 60)
+		el.MoonTitle.Text = "METEOR SHOWER!"
+		el.MoonTitle.TextColor3 = ORANGE
+		el.MoonValue.Text = Format.time(left)
+		setFill(left / 60)
+		fill.BackgroundColor3 = ORANGE
 		el.MoonIcon.Image = AssetLibrary.image("Icon_Meteor")
 	else
 		local clean = State.server("MoonClean") or 0
-		el.MoonLabel.Text = `Moon Clean {Format.percent(clean)}`
-		el.MoonFill.Size = UDim2.fromScale(math.max(clean, 0.03), 1)
-		el.MoonFill.BackgroundColor3 = MINT
+		el.MoonTitle.Text = "MOON CLEAN"
+		el.MoonTitle.TextColor3 = MINT
+		el.MoonValue.Text = Format.percent(clean)
+		setFill(clean)
+		fill.BackgroundColor3 = MINT
 		el.MoonIcon.Image = AssetLibrary.image("Icon_Star")
+		-- A little bump on the panel each time the server's Moon gets cleaner.
+		if lastClean >= 0 and math.floor(clean * 100) > math.floor(lastClean * 100) and not Ui.reducedMotion() then
+			local scale = el.MoonScale :: UIScale
+			scale.Scale = Ui.scale() * 1.06
+			TweenService:Create(scale, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = Ui.scale() }):Play()
+		end
+		lastClean = clean
 	end
 end
 
@@ -369,7 +434,10 @@ function HudController:Init(controllers)
 	el.BackpackFill = Ui.find(hud, "Wallet.BackpackPanel.Bar.Fill")
 	el.BackpackAmount = Ui.find(hud, "Wallet.BackpackPanel.Bar.Amount")
 	el.BackpackFull = Ui.find(hud, "Wallet.BackpackPanel.Full")
-	el.MoonLabel = Ui.find(hud, "MoonPanel.Label")
+	el.MoonTitle = Ui.find(hud, "MoonPanel.Title")
+	el.MoonValue = Ui.find(hud, "MoonPanel.Value")
+	el.MoonScale = Ui.find(hud, "MoonPanel.AutoScale")
+	el.MoonShine = Ui.find(hud, "MoonPanel.Bar.Fill.Shine")
 	el.MoonFill = Ui.find(hud, "MoonPanel.Bar.Fill")
 	el.MoonIcon = Ui.find(hud, "MoonPanel.Icon")
 	el.Announcement = Ui.find(hud, "Announcement")
@@ -387,6 +455,7 @@ function HudController:Init(controllers)
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
 	el.Combo = Ui.find(hud, "Combo")
 	el.ComboFill = Ui.find(hud, "Combo.Bar.Fill")
+	el.ComboScale = Ui.find(hud, "Combo.AutoScale")
 	el.ComboLabel = Ui.find(hud, "Combo.Label")
 	el.ZoneRows = {}
 	for _, zoneId in ZONE_ORDER do
@@ -394,17 +463,60 @@ function HudController:Init(controllers)
 	end
 end
 
--- Sweep combo meter (x1 -> x3 cash). Shows while you keep sweeping, hides after a pause.
+-- Sweep combo (x1 -> x3 cash): a big tilted "x2.4" next to your character. It pops and
+-- chimes higher each time it climbs, goes white -> gold -> orange -> pink, and the bar
+-- under it runs down until the combo drops.
+local COMBO_HOLD = 1.8
+local COMBO_COLORS = {
+	{ at = 1, color = Color3.fromRGB(255, 255, 255) },
+	{ at = 1.5, color = Color3.fromRGB(255, 214, 72) },
+	{ at = 2.2, color = Color3.fromRGB(255, 154, 60) },
+	{ at = 2.8, color = Color3.fromRGB(255, 90, 200) },
+}
 local comboToken = 0
+local comboShown = 1
+local comboEnds = 0
+local lastComboSound = 0
 function HudController:SetCombo(combo: number)
 	comboToken += 1
 	local token = comboToken
-	el.Combo.Visible = combo > 1.05
-	el.ComboLabel.Text = string.format("COMBO x%.1f", combo)
-	el.ComboFill.Size = UDim2.fromScale(math.clamp((combo - 1) / 2, 0, 1), 1)
-	task.delay(1.8, function()
+	local frame = el.Combo :: Frame
+	local label = el.ComboLabel :: TextLabel
+	if combo <= 1.05 then
+		frame.Visible = false
+		comboShown = 1
+		return
+	end
+	local color = COMBO_COLORS[1].color
+	for _, step in COMBO_COLORS do
+		if combo >= step.at then
+			color = step.color
+		end
+	end
+	label.Text = string.format("x%.1f", combo)
+	label.TextColor3 = color
+	el.ComboFill.BackgroundColor3 = color
+	comboEnds = os.clock() + COMBO_HOLD
+	if not frame.Visible then
+		frame.Visible = true
+	end
+	-- Pop + rising chime each time it goes up a notch.
+	if combo >= comboShown + 0.1 then
+		comboShown = combo
+		if not Ui.reducedMotion() then
+			local scale = el.ComboScale :: UIScale
+			scale.Scale = Ui.scale() * 1.35
+			TweenService:Create(scale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = Ui.scale() }):Play()
+		end
+		if os.clock() - lastComboSound > 0.18 then
+			lastComboSound = os.clock()
+			Ui.sound("Combo", 0.8 + (combo - 1) * 0.35)
+		end
+	end
+	task.delay(COMBO_HOLD, function()
 		if comboToken == token then
-			el.Combo.Visible = false
+			frame.Visible = false
+			comboShown = 1
 		end
 	end)
 end
@@ -415,6 +527,16 @@ end
 
 function HudController:Start()
 	layoutForTouch()
+	-- Per frame: the shine sliding across the Moon bar, the combo timer running down.
+	RunService.RenderStepped:Connect(function()
+		local t = (os.clock() % 2.6) / 2.6
+		local shine = el.MoonShine :: Frame
+		shine.Position = UDim2.new(-0.3 + t * 1.8, 0, 0, 0)
+		local combo = el.Combo :: Frame
+		if combo.Visible then
+			el.ComboFill.Size = UDim2.fromScale(math.clamp((comboEnds - os.clock()) / COMBO_HOLD, 0, 1), 1)
+		end
+	end)
 
 	Ui.button(Ui.find(hud, "Rail.ShopButton"), function()
 		C.ShopController:Toggle()
