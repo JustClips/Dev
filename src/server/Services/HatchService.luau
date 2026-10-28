@@ -60,6 +60,10 @@ function HatchService:EnsureSpots(data)
 			local x, z = EggSpots.auto(data.Hatching, entry.Uid)
 			entry.X, entry.Z = x or 0, z or 0
 		end
+		if not entry.StartsAt then
+			local def = Eggs.ByName[entry.Rarity]
+			entry.StartsAt = entry.EndsAt - (if def then def.HatchSeconds else 0)
+		end
 	end
 end
 
@@ -128,6 +132,7 @@ function HatchService:PlaceEgg(player: Player, uid: string, position: Vector3?):
 		Z = z,
 		Weight = egg.Weight,
 		Size = egg.Size,
+		StartsAt = os.time(),
 		EndsAt = os.time() + seconds,
 	})
 	changed(player)
@@ -221,6 +226,9 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 			IsNew = isNew,
 			Income = Aliens.income(pet),
 			Weight = weight,
+			EggUid = entry.Uid,
+			EggRarity = entry.Rarity,
+			EggWeight = entry.Weight,
 			X = entry.X,
 			Z = entry.Z,
 			FreeSlot = S.AlienService:PlacedCount(player) < S.AlienService:GetSlotCount(player),

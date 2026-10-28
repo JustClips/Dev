@@ -166,6 +166,7 @@ export type HatchEntry = {
 	Z: number?,
 	Weight: number?,
 	Size: string?,
+	StartsAt: number?, -- when it was put down (the egg grows from then until EndsAt)
 	EndsAt: number,
 }
 
@@ -243,6 +244,7 @@ export type PlayerSnapshot = {
 	TutorialStep: string,
 	TutorialTarget: Vector3?,
 	AutoSweep: boolean,
+	Settings: { Music: number?, Sfx: number? },
 	ServerTime: number,
 }
 

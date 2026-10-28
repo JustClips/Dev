@@ -20,6 +20,7 @@ local EVENTS: { [string]: number } = {
 	MeteorImpact = 0, -- server -> all: meteor visual at a position
 	BunnyPop = 0, -- server -> all: a dust bunny got swept at a position
 	SetAutoSweep = 4, -- client: toggle auto sweep (gamepass)
+	SetSetting = 6, -- client: ("Music" | "Sfx", 0-1) volume sliders, saved
 }
 
 local FUNCTIONS: { [string]: number } = {

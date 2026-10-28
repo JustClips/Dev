@@ -14,7 +14,7 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui") :: PlayerGui
 
 -- Modal screens: only one is open at a time.
-local MODALS = { "Shop", "Index", "Rebirth", "Garage", "Upgrades", "Inventory", "Daily", "Playtime", "Events" }
+local MODALS = { "Shop", "Index", "Rebirth", "Garage", "Upgrades", "Inventory", "Daily", "Playtime", "Events", "Settings" }
 local POP = TweenInfo.new(0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PRESS = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local HOVER = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -24,21 +24,50 @@ local Ui = {}
 local soundCache: { [string]: Sound } = {}
 local currentScale = 1
 
-function Ui.sound(name: string)
-	local id = (Sounds :: any)[name]
-	if type(id) ~= "string" or id == "" then
+-- The "SFX" and "Music" sound groups (volume sliders in the settings window).
+function Ui.soundGroup(name: string): SoundGroup
+	local group = SoundService:FindFirstChild(name)
+	if group and group:IsA("SoundGroup") then
+		return group
+	end
+	local g = Instance.new("SoundGroup")
+	g.Name = name
+	g.Volume = 1
+	g.Parent = SoundService
+	return g
+end
+
+-- Plays a sound effect from Config/Sounds. speed changes the pitch (combo blips).
+function Ui.sound(name: string, speed: number?)
+	local def = Sounds.Sfx[name]
+	if not def or def.Id == "" then
 		return
 	end
 	local sound = soundCache[name]
 	if not sound then
 		local s = Instance.new("Sound")
-		s.SoundId = id
-		s.Volume = Sounds.Volumes[name] or 0.5
+		s.Name = name
+		s.SoundId = def.Id
+		s.Volume = def.Volume
+		s.PlaybackSpeed = def.Speed or 1
+		s.SoundGroup = Ui.soundGroup("SFX")
 		s.Parent = SoundService
 		soundCache[name] = s
 		sound = s
 	end
-	SoundService:PlayLocalSound(sound)
+	-- A fresh copy per play, so sounds can overlap and still follow the SFX slider.
+	local copy = sound:Clone()
+	copy.PlaybackSpeed = (def.Speed or 1) * (speed or 1)
+	copy.Parent = SoundService
+	copy.Ended:Once(function()
+		copy:Destroy()
+	end)
+	copy:Play()
+	task.delay(12, function()
+		if copy.Parent then
+			copy:Destroy()
+		end
+	end)
 end
 
 function Ui.screen(name: string): ScreenGui

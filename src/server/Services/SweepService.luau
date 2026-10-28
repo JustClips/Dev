@@ -114,6 +114,13 @@ function SweepService:Init(services)
 			S.StateService:Mark(player)
 		end
 	end)
+	-- Volume sliders (settings window), saved with the profile.
+	Net.onEvent("SetSetting", function(player, key, value)
+		local data = S.DataService:GetData(player)
+		if data and (key == "Music" or key == "Sfx") and type(value) == "number" and value == value then
+			data.Settings[key] = math.clamp(math.floor(value * 100 + 0.5) / 100, 0, 1)
+		end
+	end)
 end
 
 return SweepService

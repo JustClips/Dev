@@ -744,29 +744,74 @@ def offer():
 
 # ---------------------------------------------------------------- Hatch
 def hatch():
-    stage = frame("Stage", U(0, 560, 0, 560), U(0.5, 0, 0.5, 0), (0.5, 0.5), children=[
+    """Egg opening. In the world when you're near the egg (HatchController moves the camera),
+    otherwise in the Stage window. Card = what hatched, with Place on base / Keep in bag."""
+    stage = frame("Stage", U(0, 520, 0, 520), U(0.5, 0, 0.45, 0), (0.5, 0.5), Visible=False, children=[
         autoscale(),
-        node("Glow", "ImageLabel", base(U(1.3, 0, 1.3, 0), U(0.5, 0, 0.45, 0), (0.5, 0.5), BackgroundTransparency=1,
-                                        Image="rbxasset://textures/particles/sparkles_main.dds", ImageColor3=ACCENT, ImageTransparency=0.35,
-                                        ZIndex=0)),
-        node("Viewport", "ViewportFrame", base(U(0, 440, 0, 400), U(0.5, 0, 0, 0), (0.5, 0), BackgroundTransparency=1,
+        node("Rays", "ImageLabel", base(U(1.25, 0, 1.25, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
+                                        Image=img("Rays"), ImageColor3=ACCENT, ImageTransparency=1, ZIndex=0)),
+        node("Glow", "ImageLabel", base(U(1, 0, 1, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
+                                        Image=img("Glow"), ImageColor3=ACCENT, ImageTransparency=1, ZIndex=0)),
+        node("Viewport", "ViewportFrame", base(U(0, 440, 0, 440), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
                                                Ambient="#AEB8D8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=1)),
-        text("Name", "", U(1, 0, 0, 56), U(0.5, 0, 0, 396), (0.5, 0), ts=40, display=True, stroke=3.5),
-        text("Sub", "", U(1, 0, 0, 30), U(0.5, 0, 0, 452), (0.5, 0), ts=24, heavy=True, stroke=2.5),
-        plate("New", U(0, 110, 0, 40), U(0.5, 150, 0, 380), (0.5, 0.5), PREMIUM, stroke=3, stud=None, Rotation=-8, Visible=False, children=[
-            text("Label", "NEW!", U(1, 0, 1, 0), ts=26, color=INK, display=True),
+    ])
+    card = plate("Card", U(0, 480, 0, 132), U(0.5, 0, 1, -184), (0.5, 1), BG, stud=None, stroke=4, Visible=False, ZIndex=4, children=[
+        autoscale(),
+        text("Rarity", "LEGENDARY", U(1, -20, 0, 22), U(0.5, 0, 0, 10), (0.5, 0), ts=18, display=True, stroke=2, ZIndex=5),
+        text("Name", "", U(1, -20, 0, 44), U(0.5, 0, 0, 30), (0.5, 0), ts=36, display=True, stroke=3, ZIndex=5, TextScaled=True),
+        text("Info", "", U(1, -20, 0, 26), U(0.5, 0, 0, 78), (0.5, 0), ts=20, heavy=True, stroke=2, ZIndex=5, RichText=True),
+        plate("New", U(0, 100, 0, 38), U(1, 14, 0, -14), (1, 0), PREMIUM, stroke=3, stud=None, Rotation=8, Visible=False, ZIndex=6,
+              children=[text("Label", "NEW!", U(1, 0, 1, 0), ts=24, color=INK, display=True, ZIndex=7)]),
+        frame("Choice", U(0, 440, 0, 54), U(0.5, 0, 1, 12), (0.5, 0), Visible=False, ZIndex=5, children=[
+            hlist(14),
+            button("Place", U(0, 220, 0, 54), color=SUCCESS, label="Place on base", ts=22, LayoutOrder=1, ZIndex=5),
+            button("Keep", U(0, 190, 0, 54), color=HEADER, label="Keep in bag", ts=22, LayoutOrder=2, ZIndex=5),
         ]),
-        text("Hint", "Tap to skip", U(1, 0, 0, 24), U(0.5, 0, 1, -8), (0.5, 1), ts=18, heavy=True, stroke=2, TextTransparency=0.2),
-        frame("Choice", U(0, 420, 0, 56), U(0.5, 0, 1, 56), (0.5, 0), Visible=False, children=[
-            hlist(16),
-            button("Place", U(0, 200, 0, 56), color=SUCCESS, label="Place on base", ts=22, LayoutOrder=1),
-            button("Keep", U(0, 180, 0, 56), color=HEADER, label="Keep in bag", ts=22, LayoutOrder=2),
-        ]),
+        text("Hint", "Click to skip", U(1, 0, 0, 22), U(0.5, 0, 1, 8), (0.5, 0), ts=16, heavy=True, stroke=2, ZIndex=5,
+             TextTransparency=0.15),
+    ])
+    confetti = frame("Confetti", U(1, 0, 1, 0), ZIndex=8, children=[
+        node("Template", "ImageLabel", base(U(0, 26, 0, 26), anchor=(0.5, 0.5), BackgroundTransparency=1, Image=img("Sparkle"),
+                                            Visible=False, ZIndex=8)),
     ])
     flash = frame("Flash", U(1, 0, 1, 0), bg=WHITE, BackgroundTransparency=1, ZIndex=10)
-    tree = screen([stage, flash], order=20, enabled=False, inset=True)
+    tree = screen([stage, card, confetti, flash], order=20, enabled=False, inset=True)
     tree["properties"]["ScreenInsets"] = "None"
     write("Hatch", tree)
+
+
+def settings():
+    """Gear button in the top bar (next to Roblox's own buttons) and the Settings window
+    with Music and Sound effects sliders."""
+    gear = node("Gear", "ImageButton", base(U(0, 44, 0, 44), U(0, 116, 0, 12), BackgroundColor3="#000000",
+                                            BackgroundTransparency=0.3, Image="", AutoButtonColor=False), [
+        node("Corner", "UICorner", {"CornerRadius": [1, 0]}),  # matches Roblox's own round top bar buttons
+        icon("Icon", "Gear", 28, U(0.5, 0, 0.5, 0), (0.5, 0.5)),
+    ])
+    write("Topbar", screen([gear], order=6, inset=True))
+
+    def row(name, label, ico, y):
+        return plate(name, U(1, -28, 0, 84), U(0, 14, 0, y), tint=WHITE, stud=0.2, children=[
+            button("Mute", U(0, 60, 0, 60), U(0, 12, 0.5, 0), (0, 0.5), color=HEADER, children=[
+                icon("Icon", ico, 40, U(0.5, 0, 0.5, 0), (0.5, 0.5)),
+            ]),
+            text("Label", label, U(0, 220, 0, 30), U(0, 86, 0, 8), ts=22, color=INK, display=True, xa="Left"),
+            text("Value", "60%", U(0, 80, 0, 30), U(1, -14, 0, 8), (1, 0), ts=22, color=HEADER, display=True, xa="Right"),
+            frame("Track", U(1, -112, 0, 16), U(0, 86, 0, 52), bg="#0B0E1E", children=[
+                border(INK, 3),
+                frame("Fill", U(0.6, 0, 1, 0), bg=SUCCESS),
+                frame("Knob", U(0, 22, 0, 34), U(0.6, 0, 0.5, 0), (0.5, 0.5), bg=WHITE, ZIndex=3, children=[border(INK, 3)]),
+                node("Hit", "TextButton", base(U(1, 24, 0, 48), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, Text="",
+                                                ZIndex=4)),
+            ]),
+        ])
+
+    body = [
+        row("Music", "Music", "Music", 80),
+        row("Sfx", "Sound effects", "Speaker", 176),
+        text("Track", "", U(1, -28, 0, 22), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True),
+    ]
+    write("Settings", screen([dim(), window(520, 310, "Settings", "Gear", body, header="#5A6585")], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Garage
@@ -842,6 +887,7 @@ def main():
     rebirth()
     offer()
     hatch()
+    settings()
     garage()
     upgrades()
     loading()

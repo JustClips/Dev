@@ -45,4 +45,22 @@ function Eggs.order(rarity: string): number
 	return if def then def.Order else 0
 end
 
+-- Growing eggs start small and grow until they're ready to open.
+Eggs.StartScale = 0.4
+
+-- How far along a growing egg is (0 just placed, 1 ready).
+function Eggs.progress(startsAt: number?, endsAt: number, now: number): number
+	local start = startsAt or endsAt
+	if endsAt <= start then
+		return if now >= endsAt then 1 else 0
+	end
+	return math.clamp((now - start) / (endsAt - start), 0, 1)
+end
+
+-- Size of a growing egg as a share of its full size (eases out, so the growth shows early).
+function Eggs.growScale(progress: number): number
+	local eased = 1 - (1 - progress) ^ 2
+	return Eggs.StartScale + (1 - Eggs.StartScale) * eased
+end
+
 return Eggs

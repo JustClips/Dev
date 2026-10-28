@@ -87,8 +87,10 @@ local function showEgg(model: Model)
 	nameLabel.TextColor3 = rarity.Color
 	weightLabel.Text = `{Weights.format(weight)} · {class.Name}`
 	weightLabel.TextColor3 = class.Color
-	local left = (model:GetAttribute("EndsAt") or 0) - State.now()
-	incomeLabel.Text = if left > 0 then `Hatches in {Format.time(left)}` else "Ready to open!"
+	local endsAt = model:GetAttribute("EndsAt") or 0
+	local left = endsAt - State.now()
+	local grown = Eggs.progress(model:GetAttribute("StartsAt"), endsAt, Workspace:GetServerTimeNow())
+	incomeLabel.Text = if left > 0 then `Grown {math.floor(grown * 100)}% · ready in {Format.time(left)}` else "Ready to open!"
 	local low, high = Weights.petRange(rarityName, rarityName, weight)
 	extraLabel.Text = `Pets: {Weights.format(low)} - {Weights.format(high)}`
 	return true

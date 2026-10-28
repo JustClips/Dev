@@ -51,7 +51,7 @@ local TEMPLATE: Types.ProfileData = {
 		EventSignups = {},
 	},
 	Stats = { EggsFound = 0, Hatches = 0, Playtime = 0, TilesCleared = 0, Sells = 0 },
-	Settings = { AutoSweep = true },
+	Settings = { AutoSweep = true, Music = 0.6, Sfx = 0.8 },
 }
 
 export type Session = {

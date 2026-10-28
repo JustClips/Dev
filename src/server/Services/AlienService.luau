@@ -92,9 +92,25 @@ local function label(parent: Instance, text: string, color: Color3, height: numb
 	text1.Text = text
 	text1.Parent = plate
 	if tag then
-		-- The client counts these down (HatchController).
+		-- The client counts these down and fills the growth bar (HatchController).
 		text1:SetAttribute("EndsAt", endsAt)
 		CollectionService:AddTag(text1, tag)
+		billboard.Size = UDim2.fromOffset(110, 44)
+		text1.Size = UDim2.new(1, 0, 1, -12)
+		local bar = Instance.new("Frame")
+		bar.Name = "Bar"
+		bar.AnchorPoint = Vector2.new(0.5, 1)
+		bar.Position = UDim2.new(0.5, 0, 1, -5)
+		bar.Size = UDim2.new(1, -12, 0, 7)
+		bar.BackgroundColor3 = Color3.fromRGB(8, 10, 22)
+		bar.BorderSizePixel = 0
+		bar.Parent = plate
+		local fill = Instance.new("Frame")
+		fill.Name = "Fill"
+		fill.Size = UDim2.fromScale(0, 1)
+		fill.BackgroundColor3 = color
+		fill.BorderSizePixel = 0
+		fill.Parent = bar
 	end
 	billboard.Parent = parent
 end
@@ -154,8 +170,12 @@ function AlienService:RefreshBase(player: Player)
 		local scale = Weights.visualScale(Weights.eggMult(entry.Rarity, entry.Weight))
 		local egg = AssetLibrary.egg(entry.Rarity)
 		egg.Name = entry.Uid
-		egg:ScaleTo(scale * 1.25)
+		-- Built at its current size; every client keeps growing it (HatchController).
+		local fullScale = scale * 1.25
+		egg:ScaleTo(fullScale * Eggs.growScale(Eggs.progress(entry.StartsAt, entry.EndsAt, os.time())))
 		egg:PivotTo(spot * CFrame.new(0, 0.35, 0))
+		egg:SetAttribute("FullScale", fullScale)
+		egg:SetAttribute("StartsAt", entry.StartsAt or entry.EndsAt)
 		egg:SetAttribute("Uid", entry.Uid)
 		egg:SetAttribute("Rarity", entry.Rarity)
 		egg:SetAttribute("Zone", entry.Zone)
@@ -184,6 +204,7 @@ function AlienService:RefreshBase(player: Player)
 		local primary = egg.PrimaryPart or egg:FindFirstChildWhichIsA("BasePart")
 		if primary then
 			label(primary, "", rarity.Color, 3.4 * scale, "HatchTimer", entry.EndsAt)
+			egg:SetAttribute("LabelHeight", 3.4 * scale)
 		end
 		egg.Parent = hatching
 	end
