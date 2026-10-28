@@ -3248,6 +3248,8 @@ Assets.AnimationFallback = {
 Assets.Images = {
 	BannerLuck = "rbxassetid://80280328077497",
 	BannerStarter = "rbxassetid://140216401802209",
+	Gear = "rbxassetid://73874897282368",
+	Glow = "rbxassetid://76014021555652",
 	Icon_Alien = "rbxassetid://96284894082842",
 	Icon_Auto = "rbxassetid://140389556652076",
 	Icon_Backpack = "rbxassetid://93587336308441",
@@ -3293,7 +3295,12 @@ Assets.Images = {
 	Icon_Vehicle = "rbxassetid://137244696142454",
 	Icon_Zones = "rbxassetid://76068568124350",
 	Logo = "rbxassetid://135332141267180",
+	Music = "rbxassetid://116962998542276",
+	Rays = "rbxassetid://128826095705493",
+	Ring = "rbxassetid://106486683180492",
 	Sky_Stars = "rbxassetid://132647195236775",
+	Sparkle = "rbxassetid://96720528313601",
+	Speaker = "rbxassetid://134794174733825",
 	Stud = "rbxassetid://139302839809244",
 }
 
