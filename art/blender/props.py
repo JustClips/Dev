@@ -889,3 +889,7 @@ ALL.update({
     "Earth": earth,
     "Signpost": signpost,
 })
+
+# Sweep the World: Earth versions of the old Moon props, under the same names.
+import earth  # noqa: E402  (imported last: it uses the helpers above)
+ALL.update(earth.ALL)

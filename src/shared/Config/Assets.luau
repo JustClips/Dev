@@ -2196,73 +2196,53 @@ Assets.Models = {
 	},
 	Crystal_Blue = {
 		bounds = {
-			max = Vector3.new(1.252, 4.0, 1.882),
-			min = Vector3.new(-1.252, -0.3, -1.191),
+			max = Vector3.new(1.7, 1.309, 1.7),
+			min = Vector3.new(-1.7, 0.0, -1.7),
 		},
-		id = 96240197058912,
+		id = 95092038865367,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "78E6FF",
-				parent = "Body",
 			},
 		},
 	},
 	Crystal_Ice = {
 		bounds = {
-			max = Vector3.new(1.252, 5.5, 1.221),
-			min = Vector3.new(-2.136, -0.3, -1.269),
+			max = Vector3.new(3.2, 8.36, 3.2),
+			min = Vector3.new(-3.2, 0.0, -3.2),
 		},
-		id = 132904146756802,
+		id = 134056346173990,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "D2F8FF",
-				parent = "Body",
 			},
 		},
 	},
 	Crystal_Purple = {
 		bounds = {
-			max = Vector3.new(2.11, 5.0, 1.585),
-			min = Vector3.new(-1.322, -0.3, -1.484),
+			max = Vector3.new(0.65, 2.075, 0.55),
+			min = Vector3.new(-0.65, 0.0, -0.65),
 		},
-		id = 94601935658317,
+		id = 94777758229834,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "C878FF",
-				parent = "Body",
 			},
 		},
 	},
 	Crystal_Red = {
 		bounds = {
-			max = Vector3.new(2.125, 4.5, 1.58),
-			min = Vector3.new(-1.252, -0.3, -1.191),
+			max = Vector3.new(1.667, 7.667, 3.703),
+			min = Vector3.new(-5.845, -0.5, -3.675),
 		},
-		id = 114727308175207,
+		id = 131194685190071,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "FF784A",
-				parent = "Body",
 			},
 		},
 	},
@@ -2486,64 +2466,49 @@ Assets.Models = {
 	},
 	Mushroom_Glow = {
 		bounds = {
-			max = Vector3.new(1.95, 5.0, 1.8),
-			min = Vector3.new(-1.8, 0.0, -1.814),
+			max = Vector3.new(2.0, 2.432, 0.83),
+			min = Vector3.new(-2.0, 0.0, -0.7),
 		},
-		id = 95711482057834,
+		id = 136474999711601,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "9BFFF5",
-				parent = "Body",
 			},
 		},
 	},
 	Mushroom_Mars = {
 		bounds = {
-			max = Vector3.new(1.8, 5.0, 1.8),
-			min = Vector3.new(-1.8, 0.0, -1.8),
+			max = Vector3.new(3.23, 5.33, 3.23),
+			min = Vector3.new(-3.23, 0.0, -3.23),
 		},
-		id = 98868216222020,
+		id = 94155925522557,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "FFF08C",
-				parent = "Body",
 			},
 		},
 	},
 	Pond = {
 		bounds = {
-			max = Vector3.new(8.099, 1.1, 5.908),
+			max = Vector3.new(8.099, 1.8, 5.908),
 			min = Vector3.new(-8.252, -0.5, -5.908),
 		},
-		id = 119549304925368,
+		id = 120446619890790,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
 			},
-			Body_Glow = {
-				collide = false,
-				glow = "5AFFB4",
-				parent = "Body",
-			},
 		},
 	},
 	Rock_Crater1 = {
 		bounds = {
-			max = Vector3.new(4.231, 3.972, 3.178),
-			min = Vector3.new(-4.135, 0.0, -3.233),
+			max = Vector3.new(1.77, 2.7, 1.787),
+			min = Vector3.new(-1.378, 0.0, -1.813),
 		},
-		id = 113810069760289,
+		id = 133381231334577,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2553,10 +2518,10 @@ Assets.Models = {
 	},
 	Rock_Crater2 = {
 		bounds = {
-			max = Vector3.new(6.948, 5.985, 5.293),
-			min = Vector3.new(-7.227, 0.0, -4.641),
+			max = Vector3.new(2.983, 4.2, 3.18),
+			min = Vector3.new(-2.422, 0.0, -2.889),
 		},
-		id = 126018567770244,
+		id = 131871464641319,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2566,10 +2531,10 @@ Assets.Models = {
 	},
 	Rock_Dark1 = {
 		bounds = {
-			max = Vector3.new(3.913, 4.781, 3.565),
-			min = Vector3.new(-4.248, 0.0, -3.511),
+			max = Vector3.new(0.92, 2.6, 0.92),
+			min = Vector3.new(-0.92, 0.0, -0.92),
 		},
-		id = 139284138741095,
+		id = 105690226363227,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2579,10 +2544,10 @@ Assets.Models = {
 	},
 	Rock_Dark2 = {
 		bounds = {
-			max = Vector3.new(7.587, 7.151, 5.788),
-			min = Vector3.new(-7.353, 0.0, -6.076),
+			max = Vector3.new(2.55, 3.45, 1.45),
+			min = Vector3.new(-2.55, 0.012, -1.45),
 		},
-		id = 113038947328526,
+		id = 101387801160378,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2592,10 +2557,10 @@ Assets.Models = {
 	},
 	Rock_Ice1 = {
 		bounds = {
-			max = Vector3.new(4.31, 3.728, 3.203),
-			min = Vector3.new(-4.192, 0.0, -3.336),
+			max = Vector3.new(3.94, 4.398, 3.24),
+			min = Vector3.new(-4.067, 0.0, -3.318),
 		},
-		id = 105683479247663,
+		id = 111175288661844,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2605,10 +2570,10 @@ Assets.Models = {
 	},
 	Rock_Ice2 = {
 		bounds = {
-			max = Vector3.new(7.334, 6.218, 4.883),
-			min = Vector3.new(-7.024, 0.0, -5.441),
+			max = Vector3.new(6.895, 7.41, 5.263),
+			min = Vector3.new(-7.174, 0.0, -5.624),
 		},
-		id = 121137135827283,
+		id = 95731518327321,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2618,10 +2583,10 @@ Assets.Models = {
 	},
 	Rock_Mars1 = {
 		bounds = {
-			max = Vector3.new(4.145, 3.721, 3.01),
-			min = Vector3.new(-4.17, 0.0, -2.877),
+			max = Vector3.new(4.009, 3.969, 3.307),
+			min = Vector3.new(-4.03, -0.03, -3.188),
 		},
-		id = 88484412880249,
+		id = 135374247659031,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2631,10 +2596,10 @@ Assets.Models = {
 	},
 	Rock_Mars2 = {
 		bounds = {
-			max = Vector3.new(7.574, 6.56, 5.253),
-			min = Vector3.new(-7.921, 0.0, -5.558),
+			max = Vector3.new(7.741, 6.321, 5.259),
+			min = Vector3.new(-7.817, -0.03, -5.001),
 		},
-		id = 91763938635099,
+		id = 78096863937721,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2644,10 +2609,10 @@ Assets.Models = {
 	},
 	Rock_Moon1 = {
 		bounds = {
-			max = Vector3.new(3.377, 3.002, 2.622),
-			min = Vector3.new(-3.443, 0.0, -2.577),
+			max = Vector3.new(3.23, 3.142, 2.633),
+			min = Vector3.new(-3.075, 0.0, -2.763),
 		},
-		id = 138239423128238,
+		id = 124196271325443,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2657,10 +2622,10 @@ Assets.Models = {
 	},
 	Rock_Moon2 = {
 		bounds = {
-			max = Vector3.new(5.904, 5.016, 4.611),
-			min = Vector3.new(-6.023, 0.0, -4.792),
+			max = Vector3.new(6.232, 5.509, 4.359),
+			min = Vector3.new(-5.928, 0.0, -4.664),
 		},
-		id = 88313298295244,
+		id = 86438856110574,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2670,10 +2635,10 @@ Assets.Models = {
 	},
 	Rock_Moon3 = {
 		bounds = {
-			max = Vector3.new(1.567, 1.6, 1.383),
-			min = Vector3.new(-1.545, 0.0, -1.326),
+			max = Vector3.new(1.632, 1.757, 1.393),
+			min = Vector3.new(-1.612, 0.0, -1.471),
 		},
-		id = 127380355988453,
+		id = 96774920066728,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2702,19 +2667,14 @@ Assets.Models = {
 	},
 	Satellite = {
 		bounds = {
-			max = Vector3.new(3.0, 7.425, 1.189),
-			min = Vector3.new(-3.0, -0.1, -2.593),
+			max = Vector3.new(3.605, 10.205, 2.0),
+			min = Vector3.new(-3.605, 0.0, -2.36),
 		},
-		id = 128758326175768,
+		id = 113425834162483,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "FF5A5A",
-				parent = "Body",
 			},
 		},
 	},
@@ -2827,55 +2787,40 @@ Assets.Models = {
 	},
 	Tree_Bulb = {
 		bounds = {
-			max = Vector3.new(2.5, 10.7, 2.826),
-			min = Vector3.new(-3.151, -0.85, -3.037),
+			max = Vector3.new(3.753, 10.0, 3.994),
+			min = Vector3.new(-3.93, -0.65, -3.962),
 		},
-		id = 139287077927031,
+		id = 138798623622064,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "FFF08C",
-				parent = "Body",
 			},
 		},
 	},
 	Tree_Puff = {
 		bounds = {
-			max = Vector3.new(2.76, 8.7, 3.134),
-			min = Vector3.new(-3.109, -0.85, -2.6),
+			max = Vector3.new(2.08, 12.14, 2.08),
+			min = Vector3.new(-2.08, -0.65, -2.08),
 		},
-		id = 119654173945417,
+		id = 106653999716944,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "9BFFF5",
-				parent = "Body",
 			},
 		},
 	},
 	Tree_Tall = {
 		bounds = {
-			max = Vector3.new(2.736, 12.7, 2.606),
-			min = Vector3.new(-3.121, -0.85, -3.144),
+			max = Vector3.new(3.791, 11.2, 3.806),
+			min = Vector3.new(-4.276, -0.65, -4.34),
 		},
-		id = 137102849905772,
+		id = 89821170555241,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "FFB4F0",
-				parent = "Body",
 			},
 		},
 	},
@@ -3112,19 +3057,14 @@ Assets.Models = {
 	},
 	ZoneGate = {
 		bounds = {
-			max = Vector3.new(15.5, 17.0, 2.5),
-			min = Vector3.new(-15.5, 0.0, -2.5),
+			max = Vector3.new(16.0, 17.05, 2.3),
+			min = Vector3.new(-16.0, 0.0, -2.3),
 		},
-		id = 75151650721886,
+		id = 120653370862097,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "FFFFFF",
-				parent = "Body",
 			},
 		},
 		sign = Vector3.new(0.0, 15.5, -1.8),
