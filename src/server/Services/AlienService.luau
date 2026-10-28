@@ -64,9 +64,6 @@ local function label(parent: Instance, text: string, color: Color3, height: numb
 	plate.Size = UDim2.fromScale(1, 1)
 	plate.BackgroundColor3 = Color3.fromRGB(20, 26, 51)
 	plate.Parent = billboard
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 10)
-	corner.Parent = plate
 	local stroke = Instance.new("UIStroke")
 	stroke.Color = color
 	stroke.Thickness = 3
@@ -75,7 +72,7 @@ local function label(parent: Instance, text: string, color: Color3, height: numb
 	local text1 = Instance.new("TextLabel")
 	text1.Size = UDim2.fromScale(1, 1)
 	text1.BackgroundTransparency = 1
-	text1.Font = Enum.Font.FredokaOne
+	text1.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	text1.TextSize = 22
 	text1.TextColor3 = color
 	text1.Text = text

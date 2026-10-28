@@ -111,7 +111,7 @@ local function tag(model: Model, alienId: string, mutation: string?, income: num
 	local name = Instance.new("TextLabel")
 	name.Size = UDim2.new(1, 0, 0.55, 0)
 	name.BackgroundTransparency = 1
-	name.Font = Enum.Font.FredokaOne
+	name.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	name.TextSize = 20
 	name.TextColor3 = if rarity then rarity.Color else Color3.new(1, 1, 1)
 	name.Text = AlienModel.displayName(alienId, mutation)
@@ -124,7 +124,7 @@ local function tag(model: Model, alienId: string, mutation: string?, income: num
 	cash.Size = UDim2.new(1, 0, 0.45, 0)
 	cash.Position = UDim2.fromScale(0, 0.55)
 	cash.BackgroundTransparency = 1
-	cash.Font = Enum.Font.FredokaOne
+	cash.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	cash.TextSize = 17
 	cash.TextColor3 = Color3.fromRGB(124, 245, 140)
 	cash.Text = `+{Format.cash(income)}/s`

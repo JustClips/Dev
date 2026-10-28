@@ -87,7 +87,7 @@ def billboard(text, offset, size=(300, 70), color="#FFFFFF", dist=220):
         "Size": [[0, size[0]], [0, size[1]]], "StudsOffset": offset, "MaxDistance": dist, "LightInfluence": 0},
         "children": [{"name": "Text", "className": "TextLabel", "properties": {
             "Size": [[1, 0], [1, 0]], "BackgroundTransparency": 1, "Text": text, "TextScaled": True,
-            "TextColor3": color, "Font": "FredokaOne", "TextStrokeTransparency": 0, "TextStrokeColor3": "#1B1F3A"}}]}
+            "TextColor3": color, "FontFace": {"family": "rbxasset://fonts/families/Montserrat.json", "weight": "ExtraBold", "style": "Normal"}, "TextStrokeTransparency": 0, "TextStrokeColor3": "#1B1F3A"}}]}
 
 
 def write(name, tree):

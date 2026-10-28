@@ -83,7 +83,11 @@
         "Text": "SELL DUST",
         "TextScaled": true,
         "TextColor3": "#9DFFCB",
-        "Font": "FredokaOne",
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "ExtraBold",
+         "style": "Normal"
+        },
         "TextStrokeTransparency": 0,
         "TextStrokeColor3": "#1B1F3A"
        }

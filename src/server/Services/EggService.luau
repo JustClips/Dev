@@ -176,7 +176,7 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?):
 	label.Size = UDim2.fromScale(1, 1)
 	label.BackgroundTransparency = 1
 	label.TextScaled = true
-	label.Font = Enum.Font.FredokaOne
+	label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	label.TextColor3 = def.Color
 	label.TextStrokeTransparency = 0.2
 	label.Text = if owner then `{rarity} Egg\n{owner.DisplayName}'s` else `{rarity} Egg`

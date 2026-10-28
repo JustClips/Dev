@@ -47,7 +47,7 @@ local function makeSign(index: number): TextLabel
 	label.Size = UDim2.fromScale(1, 1)
 	label.BackgroundTransparency = 1
 	label.TextScaled = true
-	label.Font = Enum.Font.FredokaOne
+	label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	label.TextColor3 = Color3.new(1, 1, 1)
 	label.TextStrokeColor3 = Color3.fromRGB(27, 31, 58)
 	label.TextStrokeTransparency = 0

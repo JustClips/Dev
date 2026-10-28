@@ -30,12 +30,13 @@ PILL_SELL = "#FF9A3C"
 PILL_ZONES = "#4C8DFF"
 REBIRTH = "#9B6BFF"
 
-RADIUS = 10
+RADIUS = 0  # square corners everywhere (Dev: rounded corners looked bad)
 STROKE = 4
 STUD_TILE = 64
-DISPLAY = "FredokaOne"
-BODY = {"family": "rbxasset://fonts/families/BuilderSans.json", "weight": "Bold", "style": "Normal"}
-BODY_HEAVY = {"family": "rbxasset://fonts/families/BuilderSans.json", "weight": "ExtraBold", "style": "Normal"}
+MONTSERRAT = "rbxasset://fonts/families/Montserrat.json"
+DISPLAY = {"family": MONTSERRAT, "weight": "Heavy", "style": "Normal"}
+BODY = {"family": MONTSERRAT, "weight": "Bold", "style": "Normal"}
+BODY_HEAVY = {"family": MONTSERRAT, "weight": "ExtraBold", "style": "Normal"}
 
 
 def images():
@@ -66,7 +67,8 @@ def node(name, cls, props=None, children=None, attrs=None):
 
 
 def corner(r=RADIUS, scale=0):
-    return node("Corner", "UICorner", {"CornerRadius": [scale, r]})
+    # Square style: no UICorner at all.
+    return None
 
 
 def border(color=INK, thickness=STROKE, name="Stroke"):
@@ -136,7 +138,7 @@ def text(name, value, size, pos=U(0, 0, 0, 0), anchor=(0, 0), ts=20, color=WHITE
     p = base(size, pos, anchor, BackgroundTransparency=1, Text=value, TextColor3=color, TextSize=ts,
              TextXAlignment=xa, TextYAlignment=ya, TextWrapped=True, ZIndex=2)
     if display:
-        p["Font"] = DISPLAY
+        p["FontFace"] = DISPLAY
     else:
         p["FontFace"] = BODY_HEAVY if heavy else BODY
     p.update(extra)
@@ -191,7 +193,7 @@ def window(w, h, title, ico, children, header=HEADER):
         autoscale(),
         plate("Header", U(1, 0, 0, 64), tint=header, children=[
             icon("Icon", ico, 64, U(0, -6, 0.5, -2), (0, 0.5)),
-            text("Title", title, U(1, -150, 1, 0), U(0, 66, 0, 0), ts=34, display=True, stroke=3, xa="Left"),
+            text("Title", title, U(1, -150, 1, 0), U(0, 66, 0, 0), ts=30, display=True, stroke=3, xa="Left"),
         ]),
         close_button(),
     ] + children)
@@ -213,21 +215,21 @@ def write(name, tree):
 def rail_tile(name, label, ico, color, order):
     return button(name, U(0, 84, 0, 84), color=color, stud=0.15, LayoutOrder=order, children=[
         icon("Icon", ico, 62, U(0.5, 0, 0, 2), (0.5, 0)),
-        text("Label", label, U(1, 16, 0, 26), U(0.5, 0, 1, 2), (0.5, 1), ts=22, display=True, stroke=3),
+        text("Label", label, U(1, 20, 0, 24), U(0.5, 0, 1, 2), (0.5, 1), ts=17, display=True, stroke=3),
         plate("Badge", U(0, 28, 0, 28), U(1, 6, 0, -6), (1, 0), DANGER, r=14, stroke=3, stud=None, Visible=False, ZIndex=4,
               children=[text("Label", "!", U(1, 0, 1, 0), ts=20, display=True, ZIndex=5)]),
     ])
 
 
 def pill(name, label, ico, color, order):
-    return button(name, U(0, 132, 0, 52), color=color, label=label, ts=26, ico=ico, ico_px=40, LayoutOrder=order)
+    return button(name, U(0, 136, 0, 52), color=color, label=label, ts=21, ico=ico, ico_px=40, LayoutOrder=order)
 
 
 def zone_row(zone_id, title, order):
-    return button("Zone_" + zone_id, U(1, 0, 0, 50), color=WHITE, stroke=3, LayoutOrder=order, dark="#D6DCE8", children=[
+    return button("Zone_" + zone_id, U(1, 0, 0, 50), color=HEADER, stroke=3, LayoutOrder=order, children=[
         icon("Icon", "Zones", 36, U(0, 8, 0.5, 0), (0, 0.5)),
-        text("Name", title, U(0.6, -50, 1, 0), U(0, 52, 0, 0), ts=22, color=INK, display=True, xa="Left"),
-        text("Price", "", U(0.4, -10, 1, 0), U(1, -10, 0, 0), (1, 0), ts=18, color=SUB, heavy=True, xa="Right"),
+        text("Name", title, U(0.6, -50, 1, 0), U(0, 52, 0, 0), ts=18, display=True, stroke=2.5, xa="Left"),
+        text("Price", "", U(0.4, -10, 1, 0), U(1, -10, 0, 0), (1, 0), ts=16, heavy=True, stroke=2.5, xa="Right"),
     ])
 
 
@@ -238,7 +240,7 @@ def hud():
         rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 2),
         rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 3),
     ])
-    pills = frame("Pills", U(0, 420, 0, 52), U(0.5, 0, 0, 6), (0.5, 0), children=[
+    pills = frame("Pills", U(0, 432, 0, 52), U(0.5, 0, 0, 6), (0.5, 0), children=[
         autoscale(), hlist(12),
         pill("BaseButton", "Base", "Base", PILL_BASE, 1),
         pill("SellButton", "Sell", "Sell", PILL_SELL, 2),
@@ -283,7 +285,7 @@ def hud():
         autoscale(), vlist(10, "Left", "Bottom"),
         plate("CashPanel", U(0, 270, 0, 64), tint=SURFACE, LayoutOrder=1, children=[
             icon("Icon", "Cash", 70, U(0, -10, 0.5, 0), (0, 0.5)),
-            text("Cash", "$0", U(1, -120, 0, 38), U(0, 62, 0, 4), ts=32, color=INK, display=True, xa="Left"),
+            text("Cash", "$0", U(1, -120, 0, 38), U(0, 62, 0, 4), ts=28, color=INK, display=True, xa="Left"),
             text("Income", "+$0/s", U(1, -120, 0, 20), U(0, 64, 0, 38), ts=17, color="#1E9E3A", heavy=True, xa="Left"),
             button("PlusButton", U(0, 44, 0, 44), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=34, stroke=3),
         ]),
@@ -325,8 +327,7 @@ def hud():
 
 # ---------------------------------------------------------------- Shop
 def shop_tab(name, label, ico, order):
-    return button("Tab" + name, U(1, 0, 0, 54), color=WHITE, label=label, ts=22, label_color=INK, ico=ico, ico_px=40,
-                  LayoutOrder=order, dark="#D6DCE8")
+    return button("Tab" + name, U(1, 0, 0, 54), color=HEADER, label=label, ts=19, ico=ico, ico_px=40, LayoutOrder=order)
 
 
 def shop():
@@ -350,7 +351,9 @@ def shop():
     ])
     row = plate("Template", U(1, -12, 0, 78), tint=WHITE, stud=0.2, Visible=False, children=[
         icon("Icon", "Tool", 58, U(0, 10, 0.5, 0), (0, 0.5)),
-        text("Name", "Item", U(1, -300, 0, 30), U(0, 78, 0, 8), ts=22, color=INK, display=True, xa="Left"),
+        text("Name", "Item", U(1, -300, 0, 28), U(0, 78, 0, 8), ts=22, color=INK, display=True, xa="Left",
+             TextWrapped=False, TextScaled=True,
+             children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 12})]),
         text("Desc", "", U(1, -300, 0, 34), U(0, 78, 0, 38), ts=15, color=SUB, xa="Left", ya="Top"),
         button("Buy", U(0, 150, 0, 50), U(1, -12, 0.5, 0), (1, 0.5), color=SUCCESS, label="", ts=22),
         button("Gift", U(0, 50, 0, 50), U(1, -172, 0.5, 0), (1, 0.5), color="#FF7EB6", ico="Gift", ico_px=38, Visible=False),
@@ -358,7 +361,7 @@ def shop():
     lst = scroller("List", U(1, -200, 1, -92), U(0, 186, 0, 80), [vlist(10), padding(2, 2, 4, 4), row])
     empty = text("Empty", "Nothing here right now. Check back soon!", U(1, -200, 0, 60), U(0, 186, 0.5, 0), ts=20, color=SUB, heavy=True,
                  Visible=False)
-    gift_row = button("Template", U(1, -10, 0, 46), color=WHITE, label="Player", ts=20, label_color=INK, stroke=3, Visible=False, dark="#D6DCE8")
+    gift_row = button("Template", U(1, -10, 0, 46), color=HEADER, label="Player", ts=18, stroke=3, Visible=False)
     gift = plate("GiftPicker", U(0, 380, 0, 330), U(0.5, 0, 0.5, 20), (0.5, 0.5), SURFACE, Visible=False, ZIndex=10, children=[
         plate("Header", U(1, 0, 0, 52), tint="#FF7EB6", children=[
             icon("Icon", "Gift", 54, U(0, -4, 0.5, 0), (0, 0.5)),
@@ -378,7 +381,7 @@ def index():
         node("Viewport", "ViewportFrame", base(U(1, -12, 0, 94), U(0.5, 0, 0, 6), (0.5, 0), BackgroundTransparency=1,
                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
         icon("Lock", "Lock", 44, U(0.5, 0, 0, 34), (0.5, 0), Visible=False),
-        text("Name", "???", U(1, -8, 0, 22), U(0.5, 0, 0, 100), (0.5, 0), ts=18, color=INK, display=True),
+        text("Name", "???", U(1, -8, 0, 22), U(0.5, 0, 0, 100), (0.5, 0), ts=15, color=INK, display=True),
         text("Income", "", U(1, -8, 0, 18), U(0.5, 0, 0, 122), (0.5, 0), ts=15, color="#1E9E3A", heavy=True),
         plate("Rarity", U(1, -16, 0, 22), U(0.5, 0, 1, -8), (0.5, 1), "#BEBEBE", stroke=2, stud=None, r=8, children=[
             text("Label", "Common", U(1, 0, 1, 0), ts=15, color=INK, heavy=True),
@@ -399,7 +402,7 @@ def index():
 def rebirth():
     body = [
         icon("Big", "Rebirth", 110, U(0, 22, 0, 80)),
-        text("Mult", "Cash x1 → x1.5", U(1, -160, 0, 44), U(0, 140, 0, 86), ts=34, color=INK, display=True, xa="Left"),
+        text("Mult", "Cash x1 → x1.5", U(1, -160, 0, 44), U(0, 140, 0, 86), ts=30, color=INK, display=True, xa="Left"),
         text("Info", "Resets your cash, tools and backpack.\nKeeps your aliens, index and zones.", U(1, -160, 0, 50),
              U(0, 140, 0, 132), ts=17, color=SUB, xa="Left", ya="Top"),
         text("Cost", "Cost: $0", U(1, -40, 0, 30), U(0.5, 0, 0, 202), (0.5, 0), ts=22, color=INK, heavy=True),
@@ -442,7 +445,7 @@ def hatch():
                                         ZIndex=0)),
         node("Viewport", "ViewportFrame", base(U(0, 440, 0, 400), U(0.5, 0, 0, 0), (0.5, 0), BackgroundTransparency=1,
                                                Ambient="#AEB8D8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=1)),
-        text("Name", "", U(1, 0, 0, 56), U(0.5, 0, 0, 396), (0.5, 0), ts=48, display=True, stroke=3.5),
+        text("Name", "", U(1, 0, 0, 56), U(0.5, 0, 0, 396), (0.5, 0), ts=40, display=True, stroke=3.5),
         text("Sub", "", U(1, 0, 0, 30), U(0.5, 0, 0, 452), (0.5, 0), ts=24, heavy=True, stroke=2.5),
         plate("New", U(0, 110, 0, 40), U(0.5, 150, 0, 380), (0.5, 0.5), PREMIUM, stroke=3, stud=None, Rotation=-8, Visible=False, children=[
             text("Label", "NEW!", U(1, 0, 1, 0), ts=26, color=INK, display=True),

@@ -243,18 +243,34 @@ end
 
 local animations: { [string]: Animation } = {}
 
+-- Which account's animation ids to play. Unknown until AssetService finishes loading
+-- models; until then the fallback ids are used if there are any.
+local function useFallback(): boolean
+	local f = folder()
+	local flag = f and f:GetAttribute("UseFallback")
+	if flag == nil then
+		return true
+	end
+	return flag == true
+end
+
 function AssetLibrary.animation(name: string): Animation?
 	local id = Assets.Animations[name]
+	local fallback = Assets.AnimationFallback[name]
+	if fallback and useFallback() then
+		id = fallback
+	end
 	if not id then
 		return nil
 	end
+	local url = "rbxassetid://" .. tostring(id)
 	local anim = animations[name]
 	if not anim then
 		anim = Instance.new("Animation")
 		anim.Name = name
-		anim.AnimationId = "rbxassetid://" .. tostring(id)
 		animations[name] = anim
 	end
+	anim.AnimationId = url
 	return anim
 end
 

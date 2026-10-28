@@ -1,0 +1,180 @@
+{
+ "anims": {
+  "Pet_Walk": {
+   "id": 130705289172156,
+   "sha": "ad47f99c332b11e7c8f783440d09d967255f50b80812e8eee7d3d6e24008fd9e"
+  }
+ },
+ "images": {
+  "Icon_Cash": {
+   "id": 77755252353039,
+   "sha": "e645b740c49db731cbb21a30b7751ab3b558ec31198624a719eb86cf60349898"
+  }
+ },
+ "models": {
+  "Alien_AstroAxolotl": {
+   "id": 127515995674942,
+   "sha": "8a143cafa346cc61346ead398fcb33907e3d38e674b3bdaa3943ff6e0bb9281e"
+  },
+  "Alien_Blip": {
+   "id": 97664436457337,
+   "sha": "d2d46128f80e31b7abfffdedb87fed7574d508ccebd888ca6cefbd0afcec949c"
+  },
+  "Alien_CometCat": {
+   "id": 96234547579566,
+   "sha": "84df8d1f3ee138da26b58a7c367045544f0d2e1eda95d1a084c1e88a5f533e29"
+  },
+  "Alien_Cosmo": {
+   "id": 75221730545227,
+   "sha": "6d4044e9526086ca77e1b8e600063f87ac5b97710ed712fdd001fd7b0e1476b4"
+  },
+  "Alien_CraterCrab": {
+   "id": 137040133871345,
+   "sha": "b219df0cbb2427e4254a0348941130e8250d6f2eb29ae5879abf0b9c903ff571"
+  },
+  "Alien_Dusty": {
+   "id": 82934688856650,
+   "sha": "d5cadf00588b8e50b2b47124b350ecb81b2759c90609143a482786ee91238cfe"
+  },
+  "Alien_EclipseDragon": {
+   "id": 91518097321561,
+   "sha": "3dfabac12787b2475e75a7becc121ee14b3e02738ffb6e8f9f9cc8c5b393662b"
+  },
+  "Alien_GalaxyGus": {
+   "id": 137175031371756,
+   "sha": "379eecbbeee41da465dd843a7fc01469d553638d52730424bf9b79a121dd0883"
+  },
+  "Alien_Glorp": {
+   "id": 105279632742633,
+   "sha": "b7fad0b637986b7b9fd73214adefdfe5034e5ff9a0ed0e5e5c4fdc556b6b5ee1"
+  },
+  "Alien_LunarSlug": {
+   "id": 111111608056175,
+   "sha": "7e7916e4e8c58975200d66f0fe560435a6fa98f7da60231082e3e33cdd338fd6"
+  },
+  "Alien_MoonMite": {
+   "id": 72946029649148,
+   "sha": "1464cfa638ad22ced266544ff3ca4a35d694bfa397b0f535e2a60288416b3cfc"
+  },
+  "Alien_Nebby": {
+   "id": 123535130530433,
+   "sha": "c50d8ad4cee193902d6b59c66fe0a41f133b07a811b9b5088babb5c6df06f374"
+  },
+  "Alien_NovaQueen": {
+   "id": 71239173030856,
+   "sha": "7c3e47a9a961e6008901d8ba11bd6de642292feffad022f047bb41cc6ac2be45"
+  },
+  "Alien_Orbo": {
+   "id": 99602458023385,
+   "sha": "559708051cfc47dc50235fe102984ca17945d30973f6735de97976f78ddc8a1a"
+  },
+  "Alien_QuasarPup": {
+   "id": 87145308776057,
+   "sha": "5274a1da9915cfb7c94bea0e7d7ecb16cd9ed3ef55f1b37652906b2002b879ae"
+  },
+  "Alien_StarWhale": {
+   "id": 125166969435086,
+   "sha": "4eddf632a9319179a734cb5108dcc20bcf39dd80103ef82b1cd103aa1d60f668"
+  },
+  "Alien_VoidKing": {
+   "id": 79546865983728,
+   "sha": "6b0084ef614127bf9a9f385c53af9216b6cf941de393061fcd14b5ef3c843071"
+  },
+  "Alien_Zib": {
+   "id": 137475240058924,
+   "sha": "fc0fa8258999a282b3f525e3c02bdf60523ef2a5399e38911c8b2901eb300310"
+  },
+  "Alien_Zorblax": {
+   "id": 100192311295244,
+   "sha": "99f39a8b849156e653e458232a8092f7f8ed269e7c7238f57e632d27d6d6f75e"
+  },
+  "BaseArch": {
+   "id": 132327604890101,
+   "sha": "77479f6ae1a9dc852b255988651cfbe8d9aee01c3163efda89051f2112def831"
+  },
+  "Crystal_Blue": {
+   "id": 90674629120926,
+   "sha": "dc7e023b10be2e66feb3ad23938aa5741344d034b641207da315e4d83e883edc"
+  },
+  "Crystal_Purple": {
+   "id": 95570881876840,
+   "sha": "a711fae691dbef2f67ebdf1cf1320623e6d32d4d95eecde6d7a4574e35a265fa"
+  },
+  "Crystal_Red": {
+   "id": 132988115992254,
+   "sha": "192d6cc561bf29687f49f1c9d890272774e4726875c4afe4f472e4f9439dba9b"
+  },
+  "Earth": {
+   "id": 72085997690701,
+   "sha": "aa649a461b4c4cb9b27df930a1fa5e8ef0d213e326943c618d3cb5115a5fe8c4"
+  },
+  "Egg_Common": {
+   "id": 82185523006306,
+   "sha": "e2dd14677718639bd5fc1b82ad172f87df55173b5df29bd5ae404d8bc65bca47"
+  },
+  "Egg_Cosmic": {
+   "id": 135335042270206,
+   "sha": "2c665521b60679ef40b774ec5abf4fcc05d601244e392bde15ca7fca4bbb7754"
+  },
+  "Egg_Epic": {
+   "id": 77861941160324,
+   "sha": "85412efc913b3c6e3bc3ae7222af7805e0b408e332a28ab5fb92629df91387d2"
+  },
+  "Egg_Legendary": {
+   "id": 94992449873071,
+   "sha": "68382a9ccabea6150fe84f466b6ff18bf4e679e6fa64dce90069297a4d55e25b"
+  },
+  "Egg_Mythic": {
+   "id": 102316926167603,
+   "sha": "dde9ab9949702a5b50abc0802fbb100b0b4ded82eb4c6ae49e3d519489c55a5f"
+  },
+  "Egg_Rare": {
+   "id": 128535047497848,
+   "sha": "f57fe05c491918f3acccd32db35f268758b34c55cb06b92035b0dacfd0f5078c"
+  },
+  "Egg_Uncommon": {
+   "id": 75748866274162,
+   "sha": "4d4c07ba749f5b9556e2060fc28f32bb8e2f9eb89bfdacd78a2c4a491b0527d0"
+  },
+  "Fence": {
+   "id": 75852623209908,
+   "sha": "57210fb7fdd48bae593fb968a15fe4e9292c4c114f483337ed2c06dbcc6a649e"
+  },
+  "Flag": {
+   "id": 140623466475791,
+   "sha": "623d76c5f9b853eb43a3bae90f6f3329f82ecbc613f8420d1170d2083b9d4c0f"
+  },
+  "Habitat": {
+   "id": 76394296493687,
+   "sha": "8d36242d8c65da7acbe21138880aebddba73cc3541f5ec2d8e3bdf13f3114bf4"
+  },
+  "Hatchery": {
+   "id": 91098903744651,
+   "sha": "adb02c8b6bd1c07ea6081843b3012fa461143b981b414ae3947fe920ed14b9b8"
+  },
+  "Incubator": {
+   "id": 104302418696142,
+   "sha": "4ddb5e628336f2c47b3841cd16acab556f918b59220266d114c64263a1d40968"
+  },
+  "Lamp": {
+   "id": 72580564455004,
+   "sha": "0863554b805d8062e0d74fde1f57776bf80265eaa67d43e6809966f0a9123561"
+  },
+  "Mushroom_Glow": {
+   "id": 106766415469362,
+   "sha": "296f7e8b75b16a0a6e45295047fd5b8c522aa38add6af2cca9adaa1ede82cc9b"
+  },
+  "Mushroom_Mars": {
+   "id": 92696092430558,
+   "sha": "bf62a4bec6b6f8d9fea353be1a96f71c9e473f910c20af2a0f3f664bc7e96a1c"
+  },
+  "Pond": {
+   "id": 107579562898691,
+   "sha": "ae384bd61f331be568f700d3f4a6e6b226c8db690589472958a8f5859cb0a5d7"
+  },
+  "Rock_Crater1": {
+   "id": 76859513166318,
+   "sha": "f1eef176c965049b711fdff67f1eb9f4d79cfe87ca09e4c63cda640fdc6ded5b"
+  }
+ }
+}

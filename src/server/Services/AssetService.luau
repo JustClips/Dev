@@ -21,22 +21,42 @@ local folder: Folder
 local loaded = 0
 local failed: { string } = {}
 
-local function loadOne(name: string, id: number)
+local primaryLoaded = 0
+local fallbackLoaded = 0
+
+local function tryLoad(id: number): Instance?
 	for attempt = 1, 2 do
 		local ok, result = pcall(function()
 			return InsertService:LoadAsset(id)
 		end)
 		if ok and result then
-			local model = AssetLibrary.prepare(name, result)
-			model.Parent = folder
-			loaded += 1
-			return
+			return result
 		end
-		if attempt == 2 then
-			table.insert(failed, name)
-		else
+		if attempt == 1 then
 			task.wait(1)
 		end
+	end
+	return nil
+end
+
+-- Primary id first. A game can only insert models owned by its own creator, so when the
+-- primary account isn't the game's owner the fallback (owner's) copy is used instead.
+local function loadOne(name: string, id: number?, fallback: number?)
+	local result = if id then tryLoad(id) else nil
+	if result then
+		primaryLoaded += 1
+	elseif fallback then
+		result = tryLoad(fallback)
+		if result then
+			fallbackLoaded += 1
+		end
+	end
+	if result then
+		local model = AssetLibrary.prepare(name, result)
+		model.Parent = folder
+		loaded += 1
+	else
+		table.insert(failed, name)
 	end
 end
 
@@ -60,7 +80,7 @@ function AssetService:Init()
 		local started = os.clock()
 		local queue = {}
 		for name, meta in Assets.Models do
-			table.insert(queue, { name = name, id = meta.id })
+			table.insert(queue, { name = name, id = meta.id, fallback = meta.fallback })
 		end
 		local running = 0
 		for _, job in queue do
@@ -69,7 +89,7 @@ function AssetService:Init()
 			end
 			running += 1
 			task.spawn(function()
-				loadOne(job.name, job.id)
+				loadOne(job.name, job.id, job.fallback)
 				running -= 1
 			end)
 		end
@@ -79,7 +99,18 @@ function AssetService:Init()
 		if #failed > 0 then
 			warn(`[AssetService] {#failed} models failed to load (placeholders used): {table.concat(failed, ", ")}`)
 		end
-		print(string.format("[AssetService] %d models ready in %.1f s", loaded, os.clock() - started))
+		-- Animations follow the same owner rule, so play the fallback account's copies
+		-- when the models had to come from there.
+		folder:SetAttribute("UseFallback", fallbackLoaded > primaryLoaded)
+		print(
+			string.format(
+				"[AssetService] %d models ready in %.1f s (%d primary, %d fallback)",
+				loaded,
+				os.clock() - started,
+				primaryLoaded,
+				fallbackLoaded
+			)
+		)
 		folder:SetAttribute("Ready", true)
 		AssetService.Ready:Fire()
 	end)

@@ -32,6 +32,7 @@ local LUCK_TIERS = { 16, 8, 4, 2 }
 local GREEN = Color3.fromRGB(61, 220, 90)
 local GREY = Color3.fromRGB(166, 174, 194)
 local DANGER = Color3.fromRGB(255, 77, 94)
+local LOCKED = Color3.fromRGB(255, 150, 160) -- readable on the blue zone rows
 local SAND = Color3.fromRGB(233, 201, 139)
 local NAVY = Color3.fromRGB(20, 26, 51)
 local MINT = Color3.fromRGB(124, 245, 200)
@@ -134,13 +135,13 @@ local function renderZones(data)
 			rowIcon.Image = AssetLibrary.image(if unlocked then "Icon_Zones" else "Icon_Lock")
 			if unlocked then
 				price.Text = "Go!"
-				price.TextColor3 = Color3.fromRGB(30, 158, 58)
+				price.TextColor3 = GREEN
 			elseif zone.RequiredRebirths > data.Rebirths then
 				price.Text = `Rebirth {zone.RequiredRebirths}`
-				price.TextColor3 = DANGER
+				price.TextColor3 = LOCKED
 			else
 				price.Text = Format.cash(zone.UnlockCost)
-				price.TextColor3 = if BigNum.gte(data.Cash, zone.UnlockCost) then Color3.fromRGB(30, 158, 58) else DANGER
+				price.TextColor3 = if BigNum.gte(data.Cash, zone.UnlockCost) then GREEN else LOCKED
 			end
 		end
 	end

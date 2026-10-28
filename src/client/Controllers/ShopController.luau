@@ -26,6 +26,7 @@ local ROBUX = Color3.fromRGB(255, 200, 60)
 local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(27, 31, 58)
 local MINT = Color3.fromRGB(124, 245, 200)
+local TAB_BLUE = Color3.fromRGB(59, 79, 168)
 local LIST_TOP = 80
 local FEATURED_HEIGHT = 160
 
@@ -263,7 +264,15 @@ local function render()
 	end
 	for name, button in tabButtons do
 		local selected = name == currentTab
-		button.BackgroundColor3 = if selected then MINT else WHITE
+		button.BackgroundColor3 = if selected then MINT else TAB_BLUE
+		local label = button:FindFirstChild("Label") :: TextLabel?
+		if label then
+			label.TextColor3 = if selected then INK else WHITE
+			local stroke = label:FindFirstChildOfClass("UIStroke")
+			if stroke then
+				stroke.Enabled = not selected
+			end
+		end
 	end
 	local hasFeatured = renderFeatured(data)
 	local items = BUILDERS[currentTab](data)

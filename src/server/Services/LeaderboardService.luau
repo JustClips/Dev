@@ -63,7 +63,7 @@ local function overhead(character: Model)
 	top.Size = UDim2.fromScale(1, 0.5)
 	top.BackgroundTransparency = 1
 	top.TextScaled = true
-	top.Font = Enum.Font.FredokaOne
+	top.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	top.TextColor3 = Color3.fromRGB(255, 220, 90)
 	top.TextStrokeTransparency = 0.3
 	top.Parent = billboard

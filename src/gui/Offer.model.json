@@ -43,16 +43,6 @@
    },
    "children": [
     {
-     "name": "Corner",
-     "className": "UICorner",
-     "properties": {
-      "CornerRadius": [
-       0,
-       10
-      ]
-     }
-    },
-    {
      "name": "Stroke",
      "className": "UIStroke",
      "properties": {
@@ -108,18 +98,7 @@
       "ImageTransparency": 0,
       "ZIndex": 0
      },
-     "children": [
-      {
-       "name": "Corner",
-       "className": "UICorner",
-       "properties": {
-        "CornerRadius": [
-         0,
-         10
-        ]
-       }
-      }
-     ]
+     "children": []
     },
     {
      "name": "AutoScale",
@@ -161,16 +140,6 @@
       "BackgroundColor3": "#FFC83C"
      },
      "children": [
-      {
-       "name": "Corner",
-       "className": "UICorner",
-       "properties": {
-        "CornerRadius": [
-         0,
-         10
-        ]
-       }
-      },
       {
        "name": "Stroke",
        "className": "UIStroke",
@@ -227,18 +196,7 @@
         "ImageTransparency": 0,
         "ZIndex": 0
        },
-       "children": [
-        {
-         "name": "Corner",
-         "className": "UICorner",
-         "properties": {
-          "CornerRadius": [
-           0,
-           10
-          ]
-         }
-        }
-       ]
+       "children": []
       },
       {
        "name": "Icon",
@@ -312,7 +270,11 @@
         "TextYAlignment": "Center",
         "TextWrapped": true,
         "ZIndex": 2,
-        "Font": "FredokaOne"
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "Heavy",
+         "style": "Normal"
+        }
        },
        "children": [
         {
@@ -364,16 +326,6 @@
       "ZIndex": 5
      },
      "children": [
-      {
-       "name": "Corner",
-       "className": "UICorner",
-       "properties": {
-        "CornerRadius": [
-         0,
-         10
-        ]
-       }
-      },
       {
        "name": "Stroke",
        "className": "UIStroke",
@@ -444,7 +396,11 @@
         "TextYAlignment": "Center",
         "TextWrapped": true,
         "ZIndex": 2,
-        "Font": "FredokaOne"
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "Heavy",
+         "style": "Normal"
+        }
        },
        "children": [
         {
@@ -499,7 +455,7 @@
       "TextWrapped": true,
       "ZIndex": 2,
       "FontFace": {
-       "family": "rbxasset://fonts/families/BuilderSans.json",
+       "family": "rbxasset://fonts/families/Montserrat.json",
        "weight": "ExtraBold",
        "style": "Normal"
       }
@@ -540,16 +496,6 @@
       "ZIndex": 1
      },
      "children": [
-      {
-       "name": "Corner",
-       "className": "UICorner",
-       "properties": {
-        "CornerRadius": [
-         0,
-         10
-        ]
-       }
-      },
       {
        "name": "Stroke",
        "className": "UIStroke",
@@ -620,7 +566,11 @@
         "TextYAlignment": "Center",
         "TextWrapped": true,
         "ZIndex": 2,
-        "Font": "FredokaOne"
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "Heavy",
+         "style": "Normal"
+        }
        }
       }
      ]

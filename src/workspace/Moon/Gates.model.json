@@ -72,7 +72,11 @@
         "Text": "Crater",
         "TextScaled": true,
         "TextColor3": "#78C8FF",
-        "Font": "FredokaOne",
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "ExtraBold",
+         "style": "Normal"
+        },
         "TextStrokeTransparency": 0,
         "TextStrokeColor3": "#1B1F3A"
        }
@@ -152,7 +156,11 @@
         "Text": "DarkSide",
         "TextScaled": true,
         "TextColor3": "#B478FF",
-        "Font": "FredokaOne",
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "ExtraBold",
+         "style": "Normal"
+        },
         "TextStrokeTransparency": 0,
         "TextStrokeColor3": "#1B1F3A"
        }
@@ -232,7 +240,11 @@
         "Text": "Mars",
         "TextScaled": true,
         "TextColor3": "#FF8C5A",
-        "Font": "FredokaOne",
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "ExtraBold",
+         "style": "Normal"
+        },
         "TextStrokeTransparency": 0,
         "TextStrokeColor3": "#1B1F3A"
        }

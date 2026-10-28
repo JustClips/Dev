@@ -20,10 +20,13 @@ PALETTE:
   danger    #FF4D5E   close X, FULL tag, prices you can't afford
   success   #3DDC5A   Buy with cash, Collect, Rebirth, Base pill
 MOTIF:           Roblox stud texture tinted per panel (art/out/ui/Stud.png), 4px navy outline
-CORNERS:         10px everywhere (only the mobile SWEEP button is round)
+CORNERS:         none. Square stud blocks everywhere (Dev: rounded corners look bad)
 STROKE:          4px #1B1F3A on panels and buttons; 2.5px round-join stroke on white text
-TYPE:            display FredokaOne (titles, buttons, numbers)
-                 body    BuilderSans Bold / ExtraBold (descriptions, chips)
+TYPE:            Montserrat only (rbxasset://fonts/families/Montserrat.json)
+                 display Heavy (titles, buttons, numbers)
+                 body    Bold / ExtraBold (descriptions, chips)
+BUTTONS:         every button has a solid fill (tabs and zone rows are header blue);
+                 never a bare label on a panel
 MOTION:          pop-squash: press 0.94, hover 1.06 (PC), modal 0.85 -> 1 Back Out 0.24 s,
                  toasts pop in and fade. ReducedMotion turns all of it off.
 DENSITY:         HUD-sparse (edges only; the middle of the screen is the Moon)
