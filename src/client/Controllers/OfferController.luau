@@ -77,9 +77,22 @@ local function showOffer(offer)
 	Ui.find(offerGui, "Window.Text").Text = offer.Text
 	Ui.setText(Ui.find(offerGui, "Window.Buy"), `{Ui.ROBUX} {offer.Price}`)
 	Ui.show(offerGui)
-	task.delay(AUTO_HIDE_SECONDS, function()
-		if token == showToken and Ui.isOpen(offerGui) then
-			hideOffer(false)
+	-- Auto-hides after a while. If a hatch show starts meanwhile, the offer steps aside
+	-- and comes back after it.
+	task.spawn(function()
+		local deadline = os.clock() + AUTO_HIDE_SECONDS
+		while token == showToken and Ui.isOpen(offerGui) do
+			if C.HatchController:IsBusy() then
+				current = nil
+				Ui.hide(offerGui, true)
+				pendingOffer = offer
+				return
+			end
+			if os.clock() >= deadline then
+				hideOffer(false)
+				return
+			end
+			task.wait(0.25)
 		end
 	end)
 end
@@ -123,6 +136,11 @@ function OfferController:Init(controllers)
 end
 
 function OfferController:Start()
+	-- Sit above the hotbar (same lift as the HUD hint), on PC and phones.
+	local window = Ui.find(offerGui, "Window") :: GuiObject
+	Ui.onScale(function(s: number)
+		window.Position = UDim2.new(0.5, 0, 1, -(12 + math.ceil(88 * s) + math.ceil(12 * s)))
+	end)
 	Ui.button(Ui.find(offerGui, "Window.Close"), function()
 		hideOffer(false)
 	end)
