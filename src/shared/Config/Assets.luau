@@ -2683,10 +2683,10 @@ Assets.Models = {
 	},
 	Rocket = {
 		bounds = {
-			max = Vector3.new(10.7, 19.55, 10.7),
-			min = Vector3.new(-10.7, 0.0, -10.7),
+			max = Vector3.new(11.244, 19.75, 11.244),
+			min = Vector3.new(-11.244, 0.0, -11.244),
 		},
-		id = 91225494576570,
+		id = 70586933996083,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2698,7 +2698,7 @@ Assets.Models = {
 				parent = "Body",
 			},
 		},
-		sign = Vector3.new(0.0, 11.75, -8.56),
+		sign = Vector3.new(0.0, 10.85, -10.11),
 	},
 	Satellite = {
 		bounds = {

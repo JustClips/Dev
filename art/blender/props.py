@@ -710,28 +710,35 @@ def rocket():
     for x in (-S, S):
         p.append(box(WOOD, loc=(x, 0, top + 0.35), size=(1.0, 2 * S + 1.6, 0.7), bevel=0.12))
     # hip roof (square pyramid) with an overhang, plus a ridge cap
-    rf = cone(roof, loc=(0, 0, top + 0.7 + 3.0), r=(S + 1.2) * math.sqrt(2), h=5.4, verts=4, rot=(0, 0, 45), smooth=False)
+    rf = cone(roof, loc=(0, 0, top + 0.7 + 2.7), r=(S + 1.2) * math.sqrt(2), h=5.4, verts=4, rot=(0, 0, 45), smooth=False)
     p.append(rf)
-    p.append(cone(roof_dark, loc=(0, 0, top + 0.62), r=(S + 1.3) * math.sqrt(2), h=0.25, verts=4, rot=(0, 0, 45), smooth=False))
-    # cupola with a little roof and a flag
-    ct = top + 0.7 + 4.2
-    p.append(box(WOOD_LIGHT, loc=(0, 0, ct + 0.9), size=(2.6, 2.6, 1.8), bevel=0.1))
+    p.append(cone(roof_dark, loc=(0, 0, top + 0.82), r=(S + 1.3) * math.sqrt(2), h=0.25, verts=4, rot=(0, 0, 45), smooth=False))
+    # cupola sunk into the roof top, with a little roof and a flag
+    c0 = top + 4.9                     # inside the roof, below the slope at the cupola walls
+    c1 = top + 7.0
+    p.append(box(WOOD_LIGHT, loc=(0, 0, (c0 + c1) / 2), size=(2.6, 2.6, c1 - c0), bevel=0.1))
     for x in (-1.3, 1.3):
         for y in (-1.3, 1.3):
-            p.append(box(WOOD_DARK, loc=(x, y, ct + 0.9), size=(0.35, 0.35, 1.9), bevel=0.05))
-    p.append(cone(roof, loc=(0, 0, ct + 2.6), r=2.6, h=1.8, verts=4, rot=(0, 0, 45), smooth=False))
-    p.append(cyl("5A5A66", loc=(0, 0, ct + 4.4), r=0.08, h=2.4, verts=8))
-    p.append(box("4CAF50", loc=(0.75, 0, ct + 5.1), size=(1.4, 0.08, 0.8)))
+            p.append(box(WOOD_DARK, loc=(x, y, (c0 + c1) / 2), size=(0.35, 0.35, c1 - c0 + 0.05), bevel=0.05))
+    p.append(cone(roof, loc=(0, 0, c1 + 0.85), r=2.6, h=1.8, verts=4, rot=(0, 0, 45), smooth=False))
+    p.append(cyl("5A5A66", loc=(0, 0, c1 + 2.4), r=0.08, h=2.6, verts=8))
+    p.append(box("4CAF50", loc=(0.75, 0, c1 + 3.2), size=(1.4, 0.08, 0.8)))
     # striped awnings sloping out from the beams on all four sides
     stripes = 9
+    # each awning hangs from the beam's outer face and slopes down and out
+    AW_L, AW_ANG = 3.0, 25
+    in_y, in_z = -S - 0.45, top + 0.3
+    dy, dz = math.cos(math.radians(AW_ANG)) * AW_L, math.sin(math.radians(AW_ANG)) * AW_L
+    aw_cy, aw_cz = in_y - dy / 2, in_z - dz / 2
+    out_y, out_z = in_y - dy, in_z - dz
     for side in range(4):
         ang = side * 90
         for k in range(stripes):
             t = -S + (k + 0.5) * (2 * S / stripes)
             col = red if k % 2 == 0 else cream
-            aw = box(col, loc=(t, -S - 1.2, top - 0.6), size=(2 * S / stripes + 0.02, 2.6, 0.15), rot=(-25, 0, 0))
-            scallop = cyl(col, loc=(t, -S - 2.45, top - 1.25), r=2 * S / stripes / 2, h=0.15, rot=(90, 0, 0), verts=12)
-            deform(scallop, lambda v: Vector((v.x, v.y, min(v.z, top - 1.25))))
+            aw = box(col, loc=(t, aw_cy, aw_cz), size=(2 * S / stripes + 0.02, AW_L, 0.15), rot=(AW_ANG, 0, 0))
+            scallop = cyl(col, loc=(t, out_y, out_z), r=2 * S / stripes / 2, h=0.15, rot=(90, 0, 0), verts=12)
+            deform(scallop, lambda v: Vector((v.x, v.y, min(v.z, out_z))))
             for o in (aw, scallop):
                 o.rotation_euler = (0, 0, math.radians(ang))
                 bpy.context.view_layer.update()
@@ -767,6 +774,7 @@ def rocket():
     p.append(box("5A5A66", loc=(4.4, sy, base + 3.5), size=(1.6, 0.12, 0.12)))
     for x in (3.7, 5.1):
         p.append(cyl("D9B44A", loc=(x, sy, base + 3.1), r=0.4, r2=0.25, h=0.15, verts=12))
+        p.append(cyl("5A5A66", loc=(x, sy, base + 3.3), r=0.025, h=0.42, verts=6))
     for (x, y) in ((-4.5, 3.5), (-3.2, 4.6), (4.2, 4.0)):
         sack = sphere("D8C39A", loc=(x, y, base + 0.75), scale=(0.75, 0.7, 0.85), seg=12, rings=8)
         p.append(sack)
@@ -783,16 +791,18 @@ def rocket():
         p.append(box(cream, loc=(x, y - 0.81, base + 1.3), size=(0.8, 0.05, 0.8)))
     # blank sign board over the front, on two short posts above the beam
     for x in (-3.5, 3.5):
-        p.append(box(WOOD_DARK, loc=(x, -S - 0.2, top + 1.4), size=(0.4, 0.4, 2.0)))
-    p.append(box(WOOD_DARK, loc=(0, -S - 0.2, top + 2.7), size=(9.6, 0.5, 2.8), bevel=0.12))
-    p.append(box(cream, loc=(0, -S - 0.5, top + 2.7), size=(9.0, 0.1, 2.2)))
-    a.part("Body", p, collide=True)
+        p.append(box(WOOD_DARK, loc=(x, -S - 1.0, top + 0.75), size=(0.4, 1.1, 0.4), bevel=0.05))
+    p.append(box(WOOD_DARK, loc=(0, -S - 1.75, top + 1.8), size=(9.6, 0.5, 2.8), bevel=0.12))
+    p.append(box(cream, loc=(0, -S - 2.05, top + 1.8), size=(9.0, 0.1, 2.2)))
     # warm lanterns hanging under the front and back beams
-    lamps = []
+    lamps, p_rods = [], []
     for (x, y) in ((-4, -S), (4, -S), (-4, S), (4, S)):
         lamps.append(box("FFD68C", loc=(x, y, top - 0.9), size=(0.6, 0.6, 0.7), bevel=0.08))
+        p_rods.append(cyl("5A5A66", loc=(x, y, top - 0.25), r=0.05, h=0.7, verts=6))
+        p_rods.append(box(WOOD_DARK, loc=(x, y, top - 0.5), size=(0.75, 0.75, 0.12)))
+    a.part("Body", p + p_rods, collide=True)
     a.part("Body_Glow", lamps, parent="Body", glow="FFD68C")
-    a.extra["sign"] = [0, round(top + 2.7, 2), -round(S + 0.56, 2)]
+    a.extra["sign"] = [0, round(top + 1.8, 2), -round(S + 2.11, 2)]
     return a
 
 
