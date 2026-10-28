@@ -103,20 +103,48 @@ def hand_tool(name, build, grip):
 
 
 def toothbrush(a):
-    blue, white = "5AB4FF", "FFFFFF"
-    handle = capsule(blue, (0, 1.2, 0), (0, -1.0, 0), 0.13)
-    grip = capsule("2A7ACD", (0, 1.25, 0), (0, 0.4, 0), 0.16)
-    rings = [torus("FFE36E", loc=(0, y, 0), R=0.15, r=0.03, rot=(90, 0, 0), seg=14, mseg=4) for y in (0.35, 1.3)]
-    dots = [sphere("FF7AB4", loc=(0, y, 0.15), scale=0.04) for y in (0.55, 0.75, 0.95, 1.15)]
-    head = box(blue, loc=(0, -1.25, 0.02), size=(0.32, 0.6, 0.16), bevel=0.05)
-    bristles = []
-    for i in range(5):
-        for j, x in enumerate((-0.08, 0.08)):
-            col = ("FFFFFF", "9ED8FF", "FF9EC4")[(i + j) % 3]
-            bristles.append(box(col, loc=(x, -1.45 + i * 0.1, -0.18), size=(0.12, 0.07, 0.32), bevel=0.02))
-    paste = [sphere("7AF0C8", loc=(0, -1.25 + k * 0.12, -0.38 - 0.03 * (k % 2)), scale=(0.1, 0.09, 0.07)) for k in (-1, 0, 1)]
-    paste += [sphere(white, loc=(0, -1.25 + k * 0.12, -0.42), scale=(0.05, 0.05, 0.04)) for k in (-1, 1)]
-    a.part("Handle", [handle, grip, head] + rings + dots + bristles + paste)
+    """A big cartoon toothbrush: white handle with blue rubber grips, a thin neck, an oval
+    head with rows of round bristle tufts (white and blue) and a striped toothpaste swirl.
+    Head at -Y, bristles face -Z, the hand holds the top end (+Y)."""
+    white, blue, blue_dark, mint = "F4F7FB", "3C9BFF", "2268C8", "7AF0C8"
+    p = []
+    # handle: tapered white body from the end cap (+Y) down to the neck
+    body = cyl(white, loc=(0, 0.55, 0), r=0.17, h=1.9, rot=(90, 0, 0), verts=16)
+    deform(body, lambda v: Vector((v.x * (0.75 + 0.25 * (v.y - -0.4) / 1.9),
+                                   v.y, v.z * (0.75 + 0.25 * (v.y - -0.4) / 1.9))))
+    p.append(body)
+    p.append(sphere(white, loc=(0, 1.5, 0), scale=(0.17, 0.12, 0.17), seg=16, rings=8))
+    # blue rubber grip panels on top and sides, plus a thumb rest
+    p.append(box(blue, loc=(0, 0.95, 0.12), size=(0.22, 0.75, 0.12), bevel=0.05))
+    for x in (-0.13, 0.13):
+        p.append(box(blue, loc=(x, 0.95, 0), size=(0.1, 0.7, 0.2), bevel=0.04))
+    for k in range(4):
+        p.append(box(blue_dark, loc=(0, 0.7 + k * 0.17, 0.19), size=(0.18, 0.06, 0.04), bevel=0.015))
+    p.append(box(blue, loc=(0, -0.05, 0.13), size=(0.16, 0.3, 0.08), bevel=0.035))
+    # hanging hole ring at the end
+    p.append(torus(blue_dark, loc=(0, 1.55, 0), R=0.08, r=0.025, rot=(0, 90, 0), seg=12, mseg=4))
+    # neck: thin, bending slightly up toward the head
+    neck = cyl(white, loc=(0, -0.65, 0.02), r=0.085, h=0.6, rot=(90, 0, 0), verts=12)
+    p.append(neck)
+    # head: rounded oval paddle
+    head = cyl(white, loc=(0, -1.25, 0.03), r=0.2, h=0.12, verts=20)
+    deform(head, lambda v: Vector((v.x, -1.25 + (v.y + 1.25) * 2.4, v.z)))
+    p.append(head)
+    a.part("Handle", p)
+    # bristles: one rounded block (white roots, blue tips) with shallow grooves between rows
+    L, Wd, H = 0.66, 0.34, 0.3
+    yc, z0 = -1.25, -0.03
+    tufts = [box(white, loc=(0, yc, z0 - H * 0.35), size=(Wd, L, H * 0.7), bevel=0.06, smooth=True),
+             box(blue, loc=(0, yc, z0 - H * 0.82), size=(Wd + 0.01, L + 0.01, H * 0.36), bevel=0.08, smooth=True)]
+    for k in range(1, 6):
+        tufts.append(box("C9D6E6", loc=(0, yc - L / 2 + k * L / 6, z0 - H * 0.35), size=(Wd + 0.02, 0.025, H * 0.6)))
+    # toothpaste: a striped swirl lying along the bristle tips (mint with a white stripe)
+    tip = z0 - H - 0.05
+    pts = [(0.02 * math.sin(t * 2.2), yc + 0.27 - t * 0.09, tip - 0.02 * math.sin(t * 1.3)) for t in range(7)]
+    paste = [tube(mint, pts, 0.085, seg=10),
+             tube("FFFFFF", [(x + 0.03, y, z - 0.05) for x, y, z in pts], 0.035, seg=8),
+             sphere(mint, loc=(pts[0][0], pts[0][1] + 0.02, tip - 0.06), scale=(0.07, 0.06, 0.08), seg=10, rings=6)]
+    a.part("Bristles", tufts + paste, parent="Handle")
 
 
 def broom(a):

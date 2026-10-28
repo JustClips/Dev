@@ -4797,14 +4797,14 @@
  "Habitat": {
   "bounds": {
    "max": [
-    9.2,
-    9.2,
-    9.0
+    7.232,
+    12.475,
+    5.9
    ],
    "min": [
-    -9.2,
+    -7.232,
     0.0,
-    -9.7
+    -7.05
    ]
   },
   "kind": "prop",
@@ -4819,13 +4819,13 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "FFE678",
+    "glow": "FFD68C",
     "joint": null,
     "material": null,
     "parent": "Body"
    }
   },
-  "tris": 2376
+  "tris": 7528
  },
  "Hatchery": {
   "bounds": {
@@ -5533,14 +5533,14 @@
  "Tool_Toothbrush": {
   "bounds": {
    "max": [
-    0.18,
-    0.19,
-    1.41
+    0.2,
+    0.21,
+    1.655
    ],
    "min": [
-    -0.18,
-    -0.48,
-    -1.55
+    -0.2,
+    -0.52,
+    -1.73
    ]
   },
   "grip": [
@@ -5551,6 +5551,13 @@
   "kind": "tool",
   "name": "Tool_Toothbrush",
   "parts": {
+   "Bristles": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": "Handle"
+   },
    "Handle": {
     "collide": false,
     "glow": null,
@@ -5559,7 +5566,7 @@
     "parent": null
    }
   },
-  "tris": 6092
+  "tris": 4980
  },
  "Tool_TurboVacuum": {
   "bounds": {

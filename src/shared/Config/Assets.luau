@@ -2418,10 +2418,10 @@ Assets.Models = {
 	},
 	Habitat = {
 		bounds = {
-			max = Vector3.new(9.2, 9.2, 9.0),
-			min = Vector3.new(-9.2, 0.0, -9.7),
+			max = Vector3.new(7.232, 12.475, 5.9),
+			min = Vector3.new(-7.232, 0.0, -7.05),
 		},
-		id = 123322739580896,
+		id = 114875698982833,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -2429,7 +2429,7 @@ Assets.Models = {
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "FFE678",
+				glow = "FFD68C",
 				parent = "Body",
 			},
 		},
@@ -2789,13 +2789,17 @@ Assets.Models = {
 	},
 	Tool_Toothbrush = {
 		bounds = {
-			max = Vector3.new(0.18, 0.19, 1.41),
-			min = Vector3.new(-0.18, -0.48, -1.55),
+			max = Vector3.new(0.2, 0.21, 1.655),
+			min = Vector3.new(-0.2, -0.52, -1.73),
 		},
 		grip = Vector3.new(0.0, 0.0, 0.85),
-		id = 78123913845434,
+		id = 123435170850356,
 		kind = "tool",
 		parts = {
+			Bristles = {
+				collide = false,
+				parent = "Handle",
+			},
 			Handle = {
 				collide = false,
 			},
