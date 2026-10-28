@@ -19,6 +19,7 @@ local EVENTS: { [string]: number } = {
 	OfferResponse = 4, -- client: offer clicked / dismissed
 	MeteorImpact = 0, -- server -> all: meteor visual at a position
 	BunnyPop = 0, -- server -> all: a dust bunny got swept at a position
+	TutorialDone = 0, -- server -> owner: tutorial finished, with the reward it gave
 	SetAutoSweep = 4, -- client: toggle auto sweep (gamepass)
 	SetSetting = 6, -- client: ("Music" | "Sfx", 0-1) volume sliders, saved
 }

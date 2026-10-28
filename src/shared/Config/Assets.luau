@@ -3246,8 +3246,10 @@ Assets.AnimationFallback = {
 
 -- UI images (icons rendered in art/blender/icons.py, UI art from art/out/ui).
 Assets.Images = {
+	ArrowDown = "rbxassetid://110709140241153",
 	BannerLuck = "rbxassetid://80280328077497",
 	BannerStarter = "rbxassetid://140216401802209",
+	Chevron = "rbxassetid://74478848816812",
 	Gear = "rbxassetid://73874897282368",
 	Glow = "rbxassetid://76014021555652",
 	Icon_Alien = "rbxassetid://96284894082842",

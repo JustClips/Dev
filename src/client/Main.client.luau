@@ -19,6 +19,7 @@ local ORDER = {
 	"PlacementController",
 	"HoverController",
 	"AudioController",
+	"TutorialController",
 	"BasePanelsController",
 	"RewardsController",
 	"RebirthController",

@@ -369,11 +369,34 @@ def hud():
         hot_slot("CarSlot", "2", "Vehicle", "No car", 2),
         bag,
     ])
-    # Tutorial / next-step hint above the hotbar ("Open your bag and place your egg!").
-    hint = plate("Hint", U(0, 0, 0, 46), U(0.5, 0, 1, -122), (0.5, 1), BG, stud=0.5, AutomaticSize="X", Visible=False, children=[
-        autoscale(), padding(16, 16, 0),
-        text("Text", "", U(0, 0, 1, 0), ts=22, color=ACCENT, display=True, stroke=2.5, AutomaticSize="X", TextWrapped=False),
+    # Tutorial step card above the hotbar: "STEP 3/9", what to do, a progress bar. After the
+    # tutorial the same card shows nudges ("An egg is ready!") without the step and bar.
+    hint = plate("Hint", U(0, 480, 0, 74), U(0.5, 0, 1, -122), (0.5, 1), BG, stud=0.5, Visible=False, ZIndex=21, children=[
+        autoscale(),
+        icon("Icon", "Star", 52, U(0, 10, 0.5, 0), (0, 0.5)),
+        text("Step", "STEP 1/9", U(1, -84, 0, 18), U(0, 72, 0, 6), ts=14, color=PREMIUM, display=True, xa="Left", stroke=1.5),
+        text("Text", "", U(1, -84, 0, 36), U(0, 72, 0, 24), ts=20, color=WHITE, display=True, stroke=2.5, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 21, "MinTextSize": 12})]),
+        frame("Bar", U(1, -84, 0, 7), U(0, 72, 1, -9), bg="#2A3260", children=[
+            frame("Fill", U(0.1, 0, 1, 0), bg=ACCENT),
+        ]),
+        frame("Done", U(1, 0, 1, 0), bg=SUCCESS, BackgroundTransparency=1, ZIndex=5, children=[
+            text("Label", "✓  Nice!", U(1, 0, 1, 0), ts=30, display=True, stroke=3, TextTransparency=1, ZIndex=6),
+        ]),
     ])
+    # Tutorial spotlight: the screen dims except a cut-out around one button (four dark
+    # frames around it), a pulsing ring on the button and a bouncing arrow above it.
+    # TutorialController lays it out. Frames are not Active, so clicks go through.
+    dark = dict(bg="#05070F", BackgroundTransparency=0.45, ZIndex=18)
+    spot = frame("Spot", U(1, 0, 1, 0), Visible=False, ZIndex=18, children=[
+        frame("Top", U(0, 0, 0, 0), **dark),
+        frame("Bottom", U(0, 0, 0, 0), **dark),
+        frame("Left", U(0, 0, 0, 0), **dark),
+        frame("Right", U(0, 0, 0, 0), **dark),
+        frame("Ring", U(0, 0, 0, 0), ZIndex=19, children=[border(PREMIUM, 4)]),
+    ])
+    pointer = node("Pointer", "ImageLabel", base(U(0, 56, 0, 56), anchor=(0.5, 1), BackgroundTransparency=1, Image=img("ArrowDown"),
+                                                 Visible=False, ZIndex=20))
     # Sweep combo meter (x1.0 - x3.0) above the hint.
     combo = plate("Combo", U(0, 170, 0, 40), U(0.5, 0, 1, -176), (0.5, 1), BG, stud=0.5, Visible=False, children=[
         autoscale(),
@@ -382,7 +405,8 @@ def hud():
         ]),
         text("Label", "COMBO x1.0", U(1, 0, 1, -10), ts=22, color=PREMIUM, display=True, stroke=2.5),
     ])
-    write("Hud", screen([rail, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, sweep, hotbar, hint, combo, picker], order=1))
+    write("Hud", screen([rail, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, sweep, hotbar, hint, combo, picker,
+                         spot, pointer], order=1))
 
 
 # ---------------------------------------------------------------- Shop
@@ -780,6 +804,23 @@ def hatch():
     write("Hatch", tree)
 
 
+def tutorial_done():
+    """Shown once when the tutorial is finished, with the reward it gave."""
+    rewards_row = frame("Rewards", U(1, -28, 0, 132), U(0.5, 0, 0, 120), (0.5, 0), children=[
+        hlist(12, "Center", "Center"),
+        reward_card("Cash", "Cash", 1, 120, 128, 70),
+        reward_card("Luck", "Potion", 2, 120, 128, 70),
+        reward_card("CashPotion", "Potion", 3, 120, 128, 70),
+    ])
+    body = [
+        text("Sub", "You're a real Moon Sweeper now. Here's a gift to get going:", U(1, -40, 0, 44), U(0.5, 0, 0, 72), (0.5, 0),
+             ts=18, color=INK, heavy=True),
+        rewards_row,
+        button("Ok", U(0, 220, 0, 58), U(0.5, 0, 1, -16), (0.5, 1), color=SUCCESS, label="Awesome!", ts=26),
+    ]
+    write("TutorialDone", screen([dim(), window(480, 360, "Tutorial done!", "Star", body, header=SUCCESS)], order=12, enabled=False))
+
+
 def settings():
     """Gear button in the top bar (next to Roblox's own buttons) and the Settings window
     with Music and Sound effects sliders."""
@@ -888,6 +929,7 @@ def main():
     offer()
     hatch()
     settings()
+    tutorial_done()
     garage()
     upgrades()
     loading()

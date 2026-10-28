@@ -22,6 +22,10 @@
   }
  },
  "images": {
+  "ArrowDown": {
+   "id": 110709140241153,
+   "sha": "2c228afe96645a85f7e81958db63d461941f87b0407befb8f0147264ef46e3c3"
+  },
   "BannerLuck": {
    "id": 80280328077497,
    "sha": "9f0f70eb8c240c3fe925c0f3a4e845f0a55885211679f75f338db52245279489"
@@ -29,6 +33,10 @@
   "BannerStarter": {
    "id": 140216401802209,
    "sha": "3f7b389bf687cfcd35b9b8d7cf37dd4728fc8838fbb602e191b2401be2400b71"
+  },
+  "Chevron": {
+   "id": 74478848816812,
+   "sha": "7ea119751b8a03cfdd9b40d16c8c4527978450dfcbfc877db8d6757585c525df"
   },
   "Gear": {
    "id": 73874897282368,

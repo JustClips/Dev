@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local Net = require(Shared.Net)
+local Rewards = require(Shared.Config.Rewards)
 local Types = require(Shared.Types)
 local Upgrades = require(Shared.Config.Upgrades)
 
@@ -24,7 +25,18 @@ function StateService:GetServerState(): Folder
 end
 
 -- Server-confirmed tutorial step (GAME_PLAN §4).
-local function tutorialStep(session: any): string
+-- One-time reward for finishing the tutorial (Config/Rewards.Tutorial).
+local function rewardTutorial(player: Player)
+	local reward = Rewards.Tutorial
+	S.BackpackService:GiveCash(player, reward.Cash, "TutorialReward")
+	for itemId, amount in reward.Items do
+		S.InventoryService:AddItem(player, itemId, amount)
+	end
+	Net.fire("TutorialDone", player, reward)
+	S.StateService:Mark(player)
+end
+
+local function tutorialStep(player: Player, session: any): string
 	local data = session.Data
 	if data.Flags.TutorialDone then
 		return "Done"
@@ -67,6 +79,10 @@ local function tutorialStep(session: any): string
 		return "Shop"
 	end
 	data.Flags.TutorialDone = true
+	if not data.Flags.TutorialRewarded then
+		data.Flags.TutorialRewarded = true
+		task.defer(rewardTutorial, player)
+	end
 	return "Done"
 end
 
@@ -125,7 +141,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		CarriedEggs = carried,
 		CarryLimit = S.EggService:GetCarryLimit(player),
 		BaseIndex = runtime.BaseIndex or 0,
-		TutorialStep = tutorialStep(session),
+		TutorialStep = tutorialStep(player, session),
 		TutorialTarget = runtime.TutorialEggPosition,
 		AutoSweep = data.Settings.AutoSweep == true,
 		Settings = { Music = data.Settings.Music, Sfx = data.Settings.Sfx },

@@ -50,6 +50,12 @@ Rewards.Playtime = {
 	{ Minutes = 60, Reward = { Kind = "Item", Item = "HatchPotion", Amount = 2 } },
 } :: { { Minutes: number, Reward: Reward } }
 
+-- Finishing the tutorial (first egg hatched, pet placed, first sell, first tool bought).
+Rewards.Tutorial = {
+	Cash = 750,
+	Items = { LuckPotion = 1, CashPotion = 1 } :: { [string]: number },
+}
+
 Rewards.Stay = {
 	Minutes = 5,
 	CooldownMinutes = 30, -- one stay offer per half hour

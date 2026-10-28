@@ -150,28 +150,6 @@ local function renderZones(data)
 end
 
 -- One line telling new players what to do next (server-confirmed tutorial steps).
-local HINTS: { [string]: string } = {
-	Sweep = "Sweep the moon dust to find an egg!",
-	Egg = "You found an egg! Walk into it to pick it up.",
-	Base = "Carry the egg home to your hatchery!",
-	Place = "Press F at your hatchery to put the egg in an incubator!",
-	Hatching = "Your egg is hatching...",
-	Open = "Your egg is ready! Press E on it to open it.",
-	PlacePet = "Open your Bag (3) and place your pet on your base!",
-	Sell = "Sell your dust at the Rocket for cash!",
-	Shop = "Buy the Broom: it sweeps faster!",
-}
-
--- After the tutorial: only nudges for things that are waiting on the player.
-local function nextStepHint(data): string?
-	for _, entry in data.Hatching do
-		if entry.EndsAt <= State.now() then
-			return "An egg is ready! Open it at your hatchery."
-		end
-	end
-	return nil
-end
-
 local function render(data)
 	el.Cash.Text = Format.cash(data.Cash)
 	el.Income.Text = `+{Format.cash(data.IncomePerSec)}/s`
@@ -204,14 +182,7 @@ local function render(data)
 		renderZones(data)
 	end
 
-	local hint = HINTS[data.TutorialStep]
-	if not hint and data.TutorialStep == "Done" then
-		hint = nextStepHint(data)
-	end
-	el.Hint.Visible = hint ~= nil
-	if hint then
-		el.HintText.Text = hint
-	end
+	-- The step card above the hotbar belongs to TutorialController.
 end
 
 local function renderServer()
@@ -414,8 +385,6 @@ function HudController:Init(controllers)
 	el.SweepButton = Ui.find(hud, "SweepButton")
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
-	el.Hint = Ui.find(hud, "Hint")
-	el.HintText = Ui.find(hud, "Hint.Text")
 	el.Combo = Ui.find(hud, "Combo")
 	el.ComboFill = Ui.find(hud, "Combo.Bar.Fill")
 	el.ComboLabel = Ui.find(hud, "Combo.Label")

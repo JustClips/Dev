@@ -138,6 +138,39 @@ def speaker(size=128):
     save(im, "Speaker")
 
 
+def chevron(w=256, h=128):
+    """Two chevrons pointing right (+U), for the guide beam texture."""
+    big_w, big_h = w * 4, h * 4
+    alpha = Image.new("L", (big_w, big_h), 0)
+    d = ImageDraw.Draw(alpha)
+    t = big_h * 0.2
+    for cx in (big_w * 0.3, big_w * 0.8):
+        tip = cx + big_h * 0.25
+        d.polygon([(cx - big_h * 0.25, big_h * 0.1), (cx - big_h * 0.25 + t, big_h * 0.1), (tip + t, big_h / 2),
+                   (cx - big_h * 0.25 + t, big_h * 0.9), (cx - big_h * 0.25, big_h * 0.9), (tip, big_h / 2)], fill=255)
+    alpha = alpha.resize((w, h), Image.LANCZOS)
+    im = Image.new("RGBA", (w, h), WHITE + (0,))
+    im.putalpha(alpha)
+    save(im, "Chevron")
+
+
+def arrow_down(size=128):
+    """Chunky down arrow, white with a navy outline (readable on any background)."""
+    big = size * 4
+    s = big / 128
+    pts = [(44 * s, 10 * s), (84 * s, 10 * s), (84 * s, 62 * s), (112 * s, 62 * s), (64 * s, 118 * s), (16 * s, 62 * s), (44 * s, 62 * s)]
+    outline = Image.new("L", (big, big), 0)
+    ImageDraw.Draw(outline).polygon(pts, fill=255)
+    outline = outline.filter(ImageFilter.MaxFilter(int(9 * s) | 1))
+    fill = Image.new("L", (big, big), 0)
+    ImageDraw.Draw(fill).polygon(pts, fill=255)
+    im = Image.new("RGBA", (big, big), (27, 31, 58, 0))
+    im.putalpha(outline)
+    white = Image.new("RGBA", (big, big), WHITE + (255,))
+    im.paste(white, (0, 0), fill)
+    save(im.resize((size, size), Image.LANCZOS), "ArrowDown")
+
+
 rays()
 glow()
 sparkle()
@@ -145,4 +178,6 @@ ring()
 gear()
 music()
 speaker()
+chevron()
+arrow_down()
 print("wrote", OUT)
