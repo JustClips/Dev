@@ -220,6 +220,10 @@
    "id": 96240197058912,
    "sha": "dc7e023b10be2e66feb3ad23938aa5741344d034b641207da315e4d83e883edc"
   },
+  "Crystal_Ice": {
+   "id": 132904146756802,
+   "sha": "19e3dec2bc3b3227bd26cde7b2b0676250228207f856162fdfa4bb4d4d18c93e"
+  },
   "Crystal_Purple": {
    "id": 94601935658317,
    "sha": "a711fae691dbef2f67ebdf1cf1320623e6d32d4d95eecde6d7a4574e35a265fa"
@@ -312,6 +316,14 @@
    "id": 113038947328526,
    "sha": "14a2a5445fdc8cd131a1e23e653cdae93be277e7cbac10d8349130418763d836"
   },
+  "Rock_Ice1": {
+   "id": 105683479247663,
+   "sha": "3bbaa1e71450785b2c39630eff7c0ba44517e0ecbd73954f8c5e62ce969d7b1f"
+  },
+  "Rock_Ice2": {
+   "id": 121137135827283,
+   "sha": "da1f1e2811a23a885562c3c9be304a34fd6d4f3569d0ab8d89d3783169e6a6f6"
+  },
   "Rock_Mars1": {
    "id": 88484412880249,
    "sha": "6c62eece130d3b5592e44a3caaa1ba7e1bee4e435c3fcaec977fb810e1088e83"
@@ -381,16 +393,32 @@
    "sha": "3f27b0fe1fa84026488ade2931bcaa8921710c0ff41ba2a44ffda7215cba2c62"
   },
   "Vehicle_DustTruck": {
-   "id": 94022867337786,
-   "sha": "8e452788b816c75ed98f8c9865e05c51eb20641980be43c14da14f078f07249c"
+   "id": 132235458406457,
+   "sha": "c03f40970c80f9da0689ebecc8e7505671b8313fbb18e854175c708425378cf2"
+  },
+  "Vehicle_HoverSweeper": {
+   "id": 84373661850759,
+   "sha": "0f55d750984a8c4246f12fe82865b25dba7288eba92495032f57135dd231e3d3"
+  },
+  "Vehicle_MoonBuggy": {
+   "id": 110074258000570,
+   "sha": "7d4c0c8c4fc78b9985109a353bc94794847893f8eec0eb497c06d6e913a947f6"
   },
   "Vehicle_MoonCrawler": {
-   "id": 116829281220449,
-   "sha": "e80319935f28b0ee208c32ddf78f60c300b99188f5c44b8218030bd445303c17"
+   "id": 105103192060824,
+   "sha": "bda9d012096f0a44cd48656eeca14e51f872f1e771bd2c3484d1c1a04f558dcb"
+  },
+  "Vehicle_RocketSweeper": {
+   "id": 98988418561881,
+   "sha": "b59d8109dc93081eb1f6643c402cf0a0bd4d65a5db4ffdabffecfb394a8284ed"
+  },
+  "Vehicle_SolarRover": {
+   "id": 94763121171895,
+   "sha": "6475ddd5136980907b282c2431fb93aaaae73fdf88d2950f6ae5a10c78392052"
   },
   "Vehicle_SweeperCart": {
-   "id": 92989258768239,
-   "sha": "7612fab3fb9332113be9b555d4c776e47444c36e3ad4ba1ece47f18a663d276b"
+   "id": 99361441529847,
+   "sha": "0d4ae7e53b58449f1ae10189622701b04115710fe1e048f5113ebb3825a46917"
   },
   "ZoneGate": {
    "id": 75151650721886,

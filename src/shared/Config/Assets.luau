@@ -885,6 +885,25 @@ Assets.Models = {
 			},
 		},
 	},
+	Crystal_Ice = {
+		bounds = {
+			max = Vector3.new(1.252, 5.5, 1.221),
+			min = Vector3.new(-2.136, -0.3, -1.269),
+		},
+		fallback = 132904146756802,
+		id = 87180616776675,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "D2F8FF",
+				parent = "Body",
+			},
+		},
+	},
 	Crystal_Purple = {
 		bounds = {
 			max = Vector3.new(2.11, 5.0, 1.585),
@@ -1278,6 +1297,34 @@ Assets.Models = {
 			},
 		},
 	},
+	Rock_Ice1 = {
+		bounds = {
+			max = Vector3.new(4.31, 3.728, 3.203),
+			min = Vector3.new(-4.192, 0.0, -3.336),
+		},
+		fallback = 105683479247663,
+		id = 94793574786884,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Rock_Ice2 = {
+		bounds = {
+			max = Vector3.new(7.334, 6.218, 4.883),
+			min = Vector3.new(-7.024, 0.0, -5.441),
+		},
+		fallback = 121137135827283,
+		id = 105487546458251,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
 	Rock_Mars1 = {
 		bounds = {
 			max = Vector3.new(4.145, 3.721, 3.01),
@@ -1558,8 +1605,8 @@ Assets.Models = {
 			max = Vector3.new(4.52, 6.777, 6.075),
 			min = Vector3.new(-4.52, -0.081, -8.384),
 		},
-		fallback = 94022867337786,
-		id = 134685292058353,
+		fallback = 132235458406457,
+		id = 139111166539914,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1582,13 +1629,71 @@ Assets.Models = {
 		},
 		seat = Vector3.new(0.0, 3.78, 1.35),
 	},
+	Vehicle_HoverSweeper = {
+		bounds = {
+			max = Vector3.new(5.25, 5.987, 7.037),
+			min = Vector3.new(-5.25, -0.09, -9.315),
+		},
+		fallback = 84373661850759,
+		id = 128142838252687,
+		kind = "vehicle",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Body_Arms = {
+				collide = false,
+				parent = "Body",
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFF5C8",
+				parent = "Body",
+			},
+			Brush = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.125, -8.1),
+				parent = "Body",
+			},
+		},
+		seat = Vector3.new(0.0, 4.2, 1.5),
+	},
+	Vehicle_MoonBuggy = {
+		bounds = {
+			max = Vector3.new(3.84, 6.44, 5.175),
+			min = Vector3.new(-3.84, -0.069, -7.142),
+		},
+		fallback = 110074258000570,
+		id = 87264804303541,
+		kind = "vehicle",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Body_Arms = {
+				collide = false,
+				parent = "Body",
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFF5C8",
+				parent = "Body",
+			},
+			Brush = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.8625, -6.21),
+				parent = "Body",
+			},
+		},
+		seat = Vector3.new(0.0, 3.22, 1.15),
+	},
 	Vehicle_MoonCrawler = {
 		bounds = {
 			max = Vector3.new(6.28, 11.34, 8.1),
 			min = Vector3.new(-6.28, -0.108, -11.178),
 		},
-		fallback = 116829281220449,
-		id = 112298881685804,
+		fallback = 105103192060824,
+		id = 100499498622530,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -1611,13 +1716,71 @@ Assets.Models = {
 		},
 		seat = Vector3.new(0.0, 5.04, 1.8),
 	},
+	Vehicle_RocketSweeper = {
+		bounds = {
+			max = Vector3.new(10.956, 11.0, 14.08),
+			min = Vector3.new(-10.956, -0.132, -13.662),
+		},
+		fallback = 98988418561881,
+		id = 133577992219871,
+		kind = "vehicle",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Body_Arms = {
+				collide = false,
+				parent = "Body",
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFF5C8",
+				parent = "Body",
+			},
+			Brush = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.65, -11.88),
+				parent = "Body",
+			},
+		},
+		seat = Vector3.new(0.0, 6.16, 2.2),
+	},
+	Vehicle_SolarRover = {
+		bounds = {
+			max = Vector3.new(12.2, 11.6, 9.0),
+			min = Vector3.new(-12.2, -0.12, -12.42),
+		},
+		fallback = 94763121171895,
+		id = 97590307426997,
+		kind = "vehicle",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Body_Arms = {
+				collide = false,
+				parent = "Body",
+			},
+			Body_Glow = {
+				collide = false,
+				glow = "FFF5C8",
+				parent = "Body",
+			},
+			Brush = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.5, -10.8),
+				parent = "Body",
+			},
+		},
+		seat = Vector3.new(0.0, 5.6, 2.0),
+	},
 	Vehicle_SweeperCart = {
 		bounds = {
 			max = Vector3.new(3.33, 5.425, 4.5),
 			min = Vector3.new(-3.33, -0.06, -6.21),
 		},
-		fallback = 92989258768239,
-		id = 129873014032932,
+		fallback = 99361441529847,
+		id = 113796643098393,
 		kind = "vehicle",
 		parts = {
 			Body = {

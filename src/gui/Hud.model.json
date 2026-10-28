@@ -4825,7 +4825,7 @@
      ],
      [
       0,
-      290
+      348
      ]
     ],
     "Position": [
@@ -5794,6 +5794,224 @@
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "Mars Plains",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 18,
+          "TextXAlignment": "Left",
+          "TextYAlignment": "Center",
+          "TextWrapped": true,
+          "ZIndex": 2,
+          "FontFace": {
+           "family": "rbxasset://fonts/families/Montserrat.json",
+           "weight": "Heavy",
+           "style": "Normal"
+          }
+         },
+         "children": [
+          {
+           "name": "TextStroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#1B1F3A",
+            "Thickness": 2.5,
+            "ApplyStrokeMode": "Contextual",
+            "LineJoinMode": "Round"
+           }
+          }
+         ]
+        },
+        {
+         "name": "Price",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            0.4,
+            -10
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            1,
+            -10
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           1,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Text": "",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 16,
+          "TextXAlignment": "Right",
+          "TextYAlignment": "Center",
+          "TextWrapped": true,
+          "ZIndex": 2,
+          "FontFace": {
+           "family": "rbxasset://fonts/families/Montserrat.json",
+           "weight": "ExtraBold",
+           "style": "Normal"
+          }
+         },
+         "children": [
+          {
+           "name": "TextStroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#1B1F3A",
+            "Thickness": 2.5,
+            "ApplyStrokeMode": "Contextual",
+            "LineJoinMode": "Round"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "Zone_Europa",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          1,
+          0
+         ],
+         [
+          0,
+          50
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundColor3": "#3B4FA8",
+        "Text": "",
+        "AutoButtonColor": false,
+        "ZIndex": 1,
+        "LayoutOrder": 5
+       },
+       "children": [
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#1B1F3A",
+          "Thickness": 3,
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Shine",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.55,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#BCC4D4"
+            ]
+           ]
+          },
+          "Rotation": 90
+         }
+        },
+        {
+         "name": "Icon",
+         "className": "ImageLabel",
+         "properties": {
+          "Size": [
+           [
+            0,
+            36
+           ],
+           [
+            0,
+            36
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            8
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Image": "rbxassetid://96129567125793",
+          "ScaleType": "Fit",
+          "ZIndex": 3
+         }
+        },
+        {
+         "name": "Name",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            0.6,
+            -50
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            52
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Text": "Europa Ice",
           "TextColor3": "#FFFFFF",
           "TextSize": 18,
           "TextXAlignment": "Left",

@@ -36,7 +36,7 @@ local LOCKED = Color3.fromRGB(255, 150, 160) -- readable on the blue zone rows
 local SAND = Color3.fromRGB(233, 201, 139)
 local NAVY = Color3.fromRGB(20, 26, 51)
 local MINT = Color3.fromRGB(124, 245, 200)
-local ZONE_ORDER = { "Landing", "Crater", "DarkSide", "Mars" }
+local ZONE_ORDER = { "Landing", "Crater", "DarkSide", "Mars", "Europa" }
 
 local HudController = {}
 

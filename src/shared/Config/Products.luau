@@ -43,12 +43,21 @@ local Products: { ProductDef } = {
 	{ Key = "ToolSkip6", Id = 3723358915, Price = 129, Name = "Unlock Turbo Vacuum", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 6 },
 
 	-- Cars (sold in the Garage). Unlock = owned until rebirth; Rent = until you leave or rebirth.
+	-- Both need the car's rebirth level, so Robux can't jump ahead of the progression.
 	{ Key = "UnlockSweeperCart", Id = 3723358932, Price = 249, Name = "Unlock Sweeper Cart", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "SweeperCart" },
+	{ Key = "UnlockMoonBuggy", Id = 3723367542, Price = 349, Name = "Unlock Moon Buggy", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "MoonBuggy" },
 	{ Key = "UnlockDustTruck", Id = 3723358946, Price = 499, Name = "Unlock Dust Truck", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "DustTruck" },
+	{ Key = "UnlockHoverSweeper", Id = 3723367553, Price = 699, Name = "Unlock Hover Sweeper", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "HoverSweeper" },
 	{ Key = "UnlockMoonCrawler", Id = 3723358959, Price = 999, Name = "Unlock Moon Crawler", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "MoonCrawler" },
+	{ Key = "UnlockSolarRover", Id = 3723367560, Price = 1299, Name = "Unlock Solar Rover", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "SolarRover" },
+	{ Key = "UnlockRocketSweeper", Id = 3723367567, Price = 1699, Name = "Unlock Rocket Sweeper", Kind = "VehicleUnlock", Category = "Vehicles", Giftable = true, Vehicle = "RocketSweeper" },
 	{ Key = "RentSweeperCart", Id = 3723358973, Price = 59, Name = "Sweeper Cart (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "SweeperCart" },
+	{ Key = "RentMoonBuggy", Id = 3723367579, Price = 99, Name = "Moon Buggy (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "MoonBuggy" },
 	{ Key = "RentDustTruck", Id = 3723358981, Price = 149, Name = "Dust Truck (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "DustTruck" },
+	{ Key = "RentHoverSweeper", Id = 3723367587, Price = 199, Name = "Hover Sweeper (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "HoverSweeper" },
 	{ Key = "RentMoonCrawler", Id = 3723358993, Price = 299, Name = "Moon Crawler (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "MoonCrawler" },
+	{ Key = "RentSolarRover", Id = 3723367594, Price = 399, Name = "Solar Rover (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "SolarRover" },
+	{ Key = "RentRocketSweeper", Id = 3723367601, Price = 499, Name = "Rocket Sweeper (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "RocketSweeper" },
 
 	-- Cash packs scale with the player: max(Seconds of income, FloorFactor x next tool price).
 	{ Key = "Cash1", Id = 3723359007, Price = 24, Name = "Pile of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 600, FloorFactor = 0.5 },
@@ -57,7 +66,15 @@ local Products: { ProductDef } = {
 	{ Key = "Cash4", Id = 3723359049, Price = 399, Name = "Vault of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 14400, FloorFactor = 10 },
 	{ Key = "Cash5", Id = 3723359058, Price = 999, Name = "Moon of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 43200, FloorFactor = 25 },
 
-	{ Key = "SkipRebirth", Id = 3723359064, Price = 79, Name = "Skip Rebirth", Kind = "SkipRebirth", Category = "Special", Giftable = true },
+	-- Skip Rebirth gets pricier the further you are (Rebirth = the rebirth it takes you to).
+	-- Past the last one, the last price is used again. See Products.skipRebirthFor.
+	{ Key = "SkipRebirth", Id = 3723359064, Price = 79, Name = "Skip Rebirth", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 1 },
+	{ Key = "SkipRebirth2", Id = 3723367608, Price = 149, Name = "Skip to Rebirth 2", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 2 },
+	{ Key = "SkipRebirth3", Id = 3723367615, Price = 249, Name = "Skip to Rebirth 3", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 3 },
+	{ Key = "SkipRebirth4", Id = 3723367622, Price = 399, Name = "Skip to Rebirth 4", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 4 },
+	{ Key = "SkipRebirth5", Id = 3723367627, Price = 599, Name = "Skip to Rebirth 5", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 5 },
+	{ Key = "SkipRebirth6", Id = 3723367635, Price = 849, Name = "Skip to Rebirth 6", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 6 },
+	{ Key = "SkipRebirth7", Id = 3723367645, Price = 1199, Name = "Skip to Rebirth 7+", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 7 },
 	{ Key = "DoubleOffline", Id = 3723359071, Price = 49, Name = "Double Offline Reward", Kind = "DoubleOffline", Category = "Special", Giftable = false },
 }
 
@@ -87,6 +104,19 @@ end
 
 function Config.isLive(def: { Id: number }): boolean
 	return def.Id ~= 0
+end
+
+-- The Skip Rebirth product for a player who has `rebirths` rebirths now.
+function Config.skipRebirthFor(rebirths: number): ProductDef?
+	local best: ProductDef? = nil
+	for _, def in Products do
+		if def.Kind == "SkipRebirth" and def.Id ~= 0 and (def.Rebirth or 1) <= rebirths + 1 then
+			if not best or (def.Rebirth or 1) > (best.Rebirth or 1) then
+				best = def
+			end
+		end
+	end
+	return best
 end
 
 return Config

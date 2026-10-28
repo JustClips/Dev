@@ -185,15 +185,18 @@ local function passItems(data): { Item }
 	return items
 end
 
-local function cashItems(_data): { Item }
+local function cashItems(data): { Item }
 	local items: { Item } = {}
 	for _, key in { "Cash1", "Cash2", "Cash3", "Cash4", "Cash5" } do
-		local item = robuxItem(key, "Scales with your progress.", "Icon_Cash")
+		-- The server works out each pack's amount for this player (it grows with progress).
+		local amount = data.CashPacks and data.CashPacks[key]
+		local item = robuxItem(key, if amount then `+{Format.cash(amount)} cash` else "Scales with your progress.", "Icon_Cash")
 		if item then
 			table.insert(items, item)
 		end
 	end
-	local skip = robuxItem("SkipRebirth", "Rebirth now without paying the cash cost.", "Icon_Rebirth")
+	local skipDef = Products.skipRebirthFor(data.Rebirths)
+	local skip = skipDef and robuxItem(skipDef.Key, `Jump to Rebirth {data.Rebirths + 1} without the cash cost.`, "Icon_Rebirth")
 	if skip then
 		table.insert(items, skip)
 	end
@@ -376,6 +379,8 @@ function ShopController:Start()
 			data.EffectiveTier,
 			tostring(BigNum.gte(data.Cash, nextTool.Price)),
 			tostring(data.Flags.StarterPackBought),
+			data.Rebirths,
+			if currentTab == "Cash" and data.CashPacks and data.CashPacks.Cash1 then Format.cash(data.CashPacks.Cash1) else "",
 			table.concat(hatching, ","),
 			table.concat(passes, ","),
 		}, "|")

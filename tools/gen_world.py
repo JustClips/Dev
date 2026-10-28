@@ -23,13 +23,15 @@ ZONES = [  # id, min, max, groundY
     ("Crater", (-120, -452), (120, -232), -8),
     ("DarkSide", (-120, -704), (120, -488), 0),
     ("Mars", (-120, -956), (120, -740), 0),
+    ("Europa", (-120, -1208), (120, -992), 0),
 ]
 CORRIDORS = [  # zone, zmin, zmax, gateZ, gate ground y
     ("Crater", -232, -196, -205, 0),
     ("DarkSide", -488, -452, -479, 0),
     ("Mars", -740, -704, -713, 0),
+    ("Europa", -992, -956, -965, 0),
 ]
-GATE_COLORS = {"Crater": "#78C8FF", "DarkSide": "#B478FF", "Mars": "#FF8C5A"}
+GATE_COLORS = {"Crater": "#78C8FF", "DarkSide": "#B478FF", "Mars": "#FF8C5A", "Europa": "#A0DCFF"}
 BASE_LOCAL = {
     "Hatchery": (0, -28), "HatcheryRadius": 9, "Spawn": (-18, -31),
     "ParkMin": (-42, -14), "ParkMax": (42, 42),
@@ -161,7 +163,7 @@ def main():
         else:
             walls.append(wall(f"{zone}North", mn[0], mn[1] - 1, mx[0], mn[1] - 1, y0=y0))
     # safety floor far below, in case terrain hasn't loaded yet
-    walls.append(part("SafetyFloor", [1200, 2, 1700], [0, -60, -380], "#000000", **invisible(CanCollide=True)))
+    walls.append(part("SafetyFloor", [1200, 2, 1800], [0, -60, -420], "#000000", **invisible(CanCollide=True)))
     write("Walls", model(walls))
     print("world written to", OUT)
 

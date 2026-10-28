@@ -90,6 +90,36 @@
     "Transparency": 0.15,
     "CastShadow": false
    }
+  },
+  {
+   "name": "Gate_Europa",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     22,
+     14,
+     1
+    ],
+    "Color": "#A0DCFF",
+    "Material": "ForceField",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      0,
+      7,
+      -965
+     ],
+     "orientation": [
+      0,
+      0,
+      0
+     ]
+    },
+    "Transparency": 0.15,
+    "CastShadow": false
+   }
   }
  ]
 }

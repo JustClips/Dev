@@ -6,6 +6,7 @@ Tool.Grip from the grip point in meta.json.
 """
 import math
 import random
+import bpy
 from mathutils import Vector
 from lib import (Asset, use, sphere, ico, box, cyl, cone, torus, capsule, tube, join,
                  deform, noise_deform)
@@ -208,6 +209,51 @@ def vehicle(name, s, color, kind):
         tank = cyl("DCDCE6", loc=(0, 2.6 * s, wr + 2.4 * s), r=1.5 * s, h=3.2 * s, rot=(90, 0, 0), verts=20)
         pieces.append(tank)
         pieces += [torus(shade(color, -0.3), loc=(0, 2.6 * s + d * s, wr + 2.4 * s), R=1.52 * s, r=0.1 * s, rot=(90, 0, 0)) for d in (-1.2, 1.2)]
+    elif kind == "buggy":
+        # open roll cage, big antenna flag, chunky bumper
+        for x in (-1, 1):
+            pieces.append(tube("E6E6EE", [(x * (W / 2 - 0.5), 2.2 * s, wr + 1.2 * s), (x * (W / 2 - 0.6), 1.0 * s, wr + 3.4 * s),
+                                          (x * (W / 2 - 0.6), -0.6 * s, wr + 3.4 * s), (x * (W / 2 - 0.5), -1.6 * s, wr + 1.2 * s)], 0.12 * s))
+        pieces.append(cyl("E6E6EE", loc=(0, -0.6 * s, wr + 3.4 * s), r=0.12 * s, h=W - 1.2, rot=(0, 90, 0), verts=8))
+        pieces.append(cyl("E6E6EE", loc=(0, 1.0 * s, wr + 3.4 * s), r=0.12 * s, h=W - 1.2, rot=(0, 90, 0), verts=8))
+        pieces.append(box(shade(color, -0.3), loc=(0, -L / 2 + 0.2, wr + 0.6 * s), size=(W + 0.4, 0.6 * s, 0.8 * s), bevel=0.2 * s))
+        pieces.append(cyl("C8C8D2", loc=(-W / 2 + 0.8, 2.6 * s, wr + 3.0 * s), r=0.06 * s, h=3.2 * s, verts=8))
+        pieces.append(box("FF5A78", loc=(-W / 2 + 1.3, 2.6 * s, wr + 4.2 * s), size=(1.0 * s, 0.06, 0.6 * s)))
+    elif kind == "hover":
+        # no wheels: hover pads with glowing rings, sleek nose and fins
+        for p in pieces:
+            if p not in (chassis, seat, back):
+                bpy.data.objects.remove(p, do_unlink=True)
+        pieces = [chassis]
+        for x in (-1, 1):
+            for y in (-1, 1):
+                pieces.append(cyl("3A3A46", loc=(x * (W / 2 - 0.6), y * L * 0.32, wr * 0.7), r=0.9 * s, h=0.5 * s, verts=20))
+        pieces += [seat, back]
+        pieces.append(sphere(shade(color, 0.15), loc=(0, -L / 2 + 0.8 * s, wr + 1.0 * s), scale=(W / 2 - 0.4, 1.8 * s, 0.7 * s)))
+        pieces.append(sphere("9BE6FF", loc=(0, -0.9 * s, wr + 2.0 * s), scale=(1.3 * s, 1.0 * s, 0.7 * s)))
+        for x in (-1, 1):
+            pieces.append(box(shade(color, -0.25), loc=(x * (W / 2 - 0.8), L / 2 - 0.8 * s, wr + 2.0 * s), size=(0.25 * s, 1.6 * s, 1.6 * s), bevel=0.1 * s, rot=(20, 0, 0)))
+    elif kind == "rover":
+        # six wheels, solar panel wings, mast camera
+        for x in (-1, 1):
+            pieces += wheel("2A2A33", x * (W / 2 - 0.1), 0, wr, 0.8 * s)
+        pieces.append(box(shade(color, -0.1), loc=(0, -1.8 * s, wr + 2.0 * s), size=(W - 1.4, 3.0 * s, 1.8 * s), bevel=0.3 * s))
+        for x in (-1, 1):
+            pieces.append(box("2A4AA0", loc=(x * (W / 2 + 1.6 * s), 1.2 * s, wr + 2.2 * s), size=(3.0 * s, 4.0 * s, 0.12 * s)))
+            for k in range(3):
+                pieces.append(box("8CB4FF", loc=(x * (W / 2 + 1.6 * s), 1.2 * s + (k - 1) * 1.3 * s, wr + 2.29 * s), size=(2.7 * s, 1.1 * s, 0.03)))
+            pieces.append(cyl("C8C8D2", loc=(x * (W / 2 + 0.1), 1.2 * s, wr + 2.2 * s), r=0.1 * s, h=0.9 * s, rot=(0, 90, 0), verts=8))
+        pieces.append(cyl("C8C8D2", loc=(0, -2.4 * s, wr + 3.6 * s), r=0.15 * s, h=1.6 * s, verts=10))
+        pieces.append(box("3A3A46", loc=(0, -2.5 * s, wr + 4.5 * s), size=(1.2 * s, 0.7 * s, 0.6 * s), bevel=0.1 * s))
+    elif kind == "rocket":
+        # jet sweeper: rocket engines out the back, wings and a bubble canopy
+        pieces.append(sphere("9BE6FF", loc=(0, -0.4 * s, wr + 2.0 * s), scale=(1.4 * s, 1.8 * s, 1.0 * s)))
+        pieces.append(cone(shade(color, 0.2), loc=(0, -L / 2 - 0.2 * s, wr + 0.7 * s), r=1.6 * s, h=1.6 * s, rot=(90, 0, 0), verts=16))
+        for x in (-1, 1):
+            pieces.append(cyl("C8C8D2", loc=(x * 1.6 * s, L / 2 - 0.4 * s, wr + 1.8 * s), r=0.8 * s, h=3.0 * s, rot=(90, 0, 0), verts=16))
+            pieces.append(cone("FF5A3C", loc=(x * 1.6 * s, L / 2 + 1.3 * s, wr + 1.8 * s), r=0.6 * s, h=1.2 * s, rot=(-90, 0, 0), verts=12))
+            pieces.append(box(shade(color, -0.25), loc=(x * (W / 2 + 0.9 * s), 1.0 * s, wr + 1.0 * s), size=(2.2 * s, 2.6 * s, 0.2 * s), bevel=0.08 * s, rot=(0, x * -12, 0)))
+        pieces.append(box(shade(color, -0.25), loc=(0, L / 2 - 0.6 * s, wr + 3.0 * s), size=(0.25 * s, 1.8 * s, 2.0 * s), bevel=0.08 * s))
     else:  # crawler
         for x in (-1, 1):
             pieces.append(box("3A3A46", loc=(x * (W / 2 - 0.2), 0, wr * 0.9), size=(1.2 * s, L * 0.95, wr * 1.8), bevel=0.5 * s))
@@ -232,7 +278,11 @@ def vehicle(name, s, color, kind):
 VEHICLES = {
     "SweeperCart": lambda: vehicle("SweeperCart", 1.0, "50C878", "cart"),
     "DustTruck": lambda: vehicle("DustTruck", 1.35, "FFB428", "truck"),
+    "MoonBuggy": lambda: vehicle("MoonBuggy", 1.15, "FF8C3C", "buggy"),
+    "HoverSweeper": lambda: vehicle("HoverSweeper", 1.5, "B478FF", "hover"),
     "MoonCrawler": lambda: vehicle("MoonCrawler", 1.8, "5AA0FF", "crawler"),
+    "SolarRover": lambda: vehicle("SolarRover", 2.0, "F0F0F5", "rover"),
+    "RocketSweeper": lambda: vehicle("RocketSweeper", 2.2, "FF4A5A", "rocket"),
 }
 
 
@@ -526,6 +576,9 @@ ALL.update({
     "Crystal_Blue": lambda: crystal("Crystal_Blue", "78E6FF", 11),
     "Crystal_Purple": lambda: crystal("Crystal_Purple", "C878FF", 12, n=6, h=5),
     "Crystal_Red": lambda: crystal("Crystal_Red", "FF784A", 13, n=4, h=4.5),
+    "Rock_Ice1": lambda: rock("Rock_Ice1", "B4DCF0", 14, (4, 3.2, 2.6)),
+    "Rock_Ice2": lambda: rock("Rock_Ice2", "96C3E1", 15, (7, 5, 4.2)),
+    "Crystal_Ice": lambda: crystal("Crystal_Ice", "D2F8FF", 16, n=7, h=5.5),
     "Tree_Bulb": lambda: alien_tree("Tree_Bulb", "8C64B4", "5AE6B4", "FFF08C", 21),
     "Tree_Puff": lambda: alien_tree("Tree_Puff", "6478A0", "FF96DC", "9BFFF5", 22, h=7),
     "Tree_Tall": lambda: alien_tree("Tree_Tall", "5A8C78", "8CDCFF", "FFB4F0", 23, h=11),

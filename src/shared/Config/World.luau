@@ -3,6 +3,8 @@
 -- in the middle and 4 bases on each side (like Steal an Egg). Zones continue north (-Z),
 -- each behind a gated corridor.
 --
+--   z = -1208 .. -992 Europa Ice           (TileSize 6)
+--   z = -992 .. -956  corridor + Gate_Europa
 --   z = -956 .. -740  Mars Plains          (TileSize 6)
 --   z = -740 .. -704  corridor + Gate_Mars
 --   z = -704 .. -488  Dark Side            (TileSize 6)
@@ -97,6 +99,7 @@ World.Corridors = {
 	{ Zone = "Crater", Min = Vector2.new(-12, -232), Max = Vector2.new(12, -196), GateZ = -205, FromY = 0, ToY = -8 },
 	{ Zone = "DarkSide", Min = Vector2.new(-12, -488), Max = Vector2.new(12, -452), GateZ = -479, FromY = -8, ToY = 0 },
 	{ Zone = "Mars", Min = Vector2.new(-12, -740), Max = Vector2.new(12, -704), GateZ = -713, FromY = 0, ToY = 0 },
+	{ Zone = "Europa", Min = Vector2.new(-12, -992), Max = Vector2.new(12, -956), GateZ = -965, FromY = 0, ToY = 0 },
 }
 
 -- Teleport targets for the HUD buttons (Base uses your own spawn).
@@ -105,6 +108,7 @@ World.Teleports = {
 	Crater = CFrame.lookAt(Vector3.new(0, -4, -240), Vector3.new(0, -4, -300)),
 	DarkSide = CFrame.lookAt(Vector3.new(0, 4, -494), Vector3.new(0, 4, -560)),
 	Mars = CFrame.lookAt(Vector3.new(0, 4, -746), Vector3.new(0, 4, -800)),
+	Europa = CFrame.lookAt(Vector3.new(0, 4, -998), Vector3.new(0, 4, -1050)),
 }
 
 -- Terrain materials per area (colours are set at runtime).
@@ -113,6 +117,7 @@ World.TerrainColors = {
 	Slate = Color3.fromRGB(118, 132, 164), -- crater
 	Basalt = Color3.fromRGB(62, 50, 88), -- dark side
 	Sandstone = Color3.fromRGB(178, 92, 62), -- mars
+	Glacier = Color3.fromRGB(170, 214, 240), -- europa ice
 	Grass = Color3.fromRGB(88, 196, 160), -- alien moss in pet parks
 	Concrete = Color3.fromRGB(196, 202, 214), -- base floors
 	Pavement = Color3.fromRGB(120, 128, 148), -- paths

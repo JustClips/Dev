@@ -71,8 +71,9 @@ function MapBuilder.buildTerrain()
 	local rng = Random.new(42)
 
 	-- Moon ground everywhere (surface y = 0), with a colour band per zone.
-	slab(terrain, CFrame.new(0, 0, -380), 1000, 1800, 0, M.Sand, 36)
-	rect(terrain, -500, -1280, 500, -720, 0, M.Sandstone) -- Mars and beyond
+	slab(terrain, CFrame.new(0, 0, -410), 1000, 1860, 0, M.Sand, 36)
+	rect(terrain, -500, -1340, 500, -976, 0, M.Glacier) -- Europa and beyond
+	rect(terrain, -500, -976, 500, -720, 0, M.Sandstone) -- Mars band
 	rect(terrain, -500, -720, 500, -472, 0, M.Basalt) -- Dark Side band
 	rect(terrain, -500, -472, 500, -212, 0, M.Slate) -- Crater band
 
@@ -121,7 +122,7 @@ function MapBuilder.buildTerrain()
 		ridge(terrain, rng, Vector2.new(30, z), Vector2.new(170, z), M.Rock, 10, 8, 11, 0)
 		ridge(terrain, rng, Vector2.new(-30, z), Vector2.new(-170, z), M.Rock, 10, 8, 11, 0)
 	end
-	local zoneMaterial = { Crater = M.Slate, DarkSide = M.Basalt, Mars = M.Sandstone }
+	local zoneMaterial = { Crater = M.Slate, DarkSide = M.Basalt, Mars = M.Sandstone, Europa = M.Glacier }
 	for _, zone in Zones.List do
 		local material = zoneMaterial[zone.Id]
 		if material then
@@ -129,8 +130,9 @@ function MapBuilder.buildTerrain()
 			ridge(terrain, rng, Vector2.new(zone.Max.X + 62, zone.Max.Y), Vector2.new(zone.Max.X + 62, zone.Min.Y), material, 24, 20, 34, -4)
 		end
 	end
-	local mars = Zones.ById.Mars
-	ridge(terrain, rng, Vector2.new(mars.Min.X - 60, mars.Min.Y - 58), Vector2.new(mars.Max.X + 60, mars.Min.Y - 58), M.Sandstone, 24, 22, 36, -4)
+	-- Back wall behind the last zone.
+	local last = Zones.List[#Zones.List]
+	ridge(terrain, rng, Vector2.new(last.Min.X - 60, last.Min.Y - 58), Vector2.new(last.Max.X + 60, last.Min.Y - 58), zoneMaterial[last.Id] or M.Rock, 24, 22, 36, -4)
 end
 
 -- Lighting -----------------------------------------------------------------------
@@ -727,6 +729,7 @@ function MapBuilder.buildProps()
 	scatter(rng, Zones.ById.Crater, { "Rock_Crater1", "Rock_Crater2", "Crystal_Blue" }, 30)
 	scatter(rng, Zones.ById.DarkSide, { "Rock_Dark1", "Rock_Dark2", "Crystal_Purple", "Mushroom_Glow" }, 30)
 	scatter(rng, Zones.ById.Mars, { "Rock_Mars1", "Rock_Mars2", "Crystal_Red", "Mushroom_Mars" }, 30)
+	scatter(rng, Zones.ById.Europa, { "Rock_Ice1", "Rock_Ice2", "Crystal_Ice", "Crystal_Blue" }, 30)
 	hubDecor(rng)
 
 	for i = 1, World.BaseCount do

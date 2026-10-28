@@ -56,12 +56,14 @@ local function render()
 		row.Visible = true
 		local owned = data.Vehicles[car.Id] == true
 		local rented = data.RentedVehicle == car.Id
+		local locked = not owned and not rented and data.Rebirths < car.RequiredRebirths
 		;(row:FindFirstChild("Name") :: TextLabel).Text = car.Name
 		;(row:FindFirstChild("Stats") :: TextLabel).Text =
 			`Width {car.Radius} · Power {car.Power} · Holds {Format.number(car.Capacity)}`
 		;(row:FindFirstChild("Price") :: TextLabel).Text = if owned
 			then "Owned"
 			elseif rented then "Rented for this run"
+			elseif locked then `Needs Rebirth {car.RequiredRebirths} · {Format.cash(car.Price)}`
 			else Format.cash(car.Price)
 		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.image("Icon_Vehicle")
 
@@ -77,6 +79,12 @@ local function render()
 					toast(false, message)
 				end
 			end)
+		elseif locked then
+			Ui.setText(main, "Locked")
+			main.BackgroundColor3 = GREY
+			Ui.button(main, function()
+				toast(false, `Reach Rebirth {car.RequiredRebirths} to unlock the {car.Name}`)
+			end)
 		else
 			Ui.setText(main, "Buy")
 			main.BackgroundColor3 = if BigNum.gte(data.Cash, car.Price) then GREEN else GREY
@@ -87,7 +95,7 @@ local function render()
 
 		-- Robux: unlock (until rebirth), or rent for this run if unlock isn't on sale.
 		local robux = row:FindFirstChild("Robux") :: TextButton
-		local product = if owned or rented then nil else (liveProduct(car.UnlockKey) or liveProduct(car.RentKey))
+		local product = if owned or rented or locked then nil else (liveProduct(car.UnlockKey) or liveProduct(car.RentKey))
 		robux.Visible = product ~= nil
 		if product then
 			local verb = if product.Kind == "VehicleRental" then "Rent" else "Get"
@@ -131,7 +139,7 @@ function GarageController:Start()
 	State.Changed:Connect(function(data)
 		local parts = { tostring(data.RentedVehicle) }
 		for _, car in Tools.Vehicles do
-			table.insert(parts, `{car.Id}:{data.Vehicles[car.Id] == true}:{BigNum.gte(data.Cash, car.Price)}`)
+			table.insert(parts, `{car.Id}:{data.Vehicles[car.Id] == true}:{BigNum.gte(data.Cash, car.Price)}:{data.Rebirths >= car.RequiredRebirths}`)
 		end
 		local signature = table.concat(parts, "|")
 		if signature ~= lastSignature then

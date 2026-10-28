@@ -22,6 +22,11 @@ local costLabel: TextLabel
 local rebirthButton: TextButton
 local skipButton: TextButton
 
+local function skipKey(): string
+	local skip = State.data and Products.skipRebirthFor(State.data.Rebirths)
+	return if skip then skip.Key else "SkipRebirth"
+end
+
 local function render()
 	local data = State.data
 	if not data then
@@ -35,8 +40,9 @@ local function render()
 	-- Can't afford: the price turns red, the button goes grey.
 	costLabel.TextColor3 = if affordable then Color3.fromRGB(27, 31, 58) else Color3.fromRGB(255, 77, 94)
 	rebirthButton.BackgroundColor3 = if affordable then Color3.fromRGB(61, 220, 90) else Color3.fromRGB(166, 174, 194)
-	local skip = Products.ProductByKey.SkipRebirth
-	skipButton.Visible = skip ~= nil and skip.Id ~= 0
+	-- The skip price grows with each rebirth (Products.skipRebirthFor).
+	local skip = Products.skipRebirthFor(data.Rebirths)
+	skipButton.Visible = skip ~= nil
 	if skip then
 		Ui.setText(skipButton, `Skip for {Ui.ROBUX} {skip.Price}`)
 	end
@@ -71,7 +77,7 @@ function RebirthController:Start()
 		end
 	end)
 	Ui.button(skipButton, function()
-		local ok, message = Net.func("PromptPurchase"):InvokeServer("SkipRebirth")
+		local ok, message = Net.func("PromptPurchase"):InvokeServer(skipKey())
 		if not ok and message then
 			C.HudController:Toast(message, "Bad")
 		end

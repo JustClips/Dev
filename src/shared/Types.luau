@@ -27,6 +27,7 @@ export type VehicleDef = {
 	Power: number,
 	Capacity: number,
 	Price: number,
+	RequiredRebirths: number,
 	Color: Color3,
 	Scale: number,
 	Speed: number,
@@ -124,6 +125,7 @@ export type ProductDef = {
 	Count: number?,
 	Seconds: number?,
 	FloorFactor: number?,
+	Rebirth: number?,
 }
 
 export type GamepassDef = {
@@ -196,6 +198,7 @@ export type PlayerSnapshot = {
 	Stats: { [string]: number },
 	Slots: number,
 	IncomePerSec: number,
+	CashPacks: { [string]: number },
 	CashMultiplier: number,
 	CarriedEggs: { Rarity },
 	CarryLimit: number,

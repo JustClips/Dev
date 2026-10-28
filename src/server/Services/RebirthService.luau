@@ -26,6 +26,7 @@ function RebirthService:DoRebirth(player: Player, paid: boolean): (boolean, stri
 	local cost = RebirthService:GetCost(data)
 	if paid then
 		if BigNum.lt(data.Cash, cost) then
+			S.ShopService:OfferCashFor(player, BigNum.sub(cost, data.Cash))
 			return false, `Need {Format.cash(cost)} to rebirth`
 		end
 		S.AnalyticsService:Sink(player, BigNum.toNumber(cost), Enum.AnalyticsEconomyTransactionType.Gameplay, "Rebirth")

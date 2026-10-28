@@ -2,8 +2,9 @@
 -- Economy and tuning numbers. Everything balance-related lives here or in the other configs.
 local Economy = {
 	-- Rebirth (GAME_PLAN §5.7)
-	RebirthBaseCost = 1_000_000,
-	RebirthCostGrowth = 3,
+	-- Tuned with tools/balance/sim.py: first rebirth ~2 h, rebirth 5 ~18 h, rebirth 7 ~40 h.
+	RebirthBaseCost = 150_000_000,
+	RebirthCostGrowth = 7,
 	RebirthCashBonus = 0.5, -- +50% cash per rebirth
 	RebirthsPerExtraSlot = 2,
 

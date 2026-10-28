@@ -83,6 +83,7 @@ function StateService:Build(player: Player): Types.PlayerSnapshot?
 		Stats = data.Stats,
 		Slots = S.AlienService:GetSlotCount(player),
 		IncomePerSec = S.AlienService:GetIncomePerSec(player),
+		CashPacks = S.ShopService:GetCashPackAmounts(player),
 		CashMultiplier = S.BoostService:GetCashMultiplier(player),
 		CarriedEggs = runtime.Carried or {},
 		CarryLimit = S.EggService:GetCarryLimit(player),

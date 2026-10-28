@@ -6,7 +6,9 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
+local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 local Tools = require(Shared.Config.Tools)
@@ -21,12 +23,72 @@ local function notify(player: Player, text: string, kind: string?)
 	Net.fire("Notify", player, text, kind or "Good")
 end
 
+local CASH_PACKS = { "Cash1", "Cash2", "Cash3", "Cash4", "Cash5" }
+local OFFER_COOLDOWN = 4
+
+-- The next thing the player is saving up for: next tool, else the next car they can buy,
+-- else a slice of the rebirth cost.
+local function nextGoalPrice(data): number
+	if data.ToolTier < Tools.MaxTier then
+		return Tools.get(data.ToolTier + 1).Price
+	end
+	for _, car in Tools.Vehicles do
+		if not data.Vehicles[car.Id] and data.Rebirths >= car.RequiredRebirths then
+			return car.Price
+		end
+	end
+	return BigNum.toNumber(S.RebirthService:GetCost(data)) * 0.1
+end
+
+-- Cash packs scale with the player: Seconds of their earnings (pets + selling), and at
+-- least FloorFactor x the next thing they're saving for.
 local function cashPackAmount(player: Player, product): number
 	local data = S.DataService:GetData(player)
-	local income = S.AlienService:GetIncomePerSec(player)
-	local nextTier = math.min((data and data.ToolTier or 1) + 1, Tools.MaxTier)
-	local floor = Tools.get(nextTier).Price * (product.FloorFactor or 1)
-	return math.max(income * (product.Seconds or 600), floor, 100)
+	if not data then
+		return 100
+	end
+	local rate = S.AlienService:GetIncomePerSec(player) + S.BackpackService:GetEarnRate(player)
+	local floor = nextGoalPrice(data) * (product.FloorFactor or 1)
+	return math.floor(math.max(rate * (product.Seconds or 600), floor, 100))
+end
+
+function ShopService:GetCashPackAmounts(player: Player): { [string]: number }
+	local amounts = {}
+	for _, key in CASH_PACKS do
+		local def = Products.ProductByKey[key]
+		if def and def.Id ~= 0 then
+			amounts[key] = cashPackAmount(player, def)
+		end
+	end
+	return amounts
+end
+
+-- The player tried to buy something they can't afford: open the purchase prompt for the
+-- smallest cash pack that covers the gap (or the biggest one if none does).
+function ShopService:OfferCashFor(player: Player, shortfall: any)
+	local session = S.DataService:GetSession(player)
+	if not session or (session.Runtime.CashOfferAt or 0) + OFFER_COOLDOWN > os.clock() then
+		return
+	end
+	local need = BigNum.toNumber(shortfall)
+	local pick, biggest = nil, nil
+	for _, key in CASH_PACKS do
+		local def = Products.ProductByKey[key]
+		if def and def.Id ~= 0 then
+			biggest = def
+			if not pick and cashPackAmount(player, def) >= need then
+				pick = def
+			end
+		end
+	end
+	pick = pick or biggest
+	if not pick then
+		return
+	end
+	session.Runtime.CashOfferAt = os.clock()
+	pendingGifts[player] = nil
+	S.AnalyticsService:Custom(player, "CashShortfallOffer", 0, { Product = pick.Key })
+	MarketplaceService:PromptProductPurchase(player, pick.Id)
 end
 
 -- What each product does. Runs without yielding so a receipt can't be granted twice.
@@ -81,6 +143,7 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 	CashPack = function(product, _buyer, recipient)
 		local amount = cashPackAmount(recipient, product)
 		S.BackpackService:GiveCash(recipient, amount, product.Key, Enum.AnalyticsEconomyTransactionType.IAP)
+		notify(recipient, `+{Format.cash(amount)} cash!`)
 	end,
 	SkipRebirth = function(_product, _buyer, recipient)
 		S.RebirthService:DoRebirth(recipient, false)
@@ -211,6 +274,17 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		return false, "Not the next tool"
 	elseif (product.Kind == "VehicleRental" or product.Kind == "VehicleUnlock") and S.ToolService:OwnsVehicle(recipient, product.Vehicle) then
 		return false, "Already unlocked"
+	elseif product.Kind == "VehicleRental" or product.Kind == "VehicleUnlock" then
+		local car = Tools.vehicle(product.Vehicle or "")
+		if car and targetData.Rebirths < car.RequiredRebirths then
+			return false, `Rebirth {car.RequiredRebirths} needed for the {car.Name}`
+		end
+	elseif product.Kind == "SkipRebirth" then
+		-- Only the price tier for the recipient's current rebirth can be bought.
+		local current = Products.skipRebirthFor(targetData.Rebirths)
+		if not current or current.Key ~= product.Key then
+			return false, "That rebirth skip isn't for your rebirth"
+		end
 	end
 	MarketplaceService:PromptProductPurchase(player, product.Id)
 	return true, nil

@@ -375,6 +375,9 @@ local function buyVehicle(player: Player, id: string): (boolean, string)
 	if data.Vehicles[def.Id] then
 		return false, "You already own it"
 	end
+	if data.Rebirths < def.RequiredRebirths then
+		return false, `Rebirth {def.RequiredRebirths} needed for the {def.Name}`
+	end
 	if not S.BackpackService:TrySpend(player, def.Price, "Vehicle_" .. def.Id) then
 		return false, `Need {Format.cash(def.Price)}`
 	end
@@ -450,6 +453,7 @@ local function buyNext(player: Player): (boolean, string)
 	end
 	local def = Tools.get(nextTier)
 	if BigNum.lt(data.Cash, def.Price) then
+		S.ShopService:OfferCashFor(player, BigNum.sub(def.Price, data.Cash))
 		return false, `Need {Format.cash(def.Price)}`
 	end
 	data.Cash = BigNum.sub(data.Cash, def.Price)

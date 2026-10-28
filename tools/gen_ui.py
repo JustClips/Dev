@@ -260,7 +260,7 @@ def hud():
         pill("ZonesButton", "Zones", "Zones", PILL_ZONES, 3),
     ])
     # Fixed height: a UIListLayout directly in a plate would also stack the Studs image.
-    picker = plate("ZonePicker", U(0, 330, 0, 290), U(0.5, 0, 0, 66), (0.5, 0), SURFACE, Visible=False, ZIndex=6,
+    picker = plate("ZonePicker", U(0, 330, 0, 348), U(0.5, 0, 0, 66), (0.5, 0), SURFACE, Visible=False, ZIndex=6,
                    children=[
                        autoscale(),
                        frame("List", U(1, -20, 1, -20), U(0, 10, 0, 10), children=[
@@ -270,6 +270,7 @@ def hud():
                            zone_row("Crater", "Crater", 2),
                            zone_row("DarkSide", "Dark Side", 3),
                            zone_row("Mars", "Mars Plains", 4),
+                           zone_row("Europa", "Europa Ice", 5),
                        ]),
                    ])
     moon = plate("MoonPanel", U(0, 360, 0, 40), U(0.5, 0, 0, 68), (0.5, 0), BG, stud=0.6, children=[

@@ -28,10 +28,50 @@ function BackpackService:GiveCash(player: Player, amount: any, sku: string, tran
 	S.StateService:Mark(player)
 end
 
--- Spends cash if the player has enough. Returns true on success.
-function BackpackService:TrySpend(player: Player, amount: any, sku: string): boolean
+-- Cash earned per second from selling dust over the last few minutes (cash packs scale
+-- with it, so late-game packs stay worth buying).
+local EARN_BUCKET = 30
+local EARN_BUCKETS = 10
+
+local function recordEarning(session, amount: number)
+	local log = session.Runtime.EarnLog
+	if not log then
+		log = {}
+		session.Runtime.EarnLog = log
+	end
+	local bucket = math.floor(os.time() / EARN_BUCKET)
+	log[bucket] = (log[bucket] or 0) + amount
+	log[bucket - EARN_BUCKETS] = nil
+end
+
+function BackpackService:GetEarnRate(player: Player): number
+	local session = S.DataService:GetSession(player)
+	local log = session and session.Runtime.EarnLog
+	if not log then
+		return 0
+	end
+	local now = math.floor(os.time() / EARN_BUCKET)
+	local total = 0
+	for bucket, amount in log do
+		if bucket > now - EARN_BUCKETS then
+			total += amount
+		end
+	end
+	local seconds = math.min(EARN_BUCKET * EARN_BUCKETS, os.time() - session.JoinedAt + EARN_BUCKET)
+	return total / math.max(seconds, EARN_BUCKET)
+end
+
+-- Spends cash if the player has enough. Returns true on success. When they're short,
+-- the server offers the cash pack that covers the gap (ShopService), unless quiet = true.
+function BackpackService:TrySpend(player: Player, amount: any, sku: string, quiet: boolean?): boolean
 	local data = S.DataService:GetData(player)
-	if not data or BigNum.lt(data.Cash, amount) then
+	if not data then
+		return false
+	end
+	if BigNum.lt(data.Cash, amount) then
+		if not quiet then
+			S.ShopService:OfferCashFor(player, BigNum.sub(amount, data.Cash))
+		end
 		return false
 	end
 	data.Cash = BigNum.sub(data.Cash, amount)
@@ -90,6 +130,7 @@ local function sell(player: Player)
 	data.Stats.Sells += 1
 	session.Runtime.WasFull = false
 	BackpackService:GiveCash(player, cash, "SellDust")
+	recordEarning(session, cash)
 	S.AnalyticsService:Funnel(player, "FirstSell")
 	Net.fire("Notify", player, `Sold dust for {Format.cash(cash)}!`, "Sell")
 end
