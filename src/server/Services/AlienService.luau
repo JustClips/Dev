@@ -1,6 +1,7 @@
 --!strict
--- Aliens on your base: slot count, income every second, offline income on join,
--- what the pet park shows (aliens + hatching eggs) and the top-3 follower list.
+-- Pets placed on your base: slot count, income every second, offline income on join,
+-- what the pet park shows (placed pets + incubating eggs) and the top-3 follower list.
+-- Unplaced pets stay in the inventory (InventoryService) and earn nothing.
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -18,11 +19,7 @@ local AlienService = {}
 
 local S: any
 
-local function alienIncome(alien): number
-	local def = Aliens.ById[alien.Id]
-	local mutation = alien.Mutation and Eggs.MutationByName[alien.Mutation]
-	return (if def then def.Income else 0) * (if mutation then mutation.IncomeMult else 1)
-end
+local alienIncome = Aliens.income
 
 function AlienService:GetSlotCount(player: Player): number
 	local data = S.DataService:GetData(player)
@@ -36,15 +33,30 @@ function AlienService:GetSlotCount(player: Player): number
 	return math.min(count, Economy.MaxSlots)
 end
 
--- Base income before multipliers.
+function AlienService:PlacedCount(player: Player): number
+	local data = S.DataService:GetData(player)
+	local count = 0
+	if data then
+		for _, pet in data.Pets do
+			if pet.Placed then
+				count += 1
+			end
+		end
+	end
+	return count
+end
+
+-- Base income of the placed pets, before multipliers.
 function AlienService:GetBaseIncome(player: Player): number
 	local data = S.DataService:GetData(player)
 	if not data then
 		return 0
 	end
 	local total = 0
-	for _, alien in data.Aliens do
-		total += alienIncome(alien)
+	for _, pet in data.Pets do
+		if pet.Placed then
+			total += alienIncome(pet)
+		end
 	end
 	return total
 end
@@ -106,27 +118,37 @@ function AlienService:RefreshBase(player: Player)
 	local mult = S.BoostService:GetCashMultiplier(player)
 	local aliens = Instance.new("Folder")
 	aliens.Name = "Aliens"
-	for i, alien in data.Aliens do
-		local def = Aliens.ById[alien.Id]
-		if def then
+	local placed = {}
+	for uid, pet in data.Pets do
+		local def = Aliens.ById[pet.Id]
+		if pet.Placed and def then
+			-- Folder name = pet uid, so clients can offer "Pick up" on their own pets.
 			local entry = Instance.new("Folder")
-			entry.Name = tostring(alien.Slot or i)
-			entry:SetAttribute("AlienId", alien.Id)
-			entry:SetAttribute("Mutation", alien.Mutation)
-			entry:SetAttribute("Income", alienIncome(alien) * mult)
+			entry.Name = uid
+			entry:SetAttribute("AlienId", pet.Id)
+			entry:SetAttribute("Mutation", pet.Mutation)
+			entry:SetAttribute("Huge", pet.Huge == true)
+			entry:SetAttribute("Income", alienIncome(pet) * mult)
 			entry.Parent = aliens
+			table.insert(placed, pet)
 		end
 	end
 	aliens:SetAttribute("OwnerUserId", player.UserId)
 	aliens.Parent = base
 
+	-- Incubating eggs on the hatchery pad. The owner's client adds Skip / Open prompts.
 	local hatching = Instance.new("Folder")
 	hatching.Name = "Hatching"
-	for i, entry in data.Hatching do
-		local rarity = Eggs.ByName[entry.EggRarity]
-		local spot = S.WorldService:GetHatchSpot(index, i)
-		local egg = AssetLibrary.egg(entry.EggRarity)
+	hatching:SetAttribute("OwnerUserId", player.UserId)
+	for _, entry in data.Hatching do
+		local rarity = Eggs.ByName[entry.Rarity]
+		local spot = S.WorldService:GetHatchSpot(index, entry.Spot)
+		local egg = AssetLibrary.egg(entry.Rarity)
+		egg.Name = entry.Uid
 		egg:PivotTo(spot)
+		egg:SetAttribute("Uid", entry.Uid)
+		egg:SetAttribute("Rarity", entry.Rarity)
+		egg:SetAttribute("Zone", entry.Zone)
 		egg:SetAttribute("EndsAt", entry.EndsAt)
 		egg:SetAttribute("OwnerUserId", player.UserId)
 		CollectionService:AddTag(egg, "HatchingEgg")
@@ -136,19 +158,42 @@ function AlienService:RefreshBase(player: Player)
 		end
 		egg.Parent = hatching
 	end
+	-- Empty incubators show a glowing nest, so players see how many eggs fit.
+	local used = {}
+	for _, entry in data.Hatching do
+		used[entry.Spot] = true
+	end
+	for spot = 1, S.HatchService:GetIncubatorCount(player) do
+		if not used[spot] then
+			local nest = Instance.new("Part")
+			nest.Name = "Nest"
+			nest.Shape = Enum.PartType.Cylinder
+			nest.Size = Vector3.new(0.3, 3.2, 3.2)
+			nest.CFrame = S.WorldService:GetHatchSpot(index, spot) * CFrame.new(0, -0.75, 0) * CFrame.Angles(0, 0, math.rad(90))
+			nest.Color = Color3.fromRGB(124, 245, 200)
+			nest.Material = Enum.Material.Neon
+			nest.Transparency = 0.45
+			nest.Anchored = true
+			nest.CanCollide = false
+			nest.CanQuery = false
+			nest.CanTouch = false
+			nest.CastShadow = false
+			nest:SetAttribute("Spot", spot)
+			nest.Parent = hatching
+		end
+	end
 	hatching.Parent = base
 
-	-- Top aliens follow the player around (rendered by each client).
-	local sorted = table.clone(data.Aliens)
-	table.sort(sorted, function(a, b)
+	-- Top placed pets follow the player around (rendered by each client).
+	table.sort(placed, function(a, b)
 		return alienIncome(a) > alienIncome(b)
 	end)
 	local followers = {}
-	for i = 1, math.min(FOLLOWER_COUNT, #sorted) do
-		table.insert(followers, sorted[i].Id .. ":" .. (sorted[i].Mutation or ""))
+	for i = 1, math.min(FOLLOWER_COUNT, #placed) do
+		table.insert(followers, placed[i].Id .. ":" .. (placed[i].Mutation or "") .. ":" .. (if placed[i].Huge then "H" else ""))
 	end
 	player:SetAttribute("Followers", table.concat(followers, ","))
-	player:SetAttribute("AlienCount", #data.Aliens)
+	player:SetAttribute("AlienCount", #placed)
 	player:SetAttribute("SlotCount", AlienService:GetSlotCount(player))
 end
 

@@ -99,8 +99,8 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 		data.Flags.StarterPackBought = true
 		S.BackpackService:GiveCash(recipient, pack.Cash, "StarterPack", Enum.AnalyticsEconomyTransactionType.IAP)
 		S.BoostService:AddPersonalBoost(recipient, "Cash2x", pack.Cash2xMinutes)
-		S.EggService:GiveEgg(recipient, pack.EggRarity)
-		notify(recipient, `Starter Pack: cash, an {pack.EggRarity} egg and {pack.Cash2xMinutes} min of 2x cash!`)
+		S.InventoryService:AddEgg(recipient, pack.EggRarity, "Landing", true)
+		notify(recipient, `Starter Pack: cash, an {pack.EggRarity} egg (in your bag) and {pack.Cash2xMinutes} min of 2x cash!`)
 	end,
 	ServerLuck = function(product, buyer)
 		S.BoostService:AddServerLuck(product.Mult, product.Minutes or Economy.ServerLuckMinutes, buyer)
@@ -108,13 +108,20 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 	MeteorShower = function(_product, buyer)
 		S.EventService:TriggerShower(buyer)
 	end,
-	SkipHatch = function(product, _buyer, recipient)
-		S.HatchService:Skip(recipient, product.Rarity)
+	SkipHatch = function(product, buyer, recipient)
+		-- The egg the buyer picked on their base (only when they bought it for themselves).
+		local session = S.DataService:GetSession(buyer)
+		local target = if session and recipient == buyer then session.Runtime.SkipTarget else nil
+		if session then
+			session.Runtime.SkipTarget = nil
+		end
+		S.HatchService:Skip(recipient, product.Rarity, target)
 	end,
 	EggPack = function(product, _buyer, recipient)
 		for _ = 1, product.Count or 1 do
-			S.EggService:GiveEgg(recipient, product.Rarity)
+			S.InventoryService:AddEgg(recipient, product.Rarity, "Landing", true)
 		end
+		notify(recipient, `{product.Name} added to your bag!`)
 	end,
 	ToolSkip = function(product, _buyer, recipient)
 		local data = S.DataService:GetData(recipient)
@@ -288,6 +295,11 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 	end
 	MarketplaceService:PromptProductPurchase(player, product.Id)
 	return true, nil
+end
+
+-- Opens a purchase prompt from another service (e.g. Skip Hatch on one egg).
+function ShopService:Prompt(player: Player, key: string, giftToUserId: number?): (boolean, string?)
+	return promptPurchase(player, key, giftToUserId)
 end
 
 function ShopService:Init(services)

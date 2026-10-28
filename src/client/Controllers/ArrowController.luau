@@ -34,7 +34,7 @@ local function targetFor(data): Vector3?
 		return pad.Position + toCenter.Unit * DUST_AHEAD
 	elseif step == "Egg" then
 		return data.TutorialTarget
-	elseif (step == "Base" or step == "Hatching") and pad then
+	elseif (step == "Base" or step == "Hatching" or step == "Place" or step == "Open") and pad then
 		return pad.Position
 	elseif step == "Sell" and rocket then
 		return if data.Backpack > 0 then rocket.Position else nil

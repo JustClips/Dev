@@ -153,9 +153,9 @@ local function eggItems(data): { Item }
 	end
 	local seen = {}
 	for _, entry in data.Hatching do
-		if not seen[entry.EggRarity] then
-			seen[entry.EggRarity] = true
-			local item = robuxItem("SkipHatch" .. entry.EggRarity, `Finish your {entry.EggRarity} egg right now.`, "Icon_Timer")
+		if not seen[entry.Rarity] then
+			seen[entry.Rarity] = true
+			local item = robuxItem("SkipHatch" .. entry.Rarity, `Finish your {entry.Rarity} egg right now.`, "Icon_Timer")
 			if item then
 				table.insert(items, item)
 			end
@@ -367,7 +367,7 @@ function ShopController:Start()
 		local nextTool = Tools.get(math.min(data.ToolTier + 1, Tools.MaxTier))
 		local hatching = {}
 		for _, entry in data.Hatching do
-			table.insert(hatching, entry.EggRarity)
+			table.insert(hatching, entry.Rarity)
 		end
 		local passes = {}
 		for key in data.Gamepasses do

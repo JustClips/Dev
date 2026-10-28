@@ -23,6 +23,7 @@ local ORDER = {
 	"ZoneService",
 	"EggService",
 	"HatchService",
+	"InventoryService",
 	"AlienService",
 	"RebirthService",
 	"EventService",

@@ -42,10 +42,12 @@ local function rebuild(player: Player)
 	clear(player)
 	local models = {}
 	for spec in string.gmatch(key, "[^,]+") do
-		local id, mutation = string.match(spec, "^([^:]+):?(.*)$")
-		if id then
+		-- "AlienId:Mutation:H" (H = Huge); empty fields are left blank.
+		local fields = string.split(spec, ":")
+		local id, mutation, huge = fields[1], fields[2], fields[3] == "H"
+		if id and id ~= "" then
 			local model = AssetLibrary.alien(id, if mutation and mutation ~= "" then mutation else nil)
-			model:ScaleTo(SCALE)
+			model:ScaleTo(if huge then SCALE * 1.6 else SCALE)
 			if model:GetAttribute("Placeholder") then
 				for _, d in model:GetDescendants() do
 					if d:IsA("BasePart") then

@@ -24,7 +24,33 @@ function State.server(name: string): any
 	return State.serverState:GetAttribute(name)
 end
 
+local refetching = false
+
 local function apply(snapshot: Types.PlayerSnapshot)
+	-- Inventory tables come only when they changed: keep the last copy otherwise.
+	local previous = State.data
+	if snapshot.Pets == nil then
+		if previous and previous.Pets then
+			snapshot.Pets = previous.Pets
+			snapshot.Eggs = previous.Eggs
+			snapshot.Items = previous.Items
+		else
+			snapshot.Pets, snapshot.Eggs, snapshot.Items = {}, {}, {}
+			if not refetching then
+				-- Missed the full copy somehow: ask for everything once.
+				refetching = true
+				task.spawn(function()
+					local ok, full = pcall(function()
+						return Net.func("GetState"):InvokeServer()
+					end)
+					refetching = false
+					if ok and full then
+						apply(full)
+					end
+				end)
+			end
+		end
+	end
 	State.serverOffset = snapshot.ServerTime - os.time()
 	State.data = snapshot
 	State.Changed:Fire(snapshot)

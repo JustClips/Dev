@@ -8,10 +8,19 @@ local Economy = {
 	RebirthCashBonus = 0.5, -- +50% cash per rebirth
 	RebirthsPerExtraSlot = 2,
 
-	-- Base slots (GAME_PLAN §5.4)
+	-- Base slots (GAME_PLAN §5.4): how many pets can be placed in your pet park.
 	BaseSlots = 6,
 	GamepassSlots = 3,
 	MaxSlots = 15,
+
+	-- Inventory (Steal an Egg style): eggs and pets wait here until you place them.
+	PetBagSize = 60,
+	EggBagSize = 40,
+	PetSellSeconds = 60, -- selling a pet pays this many seconds of its income
+	-- Incubators on the hatchery pad: how many eggs can hatch at once.
+	Incubators = 4,
+	RebirthsPerIncubator = 2, -- one more every 2 rebirths
+	MaxIncubators = 8,
 
 	-- Offline income
 	OfflineIncomeRate = 0.5,

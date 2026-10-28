@@ -1,7 +1,8 @@
 --!strict
--- Our own two-slot hotbar (the default Roblox backpack is hidden):
+-- Our own hotbar (the default Roblox backpack is hidden):
 --   1 = your sweeping tool (equip / put away)
 --   2 = your car (spawn under you / put away). With no car it points you to the Garage.
+--   3 = your bag (inventory). A badge shows eggs ready to open / waiting to be placed.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
@@ -26,6 +27,7 @@ local C: any
 local player = Players.LocalPlayer
 local toolSlot: TextButton
 local carSlot: TextButton
+local bagSlot: TextButton
 
 local function humanoid(): Humanoid?
 	local character = player.Character
@@ -94,6 +96,23 @@ local function render(_: any?)
 	carName.TextColor3 = if car then INK else GREY
 	carIcon.Image = AssetLibrary.image(if car then "Icon_Vehicle" else "Icon_Lock")
 	setSelected(carSlot, data.InVehicle)
+	-- Badge: eggs ready to open, else eggs waiting for a free incubator.
+	local ready, waiting = 0, 0
+	for _, entry in data.Hatching do
+		if entry.EndsAt <= State.now() then
+			ready += 1
+		end
+	end
+	if #data.Hatching < data.Incubators then
+		for _ in data.Eggs or {} do
+			waiting += 1
+		end
+	end
+	local badge = bagSlot:FindFirstChild("Badge") :: Frame
+	local shown = if ready > 0 then ready else waiting
+	badge.Visible = shown > 0
+	badge.BackgroundColor3 = if ready > 0 then Color3.fromRGB(255, 200, 60) else Color3.fromRGB(255, 77, 94)
+	Ui.setText(badge, tostring(math.min(shown, 99)))
 	setSelected(toolSlot, not data.InVehicle and sweepTool(player.Character) ~= nil)
 end
 
@@ -114,12 +133,16 @@ function HotbarController:Init(controllers)
 	local hud = Ui.screen("Hud")
 	toolSlot = Ui.find(hud, "Hotbar.ToolSlot")
 	carSlot = Ui.find(hud, "Hotbar.CarSlot")
+	bagSlot = Ui.find(hud, "Hotbar.BagSlot")
 end
 
 function HotbarController:Start()
 	task.spawn(hideDefaultBackpack)
 	Ui.button(toolSlot, toggleTool)
 	Ui.button(carSlot, toggleCar)
+	Ui.button(bagSlot, function()
+		C.InventoryController:Toggle()
+	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if processed then
 			return
@@ -128,9 +151,18 @@ function HotbarController:Start()
 			toggleTool()
 		elseif input.KeyCode == Enum.KeyCode.Two then
 			toggleCar()
+		elseif input.KeyCode == Enum.KeyCode.Three then
+			C.InventoryController:Toggle()
 		end
 	end)
 	State.observe(render)
+	-- Eggs turn ready on their own: refresh the badge now and then.
+	task.spawn(function()
+		while true do
+			task.wait(1)
+			render()
+		end
+	end)
 	-- Equipping happens on the character; refresh the highlight when tools move.
 	local function watch(character: Model)
 		character.ChildAdded:Connect(render)

@@ -17,7 +17,7 @@ local S: any
 
 local function rarest(data): (string?, Color3)
 	local best, bestOrder, bestMutation = nil, 0, nil
-	for _, alien in data.Aliens do
+	for _, alien in data.Pets do
 		local def = Aliens.ById[alien.Id]
 		local order = def and Eggs.order(def.Rarity) or 0
 		if order > bestOrder or (order == bestOrder and alien.Mutation and not bestMutation) then
@@ -28,7 +28,7 @@ local function rarest(data): (string?, Color3)
 		return nil, Color3.new(1, 1, 1)
 	end
 	local def = Aliens.ById[best.Id]
-	return AlienModel.displayName(best.Id, best.Mutation), Eggs.ByName[def.Rarity].Color
+	return (if best.Huge then "Huge " else "") .. AlienModel.displayName(best.Id, best.Mutation), Eggs.ByName[def.Rarity].Color
 end
 
 local function ensureStats(player: Player)

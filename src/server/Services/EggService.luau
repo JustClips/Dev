@@ -1,5 +1,7 @@
 --!strict
 -- Egg rolls on cleared tiles, egg pickups on the ground, carrying, and delivery to your base.
+-- Delivered eggs go into your inventory (InventoryService); you place them in incubators
+-- yourself. Carried eggs are { Rarity, Zone } so they hatch from the zone they came from.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -8,8 +10,10 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local AssetLibrary = require(Shared.AssetLibrary)
 local Eggs = require(Shared.Config.Eggs)
+local Grid = require(Shared.Grid)
 local Upgrades = require(Shared.Config.Upgrades)
 local World = require(Shared.Config.World)
+local Zones = require(Shared.Config.Zones)
 local Net = require(Shared.Net)
 local Touch = require(script.Parent.Parent.Lib.Touch)
 
@@ -84,9 +88,9 @@ local function refreshCarryVisual(player: Player)
 	end
 	local folder = Instance.new("Folder")
 	folder.Name = "CarriedEggs"
-	for i, rarity in carried do
+	for i, entry in carried do
 		-- A smaller copy of the egg model, welded above the head.
-		local egg = AssetLibrary.egg(rarity)
+		local egg = AssetLibrary.egg(entry.Rarity)
 		egg:ScaleTo(0.6)
 		egg:PivotTo(head.CFrame * CFrame.new(0, 0.8 + (i - 1) * 1.6, 0))
 		for _, part in egg:GetDescendants() do
@@ -107,7 +111,9 @@ local function refreshCarryVisual(player: Player)
 	folder.Parent = character
 end
 
-local function setCarried(player: Player, carried: { string })
+type Carried = { Rarity: string, Zone: string }
+
+local function setCarried(player: Player, carried: { Carried })
 	local session = S.DataService:GetSession(player)
 	if not session then
 		return
@@ -136,8 +142,9 @@ local function pickup(player: Player, egg: BasePart)
 		return
 	end
 	local rarity = egg:GetAttribute("Rarity") :: string
+	local zone = (egg:GetAttribute("Zone") or "Landing") :: string
 	egg:Destroy()
-	table.insert(carried, rarity)
+	table.insert(carried, { Rarity = rarity, Zone = zone })
 	if session.Runtime.TutorialEgg == egg then
 		session.Runtime.TutorialEgg = nil
 		session.Runtime.TutorialEggPosition = nil
@@ -146,9 +153,13 @@ local function pickup(player: Player, egg: BasePart)
 	Net.fire("Notify", player, `Picked up a {rarity} egg! Bring it to your base.`, "Egg")
 end
 
--- Spawns a physical egg. owner gets it exclusively for EggOwnerSeconds.
-function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?): BasePart
+-- Spawns a physical egg. owner gets it exclusively for EggOwnerSeconds. zone decides which
+-- pet set it hatches from (defaults to the zone under the egg).
+function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, zone: string?): BasePart
 	local def = Eggs.ByName[rarity]
+	local zoneDef = Zones.ById[zone or ""] or Grid.zoneAt(position)
+	local zoneId = if zoneDef then zoneDef.Id else "Landing"
+	local title = if zoneId == "Landing" then `{rarity} Egg` else `{zoneDef.Name} {rarity} Egg`
 	-- The egg entity is an invisible touch box; the Blender egg model sits inside it.
 	local egg = Instance.new("Part")
 	egg.Name = rarity .. "Egg"
@@ -167,6 +178,7 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?):
 	light.Brightness = 2
 	light.Parent = egg
 	egg:SetAttribute("Rarity", rarity)
+	egg:SetAttribute("Zone", zoneId)
 
 	local billboard = Instance.new("BillboardGui")
 	billboard.Size = UDim2.fromOffset(160, 44)
@@ -181,7 +193,7 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?):
 	label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	label.TextColor3 = def.Color
 	label.TextStrokeTransparency = 0.2
-	label.Text = if owner then `{rarity} Egg\n{owner.DisplayName}'s` else `{rarity} Egg`
+	label.Text = if owner then `{title}\n{owner.DisplayName}'s` else title
 	label.Parent = billboard
 	billboard.Parent = egg
 
@@ -190,7 +202,7 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?):
 		egg:SetAttribute("FreeAt", os.time() + Economy.EggOwnerSeconds)
 		task.delay(Economy.EggOwnerSeconds, function()
 			if egg.Parent then
-				label.Text = `{rarity} Egg\nFree!`
+				label.Text = `{title}\nFree!`
 			end
 		end)
 	end
@@ -207,12 +219,12 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?):
 	return egg
 end
 
-local function foundEgg(player: Player, position: Vector3, rarity: string)
+local function foundEgg(player: Player, position: Vector3, rarity: string, zone: string?)
 	local session = S.DataService:GetSession(player)
 	if not session then
 		return
 	end
-	local egg = EggService:SpawnEgg(position, rarity, player)
+	local egg = EggService:SpawnEgg(position, rarity, player, zone)
 	session.Data.Stats.EggsFound += 1
 	session.Runtime.TutorialEggSpawned = true
 	if session.Data.Stats.Hatches == 0 and #session.Data.Hatching == 0 and not session.Runtime.TutorialEgg then
@@ -241,33 +253,25 @@ function EggService:OnTileCleared(player: Player, zone, position: Vector3)
 	stats.TilesCleared += 1
 	-- Tutorial: the first egg is guaranteed early (GAME_PLAN §4).
 	if stats.EggsFound == 0 and not session.Runtime.TutorialEggSpawned and stats.TilesCleared >= Economy.TutorialEggTile then
-		foundEgg(player, position, "Common")
+		foundEgg(player, position, "Common", zone.Id)
 		return
 	end
-	local luck = S.BoostService:GetServerLuck() * Upgrades.multiplier(session.Data.Upgrades, "Luck")
+	local luck = S.BoostService:GetServerLuck() * Upgrades.multiplier(session.Data.Upgrades, "Luck") * S.BoostService:GetPersonalLuck(player)
 	local runtime = session.Runtime
 	runtime.TilesSinceEgg = (runtime.TilesSinceEgg or 0) + 1
 	-- Pity timer: long dry streaks feel broken to new players, so one is guaranteed.
 	if rng:NextNumber() < zone.EggChance * luck or runtime.TilesSinceEgg >= Economy.EggPityTiles then
 		runtime.TilesSinceEgg = 0
-		foundEgg(player, position, EggService:RollRarity(zone.MaxRarity, luck))
+		foundEgg(player, position, EggService:RollRarity(zone.MaxRarity, luck), zone.Id)
 	end
 end
 
--- Gives an egg without a pickup (products). Hatches right away if a slot is free.
-function EggService:GiveEgg(player: Player, rarity: string)
-	if S.HatchService:StartHatch(player, rarity) then
-		return
-	end
-	local session = S.DataService:GetSession(player)
-	if session then
-		local carried = table.clone(session.Runtime.Carried or {})
-		table.insert(carried, rarity)
-		setCarried(player, carried)
-		Net.fire("Notify", player, `Your base is full. Free a slot to hatch your {rarity} egg.`, "Bad")
-	end
+-- Gives an egg without a pickup: straight into the inventory (ignores the bag limit).
+function EggService:GiveEgg(player: Player, rarity: string, zone: string?)
+	S.InventoryService:AddEgg(player, rarity, zone, true)
 end
 
+-- Walking into your hatchery with eggs puts them in your inventory.
 local function deliver(player: Player, baseIndex: number)
 	local session = S.DataService:GetSession(player)
 	if not session or session.Runtime.BaseIndex ~= baseIndex then
@@ -278,13 +282,16 @@ local function deliver(player: Player, baseIndex: number)
 		return
 	end
 	local remaining = {}
-	for _, rarity in carried do
-		if not S.HatchService:StartHatch(player, rarity) then
-			table.insert(remaining, rarity)
+	for _, entry in carried do
+		if not S.InventoryService:AddEgg(player, entry.Rarity, entry.Zone) then
+			table.insert(remaining, entry)
 		end
 	end
 	if #remaining > 0 then
-		Net.fire("Notify", player, "Your base is full! Get more slots to hatch more.", "Bad")
+		Net.fire("Notify", player, "Your egg bag is full! Place or open some eggs first.", "Bad")
+	else
+		local word = if #carried == 1 then "Egg" else `{#carried} eggs`
+		Net.fire("Notify", player, `{word} added to your bag! Place it in an incubator to hatch.`, "Egg")
 	end
 	setCarried(player, remaining)
 end

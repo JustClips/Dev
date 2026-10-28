@@ -5,6 +5,7 @@
 -- Idle / Walk animations, a Happy dance now and then, and a name + income tag.
 -- Only parks near the camera are simulated; far ones are parked out of the world.
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -15,6 +16,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
+local Net = require(Shared.Net)
 local World = require(Shared.Config.World)
 
 local PARK_SCALE = 1.4
@@ -27,6 +29,8 @@ local HAPPY_EVERY = NumberRange.new(18, 40)
 local FLOAT_HEIGHT = 1.2
 
 local PetController = {}
+
+local C: any
 
 type Pet = {
 	key: string,
@@ -97,7 +101,7 @@ local function randomSpot(from: Vector2?): Vector2?
 	return nil
 end
 
-local function tag(model: Model, alienId: string, mutation: string?, income: number)
+local function tag(model: Model, alienId: string, mutation: string?, income: number, huge: boolean)
 	local def = Aliens.ById[alienId]
 	local rarity = def and Eggs.ByName[def.Rarity]
 	local _, size = model:GetBoundingBox()
@@ -114,7 +118,7 @@ local function tag(model: Model, alienId: string, mutation: string?, income: num
 	name.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	name.TextSize = 20
 	name.TextColor3 = if rarity then rarity.Color else Color3.new(1, 1, 1)
-	name.Text = AlienModel.displayName(alienId, mutation)
+	name.Text = (if huge then "HUGE " else "") .. AlienModel.displayName(alienId, mutation)
 	local stroke = Instance.new("UIStroke")
 	stroke.Thickness = 2.5
 	stroke.Color = Color3.fromRGB(27, 31, 58)
@@ -156,11 +160,36 @@ local function setWalking(pet: Pet, walking: boolean)
 	end
 end
 
-local function spawnPet(park: Park, key: string, entry: Folder, fresh: boolean)
+-- Your own pets get a "Pick up" prompt (back into your inventory).
+local function addPickup(model: Model, uid: string)
+	local root = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+	if not root then
+		return
+	end
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "PickUp"
+	prompt.ActionText = "Pick up"
+	prompt.ObjectText = model:GetAttribute("DisplayName") or ""
+	prompt.HoldDuration = 0.3
+	prompt.MaxActivationDistance = 10
+	prompt.RequiresLineOfSight = false
+	prompt.KeyboardKeyCode = Enum.KeyCode.E
+	prompt.Parent = root
+	prompt.Triggered:Connect(function()
+		local ok, message = Net.func("Inventory"):InvokeServer("PickUpPet", uid)
+		if message then
+			C.HudController:Toast(message, if ok then "Good" else "Bad")
+		end
+	end)
+end
+
+local function spawnPet(park: Park, key: string, entry: Folder, fresh: boolean, owned: boolean)
 	local alienId = entry:GetAttribute("AlienId") :: string
 	local mutation = entry:GetAttribute("Mutation") :: string?
+	local huge = entry:GetAttribute("Huge") == true
 	local model = AssetLibrary.alien(alienId, mutation)
-	model:ScaleTo(PARK_SCALE)
+	model:ScaleTo(PARK_SCALE * (if huge then Aliens.HugeScale else 1))
+	model:SetAttribute("DisplayName", (if huge then "Huge " else "") .. AlienModel.displayName(alienId, mutation))
 	local meta = AssetLibrary.meta("Alien_" .. alienId)
 	local start = randomSpot(nil) or (World.Base.ParkMin + World.Base.ParkMax) / 2
 	local _, size = model:GetBoundingBox()
@@ -179,7 +208,10 @@ local function spawnPet(park: Park, key: string, entry: Folder, fresh: boolean)
 		happy = nil,
 		walking = false,
 	}
-	tag(model, alienId, mutation, entry:GetAttribute("Income") or 0)
+	tag(model, alienId, mutation, entry:GetAttribute("Income") or 0, huge)
+	if owned then
+		addPickup(model, entry.Name)
+	end
 	pivot(park, pet, 0)
 	model.Parent = park.folder
 	pet.idle = AssetLibrary.loadTrack(model, "Pet_Idle")
@@ -197,13 +229,14 @@ local function spawnPet(park: Park, key: string, entry: Folder, fresh: boolean)
 end
 
 local function entryKey(entry: Folder): string
-	return `{entry.Name}:{entry:GetAttribute("AlienId")}:{entry:GetAttribute("Mutation") or ""}`
+	return `{entry.Name}:{entry:GetAttribute("AlienId")}:{entry:GetAttribute("Mutation") or ""}:{entry:GetAttribute("Huge") == true}`
 end
 
 -- Rebuilds a park from base.Aliens, keeping pets that didn't change (the server rebuilds
 -- the folder on every change).
 local function sync(park: Park, base: Instance, initial: boolean)
 	local folder = base:FindFirstChild("Aliens")
+	local owned = folder ~= nil and folder:GetAttribute("OwnerUserId") == Players.LocalPlayer.UserId
 	local wanted: { [string]: Folder } = {}
 	if folder then
 		for _, entry in folder:GetChildren() do
@@ -220,7 +253,7 @@ local function sync(park: Park, base: Instance, initial: boolean)
 	end
 	for key, entry in wanted do
 		if not park.pets[key] then
-			spawnPet(park, key, entry, not initial)
+			spawnPet(park, key, entry, not initial, owned)
 		end
 	end
 end
@@ -329,7 +362,8 @@ local function cycleRainbows(now: number)
 	end
 end
 
-function PetController:Init()
+function PetController:Init(controllers)
+	C = controllers
 	root = Instance.new("Folder")
 	root.Name = "PetParks"
 	root.Parent = Workspace

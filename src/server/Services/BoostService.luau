@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
+local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 
 local LUCK_TIERS = { 2, 4, 8, 16 }
@@ -61,6 +62,16 @@ end
 function BoostService:IsBoostActive(player: Player, key: string): boolean
 	local data = S.DataService:GetData(player)
 	return data ~= nil and (data.Boosts[key] or 0) > os.time()
+end
+
+-- Luck potion (personal). Multiplies egg rarity luck, mutations and Huge chance.
+function BoostService:GetPersonalLuck(player: Player): number
+	return if BoostService:IsBoostActive(player, "Luck2x") then Items.LuckMult else 1
+end
+
+-- Speed potion: extra walk speed while active.
+function BoostService:GetSpeedBonus(player: Player): number
+	return if BoostService:IsBoostActive(player, "Speed") then Items.SpeedBonus else 0
 end
 
 function BoostService:HasPass(player: Player, key: string): boolean

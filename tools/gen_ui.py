@@ -343,12 +343,29 @@ def hud():
         text("Label", "SWEEP", U(1, 0, 0, 28), U(0.5, 0, 1, -8), (0.5, 1), ts=22, display=True, stroke=2.5),
     ])
     # Own hotbar (the default Roblox backpack is hidden): slot 1 = tool, slot 2 = car.
-    hotbar = frame("Hotbar", U(0, 200, 0, 96), U(0.5, 0, 1, -12), (0.5, 1), children=[
+    bag = hot_slot("BagSlot", "3", "Backpack", "Bag", 3)
+    bag["children"].append(plate("Badge", U(0, 30, 0, 30), U(1, 6, 0, -6), (1, 0), DANGER, stroke=3, stud=None, Visible=False, ZIndex=5,
+                                 children=[text("Label", "!", U(1, 0, 1, 0), ts=18, display=True, ZIndex=6)]))
+    hotbar = frame("Hotbar", U(0, 320, 0, 96), U(0.5, 0, 1, -12), (0.5, 1), children=[
         autoscale(), hlist(16, "Center", "Bottom"),
         hot_slot("ToolSlot", "1", "Tool", "Toothbrush", 1),
         hot_slot("CarSlot", "2", "Vehicle", "No car", 2),
+        bag,
     ])
-    write("Hud", screen([rail, pills, moon, boosts, toasts, announcement, wallet, right, sweep, hotbar, picker], order=1))
+    # Tutorial / next-step hint above the hotbar ("Open your bag and place your egg!").
+    hint = plate("Hint", U(0, 0, 0, 46), U(0.5, 0, 1, -122), (0.5, 1), BG, stud=0.5, AutomaticSize="X", Visible=False, children=[
+        autoscale(), padding(16, 16, 0),
+        text("Text", "", U(0, 0, 1, 0), ts=22, color=ACCENT, display=True, stroke=2.5, AutomaticSize="X", TextWrapped=False),
+    ])
+    # Sweep combo meter (x1.0 - x3.0) above the hint.
+    combo = plate("Combo", U(0, 170, 0, 40), U(0.5, 0, 1, -176), (0.5, 1), BG, stud=0.5, Visible=False, children=[
+        autoscale(),
+        frame("Bar", U(1, -12, 0, 8), U(0.5, 0, 1, -5), (0.5, 1), bg="#2A3260", children=[
+            frame("Fill", U(0.5, 0, 1, 0), bg=PREMIUM),
+        ]),
+        text("Label", "COMBO x1.0", U(1, 0, 1, -10), ts=22, color=PREMIUM, display=True, stroke=2.5),
+    ])
+    write("Hud", screen([rail, pills, moon, boosts, toasts, announcement, wallet, right, sweep, hotbar, hint, combo, picker], order=1))
 
 
 # ---------------------------------------------------------------- Shop
@@ -424,6 +441,68 @@ def index():
     write("Index", screen([dim(), window(780, 480, "Alien Index", "Index", [grid, count])], order=10, enabled=False))
 
 
+# ---------------------------------------------------------------- Inventory
+def inv_tab(name, label, ico, order):
+    return button("Tab" + name, U(0, 132, 1, 0), color=HEADER, label=label, ts=19, ico=ico, ico_px=34, LayoutOrder=order)
+
+
+def inventory():
+    W, H = 880, 580
+    tabs = frame("Tabs", U(0, 560, 0, 46), U(0, 14, 0, 76), children=[
+        hlist(8, "Left", "Center"),
+        inv_tab("All", "All", "Backpack", 1),
+        inv_tab("Pets", "Pets", "Alien", 2),
+        inv_tab("Eggs", "Eggs", "Egg", 3),
+        inv_tab("Items", "Items", "Potion", 4),
+    ])
+    counts = text("Counts", "", U(0, 280, 0, 46), U(1, -14, 0, 76), (1, 0), ts=16, color=SUB, heavy=True, xa="Right")
+    card = plate("Template", U(0, 0, 0, 0), tint=WHITE, stud=0.25, Visible=False, children=[
+        node("Viewport", "ViewportFrame", base(U(1, -10, 0, 74), U(0.5, 0, 0, 5), (0.5, 0), BackgroundTransparency=1,
+                                               Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
+        icon("Icon", "Potion", 64, U(0.5, 0, 0, 10), (0.5, 0), Visible=False),
+        text("Name", "", U(1, -8, 0, 20), U(0.5, 0, 0, 80), (0.5, 0), ts=14, color=INK, display=True,
+             TextWrapped=False, TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 14, "MinTextSize": 9})]),
+        text("Sub", "", U(1, -8, 0, 18), U(0.5, 0, 0, 100), (0.5, 0), ts=13, color="#1E9E3A", heavy=True),
+        frame("Rarity", U(1, 0, 0, 8), U(0, 0, 1, 0), (0, 1), bg="#BEBEBE", ZIndex=3),
+        plate("Placed", U(0, 64, 0, 22), U(0, 4, 0, 4), stroke=2, stud=None, tint=ACCENT, Visible=False, ZIndex=4, children=[
+            text("Label", "ON BASE", U(1, 0, 1, 0), ts=12, color=INK, display=True, ZIndex=5),
+        ]),
+        plate("Count", U(0, 36, 0, 22), U(1, -4, 0, 4), (1, 0), stroke=2, stud=None, tint=BG, Visible=False, ZIndex=4, children=[
+            text("Label", "x1", U(1, 0, 1, 0), ts=14, color=WHITE, display=True, ZIndex=5),
+        ]),
+        node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=6)),
+    ])
+    grid = scroller("Grid", U(1, -330, 1, -208), U(0, 14, 0, 132), [
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 118, 0, 132), "CellPadding": U(0, 10, 0, 10), "SortOrder": "LayoutOrder",
+                                        "HorizontalAlignment": "Left"}),
+        padding(4), card,
+    ])
+    empty = text("Empty", "Nothing here yet. Sweep dust to find eggs!", U(1, -330, 0, 60), U(0, 14, 0.5, 0), ts=20, color=SUB,
+                 heavy=True, Visible=False)
+    detail = plate("Detail", U(0, 296, 1, -146), U(1, -14, 0, 132), (1, 0), tint=WHITE, stud=0.2, children=[
+        node("Viewport", "ViewportFrame", base(U(1, -20, 0, 170), U(0.5, 0, 0, 10), (0.5, 0), BackgroundTransparency=1,
+                                               Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
+        icon("Icon", "Potion", 120, U(0.5, 0, 0, 30), (0.5, 0), Visible=False),
+        text("Name", "Pick something", U(1, -16, 0, 30), U(0.5, 0, 0, 184), (0.5, 0), ts=22, color=INK, display=True,
+             TextWrapped=False, TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 24, "MinTextSize": 12})]),
+        plate("Rarity", U(0, 130, 0, 24), U(0.5, 0, 0, 216), (0.5, 0), "#BEBEBE", stroke=2, stud=None, children=[
+            text("Label", "", U(1, 0, 1, 0), ts=15, color=INK, heavy=True),
+        ]),
+        text("Info", "", U(1, -20, 0, 50), U(0.5, 0, 0, 244), (0.5, 0), ts=15, color=SUB, heavy=True, ya="Top"),
+        button("Primary", U(1, -24, 0, 48), U(0.5, 0, 1, -124), (0.5, 0), color=SUCCESS, label="Place", ts=22, Visible=False),
+        button("Secondary", U(1, -24, 0, 44), U(0.5, 0, 1, -66), (0.5, 0), color=DANGER, label="Sell", ts=20, Visible=False),
+    ])
+    bar = frame("Bar", U(1, -340, 0, 52), U(0, 14, 1, -14), (0, 1), children=[
+        hlist(10, "Left", "Center"),
+        button("EquipBest", U(0, 170, 0, 50), color=SUCCESS, label="Equip Best", ts=20, ico="Alien", ico_px=34, LayoutOrder=1),
+        button("PlaceEggs", U(0, 170, 0, 50), color="#4C8DFF", label="Place Eggs", ts=20, ico="Egg", ico_px=34, LayoutOrder=2),
+        button("OpenReady", U(0, 170, 0, 50), color=PREMIUM, label="Open Ready", ts=20, label_color=INK, ico="Egg", ico_px=34,
+               LayoutOrder=3),
+    ])
+    write("Inventory", screen([dim(), window(W, H, "Inventory", "Backpack", [tabs, counts, grid, empty, detail, bar], header="#4CC3FF")],
+                              order=10, enabled=False))
+
+
 # ---------------------------------------------------------------- Rebirth
 def rebirth():
     body = [
@@ -477,6 +556,11 @@ def hatch():
             text("Label", "NEW!", U(1, 0, 1, 0), ts=26, color=INK, display=True),
         ]),
         text("Hint", "Tap to skip", U(1, 0, 0, 24), U(0.5, 0, 1, -8), (0.5, 1), ts=18, heavy=True, stroke=2, TextTransparency=0.2),
+        frame("Choice", U(0, 420, 0, 56), U(0.5, 0, 1, 56), (0.5, 0), Visible=False, children=[
+            hlist(16),
+            button("Place", U(0, 200, 0, 56), color=SUCCESS, label="Place on base", ts=22, LayoutOrder=1),
+            button("Keep", U(0, 180, 0, 56), color=HEADER, label="Keep in bag", ts=22, LayoutOrder=2),
+        ]),
     ])
     flash = frame("Flash", U(1, 0, 1, 0), bg=WHITE, BackgroundTransparency=1, ZIndex=10)
     tree = screen([stage, flash], order=20, enabled=False, inset=True)
@@ -549,6 +633,7 @@ def main():
     hud()
     shop()
     index()
+    inventory()
     rebirth()
     offer()
     hatch()

@@ -86,12 +86,12 @@ World.Base = {
 	},
 }
 
--- Where hatching eggs sit on the hatchery pad (local to the hatchery centre).
+-- Incubator spots on the hatchery pad (local to the hatchery centre): a ring of 8,
+-- starting at the front (facing the field) and going round.
 World.HatchSpots = {}
-for _, z in { -3.2, 0, 3.2 } do
-	for _, x in { -6, -3, 0, 3, 6 } do
-		table.insert(World.HatchSpots, Vector3.new(x, 0, z))
-	end
+for i = 0, 7 do
+	local a = math.pi + i * math.pi / 4
+	table.insert(World.HatchSpots, Vector3.new(math.sin(a) * 5.6, 0, math.cos(a) * 5.6))
 end
 
 -- Corridors between zones, with the gate across the middle.

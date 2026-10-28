@@ -32,6 +32,7 @@ local FUNCTIONS: { [string]: number } = {
 	BuyUpgrade = 6, -- (upgradeId) -> ok, message
 	EquipTool = 4,
 	Teleport = 2, -- ("Base" | "Rocket" | zoneId) -> ok, message
+	Inventory = 10, -- (action, arg?) -> ok, message: see InventoryService ACTIONS
 }
 
 local FOLDER_NAME = "Remotes"

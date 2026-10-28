@@ -15,6 +15,7 @@ local ORDER = {
 	"HatchController",
 	"ShopController",
 	"IndexController",
+	"InventoryController",
 	"RebirthController",
 	"OfferController",
 	"FollowerController",

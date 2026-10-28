@@ -33,16 +33,17 @@ Players only get a character once their profile has loaded (`CharacterAutoLoads 
 | AssetService | Loads every Blender model with `InsertService:LoadAsset` at start, cleans and rigs it (`AssetLibrary.prepare`), and stores it in `ReplicatedStorage.Assets` (attribute `Ready`). Failed models fall back to part-built placeholders. |
 | WorldService | Finds `Workspace.Moon`, sets up lighting and the star sky, builds the terrain and structures (launch pad, Garage, Upgrade Station, base floors, signs) at start, then places all props once assets are ready (`Lib/MapBuilder`). Sets `Workspace` attributes `TerrainReady` and `PropsReady` for the loading screen. Owner name and avatar on each base sign. |
 | BaseService | Gives each player a base, spawns and respawns them there. |
-| BoostService | Server luck tiers (time stacks per tier, highest active wins), personal 2x cash, and the single cash multiplier formula. |
+| BoostService | Server luck tiers (time stacks per tier, highest active wins), personal boosts (2x cash, Luck and Speed potions), and the single cash multiplier formula. |
 | DustService | Tiles, HP, clearing, regrowth per zone, the Moon Clean counter, 0.1 s batches of cleared tile ids. |
 | SweepService | Validates `SweepTick(position)`: rate (10/s token bucket), distance from the character, zone unlocked. Applies tool power through the grid lookup, fills the backpack, rolls eggs. |
 | ToolService | Tool ladder (tiers 1-6), tool in hand, and cars (`Tools.Vehicles`): buying with cash, Robux unlocks and rentals, spawning at your feet (hotbar slot 2) or on the Garage pad. |
 | UpgradeService | Cash upgrades from `Config/Upgrades.luau` (Bigger Backpack, Sweep Power, Moon Boots, Egg Luck), sold at the Upgrade Station. Reset on rebirth. |
 | BackpackService | Dust units + their cash value, selling (a 0.2 s distance check: stand within `World.SellRadius` of the Rocket), `GiveCash` / `TrySpend` helpers. |
 | ZoneService | Gate labels and ProximityPrompts, paid unlocks, HUD teleports (`Teleport`: Base / Rocket / zone; a locked zone sends you to its gate; no teleport while carrying an egg). |
-| EggService | Egg chance per tile, guaranteed first egg (tile 12), physical eggs (owner-only for 15 s), carrying, delivering (a distance check: walk into your base's hatchery). |
-| HatchService | Hatch timers saved as unix `EndsAt` (they keep running offline), mutations, Skip Hatch. A higher-rarity egg on a full base replaces the weakest lower-rarity alien. |
-| AlienService | Slot count, income every second, offline income on join, publishes `base.Aliens` (one Folder per alien, rendered by every client's PetController) and the hatching eggs, the top-3 followers attribute. |
+| EggService | Egg chance per tile, guaranteed first egg (tile 12), physical eggs (owner-only for 15 s, each remembers the zone it was found in), carrying, delivering (a distance check: walk into your base's hatchery). Delivered eggs go to the inventory, nothing hatches on its own. |
+| InventoryService | The inventory: eggs (`data.Eggs`), pets (`data.Pets`, `Placed = true` when on the base) and items (potions). One remote, `Inventory(action, arg)`, for every inventory button and base prompt: PlaceEgg, PlaceBestEggs, OpenEgg, OpenReady, SkipHatch, PlacePet, PickUpPet, EquipBest, SellPet, UseItem. Bag limits in `Economy` (PetBagSize, EggBagSize). |
+| HatchService | Incubators on the hatchery pad (4, +1 per 2 rebirths, max 8). The player places eggs; timers are saved as unix `EndsAt` (they keep running offline). When ready the player opens the egg: the pet is rolled from the egg's zone pool (`Aliens.pool`), with mutation and Huge rolls scaled by server and personal luck. Skip Hatch finishes the egg the player picked. |
+| AlienService | Base pet limit (slot count), income every second from placed pets, offline income on join, publishes `base.Aliens` (one Folder per placed pet, named by uid, rendered by every client's PetController) and `base.Hatching` (incubating eggs and free nests), the top-3 followers attribute. |
 | RebirthService | Cost, reset, +50% cash per rebirth. |
 | EventService | Meteor Shower state machine. |
 | ShopService | Idempotent `ProcessReceipt`, gamepass checks, gifting, what each product grants. |
@@ -51,28 +52,29 @@ Players only get a character once their profile has loaded (`CharacterAutoLoads 
 
 ## Client controllers
 
-LoadingController (loading screen until terrain, models, images, save and character are ready; 45 s timeout), HudController (HUD, toasts, teleport pills), HotbarController (our 2-slot hotbar: 1 = tool, 2 = car; the default backpack is hidden), GarageController, UpgradeController, ShopController, IndexController (3D viewports), RebirthController, OfferController, HatchController (egg -> alien happy dance in a WorldModel), SweepController (input, dust puffs, `Player_Sweep` animation), PetController (pets wander each base's park with Idle/Walk/Happy, only near the camera), FollowerController (top 3 follow you), VehicleController, ZoneController, ArrowController, SkyController (the Earth).
+LoadingController (loading screen until terrain, models, images, save and character are ready; 45 s timeout), HudController (HUD, toasts, teleport pills), HotbarController (our hotbar: 1 = tool, 2 = car, 3 = bag; the default backpack is hidden), InventoryController (bag window, key B: All/Pets/Eggs/Items tabs, Equip Best, Place Eggs, Open Ready), GarageController, UpgradeController, ShopController, IndexController (3D viewports), RebirthController, OfferController, HatchController (egg -> alien reveal in a WorldModel, then Place/Keep; Skip Hatch and Open prompts on your incubating eggs), SweepController (input, dust puffs, `Player_Sweep` animation), PetController (pets wander each base's park with Idle/Walk/Happy, only near the camera), FollowerController (top 3 follow you), VehicleController, ZoneController, ArrowController, SkyController (the Earth).
 
 ## Remotes (`src/shared/Net.luau`)
 
-Client → server (all rate limited): `SweepTick`, `OfferResponse`, `SetAutoSweep`, and the functions `GetState`, `BuyNextTool`, `Rebirth`, `PromptPurchase(key, giftToUserId?)`, `ToggleVehicle`, `SpawnVehicle(id)`, `BuyVehicle(id)`, `BuyUpgrade(id)`, `EquipTool`, `Teleport(target)`.
+Client → server (all rate limited): `SweepTick`, `OfferResponse`, `SetAutoSweep`, and the functions `GetState`, `BuyNextTool`, `Rebirth`, `PromptPurchase(key, giftToUserId?)`, `ToggleVehicle`, `SpawnVehicle(id)`, `BuyVehicle(id)`, `BuyUpgrade(id)`, `EquipTool`, `Teleport(target)`, `Inventory(action, arg)`.
 
 Server → client: `PlayerState`, `TilesCleared` (buffer of u16 ids), `SweepResult`, `Notify`, `Announce`, `HatchCompleted`, `WelcomeBack`, `ShowOffer`, `MeteorImpact`.
 
 The client never sends amounts. Every cash, egg and tool change happens on the server.
 
-## Saved data (v1)
+## Saved data (v3)
 
-See `Types.ProfileData` and the template in `DataService`. Cash and TotalDust are `BigNum` tables (`{m, e}`), safe to store as-is. `ReceiptsGranted` maps purchase id → recipient user id, trimmed to the newest 100. To change the schema, bump `CURRENT_VERSION` and add a step to `MIGRATIONS`.
+See `Types.ProfileData` and the template in `DataService`. Pets, eggs and incubating eggs carry string uids (`DataService:NewUid`). The state snapshot only carries the full Pets/Eggs/Items tables when `Runtime.InvVersion` changed (`InventoryService:Touch`); the client keeps its last copy. Cash and TotalDust are `BigNum` tables (`{m, e}`), safe to store as-is. `ReceiptsGranted` maps purchase id → recipient user id, trimmed to the newest 100. To change the schema, bump `CURRENT_VERSION` and add a step to `MIGRATIONS`.
 
 ## How to add things
 
 - **A tool:** add a row to `Config/Tools.luau` (keep tiers in order). For a Robux skip, add a `ToolSkipN` product in `Config/Products.luau`.
-- **An alien:** add a row to `Config/Aliens.luau`. It joins its rarity's hatch pool and the index automatically.
+- **An alien:** add a row to `Config/Aliens.luau`. It joins its rarity's Landing hatch pool and the index automatically. Zone variants (Crystal, Shadow, Magma, Frost) are generated from `ZONE_SETS` and only hatch from eggs found in their zone.
+- **An item:** add a row to `Config/Items.luau` and handle its effect in `InventoryService:UseItem`.
 - **A zone:** add a row to `Config/Zones.luau` with bounds that don't overlap others (keep total tiles under ~8k), add ground for it in `src/workspace/Moon/Ground.model.json`, and if it has a price add a part named `Gate_<ZoneId>` in `Gates.model.json` (ZoneService labels it and adds the prompt).
 - **A product:** add it to `Config/Products.luau` with `Id = 0` and an existing `Kind`, then run `python3 tools/create_products.py` (creates it on Roblox through Open Cloud and writes the ID back). For a new kind, add it to `Types.ProductKind` plus a function in `GRANTS` in `ShopService`. Put it in a shop tab in `ShopController`.
 - **New UI art:** edit the `.model.json` files in `src/gui`. Controllers only look up elements by name, so keep the names.
 
 ## Extension points (not built yet)
 
-Egg stealing, trading, more planets, daily rewards, codes and group rewards. Base plots, eggs and hatching are already separate services, so stealing can hook into `EggService` and `HatchService` without touching the rest.
+Egg stealing, trading, codes. Base plots, eggs and hatching are already separate services, so stealing can hook into `EggService` and `HatchService` without touching the rest.

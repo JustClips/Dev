@@ -18,8 +18,13 @@ local function applyWalkSpeed(player: Player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if data and humanoid then
-		humanoid.WalkSpeed = Upgrades.walkSpeed(data.Upgrades)
+		humanoid.WalkSpeed = Upgrades.walkSpeed(data.Upgrades) + S.BoostService:GetSpeedBonus(player)
 	end
+end
+
+-- Re-applies walk speed (Moon Boots + Speed potion).
+function UpgradeService:ApplyWalkSpeed(player: Player)
+	applyWalkSpeed(player)
 end
 
 function UpgradeService:GetLevel(player: Player, id: string): number
@@ -69,6 +74,22 @@ function UpgradeService:Init(services)
 	S.BaseService.CharacterReady:Connect(function(player: Player, character: Model)
 		character:WaitForChild("Humanoid", 10)
 		applyWalkSpeed(player)
+	end)
+end
+
+-- The Speed potion runs out on its own: re-apply speed when it ends.
+function UpgradeService:Start()
+	task.spawn(function()
+		while true do
+			task.wait(2)
+			for player, session in S.DataService:GetSessions() do
+				local fast = S.BoostService:GetSpeedBonus(player) > 0
+				if session.Runtime.SpeedPotion ~= fast then
+					session.Runtime.SpeedPotion = fast
+					applyWalkSpeed(player)
+				end
+			end
+		end
 	end)
 end
 

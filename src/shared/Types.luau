@@ -77,6 +77,8 @@ export type AlienDef = {
 	Income: number,
 	Color: Color3,
 	Size: number,
+	Zone: string?, -- the zone whose eggs hatch it (nil = Landing)
+	Base: string?, -- zone variants: the Landing alien whose model they remix
 }
 
 export type RarityDef = {
@@ -136,16 +138,28 @@ export type GamepassDef = {
 	Description: string,
 }
 
-export type AlienInstance = {
+-- A pet you own. Placed pets live in your pet park and earn cash; the rest wait in
+-- your inventory. Keyed by a uid string ("p12") in ProfileData.Pets.
+export type PetInstance = {
 	Id: string,
 	Mutation: Mutation?,
-	Slot: number,
+	Huge: boolean?,
+	Placed: boolean?,
 }
 
+-- An unhatched egg in your inventory, keyed by uid ("e7") in ProfileData.Eggs.
+export type EggInstance = {
+	Rarity: Rarity,
+	Zone: string, -- where it was found: decides which pets it can hatch
+}
+
+-- An egg placed in an incubator on your base. Ready to open once EndsAt has passed.
 export type HatchEntry = {
-	EggRarity: Rarity,
+	Uid: string,
+	Rarity: Rarity,
+	Zone: string,
+	Spot: number, -- incubator spot on the hatchery pad
 	EndsAt: number,
-	Slot: number,
 }
 
 export type ProfileData = {
@@ -160,11 +174,15 @@ export type ProfileData = {
 	Vehicles: { [string]: boolean },
 	Upgrades: { [string]: number },
 	ZonesUnlocked: { [string]: boolean },
-	Aliens: { AlienInstance },
+	Pets: { [string]: PetInstance },
+	Eggs: { [string]: EggInstance },
+	Items: { [string]: number },
+	NextUid: number,
 	Hatching: { HatchEntry },
 	Index: { [string]: boolean },
 	Boosts: { [string]: number },
 	Gamepasses: { [string]: boolean },
+	Daily: { Streak: number, LastDay: number },
 	ReceiptsGranted: { [string]: string },
 	ReceiptOrder: { string },
 	LastOnline: number,
@@ -189,11 +207,21 @@ export type PlayerSnapshot = {
 	Rebirths: number,
 	RebirthCost: BigNum,
 	ZonesUnlocked: { [string]: boolean },
-	Aliens: { AlienInstance },
+	-- Inventory tables are only sent when they change (InvVersion); the client keeps the
+	-- last copy otherwise (State.luau).
+	InvVersion: number,
+	Pets: { [string]: PetInstance }?,
+	Eggs: { [string]: EggInstance }?,
+	Items: { [string]: number }?,
 	Hatching: { HatchEntry },
+	Incubators: number,
+	PetBagSize: number,
+	EggBagSize: number,
+	PlacedCount: number,
 	Index: { [string]: boolean },
 	Boosts: { [string]: number },
 	Gamepasses: { [string]: boolean },
+	Daily: { Streak: number, LastDay: number },
 	Flags: { [string]: any },
 	Stats: { [string]: number },
 	Slots: number,

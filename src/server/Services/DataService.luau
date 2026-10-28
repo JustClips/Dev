@@ -14,7 +14,7 @@ local ProfileStore = require(script.Parent.Parent.Lib.ProfileStore)
 local MockDataStore = require(script.Parent.Parent.Lib.MockDataStore)
 
 local STORE_NAME = "PlayerData_v1"
-local CURRENT_VERSION = 2
+local CURRENT_VERSION = 3
 local RECEIPTS_KEPT = 100
 
 local TEMPLATE: Types.ProfileData = {
@@ -29,15 +29,27 @@ local TEMPLATE: Types.ProfileData = {
 	Vehicles = {},
 	Upgrades = { Backpack = 0, Power = 0, Speed = 0, Luck = 0 },
 	ZonesUnlocked = { Landing = true },
-	Aliens = {},
+	Pets = {},
+	Eggs = {},
+	Items = {},
+	NextUid = 1,
 	Hatching = {},
 	Index = {},
 	Boosts = {},
 	Gamepasses = {},
+	Daily = { Streak = 0, LastDay = 0 },
 	ReceiptsGranted = {},
 	ReceiptOrder = {},
 	LastOnline = 0,
-	Flags = { StarterPackBought = false, TutorialDone = false, Funnel = {}, OffersShown = {}, FreeSkips = 0 },
+	Flags = {
+		StarterPackBought = false,
+		TutorialDone = false,
+		Funnel = {},
+		OffersShown = {},
+		FreeSkips = 0,
+		GroupRewardClaimed = false,
+		EventSignups = {},
+	},
 	Stats = { EggsFound = 0, Hatches = 0, Playtime = 0, TilesCleared = 0, Sells = 0 },
 	Settings = { AutoSweep = true },
 }
@@ -100,6 +112,30 @@ local MIGRATIONS: { [number]: (any) -> () } = {
 			data.ToolTier = 6
 			data.OwnedTools = { true, true, true, true, true, true }
 		end
+	end,
+	-- v3: inventory (Steal an Egg style). Aliens became Pets keyed by uid (all placed),
+	-- hatching eggs got uids and a zone.
+	[2] = function(data)
+		local nextUid = 1
+		data.Pets = {}
+		for _, alien in data.Aliens or {} do
+			data.Pets["p" .. nextUid] = { Id = alien.Id, Mutation = alien.Mutation, Placed = true }
+			nextUid += 1
+		end
+		data.Aliens = nil
+		local hatching = {}
+		for i, entry in data.Hatching or {} do
+			table.insert(hatching, {
+				Uid = "e" .. nextUid,
+				Rarity = entry.EggRarity or entry.Rarity or "Common",
+				Zone = "Landing",
+				Spot = i,
+				EndsAt = entry.EndsAt or 0,
+			})
+			nextUid += 1
+		end
+		data.Hatching = hatching
+		data.NextUid = nextUid
 	end,
 }
 
@@ -222,6 +258,13 @@ function DataService:SaveNow(player: Player): boolean
 		kick(player, "Your save was opened on another server.")
 	end
 	return ok
+end
+
+-- A new unique id for a pet ("p") or egg ("e").
+function DataService:NewUid(data: Types.ProfileData, prefix: string): string
+	local uid = prefix .. data.NextUid
+	data.NextUid += 1
+	return uid
 end
 
 -- Records a granted purchase id, keeping only the newest RECEIPTS_KEPT.

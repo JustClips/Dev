@@ -14,6 +14,7 @@ local StateService = {}
 
 local S: any
 local dirty: { [Player]: boolean } = {}
+local sentInventory: { [Player]: number } = {}
 local serverState: Folder
 
 -- Server-wide values (Moon %, event state, server luck) live as attributes on
@@ -37,9 +38,27 @@ local function tutorialStep(session: any): string
 			return "Egg"
 		end
 		if #data.Hatching > 0 then
+			for _, entry in data.Hatching do
+				if entry.EndsAt <= os.time() then
+					return "Open"
+				end
+			end
 			return "Hatching"
 		end
+		if next(data.Eggs) ~= nil then
+			return "Place"
+		end
 		return "Sweep"
+	end
+	local anyPlaced = false
+	for _, pet in data.Pets do
+		if pet.Placed then
+			anyPlaced = true
+			break
+		end
+	end
+	if not anyPlaced and next(data.Pets) ~= nil then
+		return "PlacePet"
 	end
 	if data.Stats.Sells == 0 then
 		return "Sell"
@@ -51,7 +70,7 @@ local function tutorialStep(session: any): string
 	return "Done"
 end
 
-function StateService:Build(player: Player): Types.PlayerSnapshot?
+function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapshot?
 	local session = S.DataService:GetSession(player)
 	if not session then
 		return nil
@@ -59,6 +78,15 @@ function StateService:Build(player: Player): Types.PlayerSnapshot?
 	local data = session.Data
 	local runtime = session.Runtime
 	local bestCar = S.ToolService:GetBestVehicle(player)
+	-- Inventory tables only go out when they changed since the last snapshot (or when the
+	-- client asks for everything with GetState).
+	local invVersion = S.InventoryService:GetVersion(player)
+	local sendInventory = full == true or sentInventory[player] ~= invVersion
+	sentInventory[player] = invVersion
+	local carried = {}
+	for _, entry in runtime.Carried or {} do
+		table.insert(carried, entry.Rarity)
+	end
 	return {
 		Cash = data.Cash,
 		Backpack = data.Backpack,
@@ -70,12 +98,20 @@ function StateService:Build(player: Player): Types.PlayerSnapshot?
 		BestVehicle = if bestCar then bestCar.Id else nil,
 		InVehicle = S.ToolService:IsInVehicle(player),
 		Upgrades = data.Upgrades,
-		WalkSpeed = Upgrades.walkSpeed(data.Upgrades),
+		WalkSpeed = Upgrades.walkSpeed(data.Upgrades) + S.BoostService:GetSpeedBonus(player),
 		Rebirths = data.Rebirths,
 		RebirthCost = S.RebirthService:GetCost(data),
 		ZonesUnlocked = data.ZonesUnlocked,
-		Aliens = data.Aliens,
+		InvVersion = invVersion,
+		Pets = if sendInventory then data.Pets else nil,
+		Eggs = if sendInventory then data.Eggs else nil,
+		Items = if sendInventory then data.Items else nil,
 		Hatching = data.Hatching,
+		Incubators = S.HatchService:GetIncubatorCount(player),
+		PetBagSize = Economy.PetBagSize,
+		EggBagSize = Economy.EggBagSize,
+		PlacedCount = S.AlienService:PlacedCount(player),
+		Daily = data.Daily,
 		Index = data.Index,
 		Boosts = data.Boosts,
 		Gamepasses = data.Gamepasses,
@@ -85,7 +121,7 @@ function StateService:Build(player: Player): Types.PlayerSnapshot?
 		IncomePerSec = S.AlienService:GetIncomePerSec(player),
 		CashPacks = S.ShopService:GetCashPackAmounts(player),
 		CashMultiplier = S.BoostService:GetCashMultiplier(player),
-		CarriedEggs = runtime.Carried or {},
+		CarriedEggs = carried,
 		CarryLimit = S.EggService:GetCarryLimit(player),
 		BaseIndex = runtime.BaseIndex or 0,
 		TutorialStep = tutorialStep(session),
@@ -109,13 +145,14 @@ function StateService:Init(services)
 	serverState.Name = "ServerState"
 	serverState.Parent = ReplicatedStorage
 	Net.onInvoke("GetState", function(player)
-		return StateService:Build(player)
+		return StateService:Build(player, true)
 	end)
 	S.DataService.ProfileLoaded:Connect(function(player)
 		StateService:Mark(player)
 	end)
 	S.DataService.ProfileReleasing:Connect(function(player)
 		dirty[player] = nil
+		sentInventory[player] = nil
 	end)
 end
 

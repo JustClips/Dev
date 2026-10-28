@@ -147,6 +147,29 @@ local function renderZones(data)
 	end
 end
 
+-- One line telling new players what to do next (server-confirmed tutorial steps).
+local HINTS: { [string]: string } = {
+	Sweep = "Sweep the moon dust to find an egg!",
+	Egg = "You found an egg! Walk into it to pick it up.",
+	Base = "Carry the egg home to your hatchery!",
+	Place = "Press F at your hatchery to put the egg in an incubator!",
+	Hatching = "Your egg is hatching...",
+	Open = "Your egg is ready! Press E on it to open it.",
+	PlacePet = "Open your Bag (3) and place your pet on your base!",
+	Sell = "Sell your dust at the Rocket for cash!",
+	Shop = "Buy the Broom: it sweeps faster!",
+}
+
+-- After the tutorial: only nudges for things that are waiting on the player.
+local function nextStepHint(data): string?
+	for _, entry in data.Hatching do
+		if entry.EndsAt <= State.now() then
+			return "An egg is ready! Open it at your hatchery."
+		end
+	end
+	return nil
+end
+
 local function render(data)
 	el.Cash.Text = Format.cash(data.Cash)
 	el.Income.Text = `+{Format.cash(data.IncomePerSec)}/s`
@@ -177,6 +200,15 @@ local function render(data)
 
 	if el.ZonePicker.Visible then
 		renderZones(data)
+	end
+
+	local hint = HINTS[data.TutorialStep]
+	if not hint and data.TutorialStep == "Done" then
+		hint = nextStepHint(data)
+	end
+	el.Hint.Visible = hint ~= nil
+	if hint then
+		el.HintText.Text = hint
 	end
 end
 
@@ -221,6 +253,12 @@ local function renderBoosts()
 	local data = State.data
 	if data and (data.Boosts.Cash2x or 0) > now then
 		table.insert(entries, { `2x Cash  {Format.time(data.Boosts.Cash2x - now)}`, "Icon_Cash" })
+	end
+	if data and (data.Boosts.Luck2x or 0) > now then
+		table.insert(entries, { `2x Egg Luck  {Format.time(data.Boosts.Luck2x - now)}`, "Icon_PotionLuck" })
+	end
+	if data and (data.Boosts.Speed or 0) > now then
+		table.insert(entries, { `Speed  {Format.time(data.Boosts.Speed - now)}`, "Icon_PotionSpeed" })
 	end
 	for i, entry in entries do
 		local label = template:Clone()
@@ -292,6 +330,8 @@ function HudController:Init(controllers)
 	el.SweepButton = Ui.find(hud, "SweepButton")
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
+	el.Hint = Ui.find(hud, "Hint")
+	el.HintText = Ui.find(hud, "Hint.Text")
 	el.ZoneRows = {}
 	for _, zoneId in ZONE_ORDER do
 		el.ZoneRows[zoneId] = Ui.find(hud, "ZonePicker.List.Zone_" .. zoneId)

@@ -1,8 +1,11 @@
 --!strict
 -- Hatch cutscene: egg shake -> crack flash -> the alien pops out and does its happy dance
--- (rarity colour + name) -> flies off toward your pet park. Also counts down the timers
--- above hatching eggs.
+-- (rarity colour + name) -> "Place on base" or "Keep in bag" -> flies off. Also counts
+-- down the timers above incubating eggs and adds the owner's prompts on the base:
+-- Skip Hatch (Robux) while an egg is hatching, Open when it's ready, and Place Eggs on
+-- the hatchery pad.
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -20,11 +23,16 @@ local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
+local Products = require(Shared.Config.Products)
 local World = require(Shared.Config.World)
 
 local REVEAL_SECONDS = 3
 
 local HatchController = {}
+
+local C: any
+local choice: Frame
+local chosen: string? = nil
 
 local gui: ScreenGui
 local stage: Frame
@@ -129,17 +137,38 @@ local function play(info)
 		model:PivotTo(CFrame.Angles(0, yaw, 0))
 	end)
 
-	nameLabel.Text = AlienModel.displayName(info.AlienId, info.Mutation)
-	nameLabel.TextColor3 = rarity.Color
-	local income = def and def.Income or 0
-	local mutation = info.Mutation and Eggs.MutationByName[info.Mutation]
-	if mutation then
-		income *= mutation.IncomeMult
+	if info.Huge then
+		model:ScaleTo(Aliens.HugeScale)
 	end
+	nameLabel.Text = (if info.Huge then "HUGE " else "") .. AlienModel.displayName(info.AlienId, info.Mutation)
+	nameLabel.TextColor3 = rarity.Color
+	local income = info.Income or (def and def.Income or 0)
 	subLabel.Text = `{info.Rarity} · {Format.cash(income)}/s`
 	newLabel.Visible = info.IsNew == true
 	hintLabel.Visible = true
 	waitOrSkip(REVEAL_SECONDS)
+
+	-- Place it on the base right away, or keep it in the bag (only offered with room).
+	if info.FreeSlot and info.Uid then
+		hintLabel.Visible = false
+		chosen = nil
+		choice.Visible = true
+		local deadline = os.clock() + 8
+		while chosen == nil and os.clock() < deadline do
+			task.wait()
+		end
+		choice.Visible = false
+		if chosen == "Place" then
+			local ok, message = Net.func("Inventory"):InvokeServer("PlacePet", info.Uid)
+			if not ok and message then
+				C.HudController:Toast(message, "Bad")
+			end
+		else
+			C.HudController:Toast("Saved in your bag (press 3 or B).", "Info")
+		end
+	else
+		C.HudController:Toast("Added to your bag (press 3 or B).", "Info")
+	end
 
 	-- 4. Fly to the pet park
 	local fly = TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
@@ -172,12 +201,106 @@ local function updateTimers()
 		if label:IsA("TextLabel") then
 			local endsAt = label:GetAttribute("EndsAt") or 0
 			local left = endsAt - now
-			label.Text = if left > 0 then Format.time(left) else "Hatching!"
+			label.Text = if left > 0 then Format.time(left) else "READY!"
 		end
 	end
 end
 
-function HatchController:Init()
+local function invoke(action: string, arg: string?)
+	local ok, message = Net.func("Inventory"):InvokeServer(action, arg)
+	if message and message ~= "" then
+		C.HudController:Toast(message, if ok then "Good" else "Bad")
+	end
+end
+
+-- Owner prompts on incubating eggs: Skip (Robux) while hatching, Open when ready.
+local function updateEggPrompts()
+	local me = Players.LocalPlayer.UserId
+	local now = State.now()
+	for _, egg in CollectionService:GetTagged("HatchingEgg") do
+		if not egg:IsA("Model") or egg:GetAttribute("OwnerUserId") ~= me then
+			continue
+		end
+		local root = egg.PrimaryPart or egg:FindFirstChildWhichIsA("BasePart")
+		if not root then
+			continue
+		end
+		local prompt = root:FindFirstChild("EggPrompt") :: ProximityPrompt?
+		if not prompt then
+			local p = Instance.new("ProximityPrompt")
+			p.Name = "EggPrompt"
+			p.MaxActivationDistance = 12
+			p.RequiresLineOfSight = false
+			p.HoldDuration = 0.25
+			p.Parent = root
+			local uid = egg:GetAttribute("Uid") :: string
+			p.Triggered:Connect(function()
+				if p:GetAttribute("Ready") then
+					invoke("OpenEgg", uid)
+				else
+					invoke("SkipHatch", uid)
+				end
+			end)
+			prompt = p
+		end
+		local ready = (egg:GetAttribute("EndsAt") or 0) <= now
+		local rarity = egg:GetAttribute("Rarity") :: string
+		local p = prompt :: ProximityPrompt
+		p:SetAttribute("Ready", ready)
+		p.ObjectText = `{rarity} Egg`
+		if ready then
+			p.ActionText = "Open"
+		else
+			local product = Products.ProductByKey["SkipHatch" .. rarity]
+			p.ActionText = if product and product.Id ~= 0 then `Skip Hatch {Ui.ROBUX}{product.Price}` else "Hatching..."
+			p.Enabled = product ~= nil and product.Id ~= 0
+		end
+		if ready then
+			p.Enabled = true
+		end
+	end
+end
+
+-- "Place Eggs" on your own hatchery pad while you have eggs and a free incubator.
+local padPrompt: ProximityPrompt? = nil
+local function updatePadPrompt()
+	local data = State.data
+	if not data or not data.BaseIndex or data.BaseIndex == 0 then
+		return
+	end
+	if not padPrompt then
+		local moon = Workspace:FindFirstChild("Moon")
+		local bases = moon and moon:FindFirstChild("Bases")
+		local base = bases and bases:FindFirstChild("Base" .. data.BaseIndex)
+		local pad = base and base:FindFirstChild("Pad") :: BasePart?
+		if not pad then
+			return
+		end
+		local p = Instance.new("ProximityPrompt")
+		p.Name = "PlaceEggs"
+		p.ActionText = "Place Eggs"
+		p.ObjectText = "Incubators"
+		p.KeyboardKeyCode = Enum.KeyCode.F
+		p.MaxActivationDistance = 14
+		p.RequiresLineOfSight = false
+		p.UIOffset = Vector2.new(0, 60)
+		p.Parent = pad
+		p.Triggered:Connect(function()
+			invoke("PlaceBestEggs")
+		end)
+		padPrompt = p
+	end
+	local eggs = 0
+	for _ in data.Eggs or {} do
+		eggs += 1
+	end
+	local prompt = padPrompt :: ProximityPrompt
+	prompt.Enabled = eggs > 0 and #data.Hatching < data.Incubators
+	prompt.ObjectText = `{eggs} in your bag`
+end
+
+function HatchController:Init(controllers)
+	C = controllers
 	gui = Ui.screen("Hatch")
 	stage = Ui.find(gui, "Stage")
 	stageScale = Ui.find(gui, "Stage.AutoScale")
@@ -191,6 +314,7 @@ function HatchController:Init()
 	subLabel = Ui.find(gui, "Stage.Sub")
 	newLabel = Ui.find(gui, "Stage.New")
 	hintLabel = Ui.find(gui, "Stage.Hint")
+	choice = Ui.find(gui, "Stage.Choice")
 	local camera = Instance.new("Camera")
 	camera.FieldOfView = 40
 	camera.Parent = viewport
@@ -207,8 +331,16 @@ function HatchController:Start()
 			skipRequested = true
 		end
 	end)
+	Ui.button(Ui.find(choice, "Place"), function()
+		chosen = "Place"
+	end)
+	Ui.button(Ui.find(choice, "Keep"), function()
+		chosen = "Keep"
+	end)
 	while true do
 		updateTimers()
+		updateEggPrompts()
+		updatePadPrompt()
 		task.wait(0.25)
 	end
 end
