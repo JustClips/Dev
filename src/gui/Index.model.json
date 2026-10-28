@@ -478,17 +478,12 @@
        ]
       ],
       "AnchorPoint": [
-       "#",
-       "1",
-       "4",
-       "1",
-       "A",
-       "3",
-       "3"
+       0,
+       0
       ],
       "BorderSizePixel": 0,
       "BackgroundTransparency": 0,
-      "BackgroundColor3": "#E9EEF7"
+      "BackgroundColor3": "#141A33"
      },
      "children": [
       {
@@ -543,7 +538,7 @@
           64
          ]
         ],
-        "ImageColor3": "#E9EEF7",
+        "ImageColor3": "#141A33",
         "ImageTransparency": 0.6,
         "ZIndex": 0
        },
@@ -574,17 +569,12 @@
          ]
         ],
         "AnchorPoint": [
-         "#",
-         "3",
-         "B",
-         "4",
-         "F",
-         "A",
-         "8"
+         0,
+         0
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 0,
-        "BackgroundColor3": "#E9EEF7"
+        "BackgroundColor3": "#3B4FA8"
        },
        "children": [
         {
@@ -639,7 +629,7 @@
             64
            ]
           ],
-          "ImageColor3": "#E9EEF7",
+          "ImageColor3": "#3B4FA8",
           "ImageTransparency": 0.2,
           "ZIndex": 0
          },

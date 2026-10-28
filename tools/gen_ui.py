@@ -106,6 +106,8 @@ def hlist(pad=8, h="Center", v="Center"):
 
 
 def base(size, pos=U(0, 0, 0, 0), anchor=(0, 0), **extra):
+    # A colour passed by position lands here by mistake (it broke the Index once).
+    assert len(anchor) == 2 and all(isinstance(a, (int, float)) for a in anchor), f"bad AnchorPoint {anchor!r}"
     p = {"Size": size, "Position": pos, "AnchorPoint": list(anchor), "BorderSizePixel": 0}
     p.update(extra)
     return p
@@ -441,8 +443,8 @@ def index():
         text("Name", "???", U(1, -6, 0, 26), U(0.5, 0, 0, 2), (0.5, 0), ts=18, display=True, stroke=2.5, ZIndex=4,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 19, "MinTextSize": 9})]),
     ])
-    body = plate("Body", U(1, -24, 1, -156), U(0, 12, 0, 76), BG, stud=0.6, children=[
-        plate("Zone", U(0, 150, 1, -84), U(0, 10, 0, 10), "#3B4FA8", stud=0.2, children=[
+    body = plate("Body", U(1, -24, 1, -156), U(0, 12, 0, 76), tint=BG, stud=0.6, children=[
+        plate("Zone", U(0, 150, 1, -84), U(0, 10, 0, 10), tint="#3B4FA8", stud=0.2, children=[
             text("Name", "Landing Site", U(1, -10, 0, 70), U(0.5, 0, 0, 8), (0.5, 0), ts=26, display=True, stroke=3),
             icon("Icon", "Zones", 90, U(0.5, 0, 0.5, 0), (0.5, 0.5)),
             button("Prev", U(0, 54, 0, 46), U(0, 10, 1, -10), (0, 1), color=HEADER, label="<", ts=26),
