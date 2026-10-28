@@ -50,7 +50,6 @@ function MapBuilder.buildTerrain()
 	for name, color in World.TerrainColors do
 		terrain:SetMaterialColor((M :: any)[name], color)
 	end
-	terrain.Decoration = true
 	local rng = Random.new(42)
 
 	-- One big slab of moon ground, then a top layer per area.
