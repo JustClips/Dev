@@ -1,0 +1,1197 @@
+{
+ "className": "Model",
+ "children": [
+  {
+   "name": "Base1",
+   "className": "Model",
+   "attributes": {
+    "BaseIndex": 1
+   },
+   "children": [
+    {
+     "name": "Plot",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       34,
+       1,
+       34
+      ],
+      "Color": "#5B6A8F",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        0.0,
+        0,
+        70.0
+       ],
+       "orientation": [
+        0,
+        0,
+        0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Pad",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       0.6,
+       9,
+       9
+      ],
+      "Color": "#FFD54A",
+      "Material": "Neon",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        0.0,
+        0.75,
+        61.0
+       ],
+       "orientation": [
+        0,
+        0,
+        90
+       ]
+      },
+      "Shape": "Cylinder",
+      "Transparency": 0.1
+     },
+     "children": [
+      {
+       "name": "Label",
+       "className": "BillboardGui",
+       "properties": {
+        "Size": [
+         [
+          0,
+          200
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "StudsOffset": [
+         0,
+         3,
+         0
+        ],
+        "MaxDistance": 60,
+        "LightInfluence": 0,
+        "AlwaysOnTop": false
+       },
+       "children": [
+        {
+         "name": "Text",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "BackgroundTransparency": 1,
+          "Text": "🥚 Bring eggs here",
+          "TextScaled": true,
+          "TextColor3": "#FFE58A",
+          "Font": "FredokaOne",
+          "TextStrokeTransparency": 0.2
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Spawn",
+     "className": "SpawnLocation",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       6,
+       1,
+       6
+      ],
+      "Color": "#DDE6FF",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        10.0,
+        0.6,
+        59.0
+       ],
+       "orientation": [
+        0,
+        0,
+        0
+       ]
+      },
+      "Neutral": true,
+      "Duration": 0,
+      "Transparency": 0.3,
+      "AllowTeamChangeOnTouch": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "Base2",
+   "className": "Model",
+   "attributes": {
+    "BaseIndex": 2
+   },
+   "children": [
+    {
+     "name": "Plot",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       34,
+       1,
+       34
+      ],
+      "Color": "#6B5B8F",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        49.497,
+        0,
+        49.497
+       ],
+       "orientation": [
+        0,
+        45,
+        0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Pad",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       0.6,
+       9,
+       9
+      ],
+      "Color": "#FFD54A",
+      "Material": "Neon",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        43.133,
+        0.75,
+        43.133
+       ],
+       "orientation": [
+        0,
+        0,
+        90
+       ]
+      },
+      "Shape": "Cylinder",
+      "Transparency": 0.1
+     },
+     "children": [
+      {
+       "name": "Label",
+       "className": "BillboardGui",
+       "properties": {
+        "Size": [
+         [
+          0,
+          200
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "StudsOffset": [
+         0,
+         3,
+         0
+        ],
+        "MaxDistance": 60,
+        "LightInfluence": 0,
+        "AlwaysOnTop": false
+       },
+       "children": [
+        {
+         "name": "Text",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "BackgroundTransparency": 1,
+          "Text": "🥚 Bring eggs here",
+          "TextScaled": true,
+          "TextColor3": "#FFE58A",
+          "Font": "FredokaOne",
+          "TextStrokeTransparency": 0.2
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Spawn",
+     "className": "SpawnLocation",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       6,
+       1,
+       6
+      ],
+      "Color": "#DDE6FF",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        48.79,
+        0.6,
+        34.648
+       ],
+       "orientation": [
+        0,
+        45,
+        0
+       ]
+      },
+      "Neutral": true,
+      "Duration": 0,
+      "Transparency": 0.3,
+      "AllowTeamChangeOnTouch": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "Base3",
+   "className": "Model",
+   "attributes": {
+    "BaseIndex": 3
+   },
+   "children": [
+    {
+     "name": "Plot",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       34,
+       1,
+       34
+      ],
+      "Color": "#5B8F7A",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        70.0,
+        0,
+        0.0
+       ],
+       "orientation": [
+        0,
+        90,
+        0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Pad",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       0.6,
+       9,
+       9
+      ],
+      "Color": "#FFD54A",
+      "Material": "Neon",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        61.0,
+        0.75,
+        -0.0
+       ],
+       "orientation": [
+        0,
+        0,
+        90
+       ]
+      },
+      "Shape": "Cylinder",
+      "Transparency": 0.1
+     },
+     "children": [
+      {
+       "name": "Label",
+       "className": "BillboardGui",
+       "properties": {
+        "Size": [
+         [
+          0,
+          200
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "StudsOffset": [
+         0,
+         3,
+         0
+        ],
+        "MaxDistance": 60,
+        "LightInfluence": 0,
+        "AlwaysOnTop": false
+       },
+       "children": [
+        {
+         "name": "Text",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "BackgroundTransparency": 1,
+          "Text": "🥚 Bring eggs here",
+          "TextScaled": true,
+          "TextColor3": "#FFE58A",
+          "Font": "FredokaOne",
+          "TextStrokeTransparency": 0.2
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Spawn",
+     "className": "SpawnLocation",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       6,
+       1,
+       6
+      ],
+      "Color": "#DDE6FF",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        59.0,
+        0.6,
+        -10.0
+       ],
+       "orientation": [
+        0,
+        90,
+        0
+       ]
+      },
+      "Neutral": true,
+      "Duration": 0,
+      "Transparency": 0.3,
+      "AllowTeamChangeOnTouch": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "Base4",
+   "className": "Model",
+   "attributes": {
+    "BaseIndex": 4
+   },
+   "children": [
+    {
+     "name": "Plot",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       34,
+       1,
+       34
+      ],
+      "Color": "#8F7A5B",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        49.497,
+        0,
+        -49.497
+       ],
+       "orientation": [
+        0,
+        135,
+        0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Pad",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       0.6,
+       9,
+       9
+      ],
+      "Color": "#FFD54A",
+      "Material": "Neon",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        43.133,
+        0.75,
+        -43.133
+       ],
+       "orientation": [
+        0,
+        0,
+        90
+       ]
+      },
+      "Shape": "Cylinder",
+      "Transparency": 0.1
+     },
+     "children": [
+      {
+       "name": "Label",
+       "className": "BillboardGui",
+       "properties": {
+        "Size": [
+         [
+          0,
+          200
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "StudsOffset": [
+         0,
+         3,
+         0
+        ],
+        "MaxDistance": 60,
+        "LightInfluence": 0,
+        "AlwaysOnTop": false
+       },
+       "children": [
+        {
+         "name": "Text",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "BackgroundTransparency": 1,
+          "Text": "🥚 Bring eggs here",
+          "TextScaled": true,
+          "TextColor3": "#FFE58A",
+          "Font": "FredokaOne",
+          "TextStrokeTransparency": 0.2
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Spawn",
+     "className": "SpawnLocation",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       6,
+       1,
+       6
+      ],
+      "Color": "#DDE6FF",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        34.648,
+        0.6,
+        -48.79
+       ],
+       "orientation": [
+        0,
+        135,
+        0
+       ]
+      },
+      "Neutral": true,
+      "Duration": 0,
+      "Transparency": 0.3,
+      "AllowTeamChangeOnTouch": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "Base5",
+   "className": "Model",
+   "attributes": {
+    "BaseIndex": 5
+   },
+   "children": [
+    {
+     "name": "Plot",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       34,
+       1,
+       34
+      ],
+      "Color": "#8F5B6B",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        0.0,
+        0,
+        -70.0
+       ],
+       "orientation": [
+        0,
+        180,
+        0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Pad",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       0.6,
+       9,
+       9
+      ],
+      "Color": "#FFD54A",
+      "Material": "Neon",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -0.0,
+        0.75,
+        -61.0
+       ],
+       "orientation": [
+        0,
+        0,
+        90
+       ]
+      },
+      "Shape": "Cylinder",
+      "Transparency": 0.1
+     },
+     "children": [
+      {
+       "name": "Label",
+       "className": "BillboardGui",
+       "properties": {
+        "Size": [
+         [
+          0,
+          200
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "StudsOffset": [
+         0,
+         3,
+         0
+        ],
+        "MaxDistance": 60,
+        "LightInfluence": 0,
+        "AlwaysOnTop": false
+       },
+       "children": [
+        {
+         "name": "Text",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "BackgroundTransparency": 1,
+          "Text": "🥚 Bring eggs here",
+          "TextScaled": true,
+          "TextColor3": "#FFE58A",
+          "Font": "FredokaOne",
+          "TextStrokeTransparency": 0.2
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Spawn",
+     "className": "SpawnLocation",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       6,
+       1,
+       6
+      ],
+      "Color": "#DDE6FF",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -10.0,
+        0.6,
+        -59.0
+       ],
+       "orientation": [
+        0,
+        180,
+        0
+       ]
+      },
+      "Neutral": true,
+      "Duration": 0,
+      "Transparency": 0.3,
+      "AllowTeamChangeOnTouch": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "Base6",
+   "className": "Model",
+   "attributes": {
+    "BaseIndex": 6
+   },
+   "children": [
+    {
+     "name": "Plot",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       34,
+       1,
+       34
+      ],
+      "Color": "#5B7F8F",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -49.497,
+        0,
+        -49.497
+       ],
+       "orientation": [
+        0,
+        225,
+        0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Pad",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       0.6,
+       9,
+       9
+      ],
+      "Color": "#FFD54A",
+      "Material": "Neon",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -43.133,
+        0.75,
+        -43.133
+       ],
+       "orientation": [
+        0,
+        0,
+        90
+       ]
+      },
+      "Shape": "Cylinder",
+      "Transparency": 0.1
+     },
+     "children": [
+      {
+       "name": "Label",
+       "className": "BillboardGui",
+       "properties": {
+        "Size": [
+         [
+          0,
+          200
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "StudsOffset": [
+         0,
+         3,
+         0
+        ],
+        "MaxDistance": 60,
+        "LightInfluence": 0,
+        "AlwaysOnTop": false
+       },
+       "children": [
+        {
+         "name": "Text",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "BackgroundTransparency": 1,
+          "Text": "🥚 Bring eggs here",
+          "TextScaled": true,
+          "TextColor3": "#FFE58A",
+          "Font": "FredokaOne",
+          "TextStrokeTransparency": 0.2
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Spawn",
+     "className": "SpawnLocation",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       6,
+       1,
+       6
+      ],
+      "Color": "#DDE6FF",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -48.79,
+        0.6,
+        -34.648
+       ],
+       "orientation": [
+        0,
+        225,
+        0
+       ]
+      },
+      "Neutral": true,
+      "Duration": 0,
+      "Transparency": 0.3,
+      "AllowTeamChangeOnTouch": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "Base7",
+   "className": "Model",
+   "attributes": {
+    "BaseIndex": 7
+   },
+   "children": [
+    {
+     "name": "Plot",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       34,
+       1,
+       34
+      ],
+      "Color": "#7A8F5B",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -70.0,
+        0,
+        -0.0
+       ],
+       "orientation": [
+        0,
+        270,
+        0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Pad",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       0.6,
+       9,
+       9
+      ],
+      "Color": "#FFD54A",
+      "Material": "Neon",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -61.0,
+        0.75,
+        0.0
+       ],
+       "orientation": [
+        0,
+        0,
+        90
+       ]
+      },
+      "Shape": "Cylinder",
+      "Transparency": 0.1
+     },
+     "children": [
+      {
+       "name": "Label",
+       "className": "BillboardGui",
+       "properties": {
+        "Size": [
+         [
+          0,
+          200
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "StudsOffset": [
+         0,
+         3,
+         0
+        ],
+        "MaxDistance": 60,
+        "LightInfluence": 0,
+        "AlwaysOnTop": false
+       },
+       "children": [
+        {
+         "name": "Text",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "BackgroundTransparency": 1,
+          "Text": "🥚 Bring eggs here",
+          "TextScaled": true,
+          "TextColor3": "#FFE58A",
+          "Font": "FredokaOne",
+          "TextStrokeTransparency": 0.2
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Spawn",
+     "className": "SpawnLocation",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       6,
+       1,
+       6
+      ],
+      "Color": "#DDE6FF",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -59.0,
+        0.6,
+        10.0
+       ],
+       "orientation": [
+        0,
+        270,
+        0
+       ]
+      },
+      "Neutral": true,
+      "Duration": 0,
+      "Transparency": 0.3,
+      "AllowTeamChangeOnTouch": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "Base8",
+   "className": "Model",
+   "attributes": {
+    "BaseIndex": 8
+   },
+   "children": [
+    {
+     "name": "Plot",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       34,
+       1,
+       34
+      ],
+      "Color": "#8F6A5B",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -49.497,
+        0,
+        49.497
+       ],
+       "orientation": [
+        0,
+        315,
+        0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Pad",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       0.6,
+       9,
+       9
+      ],
+      "Color": "#FFD54A",
+      "Material": "Neon",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -43.133,
+        0.75,
+        43.133
+       ],
+       "orientation": [
+        0,
+        0,
+        90
+       ]
+      },
+      "Shape": "Cylinder",
+      "Transparency": 0.1
+     },
+     "children": [
+      {
+       "name": "Label",
+       "className": "BillboardGui",
+       "properties": {
+        "Size": [
+         [
+          0,
+          200
+         ],
+         [
+          0,
+          40
+         ]
+        ],
+        "StudsOffset": [
+         0,
+         3,
+         0
+        ],
+        "MaxDistance": 60,
+        "LightInfluence": 0,
+        "AlwaysOnTop": false
+       },
+       "children": [
+        {
+         "name": "Text",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "BackgroundTransparency": 1,
+          "Text": "🥚 Bring eggs here",
+          "TextScaled": true,
+          "TextColor3": "#FFE58A",
+          "Font": "FredokaOne",
+          "TextStrokeTransparency": 0.2
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Spawn",
+     "className": "SpawnLocation",
+     "properties": {
+      "Anchored": true,
+      "Size": [
+       6,
+       1,
+       6
+      ],
+      "Color": "#DDE6FF",
+      "Material": "SmoothPlastic",
+      "TopSurface": "Smooth",
+      "BottomSurface": "Smooth",
+      "CFrame": {
+       "position": [
+        -34.648,
+        0.6,
+        48.79
+       ],
+       "orientation": [
+        0,
+        315,
+        0
+       ]
+      },
+      "Neutral": true,
+      "Duration": 0,
+      "Transparency": 0.3,
+      "AllowTeamChangeOnTouch": false
+     }
+    }
+   ]
+  }
+ ]
+}

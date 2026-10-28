@@ -17,7 +17,31 @@
       "$path": "src/gui"
     },
     "Workspace": {
-      "$path": "src/workspace"
+      "$path": "src/workspace",
+      "$properties": {
+        "StreamingEnabled": true
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "ClockTime": 0,
+        "Brightness": 3,
+        "Ambient": [105, 112, 135],
+        "OutdoorAmbient": [95, 102, 125],
+        "ColorShift_Top": [200, 215, 255],
+        "EnvironmentDiffuseScale": 0.3,
+        "EnvironmentSpecularScale": 0.2,
+        "ExposureCompensation": 0.4,
+        "GlobalShadows": true,
+        "FogEnd": 100000
+      },
+      "MoonSky": {
+        "$className": "Sky",
+        "$properties": {
+          "StarCount": 5000,
+          "CelestialBodiesShown": false
+        }
+      }
     }
   }
 }

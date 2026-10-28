@@ -1,0 +1,362 @@
+{
+ "className": "Model",
+ "children": [
+  {
+   "name": "LandingBack",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     216,
+     44,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     0,
+     20,
+     107
+    ]
+   }
+  },
+  {
+   "name": "LandingLeft",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     44,
+     216
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     -107,
+     20,
+     0
+    ]
+   }
+  },
+  {
+   "name": "LandingRight",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     44,
+     216
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     107,
+     20,
+     0
+    ]
+   }
+  },
+  {
+   "name": "CraterLeft",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     50,
+     163
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     -87,
+     17,
+     -186.5
+    ]
+   }
+  },
+  {
+   "name": "CraterRight",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     50,
+     163
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     87,
+     17,
+     -186.5
+    ]
+   }
+  },
+  {
+   "name": "OuterLeft",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     46,
+     302
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     -87,
+     20,
+     -419
+    ]
+   }
+  },
+  {
+   "name": "OuterRight",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     46,
+     302
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     87,
+     20,
+     -419
+    ]
+   }
+  },
+  {
+   "name": "MarsBack",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     176,
+     46,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     0,
+     20,
+     -570
+    ]
+   }
+  },
+  {
+   "name": "CraterWallL",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     96,
+     50,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     -60.0,
+     19.0,
+     -105
+    ]
+   }
+  },
+  {
+   "name": "CraterWallR",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     96,
+     50,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     60.0,
+     19.0,
+     -105
+    ]
+   }
+  },
+  {
+   "name": "CraterLintel",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     24,
+     28,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     0,
+     30,
+     -105
+    ]
+   }
+  },
+  {
+   "name": "DarkSideWallL",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     76,
+     50,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     -50.0,
+     19.0,
+     -268
+    ]
+   }
+  },
+  {
+   "name": "DarkSideWallR",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     76,
+     50,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     50.0,
+     19.0,
+     -268
+    ]
+   }
+  },
+  {
+   "name": "DarkSideLintel",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     24,
+     28,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     0,
+     30,
+     -268
+    ]
+   }
+  },
+  {
+   "name": "MarsWallL",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     76,
+     44,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     -50.0,
+     22.0,
+     -418
+    ]
+   }
+  },
+  {
+   "name": "MarsWallR",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     76,
+     44,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     50.0,
+     22.0,
+     -418
+    ]
+   }
+  },
+  {
+   "name": "MarsLintel",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     24,
+     28,
+     2
+    ],
+    "Color": "#55585F",
+    "Material": "Rock",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     0,
+     30,
+     -418
+    ]
+   }
+  }
+ ]
+}

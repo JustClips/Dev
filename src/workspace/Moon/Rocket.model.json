@@ -1,0 +1,362 @@
+{
+ "className": "Model",
+ "children": [
+  {
+   "name": "SellPad",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     1,
+     26,
+     26
+    ],
+    "Color": "#3CFF9E",
+    "Material": "Neon",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      0,
+      0.5,
+      0
+     ],
+     "orientation": [
+      0,
+      0,
+      90
+     ]
+    },
+    "Shape": "Cylinder",
+    "Transparency": 0.15
+   },
+   "children": [
+    {
+     "name": "Light",
+     "className": "PointLight",
+     "properties": {
+      "Color": "#3CFF9E",
+      "Range": 24,
+      "Brightness": 1.5
+     }
+    },
+    {
+     "name": "Label",
+     "className": "BillboardGui",
+     "properties": {
+      "Size": [
+       [
+        0,
+        240
+       ],
+       [
+        0,
+        50
+       ]
+      ],
+      "StudsOffset": [
+       0,
+       4,
+       0
+      ],
+      "MaxDistance": 160,
+      "LightInfluence": 0,
+      "AlwaysOnTop": false
+     },
+     "children": [
+      {
+       "name": "Text",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          0
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "BackgroundTransparency": 1,
+        "Text": "SELL DUST HERE",
+        "TextScaled": true,
+        "TextColor3": "#9DFFCB",
+        "Font": "FredokaOne",
+        "TextStrokeTransparency": 0.2
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Base",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     14,
+     14
+    ],
+    "Color": "#3B3F4A",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      0,
+      2,
+      0
+     ],
+     "orientation": [
+      0,
+      0,
+      90
+     ]
+    },
+    "Shape": "Cylinder"
+   }
+  },
+  {
+   "name": "Body",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     30,
+     10,
+     10
+    ],
+    "Color": "#F2F2F2",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      0,
+      17,
+      0
+     ],
+     "orientation": [
+      0,
+      0,
+      90
+     ]
+    },
+    "Shape": "Cylinder"
+   },
+   "children": [
+    {
+     "name": "Label",
+     "className": "BillboardGui",
+     "properties": {
+      "Size": [
+       [
+        0,
+        300
+       ],
+       [
+        0,
+        70
+       ]
+      ],
+      "StudsOffset": [
+       0,
+       20,
+       0
+      ],
+      "MaxDistance": 400,
+      "LightInfluence": 0,
+      "AlwaysOnTop": false
+     },
+     "children": [
+      {
+       "name": "Text",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          0
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "BackgroundTransparency": 1,
+        "Text": "🚀 ROCKET",
+        "TextScaled": true,
+        "TextColor3": "#FFFFFF",
+        "Font": "FredokaOne",
+        "TextStrokeTransparency": 0.2
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Stripe",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     2,
+     10.4,
+     10.4
+    ],
+    "Color": "#E8443A",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "CFrame": {
+     "position": [
+      0,
+      24,
+      0
+     ],
+     "orientation": [
+      0,
+      0,
+      90
+     ]
+    },
+    "Shape": "Cylinder"
+   }
+  },
+  {
+   "name": "Nose",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     10,
+     10,
+     10
+    ],
+    "Color": "#E8443A",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     0,
+     32,
+     0
+    ],
+    "Shape": "Ball"
+   }
+  },
+  {
+   "name": "Window",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     4,
+     4,
+     4
+    ],
+    "Color": "#5AC8FA",
+    "Material": "Neon",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     0,
+     26,
+     -4.3
+    ],
+    "Shape": "Ball"
+   }
+  },
+  {
+   "name": "FinPX",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     5,
+     8,
+     1
+    ],
+    "Color": "#E8443A",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     7,
+     6,
+     0
+    ]
+   }
+  },
+  {
+   "name": "FinNX",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     5,
+     8,
+     1
+    ],
+    "Color": "#E8443A",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     -7,
+     6,
+     0
+    ]
+   }
+  },
+  {
+   "name": "FinPZ",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     1,
+     8,
+     5
+    ],
+    "Color": "#E8443A",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     0,
+     6,
+     7
+    ]
+   }
+  },
+  {
+   "name": "FinNZ",
+   "className": "Part",
+   "properties": {
+    "Anchored": true,
+    "Size": [
+     1,
+     8,
+     5
+    ],
+    "Color": "#E8443A",
+    "Material": "SmoothPlastic",
+    "TopSurface": "Smooth",
+    "BottomSurface": "Smooth",
+    "Position": [
+     0,
+     6,
+     -7
+    ]
+   }
+  }
+ ],
+ "properties": {
+  "ModelStreamingMode": "Persistent"
+ }
+}
