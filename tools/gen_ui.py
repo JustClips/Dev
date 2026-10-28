@@ -32,7 +32,8 @@ PILL_ZONES = "#4C8DFF"
 REBIRTH = "#9B6BFF"
 
 RADIUS = 0  # square corners everywhere (Dev: rounded corners looked bad)
-STUD_TEXTURE = False  # Dev moved the game to a normal Earth style (2026-10-28)
+STUD_TEXTURE = True  # buttons only: Dev wants the stud background on every button (2026-10-28)
+BUTTON_STUD = 0.45  # stud image transparency on buttons (0 = strongest)
 STROKE = 4
 STUD_TILE = 64
 MONTSERRAT = "rbxasset://fonts/families/Montserrat.json"
@@ -123,8 +124,8 @@ def frame(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), bg=None, children=None, 
     return node(name, "Frame", p, children)
 
 
-def studs(tint, transparency=0, tile=STUD_TILE, r=RADIUS):
-    # The stud texture belonged to the old space style; panels are flat now.
+def studs(tint, transparency=0, tile=48, r=RADIUS):
+    # Buttons get a tinted stud texture (Lego-style toy buttons); panels stay flat.
     if not STUD_TEXTURE:
         return None
     return node("Studs", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("Stud"), ScaleType="Tile",
@@ -136,8 +137,6 @@ def plate(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), tint=SURFACE, children=N
     """Panel: flat fill with a soft top-to-bottom shade and a thick dark outline."""
     kids = [corner(r), border(INK, stroke) if stroke else None,
             node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#DCE0E7"]]}, "Rotation": 90})]
-    if stud is not None:
-        kids.append(studs(tint, stud, r=r))
     return frame(name, size, pos, anchor, bg=tint, children=kids + (children or []), **extra)
 
 
@@ -167,8 +166,16 @@ def button(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), color=SUCCESS, label=No
     """A raised button: colour fill, navy outline, lighter top edge, optional icon + label.
     Controllers set text through the child Label (Ui.setText)."""
     kids = [corner(r), border(INK, stroke) if stroke else None, shine(dark)]
-    if stud is not None:
+    see_through = extra.get("BackgroundTransparency", 0) > 0
+    if stud is None and not see_through:
+        stud = BUTTON_STUD
+    if stud is not None and stud is not False:
         kids.append(studs(color, stud, r=r))
+        # Thin light line just inside the outline, like the toy buttons in Dev's reference.
+        kids.append(frame("Bevel", U(1, -6, 1, -6), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=0, children=[
+            node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2, "Transparency": 0.55, "ApplyStrokeMode": "Border",
+                                        "LineJoinMode": "Miter"}),
+        ]))
     if ico:
         kids.append(icon("Icon", ico, ico_px, U(0, 8, 0.5, 0), (0, 0.5)))
     if label is not None:
@@ -273,8 +280,8 @@ def window(w, h, title, ico, children, header=HEADER, popup=False, scale=1.0):
     return plate("Window", U(0, W, 0, H), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, [
         autoscale(),
         plate("Header", U(1, 0, 0, 64), tint=header, children=[
-            icon("Icon", ico, 64, U(0, -6, 0.5, -2), (0, 0.5)),
-            text("Title", title, U(1, -150, 1, 0), U(0, 66, 0, 0), ts=30, display=True, stroke=3, xa="Left"),
+            icon("Icon", ico, 48, U(0, 10, 0.5, 0), (0, 0.5)),
+            text("Title", title, U(1, -150, 1, 0), U(0, 68, 0, 0), ts=30, display=True, stroke=3, xa="Left"),
         ]),
         close_button(),
     ] + children)
@@ -294,7 +301,7 @@ def write(name, tree):
 
 # ---------------------------------------------------------------- HUD
 def rail_tile(name, label, ico, color, order):
-    return button(name, U(0, 84, 0, 84), color=color, stud=0.15, LayoutOrder=order, children=[
+    return button(name, U(0, 84, 0, 84), color=color, LayoutOrder=order, children=[
         icon("Icon", ico, 62, U(0.5, 0, 0, 2), (0.5, 0)),
         text("Label", label, U(1, 20, 0, 24), U(0.5, 0, 1, 2), (0.5, 1), ts=17, display=True, stroke=3),
         badge(),
@@ -359,10 +366,10 @@ def hud():
     # orange for the Meteor Shower countdown and the shower itself (HudController).
     moon = plate("MoonPanel", U(0, 380, 0, 52), U(0.5, 0, 0, 66), (0.5, 0), BG, stud=None, stroke=3, children=[
         autoscale(),
-        icon("Icon", "Star", 50, U(0, -14, 0.5, 0), (0, 0.5), ZIndex=4),
-        text("Title", "MOON CLEAN", U(0, 200, 0, 16), U(0, 42, 0, 4), ts=13, color=ACCENT, display=True, xa="Left", stroke=1.5),
+        icon("Icon", "Star", 38, U(0, 7, 0.5, 0), (0, 0.5), ZIndex=4),
+        text("Title", "MOON CLEAN", U(0, 200, 0, 16), U(0, 52, 0, 4), ts=13, color=ACCENT, display=True, xa="Left", stroke=1.5),
         text("Value", "0%", U(0, 120, 0, 16), U(1, -10, 0, 4), (1, 0), ts=13, color=WHITE, display=True, xa="Right", stroke=1.5),
-        frame("Bar", U(1, -52, 0, 20), U(0, 42, 1, -8), (0, 1), bg="#0B0E1E", children=[
+        frame("Bar", U(1, -62, 0, 20), U(0, 52, 1, -8), (0, 1), bg="#0B0E1E", children=[
             border(INK, 2),
             frame("Fill", U(0.3, 0, 1, 0), bg=ACCENT, ClipsDescendants=True, children=[
                 node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#B8C4D8"]]}, "Rotation": 90}),
@@ -374,7 +381,7 @@ def hud():
             ]),
         ]),
         # Kept for older code paths that set one line of text.
-        text("Label", "", U(1, -48, 0, 16), U(0, 42, 0, 4), ts=13, display=True, Visible=False),
+        text("Label", "", U(1, -58, 0, 16), U(0, 52, 0, 4), ts=13, display=True, Visible=False),
     ])
     # Active boosts (server luck, 2x cash): chips stacked in the bottom-right corner.
     # Phones move them to the top right (HudController), clear of the jump button.
@@ -382,11 +389,12 @@ def hud():
     # boost does in BoostTip.
     boosts = frame("Boosts", U(0, 220, 0, 180), U(1, -14, 1, -14), (1, 1), children=[
         autoscale(), vlist(2, "Right", "Bottom"),
-        node("Template", "TextButton", base(U(0, 0, 0, 26), BackgroundTransparency=1, Text="", TextColor3=WHITE, TextSize=17,
-                                           FontFace=DISPLAY, AutomaticSize="X", AutoButtonColor=False, Visible=False, ZIndex=2,
-                                           TextXAlignment="Right"),
-             [padding(28, 2, 0), text_stroke(2),
-              icon("Icon", "Luck", 26, U(0, 0, 0.5, 0), (0, 0.5))]),
+        node("Template", "TextButton", base(U(0, 0, 0, 28), BackgroundTransparency=1, Text="", AutomaticSize="X",
+                                           AutoButtonColor=False, Visible=False, ZIndex=2),
+             [hlist(4, "Right"),
+              icon("Icon", "Luck", 26, LayoutOrder=1),
+              text("Label", "", U(0, 0, 1, 0), ts=17, display=True, stroke=2, AutomaticSize="X", TextWrapped=False,
+                   LayoutOrder=2)]),
     ])
     boost_tip = plate("BoostTip", U(0, 260, 0, 0), U(1, -14, 1, -200), (1, 1), BG, stud=None, stroke=3, AutomaticSize="Y",
                       Visible=False, ZIndex=8, children=[
@@ -416,20 +424,22 @@ def hud():
     wallet = frame("Wallet", U(0, 270, 0, 130), U(0, 14, 1, -14), (0, 1), children=[
         autoscale(), vlist(10, "Left", "Bottom"),
         plate("CashPanel", U(0, 270, 0, 64), tint=SURFACE, LayoutOrder=1, children=[
-            icon("Icon", "Cash", 70, U(0, -10, 0.5, 0), (0, 0.5)),
-            text("Cash", "$0", U(1, -120, 0, 38), U(0, 62, 0, 4), ts=28, color=INK, display=True, xa="Left"),
-            text("Income", "+$0/s", U(1, -120, 0, 20), U(0, 64, 0, 38), ts=17, color="#1E9E3A", heavy=True, xa="Left"),
+            icon("Icon", "Cash", 48, U(0, 8, 0.5, 0), (0, 0.5)),
+            text("Cash", "$0", U(1, -124, 0, 38), U(0, 64, 0, 4), ts=28, color=INK, display=True, xa="Left",
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 14})]),
+            text("Income", "+$0/s", U(1, -124, 0, 20), U(0, 64, 0, 38), ts=17, color="#1E9E3A", heavy=True, xa="Left"),
             button("PlusButton", U(0, 44, 0, 44), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=34, stroke=3),
         ]),
         plate("BackpackPanel", U(0, 270, 0, 56), tint=SURFACE, LayoutOrder=2, children=[
-            icon("Icon", "Dust", 62, U(0, -8, 0.5, 0), (0, 0.5)),
-            frame("Bar", U(1, -78, 0, 28), U(0, 62, 0.5, 0), (0, 0.5), bg=BG, children=[
+            icon("Icon", "Dust", 42, U(0, 8, 0.5, 0), (0, 0.5)),
+            frame("Bar", U(1, -72, 0, 28), U(0, 60, 0.5, 0), (0, 0.5), bg=BG, children=[
                 corner(8),
                 frame("Fill", U(0.2, 0, 1, 0), bg="#E9C98B", children=[corner(8)]),
                 text("Amount", "0 / 50", U(1, 0, 1, 0), ts=17, heavy=True, stroke=2.5, ZIndex=3),
             ]),
-            plate("Full", U(0, 66, 0, 26), U(1, 4, 0, -12), (1, 0), DANGER, stroke=3, stud=None, Visible=False, ZIndex=4, children=[
-                text("Label", "FULL", U(1, 0, 1, 0), ts=18, display=True, stroke=2, ZIndex=5),
+            # Sits on the right end of the bar, inside the panel.
+            plate("Full", U(0, 58, 0, 22), U(1, -16, 0.5, 0), (1, 0.5), DANGER, stroke=2.5, stud=None, Visible=False, ZIndex=4, children=[
+                text("Label", "FULL", U(1, 0, 1, 0), ts=16, display=True, stroke=2, ZIndex=5),
             ]),
         ]),
     ])
@@ -506,7 +516,7 @@ def hud():
 
 
 # ---------------------------------------------------------------- Shop
-SHOP_CELL = (250, 214)  # 3 cards per row in the 778 px wide list
+SHOP_CELL = (250, 236)  # 3 cards per row in the 778 px wide list
 
 
 def shop():
@@ -519,7 +529,8 @@ def shop():
             text("Label", "SPECIAL OFFER", U(1, 0, 1, 0), ts=16, display=True, stroke=2, ZIndex=4),
         ]),
         text("Title", "Starter Pack", U(0.6, 0, 0, 40), U(0, 16, 0, 46), ts=34, display=True, stroke=3, xa="Left", ZIndex=3),
-        text("Desc", "", U(0.6, 0, 0, 44), U(0, 16, 0, 88), ts=18, heavy=True, stroke=2.5, xa="Left", ya="Top", ZIndex=3),
+        text("Desc", "", U(0.6, 0, 0, 44), U(0, 16, 0, 88), ts=18, heavy=True, stroke=2.5, xa="Left", ya="Top", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 11})]),
         text("Note", "One time only", U(0, 170, 0, 22), U(1, -14, 0, 14), (1, 0), ts=16, display=True, stroke=2.5, xa="Right",
              color=PREMIUM, ZIndex=3),
         button("Buy", U(0, 170, 0, 56), U(1, -14, 1, -14), (1, 1), color=PREMIUM, label="", ts=28, label_color=INK, ZIndex=3),
@@ -535,13 +546,14 @@ def shop():
         text("Timer", "", U(0, 120, 0, 26), U(0, 262, 0, 10), ts=17, display=True, stroke=2.5, xa="Left", color=PREMIUM, ZIndex=3),
         text("Title", "", U(1, -310, 0, 30), U(0, 104, 0, 38), ts=24, display=True, stroke=3, xa="Left", ZIndex=3,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 24, "MinTextSize": 12})]),
-        text("Desc", "", U(1, -310, 0, 34), U(0, 104, 0, 68), ts=15, heavy=True, stroke=2, xa="Left", ya="Top", ZIndex=3),
+        text("Desc", "", U(1, -310, 0, 34), U(0, 104, 0, 68), ts=15, heavy=True, stroke=2, xa="Left", ya="Top", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 10})]),
         button("Buy", U(0, 170, 0, 56), U(1, -14, 0.5, 0), (1, 0.5), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
     ])
     cw, ch = SHOP_CELL
     section = frame("Section", U(1, 0, 0, 300), Visible=False, children=[
         plate("Header", U(1, 0, 0, 44), tint=HEADER, stud=0.3, children=[
-            icon("Icon", "Star", 50, U(0, -4, 0.5, 0), (0, 0.5)),
+            icon("Icon", "Star", 34, U(0, 8, 0.5, 0), (0, 0.5)),
             text("Title", "Section", U(0.6, 0, 1, 0), U(0, 50, 0, 0), ts=24, display=True, stroke=3, xa="Left"),
             text("Note", "", U(0.5, -20, 1, 0), U(1, -12, 0, 0), (1, 0), ts=15, display=True, stroke=2.5, xa="Right", color=PREMIUM),
         ]),
@@ -551,15 +563,18 @@ def shop():
         ]),
     ])
     card = plate("Card", U(0, cw, 0, ch), tint=WHITE, stud=0.2, Visible=False, children=[
-        node("Glow", "ImageLabel", base(U(0, 150, 0, 150), U(0.5, 0, 0, 56), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
+        node("Glow", "ImageLabel", base(U(0, 140, 0, 140), U(0.5, 0, 0, 46), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
                                         ImageColor3=PREMIUM, ImageTransparency=0.45, ZIndex=1)),
-        icon("Icon", "Shop", 90, U(0.5, 0, 0, 10), (0.5, 0)),
+        icon("Icon", "Shop", 76, U(0.5, 0, 0, 8), (0.5, 0)),
         plate("Tag", U(0, 110, 0, 26), U(0, 8, 0, 8), tint=BADGE_RED, stroke=3, stud=None, Visible=False, ZIndex=4, children=[
             text("Label", "BEST", U(1, 0, 1, 0), ts=15, display=True, stroke=2, ZIndex=5),
         ]),
-        text("Name", "Item", U(1, -16, 0, 26), U(0.5, 0, 0, 104), (0.5, 0), ts=21, color=INK, display=True,
-             TextWrapped=False, TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 21, "MinTextSize": 11})]),
-        text("Desc", "", U(1, -16, 0, 34), U(0.5, 0, 0, 130), (0.5, 0), ts=14, color=SUB, heavy=True, ya="Top"),
+        # Name and Desc shrink to fit their boxes, so long names ("16x Server Luck (15 min)")
+        # and descriptions never run into the Buy button.
+        text("Name", "Item", U(1, -16, 0, 40), U(0.5, 0, 0, 86), (0.5, 0), ts=20, color=INK, display=True,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 12})]),
+        text("Desc", "", U(1, -16, 0, 46), U(0.5, 0, 0, 128), (0.5, 0), ts=14, color=SUB, heavy=True, ya="Top",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 14, "MinTextSize": 9})]),
         button("Buy", U(1, -20, 0, 44), U(0.5, 0, 1, -10), (0.5, 1), color=SUCCESS, label="", ts=22),
         button("Gift", U(0, 44, 0, 44), U(1, -10, 1, -10), (1, 1), color="#FF7EB6", ico="Gift", ico_px=34, Visible=False),
     ])
@@ -569,8 +584,8 @@ def shop():
     gift_row = button("Template", U(1, -10, 0, 46), color=HEADER, label="Player", ts=18, stroke=3, Visible=False)
     gift = plate("GiftPicker", U(0, 380, 0, 330), U(0.5, 0, 0.5, 20), (0.5, 0.5), SURFACE, Visible=False, ZIndex=10, children=[
         plate("Header", U(1, 0, 0, 52), tint="#FF7EB6", children=[
-            icon("Icon", "Gift", 54, U(0, -4, 0.5, 0), (0, 0.5)),
-            text("Title", "Gift to...", U(1, -110, 1, 0), U(0, 56, 0, 0), ts=28, display=True, stroke=3, xa="Left"),
+            icon("Icon", "Gift", 38, U(0, 8, 0.5, 0), (0, 0.5)),
+            text("Title", "Gift to...", U(1, -110, 1, 0), U(0, 54, 0, 0), ts=28, display=True, stroke=3, xa="Left"),
         ]),
         button("Close", U(0, 44, 0, 44), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=26, ZIndex=11),
         scroller("List", U(1, -24, 1, -72), U(0, 12, 0, 62), [vlist(8), padding(2), gift_row]),
@@ -584,7 +599,7 @@ def shop():
 def bar(name, size, pos, anchor, fill, label, ts=26):
     return frame(name, size, pos, anchor, bg="#0B0E1E", children=[
         border(INK, 3),
-        frame("Fill", U(0.3, 0, 1, 0), bg=fill, children=[studs(fill, 0.3)]),
+        frame("Fill", U(0.3, 0, 1, 0), bg=fill, children=[]),
         text("Label", label, U(1, 0, 1, 0), ts=ts, display=True, stroke=3, ZIndex=4),
     ])
 
@@ -592,7 +607,7 @@ def bar(name, size, pos, anchor, fill, label, ts=26):
 def index():
     """Pet index (Steal an Egg style): a zone panel on the left, rarity-coloured cards,
     the picked pet on the right, zone progress and total progress bars."""
-    card = button("Template", U(0, 0, 0, 0), color="#BEBEBE", stud=0.2, stroke=3, Visible=False, children=[
+    card = button("Template", U(0, 0, 0, 0), color="#BEBEBE", stroke=3, Visible=False, children=[
         node("Viewport", "ViewportFrame", base(U(1, -8, 1, -30), U(0.5, 0, 1, -4), (0.5, 1), BackgroundTransparency=1,
                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
         text("Name", "???", U(1, -6, 0, 26), U(0.5, 0, 0, 2), (0.5, 0), ts=18, display=True, stroke=2.5, ZIndex=4,
@@ -698,7 +713,7 @@ SAND = "#E9D3B0"
 
 
 def side_button(name, label, ico, color, order):
-    return button(name, U(0, 80, 0, 80), color=color, stud=0.15, LayoutOrder=order, children=[
+    return button(name, U(0, 80, 0, 80), color=color, LayoutOrder=order, children=[
         icon("Icon", ico, 64, U(0.5, 0, 0, 0), (0.5, 0)),
         text("Label", label, U(1, 10, 0, 22), U(0.5, 0, 1, 2), (0.5, 1), ts=17, display=True, stroke=2.5),
         badge(),
@@ -782,7 +797,7 @@ def placing():
 # ---------------------------------------------------------------- Rewards (daily, playtime, group, event)
 def reward_card(name, top, order, w, h, ico_px):
     """Daily / gift card: label on top, big icon, reward text, a CLAIMED overlay."""
-    return button(name, U(0, w, 0, h), color=WHITE, stud=0.2, stroke=3, LayoutOrder=order, children=[
+    return button(name, U(0, w, 0, h), color=WHITE, stroke=3, LayoutOrder=order, children=[
         text("Day", top, U(1, 0, 0, 24), U(0.5, 0, 0, 2), (0.5, 0), ts=18, color=INK, display=True, ZIndex=4),
         icon("Icon", "Gift", ico_px, U(0.5, 0, 0.5, 2), (0.5, 0.5)),
         text("Reward", "", U(1, -6, 0, 22), U(0.5, 0, 1, -3), (0.5, 1), ts=15, color=INK, display=True, ZIndex=4,
@@ -835,8 +850,8 @@ def rewards():
     stay = plate("Window", U(0, 440, 0, 230), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, children=[
         autoscale(),
         plate("Header", U(1, 0, 0, 56), tint="#FF5FA2", children=[
-            icon("Icon", "PotionLuck", 64, U(0, -6, 0.5, -2), (0, 0.5)),
-            text("Title", "Wait! Free potion!", U(1, -130, 1, 0), U(0, 62, 0, 0), ts=28, display=True, stroke=3, xa="Left"),
+            icon("Icon", "PotionLuck", 42, U(0, 8, 0.5, 0), (0, 0.5)),
+            text("Title", "Wait! Free potion!", U(1, -130, 1, 0), U(0, 58, 0, 0), ts=28, display=True, stroke=3, xa="Left"),
         ]),
         button("Close", U(0, 48, 0, 48), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=28, ZIndex=5),
         text("Text", "Stay 5 more minutes and get a free Luck Potion!", U(1, -40, 0, 64), U(0.5, 0, 0, 68), (0.5, 0), ts=20,
@@ -871,8 +886,8 @@ def offer():
     win = plate("Window", U(0, 420, 0, 196), U(0.5, 0, 1, -20), (0.5, 1), SURFACE, children=[
         autoscale(),
         plate("Header", U(1, 0, 0, 42), tint=PREMIUM, children=[
-            icon("Icon", "Star", 50, U(0, -6, 0.5, 0), (0, 0.5)),
-            text("Title", "Offer", U(1, -110, 1, 0), U(0, 50, 0, 0), ts=26, display=True, stroke=3, xa="Left"),
+            icon("Icon", "Star", 32, U(0, 8, 0.5, 0), (0, 0.5)),
+            text("Title", "Offer", U(1, -110, 1, 0), U(0, 48, 0, 0), ts=26, display=True, stroke=3, xa="Left"),
         ]),
         button("Close", U(0, 44, 0, 44), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=26, ZIndex=5),
         text("Text", "", U(1, -28, 0, 70), U(0, 14, 0, 50), ts=18, color=INK, heavy=True, xa="Left", ya="Top"),

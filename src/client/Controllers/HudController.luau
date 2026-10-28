@@ -203,6 +203,8 @@ local function render(data)
 	el.BackpackFill.Size = UDim2.fromScale(math.max(fraction, 0.04), 1)
 	el.BackpackAmount.Text = `{Format.number(data.Backpack)} / {Format.number(data.Capacity)}`
 	el.BackpackFull.Visible = fraction >= 1
+	-- Leave room for the FULL tag on the right end of the bar.
+	el.BackpackAmount.Size = if fraction >= 1 then UDim2.new(1, -66, 1, 0) else UDim2.fromScale(1, 1)
 	el.BackpackFill.BackgroundColor3 = if fraction >= 1 then DANGER else SAND
 
 	local nextTier = data.ToolTier + 1
@@ -374,7 +376,10 @@ local function renderBoosts()
 			chip = newChip
 		end
 		local c = chip :: TextButton
-		c.Text = `{entry.label} {Format.countdown(entry.endsAt - now)}`
+		local label = c:FindFirstChild("Label") :: TextLabel?
+		if label then
+			label.Text = `{entry.label} {Format.countdown(entry.endsAt - now)}`
+		end
 		c.LayoutOrder = i
 		local icon = c:FindFirstChild("Icon") :: ImageLabel?
 		if icon then

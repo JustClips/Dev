@@ -34,7 +34,7 @@ local LIST_TOP_PAD = 4
 local FEATURED_H = 160
 local OFFER_H = 108
 local HEADER_H = 54
-local CELL_H = 214
+local CELL_H = 236 -- SHOP_CELL in tools/gen_ui.py
 local CELL_GAP = 12
 local COLUMNS = 3
 

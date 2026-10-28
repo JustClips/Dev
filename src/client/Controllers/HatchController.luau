@@ -5,7 +5,7 @@
 -- (Eggs.growScale). It wobbles now and then, more often and harder as it gets close, and a
 -- bar under its timer fills up. A ready egg bounces and glows in a beam of its colour.
 --
--- Opening, when you're near the egg: the camera eases in, the egg wobbles harder and
+-- Opening, when you're near the egg (your camera stays yours): the egg wobbles harder and
 -- harder, swells up and turns white, then bursts (flash, rays, sparkles, shockwave) and the
 -- pet pops out and dances. The card at the bottom shows what it is (rarity, name, weight,
 -- cash) with Place on base / Keep in bag. Far from your base the same show plays in a window
@@ -402,8 +402,6 @@ local function play(info)
 	local inWorld = spot ~= nil and root ~= nil and (root.Position - spot.Position).Magnitude < WORLD_RANGE and not Ui.reducedMotion()
 
 	local scene: Scene
-	local savedType = camera.CameraType
-	local savedCf = camera.CFrame
 	if inWorld then
 		local fx = Instance.new("Folder")
 		fx.Name = "HatchShow"
@@ -483,16 +481,8 @@ local function play(info)
 		highlight = h
 	end
 
-	-- Camera: ease in towards the egg from where you're looking.
-	if scene.world then
-		local from = camera.CFrame.Position
-		local flat = Vector3.new(from.X - focus.X, 0, from.Z - focus.Z)
-		flat = if flat.Magnitude > 0.1 then flat.Unit else Vector3.new(0, 0, 1)
-		local dist = math.max(9, eggHeight * 3.6)
-		local goal = CFrame.lookAt(focus + flat * dist + Vector3.new(0, dist * 0.42, 0), focus)
-		camera.CameraType = Enum.CameraType.Scriptable
-		TweenService:Create(camera, TweenInfo.new(0.55 * tempo, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = goal }):Play()
-	else
+	-- The player keeps their camera: the show plays where the egg sits.
+	if not scene.world then
 		scene.camera.CFrame = CFrame.lookAt(Vector3.new(0, eggHeight * 0.75, -eggHeight * 2.7), Vector3.new(0, eggHeight * 0.48, 0))
 		Ui.popIn(gui)
 	end
@@ -597,13 +587,6 @@ local function play(info)
 		local center = scene.origin.Position + Vector3.new(0, petSize * 0.45, 0)
 		local _, r, g = worldRays(scene, center, petSize, rarity.Color)
 		raysImage, glowImage = r, g
-		-- Frame the pet: back off a little for big ones.
-		local camDir = (camera.CFrame.Position - center)
-		local flat = Vector3.new(camDir.X, 0, camDir.Z)
-		flat = if flat.Magnitude > 0.1 then flat.Unit else Vector3.new(0, 0, 1)
-		local dist = math.max(9, petSize * 3.2)
-		local goal = CFrame.lookAt(center + flat * dist + Vector3.new(0, dist * 0.3, 0), center)
-		TweenService:Create(camera, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = goal }):Play()
 	else
 		raysImage, glowImage = rays, glow
 		scene.camera.CFrame = CFrame.lookAt(Vector3.new(petSize * 0.35, petSize * 0.7, -petSize * 2.4), Vector3.new(0, petSize * 0.42, 0))
@@ -619,7 +602,7 @@ local function play(info)
 	waitOrSkip(REVEAL_SECONDS * tempo)
 	local placed = askPlace(info)
 
-	-- 6. Wrap up: the pet hops off (to the park or your bag) and the camera comes back.
+	-- 6. Wrap up: the pet hops off (to the park or your bag).
 	TweenService:Create(raysImage, TweenInfo.new(0.3), { ImageTransparency = 1 }):Play()
 	TweenService:Create(glowImage, TweenInfo.new(0.3), { ImageTransparency = 1 }):Play()
 	task.spawn(hideCard)
@@ -632,10 +615,7 @@ local function play(info)
 		if placed == "Place" then
 			sparkleBurst(scene, scene.origin.Position + Vector3.new(0, 1, 0), rarity.Color, 12)
 		end
-		local back = TweenService:Create(camera, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), { CFrame = savedCf })
-		back:Play()
-		back.Completed:Wait()
-		camera.CameraType = if savedType == Enum.CameraType.Scriptable then Enum.CameraType.Custom else savedType
+		task.wait(0.2)
 		task.delay(1.7, function()
 			if scene.fx then
 				scene.fx:Destroy()
@@ -665,11 +645,6 @@ local function pump()
 			local ok, err = pcall(play, info)
 			if not ok then
 				warn("[HatchController] " .. tostring(err))
-				-- Never leave the camera stuck.
-				local camera = Workspace.CurrentCamera
-				if camera and camera.CameraType == Enum.CameraType.Scriptable then
-					camera.CameraType = Enum.CameraType.Custom
-				end
 				gui.Enabled = false
 				card.Visible = false
 				playing = false

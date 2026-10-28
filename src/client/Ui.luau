@@ -353,6 +353,22 @@ local function startWiggle()
 	end)
 end
 
+-- With Sibling z-order a badge is drawn inside its button's layer, so a neighbouring
+-- button drawn later covers the corner that sticks out. While a badge shows, its button
+-- goes one layer up.
+local function liftHost(badge: GuiObject, lifted: boolean)
+	local host = badge.Parent
+	if not (host and host:IsA("GuiObject")) then
+		return
+	end
+	local baseZ = host:GetAttribute("BaseZIndex")
+	if type(baseZ) ~= "number" then
+		baseZ = host.ZIndex
+		host:SetAttribute("BaseZIndex", baseZ)
+	end
+	host.ZIndex = if lifted then (baseZ :: number) + 1 else baseZ :: number
+end
+
 function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	if not badge then
 		return
@@ -366,6 +382,7 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	if not shown then
 		badge.Visible = false
 		badgeCounts[badge] = nil
+		liftHost(badge, false)
 		return
 	end
 	local label = badge:FindFirstChild("Label") :: TextLabel?
@@ -376,6 +393,7 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	local before = badgeCounts[badge]
 	badgeCounts[badge] = shown
 	badge.Visible = true
+	liftHost(badge, true)
 	if before ~= shown and (before == nil or (tonumber(shown) or 0) > (tonumber(before) or 0)) then
 		badgePop(badge)
 	end
@@ -444,7 +462,32 @@ local function rescale()
 	end
 end
 
+-- Buttons carry a tinted "Studs" texture (gen_ui.py). Controllers recolour buttons
+-- (green when you can afford it, grey when not), so the studs follow the button colour.
+local tinted: { [Instance]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+
+local function followTint(d: Instance)
+	if d.Name ~= "Studs" or not d:IsA("ImageLabel") or tinted[d] then
+		return
+	end
+	local host = d.Parent
+	if not (host and host:IsA("GuiObject")) then
+		return
+	end
+	tinted[d] = true
+	local studs = d :: ImageLabel
+	local hostObject = host :: GuiObject
+	studs.ImageColor3 = hostObject.BackgroundColor3
+	hostObject:GetPropertyChangedSignal("BackgroundColor3"):Connect(function()
+		studs.ImageColor3 = hostObject.BackgroundColor3
+	end)
+end
+
 function Ui.initScaling()
+	for _, d in playerGui:GetDescendants() do
+		followTint(d)
+	end
+	playerGui.DescendantAdded:Connect(followTint)
 	rescale()
 	local camera = Workspace.CurrentCamera
 	if camera then
