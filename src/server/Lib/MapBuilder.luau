@@ -271,7 +271,7 @@ end
 
 export type Sign = { Board: BasePart, Titles: { TextLabel }, Subs: { TextLabel }, Avatars: { ImageLabel } }
 
--- A wooden sign board with a lighter wood frame, readable from both sides.
+-- A wooden sign board with a lighter wood frame; text on the front face.
 local function sign(parent: Instance, name: string, cf: CFrame, width: number, height: number, accent: Color3, title: string, sub: string?, withAvatar: boolean?): Sign
 	local board = block(parent, name, Vector3.new(width, height, 0.6), cf, WOOD_DARK, M.WoodPlanks)
 	block(board, "Trim", Vector3.new(width + 0.6, height + 0.6, 0.4), cf, WOOD, M.Wood, { CanCollide = false, CanQuery = false, CanTouch = false })
@@ -286,7 +286,10 @@ local function sign(parent: Instance, name: string, cf: CFrame, width: number, h
 			LightInfluence = 0.4,
 			MaxDistance = 400,
 		}, board)
+		-- Room for the owner's avatar; text uses the full board until an avatar is shown
+		-- (MapBuilder.setSignAvatar).
 		local pad = if withAvatar then height * 40 else 0
+		gui:SetAttribute("AvatarPad", pad)
 		local avatar = make("ImageLabel", {
 			Name = "Avatar",
 			Size = UDim2.new(0, pad - 24, 0, pad - 24),
@@ -301,8 +304,8 @@ local function sign(parent: Instance, name: string, cf: CFrame, width: number, h
 		local titleLabel = make("TextLabel", {
 			Name = "Title",
 			BackgroundTransparency = 1,
-			Size = UDim2.new(1, -(pad + 28), if sub then 0.6 else 0.86, 0),
-			Position = UDim2.new(0, pad + 14, if sub then 0.06 else 0.07, 0),
+			Size = UDim2.new(1, -28, if sub then 0.6 else 0.86, 0),
+			Position = UDim2.new(0, 14, if sub then 0.06 else 0.07, 0),
 			Text = title,
 			TextScaled = true,
 			TextColor3 = WHITE,
@@ -313,8 +316,8 @@ local function sign(parent: Instance, name: string, cf: CFrame, width: number, h
 		local subLabel = make("TextLabel", {
 			Name = "Sub",
 			BackgroundTransparency = 1,
-			Size = UDim2.new(1, -(pad + 28), 0.3, 0),
-			Position = UDim2.new(0, pad + 14, 0.64, 0),
+			Size = UDim2.new(1, -28, 0.3, 0),
+			Position = UDim2.new(0, 14, 0.64, 0),
 			Text = sub or "",
 			Visible = sub ~= nil,
 			TextScaled = true,
@@ -488,6 +491,22 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 	local s = sign(model, "NameSign", cf * CFrame.new(arch + Vector3.new(0, 15.4, 0)), 19, 4.6, color, "Free Base", "Claim it by joining!", true)
 	baseSigns[index] = s
 	return s
+end
+
+-- Shows the owner's headshot on a sign (or hides it) and moves the text over to make room.
+function MapBuilder.setSignAvatar(s: Sign, userId: number?)
+	for _, avatar in s.Avatars do
+		local gui = avatar.Parent :: Instance
+		local pad = if userId then (gui:GetAttribute("AvatarPad") :: number?) or 0 else 0
+		avatar.Visible = userId ~= nil and pad > 0
+		avatar.Image = if userId then `rbxthumb://type=AvatarHeadShot&id={userId}&w=150&h=150` else ""
+		for _, label in { gui:FindFirstChild("Title"), gui:FindFirstChild("Sub") } do
+			if label and label:IsA("TextLabel") then
+				label.Size = UDim2.new(1, -(pad + 28), label.Size.Y.Scale, 0)
+				label.Position = UDim2.new(0, pad + 14, label.Position.Y.Scale, 0)
+			end
+		end
+	end
 end
 
 function MapBuilder.getBaseSign(index: number): Sign?

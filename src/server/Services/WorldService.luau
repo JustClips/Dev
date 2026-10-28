@@ -109,10 +109,7 @@ function WorldService:SetOwnerName(index: number, name: string?, userId: number?
 	for _, sub in sign.Subs do
 		sub.Text = if name then "Hatching pets" else "Claim it by joining!"
 	end
-	for _, avatar in sign.Avatars do
-		avatar.Visible = userId ~= nil
-		avatar.Image = if userId then `rbxthumb://type=AvatarHeadShot&id={userId}&w=150&h=150` else ""
-	end
+	MapBuilder.setSignAvatar(sign, userId)
 end
 
 return WorldService
