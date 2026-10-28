@@ -23,7 +23,6 @@ local WHITE = Color3.new(1, 1, 1)
 local SURFACE = Color3.fromRGB(233, 238, 247)
 local MINT = Color3.fromRGB(124, 245, 200)
 local GOLD = Color3.fromRGB(255, 200, 60)
-local STEEL = Color3.fromRGB(58, 66, 104)
 
 -- Terrain ------------------------------------------------------------------------
 
@@ -65,6 +64,10 @@ end
 
 function MapBuilder.buildTerrain()
 	local terrain = Workspace.Terrain
+	-- No animated grass blades: they grew over the leaf tiles (Dev, 2026-10-28).
+	pcall(function()
+		(terrain :: any).Decoration = false
+	end)
 	for name, color in World.TerrainColors do
 		terrain:SetMaterialColor((M :: any)[name], color)
 	end
@@ -100,6 +103,9 @@ function MapBuilder.buildTerrain()
 	-- Hub: paved walkways around the dust field and the south plaza.
 	local f = World.Field
 	local w = World.Walkway
+	-- Short lawn (LeafyGrass has no tall grass blades) under the leaves, so the blades
+	-- never hide what there is to sweep.
+	rect(terrain, f.Min.X, f.Min.Y, f.Max.X, f.Max.Y, 0, M.LeafyGrass)
 	rect(terrain, f.Min.X - w, f.Min.Y, f.Min.X, f.Max.Y, 0, M.Pavement)
 	rect(terrain, f.Max.X, f.Min.Y, f.Max.X + w, f.Max.Y, 0, M.Pavement)
 	local plaza = World.Plaza
@@ -233,8 +239,10 @@ local function block(parent: Instance, name: string, size: Vector3, cf: CFrame, 
 	return p
 end
 
+-- Trim pieces. Only lamps glow (Sweep the World: no neon strips, Dev 2026-10-28).
 local function glow(parent: Instance, name: string, size: Vector3, cf: CFrame, color: Color3): BasePart
-	return block(parent, name, size, cf, color, M.Neon, { CanCollide = false, CanQuery = false, CanTouch = false, CastShadow = false })
+	local material = if string.find(name, "Light") then M.Neon else M.SmoothPlastic
+	return block(parent, name, size, cf, color, material, { CanCollide = false, CanQuery = false, CanTouch = false, CastShadow = false })
 end
 
 -- The UI's stud texture on a part's top face, so floors match the HUD.
@@ -263,10 +271,10 @@ end
 
 export type Sign = { Board: BasePart, Titles: { TextLabel }, Subs: { TextLabel }, Avatars: { ImageLabel } }
 
--- A navy sign board with a coloured frame, readable from both sides.
+-- A wooden sign board with a lighter wood frame, readable from both sides.
 local function sign(parent: Instance, name: string, cf: CFrame, width: number, height: number, accent: Color3, title: string, sub: string?, withAvatar: boolean?): Sign
-	local board = block(parent, name, Vector3.new(width, height, 0.6), cf, INK)
-	glow(board, "Trim", Vector3.new(width + 0.5, height + 0.5, 0.4), cf, accent).Parent = board
+	local board = block(parent, name, Vector3.new(width, height, 0.6), cf, WOOD_DARK, M.WoodPlanks)
+	block(board, "Trim", Vector3.new(width + 0.6, height + 0.6, 0.4), cf, WOOD, M.Wood, { CanCollide = false, CanQuery = false, CanTouch = false })
 	local result: Sign = { Board = board, Titles = {}, Subs = {}, Avatars = {} }
 	for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do
 		local gui = make("SurfaceGui", {
@@ -274,7 +282,7 @@ local function sign(parent: Instance, name: string, cf: CFrame, width: number, h
 			Face = face,
 			SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
 			PixelsPerStud = 40,
-			LightInfluence = 0,
+			LightInfluence = 0.4,
 			MaxDistance = 400,
 		}, board)
 		local pad = if withAvatar then height * 40 else 0
@@ -309,9 +317,10 @@ local function sign(parent: Instance, name: string, cf: CFrame, width: number, h
 			Text = sub or "",
 			Visible = sub ~= nil,
 			TextScaled = true,
-			TextColor3 = accent,
+			TextColor3 = lighten(accent, 0.55),
 			FontFace = Font.new(MONTSERRAT, Enum.FontWeight.ExtraBold),
 		}, gui)
+		make("UIStroke", { Color = Color3.new(0, 0, 0), Thickness = 3, Transparency = 0.4 }, subLabel)
 		table.insert(result.Subs, subLabel)
 	end
 	return result
@@ -321,7 +330,7 @@ end
 local function signOnPosts(parent: Instance, name: string, cf: CFrame, width: number, height: number, accent: Color3, title: string, sub: string?): Sign
 	local postHeight = 4 + height
 	for _, x in { -width / 2 + 1, width / 2 - 1 } do
-		block(parent, name .. "Post", Vector3.new(0.7, postHeight, 0.7), cf * CFrame.new(x, postHeight / 2, 0.4), lighten(INK, 0.15))
+		block(parent, name .. "Post", Vector3.new(0.7, postHeight, 0.7), cf * CFrame.new(x, postHeight / 2, 0.4), WOOD_DARK, M.Wood)
 	end
 	return sign(parent, name, cf * CFrame.new(0, 4 + height / 2, 0), width, height, accent, title, sub)
 end
@@ -379,10 +388,11 @@ local function launchPad()
 	local center = World.RocketPosition
 	-- Rotate cylinders so their axis is vertical.
 	local up = CFrame.Angles(0, 0, math.rad(90))
-	block(model, "Pad", Vector3.new(1, r * 2, r * 2), CFrame.new(center) * up, STEEL, M.DiamondPlate)
-	block(model, "Rim", Vector3.new(0.8, r * 2 + 2, r * 2 + 2), CFrame.new(center + Vector3.new(0, -0.15, 0)) * up, INK)
-	glow(model, "SellRing", Vector3.new(0.14, World.SellRadius * 2 + 1.2, World.SellRadius * 2 + 1.2), CFrame.new(center + Vector3.new(0, 0.52, 0)) * up, MINT)
-	block(model, "SellFloor", Vector3.new(0.16, World.SellRadius * 2 - 0.4, World.SellRadius * 2 - 0.4), CFrame.new(center + Vector3.new(0, 0.53, 0)) * up, lighten(STEEL, 0.08), M.DiamondPlate)
+	-- A round cobblestone plaza with a wooden rim; the sell ring is painted green on it.
+	block(model, "Pad", Vector3.new(1, r * 2, r * 2), CFrame.new(center) * up, Color3.fromRGB(200, 192, 178), M.Cobblestone)
+	block(model, "Rim", Vector3.new(0.8, r * 2 + 2, r * 2 + 2), CFrame.new(center + Vector3.new(0, -0.15, 0)) * up, WOOD_DARK, M.Wood)
+	glow(model, "SellRing", Vector3.new(0.14, World.SellRadius * 2 + 1.2, World.SellRadius * 2 + 1.2), CFrame.new(center + Vector3.new(0, 0.52, 0)) * up, Color3.fromRGB(92, 200, 92))
+	block(model, "SellFloor", Vector3.new(0.16, World.SellRadius * 2 - 0.4, World.SellRadius * 2 - 0.4), CFrame.new(center + Vector3.new(0, 0.53, 0)) * up, WOOD, M.WoodPlanks)
 	for _, z in { 12.4, -12.4 } do
 		local yaw = if z > 0 then 0 else 180
 		floorText(model, CFrame.new(center + Vector3.new(0, 0.62, z)) * CFrame.Angles(0, math.rad(yaw), 0), 16, 3.4, "SELL ZONE", MINT)
@@ -401,9 +411,9 @@ local function fieldEdges()
 	local y = 0.08
 	local length = f.Max.Y - f.Min.Y
 	for _, x in { f.Min.X, f.Max.X } do
-		glow(model, "Edge", Vector3.new(0.35, 0.16, length), CFrame.new(x, y, (f.Min.Y + f.Max.Y) / 2), MINT)
+		glow(model, "Edge", Vector3.new(0.35, 0.16, length), CFrame.new(x, y, (f.Min.Y + f.Max.Y) / 2), WOOD_DARK)
 	end
-	glow(model, "Edge", Vector3.new(f.Max.X - f.Min.X, 0.16, 0.35), CFrame.new(0, y, f.Max.Y), MINT)
+	glow(model, "Edge", Vector3.new(f.Max.X - f.Min.X, 0.16, 0.35), CFrame.new(0, y, f.Max.Y), WOOD_DARK)
 end
 
 -- Raised stud-plate platform in the base colour, corner lights, low walls and a name sign.
@@ -464,7 +474,7 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 		for _, y in { 1, 2.4 } do
 			block(model, "Wall", Vector3.new(0.5, 0.5, d - 5), cf * CFrame.new(side * (w / 2 - 0.4), y, 0), WOOD, M.Wood)
 		end
-		block(model, "WallRail", Vector3.new(0.8, 0.4, d - 5), cf * CFrame.new(side * (w / 2 - 0.4), wallH + 0.2, 0), color)
+		block(model, "WallRail", Vector3.new(0.8, 0.4, d - 5), cf * CFrame.new(side * (w / 2 - 0.4), wallH + 0.2, 0), WOOD_DARK, M.Wood)
 		for k = -4, 4 do
 			block(model, "Post", Vector3.new(0.7, wallH, 0.7), cf * CFrame.new(side * (w / 2 - 0.4), wallH / 2, k * (d - 6) / 8), WOOD_DARK, M.Wood)
 		end
@@ -472,7 +482,7 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 	for _, y in { 1, 2.4 } do
 		block(model, "Wall", Vector3.new(w - 5, 0.5, 0.5), cf * CFrame.new(0, y, d / 2 - 0.4), WOOD, M.Wood)
 	end
-	block(model, "WallRail", Vector3.new(w - 5, 0.4, 0.8), cf * CFrame.new(0, wallH + 0.2, d / 2 - 0.4), color)
+	block(model, "WallRail", Vector3.new(w - 5, 0.4, 0.8), cf * CFrame.new(0, wallH + 0.2, d / 2 - 0.4), WOOD_DARK, M.Wood)
 	for k = -4, 4 do
 		block(model, "Post", Vector3.new(0.7, wallH, 0.7), cf * CFrame.new(k * (w - 6) / 8, wallH / 2, d / 2 - 0.4), WOOD_DARK, M.Wood)
 	end
@@ -492,7 +502,7 @@ local function garage()
 	local cf = World.Garage
 	local model = make("Model", { Name = "Garage" }, structures)
 	local orange = Color3.fromRGB(255, 154, 60)
-	local floor = block(model, "Floor", Vector3.new(28, 0.6, 22), cf * CFrame.new(0, 0.3, 0), STEEL, M.DiamondPlate)
+	local floor = block(model, "Floor", Vector3.new(28, 0.6, 22), cf * CFrame.new(0, 0.3, 0), WOOD, M.WoodPlanks)
 	floor.CanCollide = true
 	for _, x in { -13, 13 } do
 		for _, z in { -10, 10 } do
@@ -500,7 +510,7 @@ local function garage()
 		end
 	end
 	block(model, "Roof", Vector3.new(30, 1.2, 24), cf * CFrame.new(0, 10.9, 0), orange)
-	glow(model, "RoofTrim", Vector3.new(30.4, 0.4, 0.4), cf * CFrame.new(0, 10.2, -12), MINT)
+	glow(model, "RoofTrim", Vector3.new(30.4, 0.4, 0.4), cf * CFrame.new(0, 10.2, -12), WOOD_DARK)
 	local back = block(model, "BackWall", Vector3.new(26, 10, 0.8), cf * CFrame.new(0, 5.3, 10.6), SURFACE)
 	studs(back, SURFACE, 4)
 	local ceiling = glow(model, "CeilingLight", Vector3.new(18, 0.2, 2), cf * CFrame.new(0, 10.2, 0), WHITE)
@@ -526,7 +536,7 @@ local function upgradeStation()
 	local cf = World.UpgradeStation
 	local model = make("Model", { Name = "UpgradeStation" }, structures)
 	local purple = Color3.fromRGB(150, 100, 255)
-	block(model, "Floor", Vector3.new(24, 0.6, 18), cf * CFrame.new(0, 0.3, 0), STEEL, M.DiamondPlate)
+	block(model, "Floor", Vector3.new(24, 0.6, 18), cf * CFrame.new(0, 0.3, 0), WOOD, M.WoodPlanks)
 	for _, x in { -11, 11 } do
 		for _, z in { -8, 8 } do
 			block(model, "Pillar", Vector3.new(1.4, 9, 1.4), cf * CFrame.new(x, 4.8, z), SURFACE)
@@ -559,10 +569,10 @@ local function plazaScreen()
 	local model = make("Model", { Name = "PlazaScreen" }, structures)
 	local cf = CFrame.lookAt(Vector3.new(0, 0, 194), Vector3.new(0, 0, 0))
 	for _, x in { -15, 15 } do
-		block(model, "Leg", Vector3.new(1.4, 10, 1.4), cf * CFrame.new(x, 5, 0.8), STEEL)
+		block(model, "Leg", Vector3.new(1.4, 10, 1.4), cf * CFrame.new(x, 5, 0.8), WOOD_DARK, M.Wood)
 	end
 	local screen = block(model, "Screen", Vector3.new(34, 14, 1), cf * CFrame.new(0, 16, 0), INK)
-	glow(model, "Frame", Vector3.new(35, 15, 0.6), cf * CFrame.new(0, 16, 0.3), MINT)
+	glow(model, "Frame", Vector3.new(35, 15, 0.6), cf * CFrame.new(0, 16, 0.3), WOOD_DARK)
 	local gui = make("SurfaceGui", {
 		Face = Enum.NormalId.Front,
 		SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
@@ -588,7 +598,7 @@ local function eventBoard()
 	local cf = World.EventBoard
 	local model = make("Model", { Name = "EventBoard" }, structures)
 	local pink = Color3.fromRGB(255, 120, 230)
-	block(model, "Floor", Vector3.new(20, 0.6, 10), cf * CFrame.new(0, 0.3, 0), STEEL, M.DiamondPlate)
+	block(model, "Floor", Vector3.new(20, 0.6, 10), cf * CFrame.new(0, 0.3, 0), WOOD, M.WoodPlanks)
 	glow(model, "FloorTrim", Vector3.new(20.4, 0.2, 0.4), cf * CFrame.new(0, 0.62, -5), pink)
 	eventSign = signOnPosts(model, "EventSign", cf * CFrame.new(0, 0, 3), 18, 7, GOLD, "EVENTS", "Sign up here!")
 	local kiosk = block(model, "Kiosk", Vector3.new(4, 3.6, 2), cf * CFrame.new(0, 2.4, -1.5), SURFACE)
@@ -634,7 +644,7 @@ local function corridorRamps()
 			Material = M.Concrete,
 		}, model)
 		for _, x in { c.Min.X, c.Max.X } do
-			glow(model, "RampEdge", Vector3.new(0.3, 0.2, math.sqrt(length ^ 2 + (high - low) ^ 2)), CFrame.new(x, (low + high) / 2 + 0.1, (z0 + z1) / 2) * rot * CFrame.Angles(-math.atan2(high - low, length), 0, 0), MINT)
+			glow(model, "RampEdge", Vector3.new(0.3, 0.2, math.sqrt(length ^ 2 + (high - low) ^ 2)), CFrame.new(x, (low + high) / 2 + 0.1, (z0 + z1) / 2) * rot * CFrame.Angles(-math.atan2(high - low, length), 0, 0), WOOD_DARK)
 		end
 	end
 end
