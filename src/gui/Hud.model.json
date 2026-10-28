@@ -245,11 +245,11 @@
         "Size": [
          [
           0,
-          62
+          58
          ],
          [
           0,
-          62
+          58
          ]
         ],
         "Position": [
@@ -259,7 +259,7 @@
          ],
          [
           0,
-          2
+          4
          ]
         ],
         "AnchorPoint": [
@@ -280,11 +280,11 @@
         "Size": [
          [
           1,
-          20
+          -10
          ],
          [
           0,
-          24
+          20
          ]
         ],
         "Position": [
@@ -294,7 +294,7 @@
          ],
          [
           1,
-          2
+          -4
          ]
         ],
         "AnchorPoint": [
@@ -314,7 +314,8 @@
          "family": "rbxasset://fonts/families/Montserrat.json",
          "weight": "Heavy",
          "style": "Normal"
-        }
+        },
+        "TextScaled": true
        },
        "children": [
         {
@@ -322,9 +323,17 @@
          "className": "UIStroke",
          "properties": {
           "Color": "#17191E",
-          "Thickness": 3,
+          "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Fit",
+         "className": "UITextSizeConstraint",
+         "properties": {
+          "MaxTextSize": 17,
+          "MinTextSize": 9
          }
         }
        ]
@@ -604,11 +613,11 @@
         "Size": [
          [
           0,
-          62
+          58
          ],
          [
           0,
-          62
+          58
          ]
         ],
         "Position": [
@@ -618,7 +627,7 @@
          ],
          [
           0,
-          2
+          4
          ]
         ],
         "AnchorPoint": [
@@ -639,11 +648,11 @@
         "Size": [
          [
           1,
-          20
+          -10
          ],
          [
           0,
-          24
+          20
          ]
         ],
         "Position": [
@@ -653,7 +662,7 @@
          ],
          [
           1,
-          2
+          -4
          ]
         ],
         "AnchorPoint": [
@@ -673,7 +682,8 @@
          "family": "rbxasset://fonts/families/Montserrat.json",
          "weight": "Heavy",
          "style": "Normal"
-        }
+        },
+        "TextScaled": true
        },
        "children": [
         {
@@ -681,9 +691,17 @@
          "className": "UIStroke",
          "properties": {
           "Color": "#17191E",
-          "Thickness": 3,
+          "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Fit",
+         "className": "UITextSizeConstraint",
+         "properties": {
+          "MaxTextSize": 17,
+          "MinTextSize": 9
          }
         }
        ]
@@ -963,11 +981,11 @@
         "Size": [
          [
           0,
-          62
+          58
          ],
          [
           0,
-          62
+          58
          ]
         ],
         "Position": [
@@ -977,7 +995,7 @@
          ],
          [
           0,
-          2
+          4
          ]
         ],
         "AnchorPoint": [
@@ -998,11 +1016,11 @@
         "Size": [
          [
           1,
-          20
+          -10
          ],
          [
           0,
-          24
+          20
          ]
         ],
         "Position": [
@@ -1012,7 +1030,7 @@
          ],
          [
           1,
-          2
+          -4
          ]
         ],
         "AnchorPoint": [
@@ -1032,7 +1050,8 @@
          "family": "rbxasset://fonts/families/Montserrat.json",
          "weight": "Heavy",
          "style": "Normal"
-        }
+        },
+        "TextScaled": true
        },
        "children": [
         {
@@ -1040,9 +1059,17 @@
          "className": "UIStroke",
          "properties": {
           "Color": "#17191E",
-          "Thickness": 3,
+          "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Fit",
+         "className": "UITextSizeConstraint",
+         "properties": {
+          "MaxTextSize": 17,
+          "MinTextSize": 9
          }
         }
        ]
@@ -1322,11 +1349,11 @@
         "Size": [
          [
           0,
-          62
+          58
          ],
          [
           0,
-          62
+          58
          ]
         ],
         "Position": [
@@ -1336,7 +1363,7 @@
          ],
          [
           0,
-          2
+          4
          ]
         ],
         "AnchorPoint": [
@@ -1357,11 +1384,11 @@
         "Size": [
          [
           1,
-          20
+          -10
          ],
          [
           0,
-          24
+          20
          ]
         ],
         "Position": [
@@ -1371,7 +1398,7 @@
          ],
          [
           1,
-          2
+          -4
          ]
         ],
         "AnchorPoint": [
@@ -1391,7 +1418,8 @@
          "family": "rbxasset://fonts/families/Montserrat.json",
          "weight": "Heavy",
          "style": "Normal"
-        }
+        },
+        "TextScaled": true
        },
        "children": [
         {
@@ -1399,9 +1427,17 @@
          "className": "UIStroke",
          "properties": {
           "Color": "#17191E",
-          "Thickness": 3,
+          "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Fit",
+         "className": "UITextSizeConstraint",
+         "properties": {
+          "MaxTextSize": 17,
+          "MinTextSize": 9
          }
         }
        ]
@@ -1681,11 +1717,11 @@
         "Size": [
          [
           0,
-          62
+          58
          ],
          [
           0,
-          62
+          58
          ]
         ],
         "Position": [
@@ -1695,7 +1731,7 @@
          ],
          [
           0,
-          2
+          4
          ]
         ],
         "AnchorPoint": [
@@ -1716,11 +1752,11 @@
         "Size": [
          [
           1,
-          20
+          -10
          ],
          [
           0,
-          24
+          20
          ]
         ],
         "Position": [
@@ -1730,7 +1766,7 @@
          ],
          [
           1,
-          2
+          -4
          ]
         ],
         "AnchorPoint": [
@@ -1750,7 +1786,8 @@
          "family": "rbxasset://fonts/families/Montserrat.json",
          "weight": "Heavy",
          "style": "Normal"
-        }
+        },
+        "TextScaled": true
        },
        "children": [
         {
@@ -1758,9 +1795,17 @@
          "className": "UIStroke",
          "properties": {
           "Color": "#17191E",
-          "Thickness": 3,
+          "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Fit",
+         "className": "UITextSizeConstraint",
+         "properties": {
+          "MaxTextSize": 17,
+          "MinTextSize": 9
          }
         }
        ]
@@ -2040,11 +2085,11 @@
         "Size": [
          [
           0,
-          62
+          58
          ],
          [
           0,
-          62
+          58
          ]
         ],
         "Position": [
@@ -2054,7 +2099,7 @@
          ],
          [
           0,
-          2
+          4
          ]
         ],
         "AnchorPoint": [
@@ -2075,11 +2120,11 @@
         "Size": [
          [
           1,
-          20
+          -10
          ],
          [
           0,
-          24
+          20
          ]
         ],
         "Position": [
@@ -2089,7 +2134,7 @@
          ],
          [
           1,
-          2
+          -4
          ]
         ],
         "AnchorPoint": [
@@ -2109,7 +2154,8 @@
          "family": "rbxasset://fonts/families/Montserrat.json",
          "weight": "Heavy",
          "style": "Normal"
-        }
+        },
+        "TextScaled": true
        },
        "children": [
         {
@@ -2117,9 +2163,17 @@
          "className": "UIStroke",
          "properties": {
           "Color": "#17191E",
-          "Thickness": 3,
+          "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Fit",
+         "className": "UITextSizeConstraint",
+         "properties": {
+          "MaxTextSize": 17,
+          "MinTextSize": 9
          }
         }
        ]
@@ -4538,17 +4592,17 @@
         "Size": [
          [
           0,
-          48
+          58
          ],
          [
           0,
-          48
+          58
          ]
         ],
         "Position": [
          [
           0,
-          8
+          4
          ],
          [
           0.5,
@@ -4957,17 +5011,17 @@
         "Size": [
          [
           0,
-          42
+          50
          ],
          [
           0,
-          42
+          50
          ]
         ],
         "Position": [
          [
           0,
-          8
+          5
          ],
          [
           0.5,

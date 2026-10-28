@@ -302,8 +302,10 @@ def write(name, tree):
 # ---------------------------------------------------------------- HUD
 def rail_tile(name, label, ico, color, order):
     return button(name, U(0, 84, 0, 84), color=color, LayoutOrder=order, children=[
-        icon("Icon", ico, 62, U(0.5, 0, 0, 2), (0.5, 0)),
-        text("Label", label, U(1, 20, 0, 24), U(0.5, 0, 1, 2), (0.5, 1), ts=17, display=True, stroke=3),
+        # Label inside the tile (Dev: text hanging off the bottom looked out of bounds).
+        icon("Icon", ico, 58, U(0.5, 0, 0, 4), (0.5, 0)),
+        text("Label", label, U(1, -10, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=17, display=True, stroke=2.5,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
         badge(),
     ])
 
@@ -424,14 +426,14 @@ def hud():
     wallet = frame("Wallet", U(0, 270, 0, 130), U(0, 14, 1, -14), (0, 1), children=[
         autoscale(), vlist(10, "Left", "Bottom"),
         plate("CashPanel", U(0, 270, 0, 64), tint=SURFACE, LayoutOrder=1, children=[
-            icon("Icon", "Cash", 48, U(0, 8, 0.5, 0), (0, 0.5)),
+            icon("Icon", "Cash", 58, U(0, 4, 0.5, 0), (0, 0.5)),
             text("Cash", "$0", U(1, -124, 0, 38), U(0, 64, 0, 4), ts=28, color=INK, display=True, xa="Left",
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 14})]),
             text("Income", "+$0/s", U(1, -124, 0, 20), U(0, 64, 0, 38), ts=17, color="#1E9E3A", heavy=True, xa="Left"),
             button("PlusButton", U(0, 44, 0, 44), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=34, stroke=3),
         ]),
         plate("BackpackPanel", U(0, 270, 0, 56), tint=SURFACE, LayoutOrder=2, children=[
-            icon("Icon", "Dust", 42, U(0, 8, 0.5, 0), (0, 0.5)),
+            icon("Icon", "Dust", 50, U(0, 5, 0.5, 0), (0, 0.5)),
             frame("Bar", U(1, -72, 0, 28), U(0, 60, 0.5, 0), (0, 0.5), bg=BG, children=[
                 corner(8),
                 frame("Fill", U(0.2, 0, 1, 0), bg="#E9C98B", children=[corner(8)]),
@@ -714,8 +716,9 @@ SAND = "#E9D3B0"
 
 def side_button(name, label, ico, color, order):
     return button(name, U(0, 80, 0, 80), color=color, LayoutOrder=order, children=[
-        icon("Icon", ico, 64, U(0.5, 0, 0, 0), (0.5, 0)),
-        text("Label", label, U(1, 10, 0, 22), U(0.5, 0, 1, 2), (0.5, 1), ts=17, display=True, stroke=2.5),
+        icon("Icon", ico, 56, U(0.5, 0, 0, 4), (0.5, 0)),
+        text("Label", label, U(1, -10, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=17, display=True, stroke=2.5,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
         badge(),
     ])
 

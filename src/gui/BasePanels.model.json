@@ -232,11 +232,11 @@
         "Size": [
          [
           0,
-          64
+          56
          ],
          [
           0,
-          64
+          56
          ]
         ],
         "Position": [
@@ -246,7 +246,7 @@
          ],
          [
           0,
-          0
+          4
          ]
         ],
         "AnchorPoint": [
@@ -267,11 +267,11 @@
         "Size": [
          [
           1,
-          10
+          -10
          ],
          [
           0,
-          22
+          20
          ]
         ],
         "Position": [
@@ -281,7 +281,7 @@
          ],
          [
           1,
-          2
+          -4
          ]
         ],
         "AnchorPoint": [
@@ -301,7 +301,8 @@
          "family": "rbxasset://fonts/families/Montserrat.json",
          "weight": "Heavy",
          "style": "Normal"
-        }
+        },
+        "TextScaled": true
        },
        "children": [
         {
@@ -312,6 +313,14 @@
           "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Fit",
+         "className": "UITextSizeConstraint",
+         "properties": {
+          "MaxTextSize": 17,
+          "MinTextSize": 9
          }
         }
        ]
@@ -591,11 +600,11 @@
         "Size": [
          [
           0,
-          64
+          56
          ],
          [
           0,
-          64
+          56
          ]
         ],
         "Position": [
@@ -605,7 +614,7 @@
          ],
          [
           0,
-          0
+          4
          ]
         ],
         "AnchorPoint": [
@@ -626,11 +635,11 @@
         "Size": [
          [
           1,
-          10
+          -10
          ],
          [
           0,
-          22
+          20
          ]
         ],
         "Position": [
@@ -640,7 +649,7 @@
          ],
          [
           1,
-          2
+          -4
          ]
         ],
         "AnchorPoint": [
@@ -660,7 +669,8 @@
          "family": "rbxasset://fonts/families/Montserrat.json",
          "weight": "Heavy",
          "style": "Normal"
-        }
+        },
+        "TextScaled": true
        },
        "children": [
         {
@@ -671,6 +681,14 @@
           "Thickness": 2.5,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Fit",
+         "className": "UITextSizeConstraint",
+         "properties": {
+          "MaxTextSize": 17,
+          "MinTextSize": 9
          }
         }
        ]
