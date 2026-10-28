@@ -7,6 +7,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
+local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
 local State = require(Client.State)
@@ -413,6 +415,18 @@ end
 local function layout(s: number, compact: boolean)
 	local top = 6
 	local pillsH = math.ceil(52 * s)
+	-- Pills go up into Roblox's top bar row when they fit between its buttons (and our
+	-- settings gear, which sits right after them).
+	local inset = GuiService.TopbarInset
+	local camera = Workspace.CurrentCamera
+	if camera and inset.Height >= pillsH then
+		local half = math.ceil(432 * s / 2)
+		local mid = camera.ViewportSize.X / 2
+		local freeLeft = math.max(inset.Min.X, 104) + math.ceil(inset.Height) + 8
+		if mid - half >= freeLeft and mid + half <= inset.Max.X - 8 then
+			top = -math.floor(inset.Height) + math.floor((inset.Height - pillsH) / 2)
+		end
+	end
 	el.Pills.Position = UDim2.new(0.5, 0, 0, top)
 	local barY = top + pillsH + math.ceil(8 * s)
 	el.MoonPanel.Position = UDim2.new(0.5, 0, 0, barY)
@@ -425,12 +439,12 @@ local function layout(s: number, compact: boolean)
 	local boostLayout = boosts:FindFirstChildOfClass("UIListLayout")
 	if compact then
 		el.Wallet.AnchorPoint = Vector2.new(0, 0)
-		el.Wallet.Position = UDim2.new(0, 14, 0, top)
+		el.Wallet.Position = UDim2.new(0, 14, 0, 6)
 		if walletLayout then
 			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 		end
 		el.Rail.AnchorPoint = Vector2.new(0, 0)
-		el.Rail.Position = UDim2.new(0, 14, 0, top + math.ceil(140 * s))
+		el.Rail.Position = UDim2.new(0, 14, 0, 6 + math.ceil(140 * s))
 		boosts.AnchorPoint = Vector2.new(1, 0)
 		boosts.Position = UDim2.new(1, -14, 0, 8 + math.ceil(100 * s))
 		if boostLayout then
@@ -563,6 +577,9 @@ end
 
 function HudController:Start()
 	Ui.onScale(layout)
+	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(function()
+		layout(Ui.scale(), Ui.compact())
+	end)
 	-- Per frame: the shine sliding across the Moon bar, the combo timer running down.
 	RunService.RenderStepped:Connect(function()
 		local t = (os.clock() % 2.6) / 2.6
