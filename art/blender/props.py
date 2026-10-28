@@ -537,15 +537,21 @@ def habitat():
     for x in (-W / 2, W / 2):
         for y in (-D / 2, D / 2):
             p.append(box(WOOD_DARK, loc=(x, y, 0.8 + H / 2), size=(0.9, 0.9, H + 0.2), bevel=0.15))
-    # gable ends (triangles of planks) front and back
+    # gable ends: plank rows cut along the roof slope, so the triangle under the roof is closed
     top = 0.8 + H
     ridge = 4.2
+    rows_g = 5
+    rh = ridge / rows_g
+
+    def half_width(z):
+        return max((W / 2 + 0.25) * (1 - (z - top) / ridge), 0.05)
+
     for y in (-D / 2, D / 2):
-        for k in range(5):
-            frac = (k + 0.5) / 5
-            width = W * (1 - frac) - 0.4
-            p.append(box(WOOD if k % 2 else WOOD_LIGHT, loc=(0, y, top + frac * ridge - 0.35),
-                         size=(max(width, 0.6), 0.45, ridge / 5 - 0.05), bevel=0.08))
+        for k in range(rows_g):
+            z0, z1 = top + k * rh, top + (k + 1) * rh
+            plank = box(WOOD if k % 2 else WOOD_LIGHT, loc=(0, y, (z0 + z1) / 2), size=(W + 0.5, 0.45, rh - 0.06))
+            deform(plank, lambda v: Vector((math.copysign(half_width(v.z), v.x), v.y, v.z)))
+            p.append(plank)
     # roof: two sloped panels made of shingle rows, plus a ridge beam
     half = W / 2 + 1.0
     slope = math.degrees(math.atan2(ridge, W / 2))
@@ -560,7 +566,8 @@ def habitat():
                          rot=(0, sgn * slope, 0), bevel=0.1))
     p.append(cyl(WOOD_DARK, loc=(0, 0, top + ridge + 0.45), r=0.4, h=D + 1.8, rot=(90, 0, 0), verts=10))
     # chimney
-    p.append(box("8C8C96", loc=(W / 4, D / 4, top + ridge + 0.2), size=(1.2, 1.2, 3.0), bevel=0.15))
+    # starts inside the roof so it never floats above the slope
+    p.append(box("8C8C96", loc=(W / 4, D / 4, top + (1.0 + ridge + 1.7) / 2), size=(1.2, 1.2, ridge + 0.7), bevel=0.15))
     p.append(box("6E6E78", loc=(W / 4, D / 4, top + ridge + 1.8), size=(1.5, 1.5, 0.35), bevel=0.08))
     # porch step in front of the door
     p.append(box(WOOD_DARK, loc=(0, -D / 2 - 1.1, 0.3), size=(4.4, 1.8, 0.6), bevel=0.12))
