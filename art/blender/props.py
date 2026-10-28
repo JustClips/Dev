@@ -514,17 +514,77 @@ def incubator():
 
 
 def habitat():
+    """Wooden pet hut for the pet park: plank cabin, shingled gable roof, round pet door
+    facing the front (-Y), a porch step, a round window and a bone sign over the door."""
     a = Asset("Habitat", "prop")
     use(a)
-    dome = sphere("E6EAF2", loc=(0, 0, 0), scale=(9, 9, 7), seg=24, rings=12)
-    deform(dome, lambda v: Vector((v.x, v.y, max(v.z, 0))))
-    ribs = [torus("B4BCCD", loc=(0, 0, 0), R=8.95, r=0.25, rot=(90, 0, ang), seg=32, mseg=6) for ang in (0, 60, 120)]
-    for r in ribs:
-        deform(r, lambda v: Vector((v.x, v.y, max(v.z, 0))))
-    door = box("5A6478", loc=(0, -8.6, 2.2), size=(3.6, 2, 4.4), bevel=0.4)
-    win = [sphere("5AB4FF", loc=(math.cos(math.radians(a_)) * 8.3, math.sin(math.radians(a_)) * 8.3, 3.2), scale=(1.0, 1.0, 1.0)) for a_ in (-60, -120)]
-    a.part("Body", [dome, door] + ribs, collide=True)
-    a.part("Body_Glow", win + [box("FFE678", loc=(0, -9.6, 4.8), size=(2.4, 0.2, 0.3))], parent="Body", glow="FFE678")
+    W, D, H = 12.0, 10.0, 5.5   # wall footprint and wall height
+    p = []
+    # stone footing and wooden floor deck
+    p.append(box("8C8C96", loc=(0, 0, 0.25), size=(W + 1.2, D + 1.2, 0.5), bevel=0.2))
+    p.append(box(WOOD_DARK, loc=(0, 0, 0.65), size=(W + 0.6, D + 0.6, 0.3), bevel=0.08))
+    # plank walls: horizontal logs, alternating shades
+    rows = 7
+    for k in range(rows):
+        z = 0.8 + (k + 0.5) * (H / rows)
+        col = WOOD if k % 2 == 0 else WOOD_LIGHT
+        th = H / rows - 0.06
+        for y in (-D / 2, D / 2):
+            p.append(box(col, loc=(0, y, z), size=(W, 0.5, th), bevel=0.1))
+        for x in (-W / 2, W / 2):
+            p.append(box(col, loc=(x, 0, z), size=(0.5, D, th), bevel=0.1))
+    # corner posts
+    for x in (-W / 2, W / 2):
+        for y in (-D / 2, D / 2):
+            p.append(box(WOOD_DARK, loc=(x, y, 0.8 + H / 2), size=(0.9, 0.9, H + 0.2), bevel=0.15))
+    # gable ends (triangles of planks) front and back
+    top = 0.8 + H
+    ridge = 4.2
+    for y in (-D / 2, D / 2):
+        for k in range(5):
+            frac = (k + 0.5) / 5
+            width = W * (1 - frac) - 0.4
+            p.append(box(WOOD if k % 2 else WOOD_LIGHT, loc=(0, y, top + frac * ridge - 0.35),
+                         size=(max(width, 0.6), 0.45, ridge / 5 - 0.05), bevel=0.08))
+    # roof: two sloped panels made of shingle rows, plus a ridge beam
+    half = W / 2 + 1.0
+    slope = math.degrees(math.atan2(ridge, W / 2))
+    length = math.hypot(half, ridge * half / (W / 2))
+    roof_cols = ("C0504A", "A8443F")
+    for sgn in (-1, 1):
+        for k in range(6):
+            t = (k + 0.5) / 6
+            cx = sgn * half * (1 - t)
+            cz = top + ridge * (1 - abs(cx) / (W / 2)) + 0.4
+            p.append(box(roof_cols[k % 2], loc=(cx, 0, cz), size=(length / 6 + 0.35, D + 1.6, 0.45),
+                         rot=(0, sgn * slope, 0), bevel=0.1))
+    p.append(cyl(WOOD_DARK, loc=(0, 0, top + ridge + 0.45), r=0.4, h=D + 1.8, rot=(90, 0, 0), verts=10))
+    # chimney
+    p.append(box("8C8C96", loc=(W / 4, D / 4, top + ridge + 0.2), size=(1.2, 1.2, 3.0), bevel=0.15))
+    p.append(box("6E6E78", loc=(W / 4, D / 4, top + ridge + 1.8), size=(1.5, 1.5, 0.35), bevel=0.08))
+    # porch step in front of the door
+    p.append(box(WOOD_DARK, loc=(0, -D / 2 - 1.1, 0.3), size=(4.4, 1.8, 0.6), bevel=0.12))
+    # round pet door: dark opening with a wooden ring frame
+    p.append(cyl("3A2618", loc=(0, -D / 2 - 0.2, 2.6), r=1.6, h=0.3, rot=(90, 0, 0), verts=24))
+    p.append(box("3A2618", loc=(0, -D / 2 - 0.2, 1.75), size=(3.2, 0.3, 1.7)))
+    p.append(torus(WOOD_DARK, loc=(0, -D / 2 - 0.4, 2.6), R=1.65, r=0.22, rot=(90, 0, 0), seg=24, mseg=6))
+    for x in (-1.65, 1.65):
+        p.append(box(WOOD_DARK, loc=(x, -D / 2 - 0.4, 1.7), size=(0.44, 0.44, 1.8), bevel=0.08))
+    # bone sign above the door
+    p.append(box("F2EEE4", loc=(0, -D / 2 - 0.45, 4.95), size=(2.2, 0.3, 0.5), bevel=0.15))
+    for x in (-1.15, 1.15):
+        for z in (-0.25, 0.25):
+            p.append(sphere("F2EEE4", loc=(x, -D / 2 - 0.45, 4.95 + z), scale=0.36, seg=12, rings=8))
+    # side window frames
+    for x in (-W / 2 - 0.3, W / 2 + 0.3):
+        p.append(torus(WOOD_DARK, loc=(x, 0, 3.6), R=1.0, r=0.16, rot=(0, 90, 0), seg=20, mseg=6))
+    # food bowl by the door
+    p.append(cyl("4A90E2", loc=(2.9, -D / 2 - 1.3, 0.25), r=0.75, r2=0.55, h=0.5, verts=16))
+    a.part("Body", p, collide=True)
+    # warm light in the windows
+    glow = [cyl("FFD68C", loc=(x, 0, 3.6), r=0.88, h=0.2, rot=(0, 90, 0), verts=20)
+            for x in (-W / 2 - 0.27, W / 2 + 0.27)]
+    a.part("Body_Glow", glow, parent="Body", glow="FFD68C")
     return a
 
 
