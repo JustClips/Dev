@@ -206,7 +206,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://118709070397753",
+        "Image": "rbxassetid://100073559714396",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -571,7 +571,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://118709070397753",
+          "Image": "rbxassetid://100073559714396",
           "ScaleType": "Fit",
           "ZIndex": 3
          }

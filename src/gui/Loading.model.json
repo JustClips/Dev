@@ -72,7 +72,7 @@
       ],
       "BorderSizePixel": 0,
       "BackgroundTransparency": 1,
-      "Image": "rbxassetid://139302839809244",
+      "Image": "rbxassetid://117181516497135",
       "ScaleType": "Tile",
       "TileSize": [
        [
@@ -158,7 +158,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://135332141267180",
+        "Image": "rbxassetid://91231229030895",
         "ScaleType": "Fit",
         "ZIndex": 2
        }
