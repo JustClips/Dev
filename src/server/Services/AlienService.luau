@@ -269,6 +269,15 @@ function AlienService:Init(services)
 end
 
 function AlienService:Start()
+	-- Bases built before the models finished loading show part-built placeholder eggs and
+	-- pets: rebuild them once the real models are in.
+	if not S.AssetService:IsReady() then
+		S.AssetService.Ready:Connect(function()
+			for player in S.DataService:GetSessions() do
+				AlienService:RefreshBase(player)
+			end
+		end)
+	end
 	task.spawn(function()
 		while true do
 			task.wait(Economy.IncomeTickSeconds)

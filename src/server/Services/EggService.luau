@@ -180,6 +180,22 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 	local visual = AssetLibrary.egg(rarity)
 	visual:PivotTo(CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0))
 	visual.Parent = egg
+	if visual:GetAttribute("Placeholder") then
+		-- Spawned before the models finished loading: swap in the real egg once they have.
+		task.spawn(function()
+			if not AssetLibrary.waitReady(180) or visual.Parent ~= egg then
+				return
+			end
+			local real = AssetLibrary.egg(rarity)
+			if real:GetAttribute("Placeholder") then
+				real:Destroy()
+				return
+			end
+			real:PivotTo(visual:GetPivot())
+			real.Parent = egg
+			visual:Destroy()
+		end)
+	end
 	local light = Instance.new("PointLight")
 	light.Color = def.Color
 	light.Range = 10
