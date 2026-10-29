@@ -348,6 +348,7 @@ local AURAS: { [string]: PixelFx } = {
 	Embers = { colors = { Color3.fromRGB(255, 190, 70), Color3.fromRGB(230, 60, 30) }, size = 0.11, rate = 6, speed = 0.6, accel = Vector3.new(0, 2.5, 0), glow = 1 },
 	PhoenixFlame = { colors = { Color3.fromRGB(255, 240, 140), Color3.fromRGB(255, 120, 30), Color3.fromRGB(220, 40, 20) }, size = 0.14, rate = 14, speed = 0.8, life = 0.9, accel = Vector3.new(0, 4, 0), glow = 1 },
 	FoxFire = { colors = { Color3.fromRGB(150, 230, 255), Color3.fromRGB(90, 140, 255) }, size = 0.13, rate = 5, speed = 0.3, life = 1.6, accel = Vector3.new(0, 0.6, 0), glow = 1 },
+	GoldDust = { colors = { Color3.fromRGB(255, 226, 120), Color3.fromRGB(255, 255, 230) }, size = 0.12, rate = 7, speed = 0.4, life = 1.4, accel = Vector3.new(0, -0.6, 0), glow = 1 },
 	Leaves = { texture = "Vfx_Leaf", colors = { Color3.fromRGB(255, 170, 50), Color3.fromRGB(220, 80, 40), Color3.fromRGB(250, 210, 80) }, size = 0.35, rate = 4, speed = 0.4, life = 2.2, accel = Vector3.new(0, -1.2, 0), glow = 0.3, spin = true },
 }
 

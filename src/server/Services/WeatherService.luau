@@ -10,13 +10,14 @@
 -- (mutations by chance, lightning / falling stars that hit eggs), makes eggs grow faster,
 -- and other services ask here for its bonuses (cash, luck, golden piles, Huge, regrow).
 -- Admin chat commands: "/weather <id>" (any weather or moon id, or "off"), "/night"
--- (skip to sunset), "/day", "/eggrain".
+-- (skip to sunset), "/day", "/eggrain", "/hatchtest <rarity> [huge] [mutation]" (hatch show only).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
 local Weather = require(Shared.Config.Weather)
@@ -293,6 +294,42 @@ local function onChat(player: Player, message: string)
 		jumpTo(0)
 	elseif command == "/eggrain" then
 		S.EventService:TriggerShower(player)
+	elseif command == "/hatchtest" then
+		-- Plays the hatch show for a pet of that rarity without giving anything:
+		-- "/hatchtest legendary", "/hatchtest mythic huge", "/hatchtest rare golden".
+		local rarity: string? = nil
+		for _, def in Eggs.Rarities do
+			if string.lower(def.Name) == (args[2] or "") then
+				rarity = def.Name
+			end
+		end
+		local data = S.DataService:GetData(player)
+		local char = player.Character
+		local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+		local bucket = rarity and Aliens.ByRarity[rarity]
+		if not rarity or not bucket or #bucket == 0 or not data or not data.BaseIndex or data.BaseIndex == 0 or not root then
+			Net.fire("Notify", player, "Use: /hatchtest <common|uncommon|rare|epic|legendary|mythic|cosmic> [huge|golden|rainbow]", "Info")
+			return
+		end
+		local def = bucket[math.random(1, #bucket)]
+		local mutation: string? = nil
+		for _, m in Eggs.Mutations do
+			if string.lower(m.Name) == args[3] or string.lower(m.Name) == args[4] then
+				mutation = m.Name
+			end
+		end
+		local huge = args[3] == "huge" or args[4] == "huge"
+		local spot = World.baseCFrame(data.BaseIndex):PointToObjectSpace(root.Position + root.CFrame.LookVector * 12)
+		Net.fire("HatchCompleted", player, {
+			Test = true,
+			AlienId = def.Id,
+			Mutation = mutation,
+			Huge = huge,
+			Rarity = def.Rarity,
+			EggRarity = def.Rarity,
+			X = spot.X,
+			Z = spot.Z,
+		})
 	end
 end
 

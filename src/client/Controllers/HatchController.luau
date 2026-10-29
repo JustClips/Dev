@@ -5,12 +5,15 @@
 -- (Eggs.growScale). It wobbles now and then, more often and harder as it gets close, and a
 -- bar under its timer fills up. A ready egg keeps wobbling hard (no beam: Dev found it annoying).
 --
--- Opening, when you're near the egg (your camera stays yours): the egg wobbles harder and
--- harder, swells up and turns white, then bursts (flash, rays, sparkles, shockwave) and the
--- pet pops out and dances. The card at the bottom shows what it is (rarity, name, weight,
--- cash) with Place on base / Keep in bag. Far from your base the same show plays in a window
--- in the middle of the screen. Click or tap to skip ahead. Rarer pets get a longer build up,
--- a bigger burst and a fanfare.
+-- Opening, when you're near the egg: the egg floats up over a glowing ring and wobbles, bricks
+-- chip off it and a rarity name over it climbs up the rarities (one step per wobble) until it
+-- reaches what's inside. Then it charges (swells, turns white, light leaks out of the cracks,
+-- sparks get sucked in), bursts into flying bricks with shockwaves and a star flash, the pets
+-- roll, and the real one pops out. The camera leans toward the egg but stays yours.
+-- The rarer the pet, the bigger the show (TIERS): an energy swirl from Rare, orbiting stars
+-- from Epic, a light pillar, spike crown and confetti rain from Legendary, a dimmed world
+-- from Mythic. Meshes are ours (art/blender/hatch_vfx.py, HatchFx). Far from your base the
+-- same show plays in a window. Click or tap to skip ahead.
 --
 -- Owner prompts on growing eggs: Skip Hatch (Robux) while growing, Open when ready.
 local CollectionService = game:GetService("CollectionService")
@@ -24,6 +27,7 @@ local Workspace = game:GetService("Workspace")
 local Client = script.Parent.Parent
 local State = require(Client.State)
 local Ui = require(Client.Ui)
+local HatchFx = require(Client.HatchFx)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AlienModel = require(Shared.AlienModel)
@@ -261,30 +265,6 @@ type Scene = {
 	fx: Folder?,
 }
 
--- A flat glowing ring that races outwards along the ground.
-local function shockwave(scene: Scene, color: Color3, radius: number)
-	local ring = Instance.new("Part")
-	ring.Name = "Shockwave"
-	ring.Shape = Enum.PartType.Cylinder
-	ring.Size = Vector3.new(0.2, 1, 1)
-	ring.CFrame = scene.origin * CFrame.new(0, 0.3, 0) * CFrame.Angles(0, 0, math.rad(90))
-	ring.Color = color
-	ring.Material = Enum.Material.Neon
-	ring.Transparency = 0.25
-	ring.Anchored = true
-	ring.CanCollide = false
-	ring.CanQuery = false
-	ring.CanTouch = false
-	ring.Parent = scene.parent
-	TweenService:Create(ring, TweenInfo.new(0.55, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-		Size = Vector3.new(0.2, radius * 2, radius * 2),
-		Transparency = 1,
-	}):Play()
-	task.delay(0.6, function()
-		ring:Destroy()
-	end)
-end
-
 -- Spinning sunburst + glow behind the pet (world: a billboard just behind it).
 local function worldRays(scene: Scene, center: Vector3, size: number, color: Color3): (BillboardGui, ImageLabel, ImageLabel)
 	local anchor = Instance.new("Part")
@@ -378,7 +358,7 @@ local function rollPick(rarity: string): string?
 	return bucket[math.random(1, #bucket)].Id
 end
 
-local function rollPets(scene: Scene, info, face: CFrame, petScale: number, count: number)
+local function rollPets(scene: Scene, info, face: CFrame, petScale: number, count: number, onPet: ((Color3) -> ())?)
 	local light = Instance.new("Part")
 	light.Anchored = true
 	light.CanCollide = false
@@ -404,6 +384,9 @@ local function rollPets(scene: Scene, info, face: CFrame, petScale: number, coun
 		local def = Aliens.ById[id]
 		local color = rarityOf(if def then def.Rarity else info.Rarity).Color
 		glowLight.Color = color
+		if onPet then
+			onPet(color)
+		end
 		local pet = AssetLibrary.alien(id)
 		for _, d in pet:GetDescendants() do
 			if d:IsA("BasePart") then
@@ -433,6 +416,66 @@ local function rollPets(scene: Scene, info, face: CFrame, petScale: number, coun
 	light:Destroy()
 end
 
+-- How big a show each pet rarity gets (Eggs order 1-7). Huge pets and mutations get one more.
+type Tier = {
+	wobbles: number, -- shakes before the burst (the rarity climb steps through them)
+	camera: number, -- how far the camera leans into the shot (0 = not at all)
+	shards: number, -- bricks the egg bursts into
+	rings: number, -- shockwaves at the burst
+	swirl: boolean, -- energy ribbon around the egg
+	pillar: boolean, -- light pillar to the sky + spike crown
+	darken: boolean, -- the world goes dim while it charges
+	stars: number, -- stars orbiting the revealed pet
+	rain: boolean, -- confetti rain over the pet
+	charge: number, -- seconds of charging
+}
+local TIERS: { Tier } = {
+	{ wobbles = 3, camera = 0.35, shards = 14, rings = 1, swirl = false, pillar = false, darken = false, stars = 0, rain = false, charge = 0.6 },
+	{ wobbles = 3, camera = 0.45, shards = 16, rings = 1, swirl = false, pillar = false, darken = false, stars = 0, rain = false, charge = 0.65 },
+	{ wobbles = 3, camera = 0.55, shards = 20, rings = 2, swirl = true, pillar = false, darken = false, stars = 0, rain = false, charge = 0.75 },
+	{ wobbles = 4, camera = 0.7, shards = 24, rings = 2, swirl = true, pillar = false, darken = false, stars = 4, rain = false, charge = 0.9 },
+	{ wobbles = 5, camera = 0.85, shards = 28, rings = 3, swirl = true, pillar = true, darken = false, stars = 5, rain = true, charge = 1.1 },
+	{ wobbles = 6, camera = 1, shards = 32, rings = 3, swirl = true, pillar = true, darken = true, stars = 6, rain = true, charge = 1.3 },
+	{ wobbles = 7, camera = 1, shards = 36, rings = 4, swirl = true, pillar = true, darken = true, stars = 8, rain = true, charge = 1.5 },
+}
+
+-- A rarity name floating over the egg that climbs up the rarities while it shakes.
+local function climbLabel(scene: Scene, at: Vector3, width: number): (Part, TextLabel)
+	local anchor = Instance.new("Part")
+	anchor.Name = "ClimbAnchor"
+	anchor.Transparency = 1
+	anchor.Size = Vector3.new(0.2, 0.2, 0.2)
+	anchor.Anchored = true
+	anchor.CanCollide = false
+	anchor.CanQuery = false
+	anchor.CanTouch = false
+	anchor.CFrame = CFrame.new(at)
+	anchor.Parent = scene.parent
+	local board = Instance.new("BillboardGui")
+	board.Size = UDim2.fromScale(width, width * 0.22)
+	board.LightInfluence = 0
+	board.AlwaysOnTop = true
+	board.Adornee = anchor
+	board.Parent = anchor
+	local label = Instance.new("TextLabel")
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.fromScale(1, 1)
+	label.AnchorPoint = Vector2.new(0.5, 0.5)
+	label.Position = UDim2.fromScale(0.5, 0.5)
+	label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+	label.TextScaled = true
+	label.Text = ""
+	label.TextColor3 = WHITE
+	label.TextTransparency = 1
+	label.TextStrokeTransparency = 1
+	local stroke = Instance.new("UIStroke")
+	stroke.Thickness = 3
+	stroke.Color = Color3.new(0, 0, 0)
+	stroke.Parent = label
+	label.Parent = board
+	return anchor, label
+end
+
 local function play(info)
 	playing = true
 	local standIn = waiting[info]
@@ -444,7 +487,10 @@ local function play(info)
 	local rarity = rarityOf(info.Rarity)
 	local eggRarity = info.EggRarity or info.Rarity
 	local order = Eggs.order(info.Rarity)
-	local big = info.Huge == true or info.Mutation ~= nil or order >= Eggs.order("Epic")
+	local special = info.Huge == true or info.Mutation ~= nil
+	local power = math.clamp(order + (if special then 1 else 0), 1, #TIERS)
+	local tier = TIERS[power]
+	local big = special or order >= Eggs.order("Epic")
 	local quick = #queue > 0 -- more eggs waiting: a shorter show
 	local tempo = if quick then 0.55 else 1
 
@@ -516,7 +562,11 @@ local function play(info)
 	egg.Parent = scene.parent
 	local _, eggSize = egg:GetBoundingBox()
 	local eggHeight = math.max(eggSize.Y, 1.5)
-	local focus = scene.origin.Position + Vector3.new(0, eggHeight * 0.55, 0)
+	local eggWidth = math.max(eggSize.X, eggSize.Z, 1)
+	local hover = eggHeight * 0.22 -- the egg floats up this far before it bursts
+	local lifted = scene.origin * CFrame.new(0, hover, 0)
+	local focus = scene.origin.Position + Vector3.new(0, hover + eggHeight * 0.5, 0)
+	local floorY = scene.origin.Position.Y
 	local light = Instance.new("PointLight")
 	light.Color = rarityOf(eggRarity).Color
 	light.Brightness = 0
@@ -534,61 +584,208 @@ local function play(info)
 		highlight = h
 	end
 
-	-- The player keeps their camera: the show plays where the egg sits.
-	if not scene.world then
-		scene.camera.CFrame = CFrame.lookAt(Vector3.new(0, eggHeight * 0.75, -eggHeight * 2.7), Vector3.new(0, eggHeight * 0.48, 0))
+	-- The camera leans in toward the egg (you keep control; it lets go after the show).
+	local rig: HatchFx.Rig? = nil
+	if scene.world and not Ui.reducedMotion() then
+		local ignore: { Instance } = { scene.parent }
+		if character then
+			table.insert(ignore, character)
+		end
+		rig = HatchFx.cameraRig(focus, math.clamp(eggHeight * 3.1, 9, 22), ignore)
+		local r = rig :: HatchFx.Rig
+		r.weight(tier.camera * (if quick then 0.5 else 1), 0.7 * tempo)
+		if power >= 4 and not quick then
+			r.orbit(if power >= 6 then 14 else 8)
+		end
+	else
+		scene.camera.CFrame = CFrame.lookAt(Vector3.new(0, eggHeight * 0.85, -eggHeight * 2.9), Vector3.new(0, eggHeight * 0.6, 0))
 		Ui.popIn(gui)
 	end
 
-	-- 2. Wobbles, each harder than the last (more of them for rare pets).
-	local bursts = if quick then 2 elseif big then 4 else 3
-	for i = 1, bursts do
+	-- 2. Lift off: dust, a glowing ring on the ground, the egg floats up.
+	local groundRing = HatchFx.mesh("VfxHatchRing")
+	if groundRing then
+		groundRing.Material = Enum.Material.Neon
+		groundRing.Color = rarityOf("Common").Color
+		groundRing.Transparency = 1
+		groundRing.Parent = scene.parent
+	end
+	local ringColor = rarityOf("Common").Color
+	local ringSpin = 0
+	local ringPulse = 0
+	local ringFade = 0
+	HatchFx.run(function(dt)
+		if not groundRing or not groundRing.Parent then
+			return false
+		end
+		ringSpin += dt * 1.5
+		ringPulse = math.max(0, ringPulse - dt * 3)
+		local r = eggWidth * (0.85 + 0.25 * ringPulse)
+		groundRing.Size = Vector3.new(r * 2, 0.35, r * 2)
+		groundRing.CFrame = scene.origin * CFrame.new(0, 0.2, 0) * CFrame.Angles(0, ringSpin, 0)
+		groundRing.Color = ringColor
+		groundRing.Transparency = 0.15 + 0.85 * ringFade
+		return true
+	end)
+	if scene.world then
+		HatchFx.dust(scene.parent, scene.origin.Position + Vector3.new(0, 0.2, 0), eggWidth * 0.6, 10)
+	end
+	Ui.sound("HatchLift")
+	animate(0.45 * tempo, function(t)
+		local up = backOut(t)
+		egg:PivotTo(scene.origin * CFrame.new(0, hover * up, 0) * CFrame.Angles(0, t * math.pi * 0.5, 0))
+	end, true)
+	egg:PivotTo(lifted)
+
+	-- 3. Wobbles, each harder than the last. Bricks chip off and the glow climbs up the
+	-- rarities, one step per wobble, until it reaches what's inside.
+	local setLeak, removeLeak = HatchFx.lightLeak(scene.parent, focus, eggHeight * 0.75)
+	local setSwirl: ((number, number, Color3) -> ())? = nil
+	local removeSwirl: (() -> ())? = nil
+	local climbAnchor: Part? = nil
+	local climbText: TextLabel? = nil
+	if scene.world then
+		climbAnchor, climbText = climbLabel(scene, focus + Vector3.new(0, eggHeight * 0.85, 0), math.max(6, eggWidth * 2.6))
+	end
+	local wobbles = if quick then 2 else tier.wobbles
+	local climbColor = rarityOf("Common").Color
+	for i = 1, wobbles do
 		if skipRequested then
 			break
 		end
-		Ui.sound("Wobble", 0.9 + i * 0.12)
-		local amp = math.rad(8 + i * 6)
-		local length = 0.38 * tempo
+		local step = math.max(1, math.ceil(i / wobbles * order))
+		local stepDef = Eggs.Rarities[step] or rarity
+		climbColor = stepDef.Color
+		ringColor = climbColor
+		ringPulse = 1
+		light.Color = climbColor
+		light.Brightness = 1 + 4 * i / wobbles
+		if climbText then
+			local label = climbText :: TextLabel
+			label.Text = string.upper(stepDef.Name) .. (if i < wobbles then "?" else "!")
+			label.TextColor3 = climbColor
+			label.TextTransparency = 0
+			label.Rotation = math.random(-6, 6)
+			label.Size = UDim2.fromScale(1.35, 1.35)
+			TweenService:Create(label, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromScale(1, 1) }):Play()
+		end
+		Ui.sound("Wobble", 0.9 + i * 0.1)
+		Ui.sound("HatchTier", 0.75 + step * 0.12)
+		Ui.sound("HatchChip", 0.9 + math.random() * 0.3)
+		HatchFx.shockwave(scene.parent, scene.origin, climbColor, eggWidth * (1.3 + i * 0.25), 0.45)
+		HatchFx.shards(scene.parent, focus, floorY, eggRarity, 1 + math.min(3, i), 14 + i * 2, scene.eggScale * 0.8)
+		setLeak(math.clamp((i - 1) / wobbles, 0, 1) * 0.7, climbColor)
+		if tier.swirl and i == 2 then
+			setSwirl, removeSwirl = HatchFx.swirl(scene.parent, scene.origin, eggWidth * 0.95, eggHeight * 1.5)
+		end
+		if setSwirl then
+			setSwirl(2 + i * 1.2, 0, climbColor)
+		end
+		if rig then
+			rig.shake(0.05 + 0.03 * i, 0.3)
+		end
+		local amp = math.rad(8 + i * 5)
+		local length = 0.36 * tempo
 		animate(length, function(t)
 			local fade = 1 - t
 			local angle = math.sin(t * math.pi * 6) * amp * fade
-			local hop = math.sin(t * math.pi) * eggHeight * 0.08 * i
-			egg:PivotTo(scene.origin * CFrame.new(0, hop, 0) * CFrame.Angles(angle * 0.4, 0, angle))
+			local hop = math.sin(t * math.pi) * eggHeight * 0.06 * i
+			egg:PivotTo(lifted * CFrame.new(0, hop, 0) * CFrame.Angles(angle * 0.4, 0, angle))
 		end)
-		egg:PivotTo(scene.origin)
-		waitOrSkip((0.22 - i * 0.03) * tempo)
+		egg:PivotTo(lifted)
+		waitOrSkip((0.24 - math.min(i, 5) * 0.025) * tempo)
 	end
+	if climbText then
+		local label = climbText :: TextLabel
+		label.Text = string.upper(rarity.Name) .. "!"
+		label.TextColor3 = rarity.Color
+		label.TextTransparency = 0
+	end
+	climbColor = rarity.Color
+	ringColor = climbColor
 
-	-- 3. Charge: swells up, shakes, turns white and glows.
+	-- 4. Charge: swells up, shakes, turns white, light pours out of the cracks, sparks get
+	-- sucked in. Legendary and up: a pillar of light to the sky; Mythic and up: the world dims.
 	Ui.sound("Charge")
-	animate(0.6 * tempo, function(t)
-		local shake = math.rad(5) * t
+	Ui.sound("HatchRise")
+	local stopSuck: (() -> ())? = nil
+	local undim: (() -> ())? = nil
+	local endPillar: (() -> ())? = nil
+	if scene.world then
+		stopSuck = HatchFx.suckIn(scene.parent, focus, eggHeight * 1.6, climbColor, 30 + power * 12)
+		if tier.darken and not quick then
+			undim = HatchFx.darken(climbColor, tier.charge)
+		end
+	end
+	if tier.pillar and not quick then
+		Ui.sound("HatchSuck")
+		endPillar = HatchFx.pillar(scene.parent, scene.origin, eggWidth * 0.75, if scene.world then 160 else eggHeight * 4, climbColor)
+		HatchFx.crown(scene.parent, scene.origin, eggWidth * 1.15, eggHeight * 0.8, climbColor)
+	end
+	if rig then
+		rig.weight(math.min(1, tier.camera * (if quick then 0.5 else 1) + 0.1), tier.charge * tempo)
+	end
+	animate(tier.charge * tempo, function(t)
+		local shake = math.rad(4 + power) * t
 		egg:ScaleTo(scene.eggScale * (1 + 0.38 * t * t))
-		egg:PivotTo(scene.origin * CFrame.Angles(math.random(-100, 100) / 100 * shake, 0, math.random(-100, 100) / 100 * shake))
+		egg:PivotTo(lifted * CFrame.Angles(math.random(-100, 100) / 100 * shake, t * t * 6, math.random(-100, 100) / 100 * shake))
 		whiten(eggLooks, t)
-		light.Brightness = 8 * t
+		light.Brightness = 5 + 6 * t
+		setLeak(0.7 + 0.6 * t, climbColor)
+		if setSwirl then
+			setSwirl(6 + 14 * t, t, climbColor)
+		end
 		if highlight then
 			highlight.FillTransparency = 1 - t * 0.9
+		end
+		if rig then
+			rig.shake(0.08 + 0.2 * t * (power / 7), 0.2)
 		end
 		if not scene.world then
 			glow.ImageTransparency = 1 - t * 0.7
 		end
 	end, true)
 
-	-- 4. Burst!
+	-- 5. Burst! The egg blows apart into bricks: shockwaves, a star flash, sparks.
 	Ui.sound("Crack")
+	Ui.sound("HatchBricks")
 	Ui.sound("Hatch")
+	if power >= 3 then
+		Ui.sound("HatchBoom")
+	end
 	flashScreen(if big then 1 else 0.75, if big then 0.9 else 0.55)
+	if stopSuck then
+		stopSuck()
+	end
+	removeLeak()
+	if removeSwirl then
+		removeSwirl()
+	end
+	if climbAnchor then
+		climbAnchor:Destroy()
+	end
+	ringPulse = 1.5
 	local screenPoint = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y * 0.45)
 	if scene.world then
 		local point, visible = camera:WorldToViewportPoint(focus)
 		if visible then
 			screenPoint = Vector2.new(point.X, point.Y)
 		end
-		shockwave(scene, rarity.Color, math.max(10, eggHeight * 5))
-		sparkleBurst(scene, focus, rarity.Color, 30 + order * 8)
+		HatchFx.burst(scene.parent, focus, rarity.Color, 30 + power * 10, 26 + power * 3)
 	end
+	for k = 1, tier.rings do
+		local radius = math.max(10, eggHeight * 4) * (1 + (k - 1) * 0.45)
+		task.delay((k - 1) * 0.09, function()
+			HatchFx.shockwave(scene.parent, scene.origin, if k % 2 == 0 then WHITE else rarity.Color, radius, 0.55 + k * 0.08)
+		end)
+	end
+	HatchFx.shards(scene.parent, focus, floorY, eggRarity, if quick then 10 else tier.shards, 22 + power * 2, scene.eggScale)
+	HatchFx.starFlash(scene.parent, focus, eggHeight * (1.1 + power * 0.15), rarity.Color, scene.camera)
 	burstConfetti(screenPoint, rarity.Color, if big then 30 else 18)
+	if rig then
+		rig.shake(0.35 + power * 0.06, 0.45)
+		rig.punch(-(5 + power))
+	end
 	egg:Destroy()
 
 	local petScale = Weights.visualScale(Weights.incomeMult(info.Rarity, info.Weight)) * (if info.Huge then Aliens.HugeScale else 1)
@@ -600,12 +797,17 @@ local function play(info)
 		face = CFrame.new() -- the window camera looks at the pet's front
 	end
 
-	-- 4b. The roll: pets flick through where the egg was, slowing down, then the real one.
+	-- 5b. The roll: pets flick through where the egg was, slowing down, then the real one.
 	if not quick and not Ui.reducedMotion() then
-		rollPets(scene, info, face, petScale, if big then 18 else 13)
+		rollPets(scene, info, face, petScale, if big then 18 else 13, function(color: Color3)
+			ringColor = color
+			ringPulse = 0.8
+		end)
 	end
 
-	-- 5. The pet pops out, faces you and dances.
+	-- 6. The pet pops out, faces you and dances.
+	ringColor = rarity.Color
+	ringPulse = 1.2
 	local model = AssetLibrary.alien(info.AlienId, info.Mutation)
 	for _, d in model:GetDescendants() do
 		if d:IsA("BasePart") then
@@ -626,6 +828,7 @@ local function play(info)
 	if happy then
 		happy:Play(0.05)
 	end
+	HatchFx.shockwave(scene.parent, scene.origin, rarity.Color, math.max(6, eggHeight * 2.2), 0.4)
 	animate(0.42, function(t)
 		model:ScaleTo(math.max(0.05, petScale * backOut(t)))
 		model:PivotTo(face * CFrame.new(0, math.sin(t * math.pi) * 1.2, 0))
@@ -635,17 +838,33 @@ local function play(info)
 	local petSize = math.max(finalSize.X, finalSize.Y, finalSize.Z, 1.5)
 	Ui.sound(if big then "RareReveal" else "Reveal")
 	Ui.sound("Sparkle")
+	if power >= 4 then
+		Ui.sound("HatchShimmer")
+	end
+	if power >= 6 then
+		Ui.sound("HatchGong")
+	end
+	if rig then
+		rig.punch(-3)
+	end
 
-	-- Rays behind the pet.
+	-- Rays behind the pet; stars around it and confetti for the rare ones.
 	local raysImage: ImageLabel
 	local glowImage: ImageLabel
+	local petCenter = scene.origin.Position + Vector3.new(0, petSize * 0.45, 0)
 	if scene.world then
-		local center = scene.origin.Position + Vector3.new(0, petSize * 0.45, 0)
-		local _, r, g = worldRays(scene, center, petSize, rarity.Color)
+		local _, r, g = worldRays(scene, petCenter, petSize, rarity.Color)
 		raysImage, glowImage = r, g
+		if tier.rain and not quick then
+			HatchFx.confettiRain(scene.parent, petCenter + Vector3.new(0, petSize * 2.5 + 6, 0), petSize * 1.4, { rarity.Color, WHITE, Color3.fromRGB(255, 214, 90) }, REVEAL_SECONDS)
+		end
 	else
 		raysImage, glowImage = rays, glow
 		scene.camera.CFrame = CFrame.lookAt(Vector3.new(petSize * 0.35, petSize * 0.7, -petSize * 2.4), Vector3.new(0, petSize * 0.42, 0))
+	end
+	local endStars: (() -> ())? = nil
+	if tier.stars > 0 then
+		endStars = HatchFx.orbitStars(scene.parent, petCenter, petSize * 0.85, rarity.Color, if quick then 3 else tier.stars)
 	end
 	TweenService:Create(raysImage, TweenInfo.new(0.3), { ImageTransparency = if big then 0.15 else 0.35 }):Play()
 	TweenService:Create(glowImage, TweenInfo.new(0.3), { ImageTransparency = 0.3 }):Play()
@@ -656,11 +875,31 @@ local function play(info)
 	skipRequested = false
 	showCard(info)
 	waitOrSkip(REVEAL_SECONDS * tempo)
-	local placed = autoPlace(info)
+	local placed = if info.Test then "Test" else autoPlace(info)
 
-	-- 6. Wrap up: the pet hops off (to the park or your bag).
+	-- 7. Wrap up: the pet hops off (to the park or your bag), the camera comes back.
 	TweenService:Create(raysImage, TweenInfo.new(0.3), { ImageTransparency = 1 }):Play()
 	TweenService:Create(glowImage, TweenInfo.new(0.3), { ImageTransparency = 1 }):Play()
+	if endStars then
+		endStars()
+	end
+	if endPillar then
+		endPillar()
+	end
+	if undim then
+		undim()
+	end
+	if rig then
+		rig.orbit(0)
+		rig.weight(0, 0.45)
+	end
+	HatchFx.over(0.4, function(a)
+		ringFade = a
+	end, function()
+		if groundRing then
+			groundRing:Destroy()
+		end
+	end)
 	task.spawn(hideCard)
 	if scene.world then
 		Ui.sound("Pop")
@@ -684,6 +923,12 @@ local function play(info)
 		shrink:Play()
 		shrink.Completed:Wait()
 		worldModel:ClearAllChildren()
+	end
+	if rig then
+		local r = rig :: HatchFx.Rig
+		task.delay(0.3, function()
+			r.stop()
+		end)
 	end
 	spin:Disconnect()
 	stage.Visible = false
