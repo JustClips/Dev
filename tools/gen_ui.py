@@ -389,13 +389,13 @@ def hud():
     # Phones move them to the top right (HudController), clear of the jump button.
     # Boost chips: no box, just a small icon and "2x 14:52". Hover (or tap) shows what the
     # boost does in BoostTip.
-    boosts = frame("Boosts", U(0, 220, 0, 180), U(1, -14, 1, -14), (1, 1), children=[
-        autoscale(), vlist(2, "Right", "Bottom"),
-        node("Template", "TextButton", base(U(0, 0, 0, 28), BackgroundTransparency=1, Text="", AutomaticSize="X",
+    boosts = frame("Boosts", U(0, 300, 0, 260), U(1, -14, 1, -14), (1, 1), children=[
+        autoscale(), vlist(4, "Right", "Bottom"),
+        node("Template", "TextButton", base(U(0, 0, 0, 42), BackgroundTransparency=1, Text="", AutomaticSize="X",
                                            AutoButtonColor=False, Visible=False, ZIndex=2),
-             [hlist(4, "Right"),
-              icon("Icon", "Luck", 26, LayoutOrder=1),
-              text("Label", "", U(0, 0, 1, 0), ts=17, display=True, stroke=2, AutomaticSize="X", TextWrapped=False,
+             [hlist(6, "Right"),
+              icon("Icon", "Luck", 40, LayoutOrder=1),
+              text("Label", "", U(0, 0, 1, 0), ts=26, display=True, stroke=3, AutomaticSize="X", TextWrapped=False,
                    LayoutOrder=2)]),
     ])
     boost_tip = plate("BoostTip", U(0, 260, 0, 0), U(1, -14, 1, -200), (1, 1), BG, stud=None, stroke=3, AutomaticSize="Y",

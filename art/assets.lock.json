@@ -302,9 +302,17 @@
    "id": 120417506952660,
    "sha": "a88fca9b1f1414bfca9610ea89ac2e1fcef7576f072e0af25416c493e4a0269f"
   },
+  "Icon_Weather_GoldMoon": {
+   "id": 75291687464314,
+   "sha": "c4ffdfa57e45f3b565d48630544ddfaa392732c908fb845ef65153979522b641"
+  },
   "Icon_Weather_GoldenHour": {
    "id": 76027006606662,
    "sha": "308b04c03184fe468afd770c6980826d7aff4e0309b53eb8e05fa3e316d4577b"
+  },
+  "Icon_Weather_MegaMoon": {
+   "id": 124522750175166,
+   "sha": "7aa5183e1853703cb850755e7d2d013ed35461a2cd055a554871523046e8e759"
   },
   "Icon_Weather_Rain": {
    "id": 94254875405147,
@@ -314,9 +322,17 @@
    "id": 106606990716899,
    "sha": "c37498765fdcfc9af8e885bc8c6f4b8f82bf9bffb25ad50333b7c83620e50e16"
   },
+  "Icon_Weather_RainbowMoon": {
+   "id": 92476739090919,
+   "sha": "996976e07a7cd506d7b67283de028cbdb0935eac757131fcc3a798d8216835a6"
+  },
   "Icon_Weather_Snow": {
    "id": 138027398855010,
    "sha": "9f44616e7d1da8034975b8b40536734e38f34a5236c9013664719cb046d865f9"
+  },
+  "Icon_Weather_Starfall": {
+   "id": 139660436110415,
+   "sha": "ef865afc38f14b05e9ee72973f9ca34c9a914baa4e37b01fef4246cb53ac588f"
   },
   "Icon_Weather_Thunderstorm": {
    "id": 128033834924846,
@@ -370,13 +386,33 @@
    "id": 99164652863066,
    "sha": "924b14abfc817636d577dadcf1cfffd0d603accf1f00b7f73ad53f2b0a3de4cf"
   },
+  "Vfx_Confetti": {
+   "id": 105135858287260,
+   "sha": "5ef27c72a81a0b0c8693ed862fa383df3cef3cf8db8d3c43aec15e91079acf07"
+  },
+  "Vfx_DiscoTiles": {
+   "id": 131509926961749,
+   "sha": "295adaf58ee175d72e133579861179d6f442b180f69cf525295154015cb55b24"
+  },
+  "Vfx_Droplet": {
+   "id": 75914845134268,
+   "sha": "f5b2fe1f36127d1bc775097cef87e7b12c475f8a381fb99c231ec840b9346381"
+  },
   "Vfx_Glow": {
    "id": 127790595590235,
    "sha": "f220948abe8f013d40270428472f511fe4e7ea65288bdd3ebf075389c4081004"
   },
+  "Vfx_GoldMoon": {
+   "id": 116732359911510,
+   "sha": "8938db981bcc802a083f871961c55c8d95a6652ec60b22a42a86958f7afd1093"
+  },
   "Vfx_Leaf": {
    "id": 136133170622834,
    "sha": "4cebf615a0a4b16a2b9859f6a6f234f7e9e7b5ce3caa65f6a3d6fc30d70f64d6"
+  },
+  "Vfx_MegaMoon": {
+   "id": 124655083962378,
+   "sha": "fa74ea3428abda24f5bc79bfb171d420528d5e5c425d68b14f700e31d68d33de"
   },
   "Vfx_Note": {
    "id": 78579136606448,
@@ -386,17 +422,33 @@
    "id": 136695156263425,
    "sha": "90773f096f0230cc686c3c4cf1f6b9468164e2d28d2892f35aff60dbe0be65ee"
   },
+  "Vfx_RainSheet": {
+   "id": 75131187314377,
+   "sha": "d176bc24b75e1c5b0c486c7c58b601fb220f7f272694ee2dc1bb01c80d119713"
+  },
   "Vfx_Rainbow": {
    "id": 107122876836669,
    "sha": "cdff5c723e2c45b4a01e98395cd1ee0b4d0434f4b49a65b05711bf9e5e374307"
+  },
+  "Vfx_RainbowMoon": {
+   "id": 86794220943973,
+   "sha": "4a759a44c8fa293958231666057a6d747ef4df7cec689eda8d3060a03e555659"
   },
   "Vfx_Ring": {
    "id": 133543463929183,
    "sha": "5ca262a35fc89d33b25bb387edbd39c2e955598cb16d4d7c2c054fee64aedbc7"
   },
+  "Vfx_Scorch": {
+   "id": 138989460854974,
+   "sha": "bffc363551bdf9ec2f6aaa8d77acc09367939b52f7bb3fffdd984aa5b52b8349"
+  },
   "Vfx_Snow": {
    "id": 87504712074169,
    "sha": "8be2158c3f83ecdde34850c23a20bad572041d86bbe1e1b28301dc256daabd03"
+  },
+  "Vfx_Spot": {
+   "id": 126369518633662,
+   "sha": "91f91817f1ca59c865c74e95c719c72569f049f67d02b5172ec54633d3f7158a"
   },
   "Vfx_Star": {
    "id": 112677765949874,

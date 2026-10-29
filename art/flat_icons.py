@@ -564,6 +564,39 @@ def _w_disco():
     return out
 
 
+@icon("Weather_Starfall")
+def _w_starfall():
+    return [
+        stroke_line("M 300 220 L 470 50", width=W * 1.3), stroke_line("M 380 300 L 490 190", width=W * 1.1),
+        stroke_line("M 220 150 L 330 40", width=W * 1.1),
+        poly(star_points(220, 300, 170, 76), YELLOW), hl(170, 240, 22, 40, rot=35),
+    ]
+
+
+def moon_icon(fill, crater):
+    return [circle(256, 256, 200, fill), circle(190, 200, 34, crater, body=False, shade=False),
+            circle(320, 310, 46, crater, body=False, shade=False), circle(300, 170, 22, crater, body=False, shade=False),
+            circle(180, 330, 24, crater, body=False, shade=False), hl(160, 140, 40, 22, rot=-35)]
+
+
+@icon("Weather_GoldMoon")
+def _w_goldmoon():
+    return moon_icon(GOLD, darker(GOLD, 0.82))
+
+
+@icon("Weather_MegaMoon")
+def _w_megamoon():
+    return moon_icon("#DDE6FF", "#AFC0E6") + [poly(star_points(430, 90, 60, 26, n=4, rot=0), YELLOW, shade=False)]
+
+
+@icon("Weather_RainbowMoon")
+def _w_rainbowmoon():
+    out = [circle(256, 256, 200, PINK)]
+    for r, col in ((160, ORANGE), (120, YELLOW), (80, GREEN), (40, BLUE)):
+        out.append(circle(256, 256, r, col, body=False, shade=False, line=False))
+    return out + [hl(160, 140, 40, 22, rot=-35)]
+
+
 @icon("Backpack")
 def _backpack():
     return [

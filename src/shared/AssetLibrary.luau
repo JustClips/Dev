@@ -175,6 +175,7 @@ local WEATHER_LOOKS: { [string]: WeatherLook } = {
 	Windswept = { color = Color3.fromRGB(255, 175, 90), texture = "Vfx_Leaf", fx = Color3.fromRGB(255, 160, 60), size = 0.45, rate = 4, speed = 3, glow = 0 },
 	Bloodlit = { color = Color3.fromRGB(170, 20, 30), repaint = true, material = Enum.Material.SmoothPlastic, texture = "Vfx_Glow", fx = Color3.fromRGB(255, 70, 60), size = 0.4, rate = 10, speed = 1, accel = Vector3.new(0, 3, 0), glow = 1 },
 	Starlit = { color = Color3.fromRGB(40, 60, 140), repaint = true, material = Enum.Material.Neon, texture = "Vfx_Star", fx = Color3.fromRGB(150, 255, 220), size = 0.45, rate = 8, speed = 0.8, glow = 1 },
+	Starstruck = { color = Color3.fromRGB(255, 220, 110), texture = "Vfx_Star", fx = Color3.fromRGB(255, 240, 160), size = 0.6, rate = 9, speed = 1.5, glow = 1 },
 	Disco = { rainbow = true, texture = "Vfx_Note", fx = Color3.fromRGB(255, 255, 255), size = 0.5, rate = 4, speed = 2, accel = Vector3.new(0, 2, 0), glow = 0.4 },
 }
 
@@ -184,7 +185,8 @@ function AssetLibrary.applyMutation(model: Model, mutation: string?)
 		return
 	end
 	model:SetAttribute("Mutation", mutation)
-	local body = model:FindFirstChild("Body") :: BasePart?
+	-- Pets sparkle from their Body; eggs (no Body) from their main part.
+	local body = (model:FindFirstChild("Body") or model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")) :: BasePart?
 	if mutation == "Golden" or mutation == "Rainbow" then
 		local i = 0
 		for _, d in model:GetDescendants() do

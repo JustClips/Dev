@@ -1,10 +1,13 @@
 --!strict
--- Draws the live weather (Config/Weather) and the Egg Rain on this client: the sky
--- (lighting, atmosphere, colour grade, clouds), particles around the camera, things in the
--- sky (rainbow, aurora, disco ball), lightning, looping sounds and the weather banner.
--- Also draws every Egg Rain egg falling out of the sky to its landing mark.
--- Everything here is local to this client; the server only sends the state
--- (ServerState Weather / WeatherEndsAt / EventState) and the EggDrop / WeatherStrike events.
+-- Draws the live weather (Config/Weather) on this client:
+--   * the day/night cycle (ClockTime follows ServerState.CycleStart),
+--   * the sky for the current weather / moon / Egg Rain (lighting, atmosphere, grade, clouds),
+--   * each weather's scene: particles around the camera, things in the sky (rainbow over the
+--     map, aurora, disco ball and lights), lightning and falling stars, looping sounds,
+--   * the banner when a weather or moon starts,
+--   * Egg Rain / Mega Moon eggs falling out of the sky, and eggs being upgraded.
+-- Everything here is local; the server only sends state (ServerState attributes) and the
+-- EggDrop / WeatherStrike / EggUpgraded events.
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -23,6 +26,7 @@ local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
 local Sounds = require(Shared.Config.Sounds)
 local Weather = require(Shared.Config.Weather)
+local Zones = require(Shared.Config.Zones)
 
 local WeatherController = {}
 
@@ -47,24 +51,39 @@ local function rgb(r: number, g: number, b: number): Color3
 	return Color3.fromRGB(r, g, b)
 end
 
--- Sky presets -------------------------------------------------------------------------
--- Each preset only lists what it changes; everything else goes back to the map's own
--- values (captured at start). Sky values are set at once (they can't tween).
+-- The whole map (every zone), for things that should span it.
+local MAP_MIN, MAP_MAX = Vector2.new(math.huge, math.huge), Vector2.new(-math.huge, -math.huge)
+for _, zone in Zones.List do
+	MAP_MIN = Vector2.new(math.min(MAP_MIN.X, zone.Min.X), math.min(MAP_MIN.Y, zone.Min.Y))
+	MAP_MAX = Vector2.new(math.max(MAP_MAX.X, zone.Max.X), math.max(MAP_MAX.Y, zone.Max.Y))
+end
+
+-- Sky presets -------------------------------------------------------------------------------
+-- Each preset only lists what it changes; everything else goes back to the map's own values
+-- (captured at start). Sky values are set at once (they can't tween). ClockTime is not in
+-- here: the day/night cycle drives it.
 
 type Preset = { [string]: { [string]: any } }
 
 local PRESETS: { [string]: Preset } = {
+	Night = {
+		Lighting = { Brightness = 1.2, Ambient = rgb(60, 66, 95), OutdoorAmbient = rgb(80, 90, 130), ColorShift_Top = rgb(170, 190, 255) },
+		Atmosphere = { Density = 0.3, Color = rgb(70, 85, 130), Decay = rgb(30, 40, 80), Haze = 1, Glare = 0 },
+		Grade = { TintColor = rgb(210, 220, 255), Saturation = 0.05 },
+		Clouds = { Color = rgb(90, 100, 140), Cover = 0.45 },
+		Sky = { StarCount = 3000 },
+	},
 	Rain = {
-		Lighting = { Brightness = 1.4, Ambient = rgb(90, 95, 110), OutdoorAmbient = rgb(110, 115, 130), ColorShift_Top = rgb(200, 210, 225) },
-		Atmosphere = { Density = 0.42, Color = rgb(170, 180, 195), Decay = rgb(110, 120, 140), Haze = 2.2, Glare = 0 },
-		Grade = { Saturation = -0.08, TintColor = rgb(215, 225, 240), Brightness = -0.02 },
-		Clouds = { Cover = 0.9, Density = 0.85, Color = rgb(150, 155, 165) },
+		Lighting = { Brightness = 1.3, Ambient = rgb(90, 95, 110), OutdoorAmbient = rgb(105, 112, 128), ColorShift_Top = rgb(195, 205, 225), EnvironmentSpecularScale = 1, EnvironmentDiffuseScale = 0.4 },
+		Atmosphere = { Density = 0.45, Color = rgb(165, 175, 192), Decay = rgb(105, 115, 135), Haze = 2.4, Glare = 0 },
+		Grade = { Saturation = -0.12, TintColor = rgb(212, 222, 240), Brightness = -0.03, Contrast = 0.05 },
+		Clouds = { Cover = 0.92, Density = 0.9, Color = rgb(140, 146, 158) },
 	},
 	Thunderstorm = {
-		Lighting = { Brightness = 0.8, Ambient = rgb(60, 65, 85), OutdoorAmbient = rgb(75, 80, 100), ColorShift_Top = rgb(160, 170, 200) },
-		Atmosphere = { Density = 0.5, Color = rgb(120, 125, 145), Decay = rgb(70, 75, 95), Haze = 2.6, Glare = 0 },
-		Grade = { Saturation = -0.2, TintColor = rgb(190, 200, 225), Brightness = -0.05, Contrast = 0.12 },
-		Clouds = { Cover = 0.97, Density = 1, Color = rgb(90, 92, 105) },
+		Lighting = { Brightness = 0.7, Ambient = rgb(55, 60, 82), OutdoorAmbient = rgb(70, 76, 98), ColorShift_Top = rgb(150, 160, 200), EnvironmentSpecularScale = 1, EnvironmentDiffuseScale = 0.35 },
+		Atmosphere = { Density = 0.52, Color = rgb(110, 116, 138), Decay = rgb(60, 66, 88), Haze = 2.8, Glare = 0 },
+		Grade = { Saturation = -0.22, TintColor = rgb(185, 196, 228), Brightness = -0.06, Contrast = 0.15 },
+		Clouds = { Cover = 0.98, Density = 1, Color = rgb(80, 82, 96) },
 	},
 	Snow = {
 		Lighting = { Brightness = 2, Ambient = rgb(150, 160, 180), OutdoorAmbient = rgb(170, 180, 200), ColorShift_Top = rgb(220, 235, 255) },
@@ -80,39 +99,41 @@ local PRESETS: { [string]: Preset } = {
 	},
 	Rainbow = {
 		Lighting = { Brightness = 3 },
-		Atmosphere = { Density = 0.22, Haze = 0.6 },
+		Atmosphere = { Density = 0.18, Haze = 0.4, Glare = 0.3 },
 		Grade = { Saturation = 0.4, Brightness = 0.04, TintColor = rgb(255, 250, 255) },
-		Clouds = { Cover = 0.45, Density = 0.4 },
+		Clouds = { Cover = 0.4, Density = 0.4 },
+		Bloom = { Intensity = 0.6, Threshold = 1.6 },
 	},
 	GoldenHour = {
-		Lighting = { ClockTime = 17.6, Brightness = 2.6, ColorShift_Top = rgb(255, 180, 90), Ambient = rgb(140, 110, 90), OutdoorAmbient = rgb(170, 130, 100) },
+		Lighting = { Brightness = 2.6, ColorShift_Top = rgb(255, 180, 90), Ambient = rgb(140, 110, 90), OutdoorAmbient = rgb(170, 130, 100) },
 		Atmosphere = { Density = 0.35, Color = rgb(255, 200, 140), Decay = rgb(200, 120, 80), Glare = 0.6, Haze = 1.5 },
 		Grade = { Saturation = 0.3, TintColor = rgb(255, 225, 180) },
 		Clouds = { Color = rgb(255, 210, 160), Cover = 0.6 },
 		Bloom = { Intensity = 0.7, Threshold = 1.4 },
 		SunRays = { Intensity = 0.2, Spread = 0.7 },
 	},
-	BloodMoon = {
-		Lighting = { ClockTime = 22, Brightness = 1.2, Ambient = rgb(120, 30, 35), OutdoorAmbient = rgb(150, 40, 45), ColorShift_Top = rgb(255, 60, 60) },
-		Atmosphere = { Density = 0.45, Color = rgb(120, 20, 30), Decay = rgb(60, 0, 10), Haze = 1.5, Glare = 0.3 },
-		Grade = { Saturation = 0.1, TintColor = rgb(255, 170, 170), Contrast = 0.15 },
-		Clouds = { Color = rgb(90, 20, 25), Cover = 0.5 },
-		Sky = { MoonTextureId = "Vfx_BloodMoon", MoonAngularSize = 24, StarCount = 1500 },
+	Starfall = {
+		Lighting = { Brightness = 0.9, ExposureCompensation = -0.5, Ambient = rgb(80, 75, 110), OutdoorAmbient = rgb(100, 95, 140), ColorShift_Top = rgb(255, 230, 170) },
+		Atmosphere = { Density = 0.28, Color = rgb(90, 80, 130), Decay = rgb(40, 30, 80), Haze = 0.8 },
+		Grade = { Saturation = 0.2, TintColor = rgb(235, 225, 255) },
+		Clouds = { Cover = 0.2, Color = rgb(120, 110, 160) },
+		Sky = { StarCount = 3000 },
+		Bloom = { Intensity = 0.8, Threshold = 1.3 },
 	},
 	Aurora = {
-		Lighting = { ClockTime = 22, Brightness = 1.4, Ambient = rgb(60, 90, 110), OutdoorAmbient = rgb(80, 120, 140), ColorShift_Top = rgb(150, 255, 220) },
+		Lighting = { Brightness = 0.8, ExposureCompensation = -0.6, Ambient = rgb(60, 90, 110), OutdoorAmbient = rgb(80, 120, 140), ColorShift_Top = rgb(150, 255, 220) },
 		Atmosphere = { Density = 0.3, Color = rgb(60, 110, 120), Decay = rgb(20, 40, 70), Haze = 1 },
 		Grade = { Saturation = 0.25, TintColor = rgb(205, 255, 240) },
-		Clouds = { Cover = 0.25, Color = rgb(80, 120, 140) },
+		Clouds = { Cover = 0.2, Color = rgb(80, 120, 140) },
 		Sky = { StarCount = 3000 },
 	},
 	Disco = {
-		Lighting = { ClockTime = 21, Brightness = 1.2, Ambient = rgb(110, 70, 150), OutdoorAmbient = rgb(130, 80, 170) },
-		Atmosphere = { Density = 0.35, Color = rgb(80, 40, 120), Decay = rgb(40, 10, 70), Haze = 1.2 },
-		Grade = { Saturation = 0.35, Contrast = 0.1 },
-		Clouds = { Cover = 0.3, Color = rgb(120, 70, 160) },
-		Sky = { StarCount = 2500 },
-		Bloom = { Intensity = 0.9, Threshold = 1.2 },
+		Lighting = { Brightness = 0.6, ExposureCompensation = -1, Ambient = rgb(90, 60, 130), OutdoorAmbient = rgb(110, 70, 150), ColorShift_Top = rgb(255, 120, 255) },
+		Atmosphere = { Density = 0.4, Color = rgb(60, 30, 100), Decay = rgb(30, 10, 60), Haze = 1.5 },
+		Grade = { Saturation = 0.4, Contrast = 0.12 },
+		Clouds = { Cover = 0.3, Color = rgb(100, 60, 140) },
+		Sky = { StarCount = 3000 },
+		Bloom = { Intensity = 1, Threshold = 1.1, Size = 40 },
 	},
 	EggRain = {
 		Lighting = { Brightness = 2, ColorShift_Top = rgb(255, 140, 90), Ambient = rgb(150, 110, 130), OutdoorAmbient = rgb(170, 120, 140) },
@@ -121,20 +142,49 @@ local PRESETS: { [string]: Preset } = {
 		Clouds = { Cover = 0.7, Color = rgb(255, 200, 215) },
 		Bloom = { Intensity = 0.6, Threshold = 1.5 },
 	},
+	BloodMoon = {
+		Lighting = { Brightness = 1.2, Ambient = rgb(120, 30, 35), OutdoorAmbient = rgb(150, 40, 45), ColorShift_Top = rgb(255, 60, 60) },
+		Atmosphere = { Density = 0.45, Color = rgb(120, 20, 30), Decay = rgb(60, 0, 10), Haze = 1.5, Glare = 0.3 },
+		Grade = { Saturation = 0.1, TintColor = rgb(255, 165, 165), Contrast = 0.15 },
+		Clouds = { Color = rgb(90, 20, 25), Cover = 0.5 },
+		Sky = { MoonTextureId = "Vfx_BloodMoon", MoonAngularSize = 24, StarCount = 1500 },
+	},
+	GoldMoon = {
+		Lighting = { Brightness = 1.4, Ambient = rgb(110, 95, 60), OutdoorAmbient = rgb(140, 120, 70), ColorShift_Top = rgb(255, 210, 110) },
+		Atmosphere = { Density = 0.32, Color = rgb(120, 100, 50), Decay = rgb(60, 45, 20), Haze = 1.2, Glare = 0.4 },
+		Grade = { Saturation = 0.15, TintColor = rgb(255, 235, 190) },
+		Clouds = { Color = rgb(120, 100, 60), Cover = 0.4 },
+		Sky = { MoonTextureId = "Vfx_GoldMoon", MoonAngularSize = 22, StarCount = 2500 },
+	},
+	RainbowMoon = {
+		Lighting = { Brightness = 1.4, Ambient = rgb(110, 80, 120), OutdoorAmbient = rgb(130, 100, 150), ColorShift_Top = rgb(255, 170, 240) },
+		Atmosphere = { Density = 0.3, Color = rgb(110, 70, 130), Decay = rgb(50, 30, 80), Haze = 1 },
+		Grade = { Saturation = 0.35, TintColor = rgb(250, 230, 255) },
+		Clouds = { Color = rgb(130, 90, 150), Cover = 0.35 },
+		Sky = { MoonTextureId = "Vfx_RainbowMoon", MoonAngularSize = 22, StarCount = 3000 },
+	},
+	MegaMoon = {
+		Lighting = { Brightness = 1.6, Ambient = rgb(80, 95, 130), OutdoorAmbient = rgb(110, 125, 165), ColorShift_Top = rgb(200, 225, 255) },
+		Atmosphere = { Density = 0.28, Color = rgb(80, 100, 150), Decay = rgb(30, 45, 90), Haze = 1 },
+		Grade = { TintColor = rgb(225, 235, 255) },
+		Clouds = { Color = rgb(100, 115, 160), Cover = 0.3 },
+		Sky = { MoonTextureId = "Vfx_MegaMoon", MoonAngularSize = 40, StarCount = 3000 },
+	},
 }
 
 local PROPS: { [string]: { string } } = {
-	Lighting = { "ClockTime", "Brightness", "Ambient", "OutdoorAmbient", "ColorShift_Top", "ExposureCompensation" },
+	Lighting = { "Brightness", "Ambient", "OutdoorAmbient", "ColorShift_Top", "ExposureCompensation", "EnvironmentSpecularScale", "EnvironmentDiffuseScale" },
 	Atmosphere = { "Density", "Color", "Decay", "Haze", "Glare" },
 	Grade = { "Saturation", "TintColor", "Brightness", "Contrast" },
 	Clouds = { "Cover", "Density", "Color" },
-	Bloom = { "Intensity", "Threshold" },
+	Bloom = { "Intensity", "Threshold", "Size" },
 	SunRays = { "Intensity", "Spread" },
 	Sky = { "MoonTextureId", "MoonAngularSize", "StarCount" },
 }
 
 local targets: { [string]: any } = {}
 local baseline: { [string]: { [string]: any } } = {}
+local currentPreset: Preset? = nil
 
 local function capture()
 	targets.Lighting = Lighting
@@ -145,7 +195,7 @@ local function capture()
 	targets.SunRays = Lighting:FindFirstChildOfClass("SunRaysEffect")
 	targets.Sky = Lighting:FindFirstChildOfClass("Sky")
 	for group, props in PROPS do
-		local target = targets[group] :: any
+		local target = targets[group]
 		if target then
 			baseline[group] = {}
 			for _, prop in props do
@@ -155,33 +205,41 @@ local function capture()
 	end
 end
 
+-- The value a sky property should have now (preset, else the map's own).
+local function skyValue(group: string, prop: string): any
+	local wanted = currentPreset and currentPreset[group]
+	if wanted and wanted[prop] ~= nil then
+		return wanted[prop]
+	end
+	return baseline[group] and baseline[group][prop]
+end
+
 local function applySky(preset: Preset?)
+	currentPreset = preset
 	for group, props in PROPS do
-		local target = targets[group] :: any
-		local base = baseline[group]
-		if not target or not base or not target.Parent then
+		local target = targets[group]
+		if not target or not baseline[group] or not target.Parent then
 			continue
 		end
-		local wanted = preset and preset[group] or {}
 		if group == "Sky" then
 			for _, prop in props do
-				local value = wanted[prop]
-				if prop == "MoonTextureId" and value then
+				local value = skyValue(group, prop)
+				if prop == "MoonTextureId" and preset and preset.Sky and preset.Sky.MoonTextureId then
 					value = img(value)
 				end
-				target[prop] = if value ~= nil then value else base[prop]
+				target[prop] = value
 			end
 			continue
 		end
 		local goal = {}
 		for _, prop in props do
-			goal[prop] = if wanted[prop] ~= nil then wanted[prop] else base[prop]
+			goal[prop] = skyValue(group, prop)
 		end
 		TweenService:Create(target, SKY_TWEEN, goal):Play()
 	end
 end
 
--- Helpers --------------------------------------------------------------------------------
+-- Helpers ------------------------------------------------------------------------------------
 
 local function part(name: string, size: Vector3, parent: Instance?): Part
 	local p = Instance.new("Part")
@@ -213,8 +271,8 @@ local function seq(a: number, b: number?): NumberSequence
 	return if b then NumberSequence.new(a, b) else NumberSequence.new(a)
 end
 
+-- Fades in and out so particles never pop.
 local function fadeSeq(peak: number): NumberSequence
-	-- Fades in and out so particles never pop.
 	return NumberSequence.new({
 		NumberSequenceKeypoint.new(0, 1),
 		NumberSequenceKeypoint.new(0.15, peak),
@@ -231,6 +289,7 @@ local RAINBOW = ColorSequence.new({
 	ColorSequenceKeypoint.new(0.8, rgb(80, 170, 255)),
 	ColorSequenceKeypoint.new(1, rgb(190, 100, 255)),
 })
+local BANDS = { rgb(255, 70, 70), rgb(255, 150, 50), rgb(255, 225, 60), rgb(80, 215, 90), rgb(60, 165, 255), rgb(100, 90, 255), rgb(185, 90, 255) }
 
 local function camera(): Camera?
 	return Workspace.CurrentCamera
@@ -241,6 +300,11 @@ local function focus(): Vector3
 	return if cam then cam.Focus.Position else Vector3.zero
 end
 
+local function cameraPosition(): Vector3
+	local cam = camera()
+	return if cam then cam.CFrame.Position else Vector3.zero
+end
+
 -- Ground height under a point (or the point itself when nothing is below).
 local function groundAt(position: Vector3): Vector3
 	local character = player.Character
@@ -249,27 +313,41 @@ local function groundAt(position: Vector3): Vector3
 	return if hit then hit.Position else position
 end
 
+local function attachment(parent: Instance, position: Vector3, axis: Vector3?): Attachment
+	local a = Instance.new("Attachment")
+	a.Position = position
+	if axis then
+		-- Beam curves bend along each attachment's X axis.
+		local side = if math.abs(axis.Y) > 0.9 then Vector3.xAxis else Vector3.yAxis
+		a.CFrame = CFrame.fromMatrix(position, axis, axis:Cross(side).Unit)
+	end
+	a.Parent = parent
+	return a
+end
+
 -- A one-shot 3D sound at a spot.
-local function soundAt(name: string, position: Vector3, volumeMult: number?, speed: number?)
+local function soundAt(name: string, position: Vector3, volumeMult: number?, speed: number?, delay: number?)
 	local def = Sounds.Sfx[name]
 	if not def or def.Id == "" then
 		return
 	end
-	local holder = Instance.new("Attachment")
-	holder.WorldPosition = position
-	holder.Parent = Workspace.Terrain
-	local sound = Instance.new("Sound")
-	sound.SoundId = def.Id
-	sound.Volume = def.Volume * (volumeMult or 1)
-	sound.PlaybackSpeed = speed or 1
-	sound.RollOffMode = Enum.RollOffMode.InverseTapered
-	sound.RollOffMinDistance = 30
-	sound.RollOffMaxDistance = 600
-	sound.SoundGroup = Ui.soundGroup("SFX")
-	sound.Parent = holder
-	sound:Play()
-	task.delay(10, function()
-		holder:Destroy()
+	task.delay(delay or 0, function()
+		local holder = Instance.new("Attachment")
+		holder.WorldPosition = position
+		holder.Parent = Workspace.Terrain
+		local sound = Instance.new("Sound")
+		sound.SoundId = def.Id
+		sound.Volume = def.Volume * (volumeMult or 1)
+		sound.PlaybackSpeed = speed or 1
+		sound.RollOffMode = Enum.RollOffMode.InverseTapered
+		sound.RollOffMinDistance = 40
+		sound.RollOffMaxDistance = 900
+		sound.SoundGroup = Ui.soundGroup("SFX")
+		sound.Parent = holder
+		sound:Play()
+		task.delay(10, function()
+			holder:Destroy()
+		end)
 	end)
 end
 
@@ -283,139 +361,49 @@ local function shake(power: number, seconds: number)
 	shakeUntil = math.max(shakeUntil, os.clock() + seconds)
 end
 
--- Screen flash for lightning (its own colour grade so it never fights the sky tween).
+-- Lightning flash: its own colour grade (never fights the sky tween) plus the clouds
+-- lighting up from inside.
 local flashGrade: ColorCorrectionEffect
 local function flash(strength: number)
-	flashGrade.Brightness = 0.45 * strength
-	flashGrade.Contrast = 0.2 * strength
-	TweenService:Create(flashGrade, TweenInfo.new(0.08), { Brightness = 0.05 * strength }):Play()
-	task.delay(0.12, function()
-		flashGrade.Brightness = 0.35 * strength
-		TweenService:Create(flashGrade, TweenInfo.new(0.45, Enum.EasingStyle.Quad), { Brightness = 0, Contrast = 0 }):Play()
+	flashGrade.Brightness = 0.5 * strength
+	flashGrade.Contrast = 0.25 * strength
+	flashGrade.TintColor = rgb(225, 235, 255)
+	TweenService:Create(flashGrade, TweenInfo.new(0.07), { Brightness = 0.08 * strength }):Play()
+	local clouds = targets.Clouds
+	if clouds and clouds.Parent then
+		clouds.Color = rgb(235, 240, 255)
+	end
+	task.delay(0.11, function()
+		flashGrade.Brightness = 0.38 * strength
+		TweenService:Create(flashGrade, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { Brightness = 0, Contrast = 0, TintColor = Color3.new(1, 1, 1) }):Play()
+		if clouds and clouds.Parent then
+			TweenService:Create(clouds, TweenInfo.new(0.6), { Color = skyValue("Clouds", "Color") }):Play()
+		end
 	end)
 end
 
--- Weather scenes -------------------------------------------------------------------------
--- A scene builds its effects and returns an update(dt, focus, ground) and a cleanup.
-
-type Scene = { update: ((number, Vector3, Vector3) -> ())?, parts: { Instance }, cleanup: { () -> () } }
-
-local function newScene(): Scene
-	return { parts = {}, cleanup = {} }
-end
-
-local function keep(scene: Scene, inst: Instance): any
-	table.insert(scene.parts, inst)
-	return inst
-end
-
--- An invisible box that follows the camera focus; emitters inside it rain particles around the player.
-local function follower(scene: Scene, name: string, size: Vector3): Part
-	return keep(scene, part(name, size))
-end
-
-local function rain(scene: Scene, heavy: boolean)
-	local sky = follower(scene, "RainSky", Vector3.new(160, 1, 160))
-	emitter(sky, {
-		Texture = img("Vfx_Rain"),
-		Orientation = Enum.ParticleOrientation.VelocityParallel,
-		EmissionDirection = Enum.NormalId.Bottom,
-		Size = seq(if heavy then 2.8 else 2.4),
-		Speed = NumberRange.new(if heavy then 120 else 95, if heavy then 140 else 110),
-		Lifetime = NumberRange.new(0.75, 0.85),
-		Rate = if heavy then 900 else 600,
-		SpreadAngle = Vector2.new(4, 4),
-		Acceleration = if heavy then WIND * 25 else Vector3.zero,
-		Color = ColorSequence.new(rgb(205, 220, 240)),
-		Transparency = seq(if heavy then 0.2 else 0.3),
-		LightEmission = 0.15,
-	})
-	local ground = follower(scene, "RainSplash", Vector3.new(90, 0.2, 90))
-	emitter(ground, {
-		Texture = img("Vfx_Ring"),
-		Orientation = Enum.ParticleOrientation.VelocityPerpendicular,
-		EmissionDirection = Enum.NormalId.Top,
-		Size = seq(0.1, 1.6),
-		Speed = NumberRange.new(0.01),
-		Lifetime = NumberRange.new(0.25, 0.35),
-		Rate = if heavy then 220 else 150,
-		Color = ColorSequence.new(rgb(220, 235, 255)),
-		Transparency = seq(0.35, 1),
-	})
-	scene.update = function(_, at, floor)
-		sky.CFrame = CFrame.new(at + Vector3.new(0, 70, 0))
-		ground.CFrame = CFrame.new(floor + Vector3.new(0, 0.15, 0))
-	end
-end
-
-local function lightningBolt(scene: Scene?, top: Vector3, bottom: Vector3, color: Color3)
-	local bolt = Instance.new("Model")
-	bolt.Name = "Bolt"
-	local function segment(a: Vector3, b: Vector3, width: number)
-		local p = part("Seg", Vector3.new(width, width, (b - a).Magnitude))
-		p.CFrame = CFrame.lookAt((a + b) / 2, b)
-		p.Material = Enum.Material.Neon
-		p.Color = color
-		p.Transparency = 0
-		p.Parent = bolt
-	end
-	local function zigzag(a: Vector3, b: Vector3, steps: number, jitter: number, width: number, branches: boolean)
-		local last = a
-		for i = 1, steps do
-			local t = i / steps
-			local point = a:Lerp(b, t)
-			if i < steps then
-				point += Vector3.new(rng:NextNumber(-jitter, jitter), 0, rng:NextNumber(-jitter, jitter))
-			end
-			segment(last, point, width)
-			if branches and i > 1 and i < steps - 1 and rng:NextNumber() < 0.35 then
-				local away = Vector3.new(rng:NextNumber(-1, 1), -rng:NextNumber(0.6, 1.2), rng:NextNumber(-1, 1)) * rng:NextNumber(25, 50)
-				zigzag(point, point + away, 4, jitter * 0.5, width * 0.5, false)
-			end
-			last = point
-		end
-	end
-	zigzag(top, bottom, 12, 9, 0.9, true)
-	local glow = part("Glow", Vector3.new(1, 1, 1))
-	glow.Position = bottom + Vector3.new(0, 3, 0)
-	glow.Parent = bolt
-	local light = Instance.new("PointLight")
-	light.Color = color
-	light.Range = 60
-	light.Brightness = 10
-	light.Parent = glow
-	bolt.Parent = folder
-	if scene then
-		keep(scene, bolt)
-	end
-	-- Flicker, then fade out.
-	task.spawn(function()
-		for _, t in { 0.06, 0.05, 0.07 } do
-			task.wait(t)
-			for _, p in bolt:GetChildren() do
-				if p:IsA("BasePart") and p.Name == "Seg" then
-					p.Transparency = if p.Transparency == 0 then 0.6 else 0
-				end
-			end
-		end
-		for _, p in bolt:GetChildren() do
-			if p:IsA("BasePart") and p.Name == "Seg" then
-				TweenService:Create(p, TweenInfo.new(0.35), { Transparency = 1 }):Play()
-			end
-		end
-		TweenService:Create(light, TweenInfo.new(0.5), { Brightness = 0 }):Play()
-		task.wait(0.6)
-		bolt:Destroy()
+local function decalOnGround(texture: string, position: Vector3, size: number, color: Color3, transparency: number, life: number)
+	local holder = part("GroundMark", Vector3.new(size, 0.05, size))
+	holder.Position = position + Vector3.new(0, 0.08, 0)
+	local decal = Instance.new("Decal")
+	decal.Face = Enum.NormalId.Top
+	decal.Texture = img(texture)
+	decal.Color3 = color
+	decal.Transparency = transparency
+	decal.Parent = holder
+	TweenService:Create(decal, TweenInfo.new(life, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Transparency = 1 }):Play()
+	task.delay(life + 0.1, function()
+		holder:Destroy()
 	end)
 end
 
-local function sparkBurst(position: Vector3, color: Color3, count: number, texture: string?)
+local function sparkBurst(position: Vector3, color: Color3, count: number, texture: string?, speed: number?)
 	local holder = part("Burst", Vector3.new(1, 1, 1))
 	holder.Position = position
 	local e = emitter(holder, {
 		Texture = img(texture or "Vfx_Star"),
 		Size = seq(1.4, 0),
-		Speed = NumberRange.new(18, 40),
+		Speed = NumberRange.new((speed or 1) * 18, (speed or 1) * 40),
 		Lifetime = NumberRange.new(0.4, 0.8),
 		SpreadAngle = Vector2.new(180, 180),
 		Acceleration = Vector3.new(0, -40, 0),
@@ -437,7 +425,7 @@ local function smokePuff(position: Vector3, color: Color3, count: number, size: 
 		Texture = "rbxasset://textures/particles/smoke_main.dds",
 		Size = seq(size * 0.6, size * 1.6),
 		Speed = NumberRange.new(8, 16),
-		Lifetime = NumberRange.new(0.6, 1.1),
+		Lifetime = NumberRange.new(0.6, 1.2),
 		SpreadAngle = Vector2.new(80, 80),
 		EmissionDirection = Enum.NormalId.Top,
 		Acceleration = Vector3.new(0, -6, 0),
@@ -469,87 +457,225 @@ local function shockRing(position: Vector3, color: Color3, from: number, to: num
 	end)
 end
 
--- A lightning strike (Thunderstorm) where the server says, or a far one for the mood.
-local STRIKE_COLOR = rgb(255, 250, 215)
-local function strikeAt(position: Vector3, near: boolean)
-	local floor = groundAt(position)
-	local top = floor + Vector3.new(rng:NextNumber(-30, 30), 260, rng:NextNumber(-30, 30))
-	lightningBolt(nil, top, floor, STRIKE_COLOR)
-	flash(if near then 1 else 0.5)
-	if near then
-		sparkBurst(floor + Vector3.new(0, 1, 0), rgb(255, 230, 120), 40)
-		smokePuff(floor, rgb(90, 90, 100), 14, 5)
-		shockRing(floor, rgb(255, 230, 120), 4, 28, 0.6)
-		local dist = (floor - focus()).Magnitude
-		if dist < 120 then
-			shake(0.6 * (1 - dist / 120), 0.35)
+-- Crackling sparks on a spot for a while (a struck egg).
+local function crackle(position: Vector3, color: Color3, seconds: number)
+	local holder = part("Crackle", Vector3.new(3, 3, 3))
+	holder.Position = position + Vector3.new(0, 1.8, 0)
+	local e = emitter(holder, {
+		Texture = img("Vfx_Star"),
+		Size = seq(0.8, 0),
+		Speed = NumberRange.new(4, 10),
+		Lifetime = NumberRange.new(0.15, 0.35),
+		SpreadAngle = Vector2.new(180, 180),
+		Color = ColorSequence.new(color),
+		LightEmission = 1,
+		Rate = 40,
+	})
+	local light = Instance.new("PointLight")
+	light.Color = color
+	light.Range = 14
+	light.Brightness = 4
+	light.Parent = holder
+	task.delay(seconds, function()
+		e.Enabled = false
+		TweenService:Create(light, TweenInfo.new(0.5), { Brightness = 0 }):Play()
+		task.wait(0.6)
+		holder:Destroy()
+	end)
+end
+
+-- Lightning ------------------------------------------------------------------------------------
+
+local BOLT_CORE = rgb(255, 255, 250)
+local BOLT_GLOW = rgb(150, 190, 255)
+
+-- A jagged bolt: a thin white core inside a wide blue glow, with forks. Flickers, then fades.
+local function lightningBolt(top: Vector3, bottom: Vector3)
+	local bolt = Instance.new("Model")
+	bolt.Name = "Bolt"
+	local function segment(a: Vector3, b: Vector3, width: number)
+		local len = (b - a).Magnitude
+		local core = part("Core", Vector3.new(width, width, len + width))
+		core.CFrame = CFrame.lookAt((a + b) / 2, b)
+		core.Material = Enum.Material.Neon
+		core.Color = BOLT_CORE
+		core.Transparency = 0
+		core.Parent = bolt
+		local glow = part("Glow", Vector3.new(width * 4, width * 4, len + width * 2))
+		glow.CFrame = core.CFrame
+		glow.Material = Enum.Material.Neon
+		glow.Color = BOLT_GLOW
+		glow.Transparency = 0.75
+		glow.Parent = bolt
+	end
+	local function zigzag(a: Vector3, b: Vector3, steps: number, jitter: number, width: number, depth: number)
+		local last = a
+		for i = 1, steps do
+			local point = a:Lerp(b, i / steps)
+			if i < steps then
+				point += Vector3.new(rng:NextNumber(-jitter, jitter), rng:NextNumber(-jitter, jitter) * 0.3, rng:NextNumber(-jitter, jitter))
+			end
+			segment(last, point, width)
+			if depth > 0 and i > 1 and i < steps - 1 and rng:NextNumber() < 0.4 then
+				local away = Vector3.new(rng:NextNumber(-1, 1), -rng:NextNumber(0.5, 1.2), rng:NextNumber(-1, 1)) * rng:NextNumber(20, 55)
+				zigzag(point, point + away, 5, jitter * 0.5, width * 0.55, depth - 1)
+			end
+			last = point
 		end
 	end
-	soundAt("Thunder" .. rng:NextInteger(1, 3), floor, if near then 1 else 0.6, rng:NextNumber(0.85, 1.05))
+	zigzag(top, bottom, 14, 10, 0.7, 2)
+	local glow = part("Light", Vector3.new(1, 1, 1))
+	glow.Position = bottom + Vector3.new(0, 4, 0)
+	glow.Parent = bolt
+	local light = Instance.new("PointLight")
+	light.Color = BOLT_GLOW
+	light.Range = 60
+	light.Brightness = 12
+	light.Parent = glow
+	bolt.Parent = folder
+	task.spawn(function()
+		for _, t in { 0.05, 0.04, 0.06, 0.05 } do
+			task.wait(t)
+			for _, p in bolt:GetChildren() do
+				if p:IsA("BasePart") and p.Name == "Core" then
+					p.Transparency = if p.Transparency == 0 then 0.7 else 0
+				end
+			end
+		end
+		for _, p in bolt:GetChildren() do
+			if p:IsA("BasePart") and p.Name ~= "Light" then
+				TweenService:Create(p, TweenInfo.new(0.4), { Transparency = 1 }):Play()
+			end
+		end
+		TweenService:Create(light, TweenInfo.new(0.6), { Brightness = 0 }):Play()
+		task.wait(0.7)
+		bolt:Destroy()
+	end)
 end
 
-local function snow(scene: Scene)
-	local sky = follower(scene, "SnowSky", Vector3.new(170, 1, 170))
-	emitter(sky, {
-		Texture = img("Vfx_Snow"),
-		EmissionDirection = Enum.NormalId.Bottom,
-		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.45, 0.2), NumberSequenceKeypoint.new(1, 0.45, 0.2) }),
-		Speed = NumberRange.new(5, 8),
-		Lifetime = NumberRange.new(8, 10),
-		Rate = 260,
-		SpreadAngle = Vector2.new(25, 25),
-		Acceleration = WIND * 1.5,
-		Rotation = NumberRange.new(0, 360),
-		RotSpeed = NumberRange.new(-60, 60),
-		Color = ColorSequence.new(rgb(255, 255, 255)),
-		Transparency = fadeSeq(0.1),
-		LightEmission = 0.35,
-		LightInfluence = 0.2,
+local function lightningAt(position: Vector3, hitEgg: boolean, near: boolean)
+	local floor = if hitEgg then position else groundAt(position)
+	local top = floor + Vector3.new(rng:NextNumber(-40, 40), 300, rng:NextNumber(-40, 40))
+	lightningBolt(top, floor)
+	local dist = (floor - cameraPosition()).Magnitude
+	flash(if near then math.clamp(1.2 - dist / 600, 0.35, 1) else 0.3)
+	if near then
+		sparkBurst(floor + Vector3.new(0, 1, 0), rgb(200, 225, 255), 45, nil, 1.2)
+		smokePuff(floor, rgb(80, 80, 90), 14, 5)
+		shockRing(floor, rgb(170, 210, 255), 4, 32, 0.6)
+		decalOnGround("Vfx_Scorch", floor, 14, Color3.new(1, 1, 1), 0.1, 7)
+		decalOnGround("Vfx_Spot", floor, 26, rgb(170, 210, 255), 0.3, 1.2)
+		if hitEgg then
+			crackle(floor, rgb(255, 235, 110), 2.5)
+		end
+		if dist < 140 then
+			shake(0.7 * (1 - dist / 140), 0.4)
+		end
+	end
+	-- Thunder arrives a moment later the further away it is.
+	soundAt("Thunder" .. rng:NextInteger(1, 3), floor, if near then 1 else 0.55, rng:NextNumber(0.8, 1.05), math.min(1.8, dist / 500))
+end
+
+-- Falling star (Starfall): a bright star with a long trail that lands at a spot.
+local STAR = rgb(255, 230, 140)
+local function fallingStar(target: Vector3, seconds: number, onLand: (() -> ())?)
+	local from = target + Vector3.new(rng:NextNumber(-1, 1) * 160, 280, rng:NextNumber(-1, 1) * 160)
+	local star = part("Star", Vector3.new(2.2, 2.2, 2.2))
+	star.Shape = Enum.PartType.Ball
+	star.Material = Enum.Material.Neon
+	star.Color = STAR
+	star.Transparency = 0
+	star.Position = from
+	local t0 = attachment(star, Vector3.new(0, 1.1, 0))
+	local t1 = attachment(star, Vector3.new(0, -1.1, 0))
+	local trail = Instance.new("Trail")
+	trail.Attachment0 = t0
+	trail.Attachment1 = t1
+	trail.Lifetime = 0.5
+	trail.FaceCamera = true
+	trail.LightEmission = 1
+	trail.LightInfluence = 0
+	trail.WidthScale = NumberSequence.new(1.6, 0)
+	trail.Transparency = NumberSequence.new(0, 1)
+	trail.Color = ColorSequence.new(rgb(255, 255, 230), rgb(255, 170, 80))
+	trail.Parent = star
+	emitter(star, {
+		Texture = img("Vfx_Star"),
+		Size = seq(1.6, 0),
+		Speed = NumberRange.new(1, 4),
+		Lifetime = NumberRange.new(0.3, 0.6),
+		SpreadAngle = Vector2.new(180, 180),
+		Color = ColorSequence.new(STAR),
+		LightEmission = 1,
+		Rate = 50,
+		Shape = Enum.ParticleEmitterShape.Sphere,
 	})
-	scene.update = function(_, at)
-		sky.CFrame = CFrame.new(at + Vector3.new(0, 45, 0))
+	local light = Instance.new("PointLight")
+	light.Color = STAR
+	light.Range = 24
+	light.Brightness = 4
+	light.Parent = star
+	local tween = TweenService:Create(star, TweenInfo.new(seconds, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Position = target + Vector3.new(0, 1, 0) })
+	tween:Play()
+	tween.Completed:Once(function()
+		star:Destroy()
+		if onLand then
+			onLand()
+		end
+	end)
+end
+
+local function starAt(position: Vector3, hitEgg: boolean)
+	local floor = if hitEgg then position else groundAt(position)
+	if (floor - focus()).Magnitude > 900 then
+		return
+	end
+	soundAt("EggFall", floor, 0.7, 1.2)
+	fallingStar(floor, 1.1, function()
+		sparkBurst(floor + Vector3.new(0, 1.5, 0), STAR, 40, nil, 1.1)
+		shockRing(floor, STAR, 3, 24, 0.6)
+		decalOnGround("Vfx_Spot", floor, 18, STAR, 0.2, 1.5)
+		soundAt("Sparkle", floor, 1.2)
+		if hitEgg then
+			crackle(floor, STAR, 2)
+		end
+		local dist = (floor - focus()).Magnitude
+		if dist < 60 then
+			shake(0.25 * (1 - dist / 60), 0.2)
+		end
+	end)
+end
+
+-- Scenes ----------------------------------------------------------------------------------------
+-- A scene builds its effects and gets update(dt, focus, ground) every frame, plus cleanups.
+
+type Scene = { update: ((number, Vector3, Vector3) -> ())?, parts: { Instance }, cleanup: { () -> () } }
+
+local function newScene(): Scene
+	return { parts = {}, cleanup = {} }
+end
+
+local function keep(scene: Scene, inst: Instance): any
+	table.insert(scene.parts, inst)
+	return inst
+end
+
+local function addUpdate(scene: Scene, fn: (number, Vector3, Vector3) -> ())
+	local before = scene.update
+	scene.update = function(dt, at, floor)
+		if before then
+			before(dt, at, floor)
+		end
+		fn(dt, at, floor)
 	end
 end
 
-local function windy(scene: Scene)
-	-- Leaves blow across from upwind; the box faces the wind (its Right is the wind).
-	local box = follower(scene, "WindLeaves", Vector3.new(40, 30, 170))
-	local look = CFrame.lookAt(Vector3.zero, Vector3.new(WIND.Z, 0, -WIND.X)) -- RightVector = WIND
-	for _, color in { rgb(255, 150, 50), rgb(255, 205, 60), rgb(220, 80, 40), rgb(150, 190, 70) } do
-		emitter(box, {
-			Texture = img("Vfx_Leaf"),
-			EmissionDirection = Enum.NormalId.Right,
-			Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.1, 0.4), NumberSequenceKeypoint.new(1, 1.1, 0.4) }),
-			Speed = NumberRange.new(35, 55),
-			Lifetime = NumberRange.new(4, 5),
-			Rate = 22,
-			SpreadAngle = Vector2.new(12, 25),
-			Acceleration = Vector3.new(0, -3, 0),
-			Rotation = NumberRange.new(0, 360),
-			RotSpeed = NumberRange.new(-260, 260),
-			Color = ColorSequence.new(color),
-			Transparency = fadeSeq(0),
-		})
-	end
-	emitter(box, {
-		Texture = img("Vfx_Rain"),
-		Orientation = Enum.ParticleOrientation.VelocityParallel,
-		EmissionDirection = Enum.NormalId.Right,
-		Size = seq(5),
-		Speed = NumberRange.new(80, 110),
-		Lifetime = NumberRange.new(1.4, 1.8),
-		Rate = 28,
-		SpreadAngle = Vector2.new(3, 3),
-		Color = ColorSequence.new(rgb(255, 255, 255)),
-		Transparency = fadeSeq(0.75),
-		LightEmission = 0.3,
-	})
-	scene.update = function(_, at)
-		box.CFrame = CFrame.new(at - WIND * 70 + Vector3.new(0, 12, 0)) * look
-	end
+-- An invisible box that follows the camera; emitters in it fill the air around the player.
+local function follower(scene: Scene, name: string, size: Vector3): Part
+	return keep(scene, part(name, size))
 end
 
-local function motes(scene: Scene, texture: string, color: ColorSequence, rate: number, size: number, rise: number, boxSize: Vector3?)
+local function motes(scene: Scene, texture: string, color: ColorSequence, rate: number, size: number, rise: number, boxSize: Vector3?): Part
 	local box = follower(scene, "Motes", boxSize or Vector3.new(110, 24, 110))
 	emitter(box, {
 		Texture = img(texture),
@@ -566,83 +692,325 @@ local function motes(scene: Scene, texture: string, color: ColorSequence, rate: 
 		LightEmission = 1,
 		LightInfluence = 0,
 	})
+	addUpdate(scene, function(_, _, floor)
+		box.CFrame = CFrame.new(floor + Vector3.new(0, 8, 0))
+	end)
 	return box
 end
 
--- Things that hang in the sky far away and move with the camera (like a skybox).
-local function skyAnchor(scene: Scene): Part
-	return keep(scene, part("SkyAnchor", Vector3.new(1, 1, 1)))
-end
-
-local function attachment(parent: Instance, position: Vector3, axis: Vector3?): Attachment
-	local a = Instance.new("Attachment")
-	a.Position = position
-	if axis then
-		-- Beam curves bend along each attachment's X axis.
-		local side = if math.abs(axis.Y) > 0.9 then Vector3.xAxis else Vector3.yAxis
-		a.CFrame = CFrame.fromMatrix(position, axis, axis:Cross(side).Unit)
-	end
-	a.Parent = parent
-	return a
-end
-
-local function rainbowArc(anchor: Part, distance: number, halfWidth: number, height: number, width: number, transparency: number)
-	local dir = Vector3.new(-0.6, 0, -0.8).Unit
-	local side = Vector3.new(-dir.Z, 0, dir.X)
-	local a0 = attachment(anchor, dir * distance - side * halfWidth, Vector3.yAxis)
-	local a1 = attachment(anchor, dir * distance + side * halfWidth, Vector3.yAxis)
-	local beam = Instance.new("Beam")
-	beam.Attachment0 = a0
-	beam.Attachment1 = a1
-	beam.CurveSize0 = height
-	beam.CurveSize1 = -height
-	beam.Width0 = width
-	beam.Width1 = width
-	beam.Segments = 60
-	beam.FaceCamera = true
-	beam.Texture = img("Vfx_Rainbow")
-	beam.TextureMode = Enum.TextureMode.Stretch
-	beam.TextureLength = 1
-	beam.LightEmission = 0.5
-	beam.LightInfluence = 0
-	beam.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 1),
-		NumberSequenceKeypoint.new(0.12, transparency),
-		NumberSequenceKeypoint.new(0.88, transparency),
-		NumberSequenceKeypoint.new(1, 1),
+-- Rain: two layers of streaks, splashes and bouncing drops on the ground, low mist, and
+-- rain curtains in the distance all around (so it rains over the whole map, not just here).
+local function rain(scene: Scene, storm: boolean)
+	local slant = WIND * (if storm then 30 else 10)
+	local sky = follower(scene, "RainSky", Vector3.new(170, 1, 170))
+	emitter(sky, {
+		Texture = img("Vfx_Rain"),
+		Orientation = Enum.ParticleOrientation.VelocityParallel,
+		EmissionDirection = Enum.NormalId.Bottom,
+		Size = seq(if storm then 2 else 1.7),
+		Speed = NumberRange.new(if storm then 135 else 115, if storm then 155 else 130),
+		Lifetime = NumberRange.new(0.6, 0.7),
+		Rate = if storm then 1400 else 1000,
+		SpreadAngle = Vector2.new(2, 2),
+		Acceleration = slant,
+		Color = ColorSequence.new(rgb(200, 215, 240)),
+		Transparency = seq(0.35),
+		LightEmission = 0.1,
 	})
-	beam.Parent = anchor
+	emitter(sky, {
+		Texture = img("Vfx_Rain"),
+		Orientation = Enum.ParticleOrientation.VelocityParallel,
+		EmissionDirection = Enum.NormalId.Bottom,
+		Size = seq(3.4),
+		Speed = NumberRange.new(150, 170),
+		Lifetime = NumberRange.new(0.55, 0.6),
+		Rate = if storm then 300 else 180,
+		SpreadAngle = Vector2.new(2, 2),
+		Acceleration = slant,
+		Color = ColorSequence.new(rgb(225, 235, 250)),
+		Transparency = seq(0.5),
+	})
+	local ground = follower(scene, "RainGround", Vector3.new(100, 0.2, 100))
+	emitter(ground, {
+		Texture = img("Vfx_Ring"),
+		Orientation = Enum.ParticleOrientation.VelocityPerpendicular,
+		EmissionDirection = Enum.NormalId.Top,
+		Size = seq(0.1, 1.4),
+		Speed = NumberRange.new(0.01),
+		Lifetime = NumberRange.new(0.22, 0.32),
+		Rate = if storm then 320 else 240,
+		Color = ColorSequence.new(rgb(225, 238, 255)),
+		Transparency = seq(0.3, 1),
+	})
+	emitter(ground, {
+		Texture = img("Vfx_Droplet"),
+		EmissionDirection = Enum.NormalId.Top,
+		Size = seq(0.22, 0.1),
+		Speed = NumberRange.new(5, 10),
+		Lifetime = NumberRange.new(0.25, 0.4),
+		SpreadAngle = Vector2.new(35, 35),
+		Acceleration = Vector3.new(0, -60, 0),
+		Rate = if storm then 260 else 180,
+		Color = ColorSequence.new(rgb(220, 235, 255)),
+		Transparency = seq(0.2, 0.8),
+	})
+	emitter(ground, {
+		Texture = "rbxasset://textures/particles/smoke_main.dds",
+		EmissionDirection = Enum.NormalId.Top,
+		Size = seq(14, 22),
+		Speed = NumberRange.new(0.3, 1),
+		Lifetime = NumberRange.new(6, 9),
+		Rate = 5,
+		Acceleration = WIND * 0.8,
+		Color = ColorSequence.new(rgb(200, 210, 225)),
+		Transparency = fadeSeq(0.86),
+		RotSpeed = NumberRange.new(-10, 10),
+		Rotation = NumberRange.new(0, 360),
+	})
+	-- Distant rain curtains: tall scrolling sheets in a ring around the camera.
+	local ring = keep(scene, part("RainCurtains", Vector3.new(1, 1, 1)))
+	for i = 1, 8 do
+		local angle = i / 8 * math.pi * 2
+		local radius = 150 + (i % 2) * 70
+		local center = Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+		local low = attachment(ring, center + Vector3.new(0, -10, 0))
+		local high = attachment(ring, center + Vector3.new(0, 220, 0))
+		local beam = Instance.new("Beam")
+		beam.Attachment0 = high
+		beam.Attachment1 = low
+		beam.Width0 = 240
+		beam.Width1 = 240
+		beam.FaceCamera = true
+		beam.Texture = img("Vfx_RainSheet")
+		beam.TextureMode = Enum.TextureMode.Static
+		beam.TextureLength = 4
+		beam.TextureSpeed = if storm then 3 else 2.2
+		beam.LightEmission = 0.1
+		beam.LightInfluence = 0.6
+		beam.Color = ColorSequence.new(if storm then rgb(170, 180, 205) else rgb(205, 215, 235))
+		beam.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.25, if storm then 0.55 else 0.65),
+			NumberSequenceKeypoint.new(1, if storm then 0.5 else 0.6),
+		})
+		beam.Parent = ring
+	end
+	addUpdate(scene, function(_, at, floor)
+		sky.CFrame = CFrame.new(at + Vector3.new(0, 75, 0) - slant * 0.3)
+		ground.CFrame = CFrame.new(floor + Vector3.new(0, 0.15, 0))
+		ring.CFrame = CFrame.new(Vector3.new(at.X, floor.Y, at.Z))
+	end)
 end
 
-local function rainbow(scene: Scene)
-	local anchor = skyAnchor(scene)
-	rainbowArc(anchor, 520, 380, 560, 55, 0.25)
-	rainbowArc(anchor, 560, 470, 700, 34, 0.7)
-	local m = motes(scene, "Vfx_Star", RAINBOW, 30, 0.7, 2)
-	scene.update = function(_, at, floor)
-		anchor.CFrame = CFrame.new(Vector3.new(at.X, floor.Y - 40, at.Z))
-		m.CFrame = CFrame.new(floor + Vector3.new(0, 8, 0))
+local function snow(scene: Scene)
+	local sky = follower(scene, "SnowSky", Vector3.new(170, 1, 170))
+	emitter(sky, {
+		Texture = img("Vfx_Snow"),
+		EmissionDirection = Enum.NormalId.Bottom,
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.35, 0.15), NumberSequenceKeypoint.new(1, 0.35, 0.15) }),
+		Speed = NumberRange.new(5, 8),
+		Lifetime = NumberRange.new(8, 10),
+		Rate = 320,
+		SpreadAngle = Vector2.new(25, 25),
+		Acceleration = WIND * 1.5,
+		Rotation = NumberRange.new(0, 360),
+		RotSpeed = NumberRange.new(-60, 60),
+		Color = ColorSequence.new(rgb(255, 255, 255)),
+		Transparency = fadeSeq(0.1),
+		LightEmission = 0.35,
+		LightInfluence = 0.2,
+	})
+	emitter(sky, {
+		Texture = img("Vfx_Snow"),
+		EmissionDirection = Enum.NormalId.Bottom,
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.8, 0.25), NumberSequenceKeypoint.new(1, 0.8, 0.25) }),
+		Speed = NumberRange.new(4, 6),
+		Lifetime = NumberRange.new(9, 11),
+		Rate = 60,
+		SpreadAngle = Vector2.new(30, 30),
+		Acceleration = WIND * 2,
+		Rotation = NumberRange.new(0, 360),
+		RotSpeed = NumberRange.new(-40, 40),
+		Color = ColorSequence.new(rgb(255, 255, 255)),
+		Transparency = fadeSeq(0.05),
+		LightEmission = 0.4,
+	})
+	local mist = follower(scene, "SnowMist", Vector3.new(110, 1, 110))
+	emitter(mist, {
+		Texture = "rbxasset://textures/particles/smoke_main.dds",
+		EmissionDirection = Enum.NormalId.Top,
+		Size = seq(16, 24),
+		Speed = NumberRange.new(0.2, 0.8),
+		Lifetime = NumberRange.new(7, 10),
+		Rate = 5,
+		Acceleration = WIND * 0.6,
+		Color = ColorSequence.new(rgb(240, 245, 255)),
+		Transparency = fadeSeq(0.8),
+		Rotation = NumberRange.new(0, 360),
+	})
+	addUpdate(scene, function(_, at, floor)
+		sky.CFrame = CFrame.new(at + Vector3.new(0, 45, 0))
+		mist.CFrame = CFrame.new(floor + Vector3.new(0, 1, 0))
+	end)
+end
+
+local function windy(scene: Scene)
+	-- Leaves blow across from upwind; the box faces the wind (its Right is the wind).
+	local box = follower(scene, "WindLeaves", Vector3.new(40, 30, 170))
+	local look = CFrame.lookAt(Vector3.zero, Vector3.new(WIND.Z, 0, -WIND.X)) -- RightVector = WIND
+	for _, color in { rgb(255, 150, 50), rgb(255, 205, 60), rgb(220, 80, 40), rgb(150, 190, 70) } do
+		emitter(box, {
+			Texture = img("Vfx_Leaf"),
+			EmissionDirection = Enum.NormalId.Right,
+			Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.1, 0.4), NumberSequenceKeypoint.new(1, 1.1, 0.4) }),
+			Speed = NumberRange.new(35, 55),
+			Lifetime = NumberRange.new(4, 5),
+			Rate = 26,
+			SpreadAngle = Vector2.new(12, 25),
+			Acceleration = Vector3.new(0, -3, 0),
+			Rotation = NumberRange.new(0, 360),
+			RotSpeed = NumberRange.new(-260, 260),
+			Color = ColorSequence.new(color),
+			Transparency = fadeSeq(0),
+		})
 	end
+	emitter(box, {
+		Texture = img("Vfx_Rain"),
+		Orientation = Enum.ParticleOrientation.VelocityParallel,
+		EmissionDirection = Enum.NormalId.Right,
+		Size = seq(5),
+		Speed = NumberRange.new(80, 110),
+		Lifetime = NumberRange.new(1.4, 1.8),
+		Rate = 30,
+		SpreadAngle = Vector2.new(3, 3),
+		Color = ColorSequence.new(rgb(255, 255, 255)),
+		Transparency = fadeSeq(0.75),
+		LightEmission = 0.3,
+	})
+	addUpdate(scene, function(_, at)
+		box.CFrame = CFrame.new(at - WIND * 70 + Vector3.new(0, 12, 0)) * look
+	end)
+end
+
+-- Rainbow: a real rainbow arching over the whole length of the map (every zone sees it),
+-- standing on clouds at both ends, drawn in from one end; plus a rainbow carpet trail
+-- behind every player and sparkles in the air.
+local function rainbow(scene: Scene)
+	local model = keep(scene, Instance.new("Model"))
+	model.Name = "Rainbow"
+	model.Parent = folder
+	local sideX = MAP_MAX.X + 320
+	local zA, zB = MAP_MAX.Y + 160, MAP_MIN.Y - 160
+	local center = Vector3.new(sideX, -60, (zA + zB) / 2)
+	local radius = math.abs(zA - zB) / 2
+	local bandWidth = 22
+	local steps = 72
+	local segments: { BasePart } = {}
+	for b, color in BANDS do
+		local r = radius - (b - 1) * bandWidth
+		local arcLen = math.pi * r / steps
+		for i = 0, steps - 1 do
+			local a = math.pi * (i + 0.5) / steps
+			local pos = center + Vector3.new(0, math.sin(a) * r, math.cos(a) * r)
+			local tangent = Vector3.new(0, math.cos(a), -math.sin(a))
+			local seg = part("Band", Vector3.new(6, bandWidth + 0.5, arcLen + 1), model)
+			seg.CFrame = CFrame.lookAt(pos, pos + tangent)
+			seg.Material = Enum.Material.Neon
+			seg.Color = color
+			seg.Transparency = 1
+			seg:SetAttribute("Order", i)
+			table.insert(segments, seg)
+		end
+	end
+	-- Cloud puffs where it touches down.
+	for _, endZ in { zA, zB } do
+		for _ = 1, 9 do
+			local puff = part("Cloud", Vector3.new(1, 1, 1) * rng:NextNumber(40, 75), model)
+			puff.Shape = Enum.PartType.Ball
+			puff.Material = Enum.Material.SmoothPlastic
+			puff.Color = Color3.new(1, 1, 1)
+			puff.Position = Vector3.new(sideX + rng:NextNumber(-40, 40), rng:NextNumber(-10, 30), endZ + rng:NextNumber(-60, 60))
+			puff.Transparency = 1
+			TweenService:Create(puff, TweenInfo.new(2), { Transparency = 0.15 }):Play()
+		end
+	end
+	-- Draw it in from one end to the other.
+	task.spawn(function()
+		for i = 0, steps - 1 do
+			for _, seg in segments do
+				if seg:GetAttribute("Order") == i and seg.Parent then
+					TweenService:Create(seg, TweenInfo.new(0.5), { Transparency = 0.32 }):Play()
+				end
+			end
+			task.wait(0.03)
+		end
+	end)
+	table.insert(scene.cleanup, function()
+		for _, p in model:GetDescendants() do
+			if p:IsA("BasePart") then
+				TweenService:Create(p, TweenInfo.new(2.5), { Transparency = 1 }):Play()
+			end
+		end
+	end)
+
+	-- Rainbow carpet behind every player (like Grow a Garden's rainbow): a flat trail at the feet.
+	local trails: { [Player]: Trail } = {}
+	local function carpet(p: Player)
+		local character = p.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if not root or trails[p] then
+			return
+		end
+		local a0 = Instance.new("Attachment")
+		a0.Name = "RainbowCarpetL"
+		a0.Position = Vector3.new(-1.6, -2.8, 0)
+		a0.Parent = root
+		local a1 = Instance.new("Attachment")
+		a1.Name = "RainbowCarpetR"
+		a1.Position = Vector3.new(1.6, -2.8, 0)
+		a1.Parent = root
+		local trail = Instance.new("Trail")
+		trail.Attachment0 = a0
+		trail.Attachment1 = a1
+		trail.Lifetime = 2.2
+		trail.MinLength = 0.2
+		trail.FaceCamera = false
+		trail.LightEmission = 0.6
+		trail.LightInfluence = 0.2
+		trail.Color = RAINBOW
+		trail.Transparency = NumberSequence.new(0.15, 1)
+		trail.Parent = root
+		trails[p] = trail
+		table.insert(scene.cleanup, function()
+			a0:Destroy()
+			a1:Destroy()
+			trail:Destroy()
+		end)
+	end
+	local nextCheck = 0
+	local sparkles = motes(scene, "Vfx_Star", RAINBOW, 30, 0.7, 2)
+	addUpdate(scene, function(_, _, floor)
+		sparkles.CFrame = CFrame.new(floor + Vector3.new(0, 8, 0))
+		if os.clock() > nextCheck then
+			nextCheck = os.clock() + 1
+			for _, p in Players:GetPlayers() do
+				local trail = trails[p]
+				if trail and not trail.Parent then
+					trails[p] = nil
+				end
+				carpet(p)
+			end
+		end
+	end)
 end
 
 local function goldenHour(scene: Scene)
-	local m1 = motes(scene, "Vfx_Glow", ColorSequence.new(rgb(255, 210, 110)), 45, 0.5, 1.5)
-	local m2 = motes(scene, "Vfx_Star", ColorSequence.new(rgb(255, 230, 150)), 12, 0.8, 1)
-	scene.update = function(_, _, floor)
-		m1.CFrame = CFrame.new(floor + Vector3.new(0, 8, 0))
-		m2.CFrame = CFrame.new(floor + Vector3.new(0, 8, 0))
-	end
-end
-
-local function bloodMoon(scene: Scene)
-	local embers = motes(scene, "Vfx_Glow", ColorSequence.new(rgb(255, 120, 60), rgb(160, 0, 0)), 70, 0.35, 3)
-	scene.update = function(_, _, floor)
-		embers.CFrame = CFrame.new(floor + Vector3.new(0, 6, 0))
-	end
+	motes(scene, "Vfx_Glow", ColorSequence.new(rgb(255, 210, 110)), 45, 0.5, 1.5)
+	motes(scene, "Vfx_Star", ColorSequence.new(rgb(255, 230, 150)), 12, 0.8, 1)
 end
 
 local function aurora(scene: Scene)
-	local anchor = skyAnchor(scene)
+	local anchor = keep(scene, part("SkyAnchor", Vector3.new(1, 1, 1)))
 	local colors = {
 		ColorSequence.new({ ColorSequenceKeypoint.new(0, rgb(80, 255, 170)), ColorSequenceKeypoint.new(0.5, rgb(80, 220, 255)), ColorSequenceKeypoint.new(1, rgb(170, 100, 255)) }),
 		ColorSequence.new({ ColorSequenceKeypoint.new(0, rgb(170, 100, 255)), ColorSequenceKeypoint.new(0.5, rgb(80, 255, 170)), ColorSequenceKeypoint.new(1, rgb(80, 220, 255)) }),
@@ -671,108 +1039,265 @@ local function aurora(scene: Scene)
 		beam.Color = color
 		beam.Transparency = NumberSequence.new({
 			NumberSequenceKeypoint.new(0, 1),
-			NumberSequenceKeypoint.new(0.2, 0.35),
-			NumberSequenceKeypoint.new(0.8, 0.35),
+			NumberSequenceKeypoint.new(0.2, 0.3),
+			NumberSequenceKeypoint.new(0.8, 0.3),
 			NumberSequenceKeypoint.new(1, 1),
 		})
 		beam.Parent = anchor
 	end
-	local twinkles = motes(scene, "Vfx_Star", ColorSequence.new(rgb(180, 255, 230)), 14, 0.6, 1)
-	local nextStar = 0
-	scene.update = function(_, at, floor)
+	motes(scene, "Vfx_Star", ColorSequence.new(rgb(180, 255, 230)), 14, 0.6, 1)
+	addUpdate(scene, function(_, at, floor)
 		anchor.CFrame = CFrame.new(Vector3.new(at.X, floor.Y, at.Z))
-		twinkles.CFrame = CFrame.new(floor + Vector3.new(0, 10, 0))
-		if os.clock() > nextStar then
-			-- A shooting star across the sky.
-			nextStar = os.clock() + rng:NextNumber(0.8, 2.2)
-			local start = Vector3.new(at.X + rng:NextNumber(-300, 300), floor.Y + rng:NextNumber(200, 280), at.Z - rng:NextNumber(250, 450))
-			local travel = Vector3.new(rng:NextNumber(-1, 1) * 260, -rng:NextNumber(60, 120), rng:NextNumber(-40, 40))
-			local star = part("ShootingStar", Vector3.new(1.2, 1.2, 1.2))
-			star.Shape = Enum.PartType.Ball
-			star.Material = Enum.Material.Neon
-			star.Color = rgb(220, 255, 245)
-			star.Transparency = 0
-			star.Position = start
-			local t0 = attachment(star, Vector3.new(0, 0.5, 0))
-			local t1 = attachment(star, Vector3.new(0, -0.5, 0))
-			local trail = Instance.new("Trail")
-			trail.Attachment0 = t0
-			trail.Attachment1 = t1
-			trail.Lifetime = 0.45
-			trail.FaceCamera = true
-			trail.LightEmission = 1
-			trail.WidthScale = NumberSequence.new(1, 0)
-			trail.Transparency = NumberSequence.new(0, 1)
-			trail.Color = ColorSequence.new(rgb(200, 255, 240))
-			trail.Parent = star
-			local tween = TweenService:Create(star, TweenInfo.new(0.9, Enum.EasingStyle.Linear), { Position = start + travel })
-			tween:Play()
-			tween.Completed:Once(function()
-				star:Destroy()
-			end)
-		end
-	end
+	end)
 end
 
+-- Starfall: shooting stars streak down all over the sky; the server's stars land on eggs
+-- and the field (WeatherStrike).
+local function starfall(scene: Scene)
+	local nextStar = 0
+	motes(scene, "Vfx_Star", ColorSequence.new(STAR), 16, 0.7, 1)
+	addUpdate(scene, function(_, at, floor)
+		if os.clock() < nextStar then
+			return
+		end
+		nextStar = os.clock() + rng:NextNumber(0.25, 0.7)
+		local start = Vector3.new(at.X + rng:NextNumber(-400, 400), floor.Y + rng:NextNumber(220, 320), at.Z + rng:NextNumber(-400, 400))
+		local travel = Vector3.new(rng:NextNumber(-1, 1) * 120, -rng:NextNumber(140, 220), rng:NextNumber(-1, 1) * 120)
+		local star = part("ShootingStar", Vector3.new(1.4, 1.4, 1.4))
+		star.Shape = Enum.PartType.Ball
+		star.Material = Enum.Material.Neon
+		star.Color = STAR
+		star.Transparency = 0
+		star.Position = start
+		local t0 = attachment(star, Vector3.new(0, 0.7, 0))
+		local t1 = attachment(star, Vector3.new(0, -0.7, 0))
+		local trail = Instance.new("Trail")
+		trail.Attachment0 = t0
+		trail.Attachment1 = t1
+		trail.Lifetime = 0.4
+		trail.FaceCamera = true
+		trail.LightEmission = 1
+		trail.WidthScale = NumberSequence.new(1, 0)
+		trail.Transparency = NumberSequence.new(0, 1)
+		trail.Color = ColorSequence.new(rgb(255, 250, 220), rgb(255, 160, 80))
+		trail.Parent = star
+		local tween = TweenService:Create(star, TweenInfo.new(0.9, Enum.EasingStyle.Linear), { Position = start + travel, Transparency = 1 })
+		tween:Play()
+		tween.Completed:Once(function()
+			star:Destroy()
+		end)
+	end)
+end
+
+-- Disco: a giant mirror ball over the zone you're in, coloured light beams sweeping the
+-- ground with spots of light, lasers from four towers, confetti, and everything pulsing
+-- to the beat.
+local BEAT = 60 / 118 -- Funky Disco Beats tempo
 local function disco(scene: Scene)
-	local ball = keep(scene, part("DiscoBall", Vector3.new(9, 9, 9)))
-	ball.Shape = Enum.PartType.Ball
-	ball.Material = Enum.Material.Foil
-	ball.Color = rgb(225, 225, 235)
-	ball.Reflectance = 0.4
+	local rig = keep(scene, Instance.new("Model"))
+	rig.Name = "Disco"
+	rig.Parent = folder
+	local ball = part("MirrorBall", Vector3.new(26, 26, 26), rig)
 	ball.Transparency = 0
-	local light = Instance.new("PointLight")
-	light.Range = 40
-	light.Brightness = 3
-	light.Parent = ball
+	ball.Material = Enum.Material.SmoothPlastic
+	ball.Reflectance = 0.2
+	local mesh = Instance.new("SpecialMesh")
+	mesh.MeshType = Enum.MeshType.Sphere
+	mesh.TextureId = img("Vfx_DiscoTiles")
+	mesh.Parent = ball
+	local ballLight = Instance.new("PointLight")
+	ballLight.Range = 60
+	ballLight.Brightness = 4
+	ballLight.Parent = ball
+	local hang = part("Chain", Vector3.new(0.6, 120, 0.6), rig)
+	hang.Transparency = 0
+	hang.Material = Enum.Material.Metal
+	hang.Color = rgb(60, 60, 70)
+	emitter(ball, {
+		Texture = img("Vfx_Star"),
+		Size = seq(3, 0),
+		Speed = NumberRange.new(0.1),
+		Lifetime = NumberRange.new(0.3, 0.6),
+		Color = ColorSequence.new(Color3.new(1, 1, 1)),
+		LightEmission = 1,
+		Rate = 25,
+		Shape = Enum.ParticleEmitterShape.Sphere,
+		ShapeStyle = Enum.ParticleEmitterShapeStyle.Surface,
+	})
+
+	-- Light beams from the ball to moving spots on the ground.
 	local center = attachment(ball, Vector3.zero)
-	local ground = keep(scene, part("DiscoFloor", Vector3.new(1, 1, 1)))
-	local spots: { Attachment } = {}
-	local beams: { Beam } = {}
-	for i = 1, 8 do
-		local spot = attachment(ground, Vector3.zero)
-		table.insert(spots, spot)
+	local floorPart = part("DiscoFloor", Vector3.new(1, 1, 1), rig)
+	local spots = {}
+	for i = 1, 10 do
+		local spotAtt = attachment(floorPart, Vector3.zero)
 		local beam = Instance.new("Beam")
 		beam.Attachment0 = center
-		beam.Attachment1 = spot
-		beam.Width0 = 0.6
-		beam.Width1 = 12
+		beam.Attachment1 = spotAtt
+		beam.Width0 = 1.5
+		beam.Width1 = 16
 		beam.FaceCamera = true
 		beam.LightEmission = 1
 		beam.LightInfluence = 0
-		beam.Transparency = NumberSequence.new(0.45, 0.75)
-		beam.Color = ColorSequence.new(Color3.fromHSV(i / 8, 0.8, 1))
+		beam.Texture = img("Vfx_Glow")
+		beam.TextureMode = Enum.TextureMode.Stretch
+		beam.Transparency = NumberSequence.new(0.35, 0.7)
 		beam.Parent = ball
-		table.insert(beams, beam)
+		local light = part("Spot", Vector3.new(18, 0.05, 18), rig)
+		local decal = Instance.new("Decal")
+		decal.Face = Enum.NormalId.Top
+		decal.Texture = img("Vfx_Spot")
+		decal.Transparency = 0.15
+		decal.Parent = light
+		table.insert(spots, { att = spotAtt, beam = beam, decal = decal, light = light, phase = i * 0.7, speed = rng:NextNumber(0.4, 0.9) * (if i % 2 == 0 then 1 else -1) })
 	end
-	local notes = motes(scene, "Vfx_Note", RAINBOW, 14, 1.1, 3, Vector3.new(60, 10, 60))
+
+	-- Lasers from towers at the corners of the zone, crossing over the middle.
+	local lasers = {}
+	for i = 1, 4 do
+		local tower = part("Tower", Vector3.new(3, 40, 3), rig)
+		tower.Transparency = 0
+		tower.Material = Enum.Material.Metal
+		tower.Color = rgb(40, 40, 50)
+		local head = part("Head", Vector3.new(5, 5, 5), rig)
+		head.Transparency = 0
+		head.Material = Enum.Material.Neon
+		local from = attachment(head, Vector3.zero)
+		local to = attachment(floorPart, Vector3.zero)
+		local beams = {}
+		for k = 1, 3 do
+			local beam = Instance.new("Beam")
+			beam.Attachment0 = from
+			beam.Attachment1 = if k == 1 then to else attachment(floorPart, Vector3.zero)
+			beam.Width0 = 0.5
+			beam.Width1 = 0.5
+			beam.FaceCamera = true
+			beam.LightEmission = 1
+			beam.LightInfluence = 0
+			beam.Transparency = NumberSequence.new(0.1)
+			beam.Parent = head
+			table.insert(beams, beam)
+		end
+		table.insert(lasers, { tower = tower, head = head, beams = beams, corner = i })
+	end
+
+	-- Confetti around the player.
+	local confetti = follower(scene, "Confetti", Vector3.new(90, 1, 90))
+	for _, color in { rgb(255, 80, 120), rgb(255, 220, 60), rgb(80, 200, 255), rgb(140, 255, 120), rgb(200, 110, 255) } do
+		emitter(confetti, {
+			Texture = img("Vfx_Confetti"),
+			EmissionDirection = Enum.NormalId.Bottom,
+			Size = seq(0.7),
+			Speed = NumberRange.new(4, 8),
+			Lifetime = NumberRange.new(5, 7),
+			Rate = 12,
+			SpreadAngle = Vector2.new(40, 40),
+			Acceleration = Vector3.new(0, -2, 0),
+			Drag = 0.4,
+			Rotation = NumberRange.new(0, 360),
+			RotSpeed = NumberRange.new(-300, 300),
+			Color = ColorSequence.new(color),
+			Transparency = fadeSeq(0),
+			LightEmission = 0.4,
+		})
+	end
+	motes(scene, "Vfx_Note", RAINBOW, 10, 1.1, 3, Vector3.new(60, 10, 60))
+
 	local tint = Instance.new("ColorCorrectionEffect")
 	tint.Name = "WeatherDisco"
 	tint.Parent = Lighting
 	table.insert(scene.cleanup, function()
-		tint:Destroy()
+		TweenService:Create(tint, TweenInfo.new(2), { TintColor = Color3.new(1, 1, 1), Brightness = 0 }):Play()
+		task.delay(2.1, function()
+			tint:Destroy()
+		end)
 	end)
-	scene.update = function(_, at, floor)
+
+	-- The zone the ball hangs over: the one you're in (eases over when you move on).
+	local hub = Vector3.zero
+	local hubSize = Vector2.new(200, 200)
+	addUpdate(scene, function(dt, at, floor)
 		local t = os.clock()
-		ball.CFrame = CFrame.new(floor + Vector3.new(0, 38, 0)) * CFrame.Angles(0, t * 1.2, 0)
-		ground.CFrame = CFrame.new(floor + Vector3.new(0, 0.2, 0))
-		for i, spot in spots do
-			local a = t * 0.9 + i * (math.pi * 2 / 8)
-			local r = 18 + math.sin(t * 1.7 + i) * 12
-			spot.Position = Vector3.new(math.cos(a) * r, 0, math.sin(a) * r)
-			beams[i].Color = ColorSequence.new(Color3.fromHSV((i / 8 + t * 0.15) % 1, 0.8, 1))
+		local zoneCenter, zoneSize = Vector3.new(at.X, floor.Y, at.Z), Vector2.new(200, 200)
+		for _, zone in Zones.List do
+			if at.X >= zone.Min.X - 40 and at.X <= zone.Max.X + 40 and at.Z >= zone.Min.Y - 40 and at.Z <= zone.Max.Y + 40 then
+				zoneCenter = Vector3.new((zone.Min.X + zone.Max.X) / 2, floor.Y, (zone.Min.Y + zone.Max.Y) / 2)
+				zoneSize = zone.Max - zone.Min
+				break
+			end
 		end
-		light.Color = Color3.fromHSV((t * 0.4) % 1, 0.7, 1)
-		tint.TintColor = Color3.fromHSV((t * 0.25) % 1, 0.18, 1)
-		notes.CFrame = CFrame.new(at + Vector3.new(0, 2, 0))
-	end
+		if hub == Vector3.zero then
+			hub, hubSize = zoneCenter, zoneSize
+		end
+		local k = math.min(1, dt * 1.5)
+		hub = hub:Lerp(zoneCenter, k)
+		hubSize = hubSize:Lerp(zoneSize, k)
+		local beat = (t % BEAT) / BEAT
+		local pulse = 1 - beat
+		local hue = (t * 0.12) % 1
+
+		local ballPos = Vector3.new(hub.X, floor.Y + 75, hub.Z)
+		ball.CFrame = CFrame.new(ballPos) * CFrame.Angles(0, t * 0.8, 0)
+		local ballTint = Color3.fromHSV(hue, 0.3, 1)
+		mesh.VertexColor = Vector3.new(ballTint.R, ballTint.G, ballTint.B)
+		hang.CFrame = CFrame.new(ballPos + Vector3.new(0, 73, 0))
+		ballLight.Color = Color3.fromHSV(hue, 0.6, 1)
+		floorPart.CFrame = CFrame.new(Vector3.new(hub.X, floor.Y, hub.Z))
+
+		local rx, rz = hubSize.X * 0.45, hubSize.Y * 0.45
+		for i, s in spots do
+			local a = t * s.speed + s.phase
+			local wob = math.sin(t * 0.7 + i) * 0.35 + 0.65
+			local offset = Vector3.new(math.cos(a) * rx * wob, 0.1, math.sin(a * 1.3) * rz * wob)
+			s.att.Position = offset
+			local color = Color3.fromHSV((hue + i / #spots) % 1, 0.85, 1)
+			s.beam.Color = ColorSequence.new(color)
+			s.beam.Width1 = 14 + pulse * 6
+			s.decal.Color3 = color
+			s.light.CFrame = CFrame.new(Vector3.new(hub.X, floor.Y, hub.Z) + offset)
+		end
+		for _, l in lasers do
+			local sx = if l.corner == 1 or l.corner == 2 then -1 else 1
+			local sz = if l.corner == 1 or l.corner == 3 then -1 else 1
+			local base = Vector3.new(hub.X + sx * hubSize.X * 0.55, floor.Y, hub.Z + sz * hubSize.Y * 0.48)
+			l.tower.CFrame = CFrame.new(base + Vector3.new(0, 20, 0))
+			l.head.CFrame = CFrame.new(base + Vector3.new(0, 42, 0))
+			local color = Color3.fromHSV((hue + l.corner * 0.25) % 1, 1, 1)
+			l.head.Color = color
+			for k, beam in l.beams do
+				local sweep = t * (0.9 + k * 0.2) + l.corner + k
+				local target = Vector3.new(math.sin(sweep) * rx, 0.2, math.cos(sweep * 0.8) * rz)
+				(beam.Attachment1 :: Attachment).Position = target
+				beam.Color = ColorSequence.new(color)
+				beam.Width0 = 0.4 + pulse * 0.4
+				beam.Width1 = beam.Width0
+			end
+		end
+		tint.TintColor = Color3.fromHSV(hue, 0.22, 1)
+		tint.Brightness = pulse * 0.06
+		confetti.CFrame = CFrame.new(at + Vector3.new(0, 35, 0))
+	end)
 end
 
 local function eggRainSky(scene: Scene)
-	local sparkle = motes(scene, "Vfx_Star", ColorSequence.new(rgb(255, 200, 230), rgb(255, 240, 170)), 26, 0.7, 1.5)
-	scene.update = function(_, _, floor)
-		sparkle.CFrame = CFrame.new(floor + Vector3.new(0, 10, 0))
-	end
+	motes(scene, "Vfx_Star", ColorSequence.new(rgb(255, 200, 230), rgb(255, 240, 170)), 26, 0.7, 1.5)
+end
+
+local function bloodMoon(scene: Scene)
+	motes(scene, "Vfx_Glow", ColorSequence.new(rgb(255, 120, 60), rgb(160, 0, 0)), 70, 0.35, 3)
+end
+
+local function goldMoon(scene: Scene)
+	motes(scene, "Vfx_Glow", ColorSequence.new(rgb(255, 215, 90)), 50, 0.4, 1.2)
+	motes(scene, "Vfx_Star", ColorSequence.new(rgb(255, 230, 140)), 14, 0.7, 0.8)
+end
+
+local function rainbowMoon(scene: Scene)
+	motes(scene, "Vfx_Star", RAINBOW, 35, 0.7, 1.5)
+end
+
+local function megaMoon(scene: Scene)
+	motes(scene, "Vfx_Glow", ColorSequence.new(rgb(190, 220, 255)), 30, 0.4, 1)
 end
 
 local BUILDERS: { [string]: (Scene) -> () } = {
@@ -781,31 +1306,31 @@ local BUILDERS: { [string]: (Scene) -> () } = {
 	end,
 	Thunderstorm = function(scene)
 		rain(scene, true)
-		local base = scene.update
-		local nextFlash = os.clock() + 3
-		scene.update = function(dt, at, floor)
-			if base then
-				base(dt, at, floor)
-			end
+		local nextFlash = os.clock() + 2
+		addUpdate(scene, function(_, at, floor)
 			if os.clock() > nextFlash then
 				-- Far-off lightning for the mood (the real strikes come from the server).
-				nextFlash = os.clock() + rng:NextNumber(4, 9)
-				local away = Vector3.new(rng:NextNumber(-1, 1), 0, rng:NextNumber(-1, 1)).Unit * rng:NextNumber(250, 420)
-				strikeAt(Vector3.new(at.X, floor.Y, at.Z) + away, false)
+				nextFlash = os.clock() + rng:NextNumber(3, 7)
+				local away = Vector3.new(rng:NextNumber(-1, 1), 0, rng:NextNumber(-1, 1)).Unit * rng:NextNumber(260, 480)
+				lightningAt(Vector3.new(at.X, floor.Y, at.Z) + away, false, false)
 			end
-		end
+		end)
 	end,
 	Snow = snow,
 	Windy = windy,
 	Rainbow = rainbow,
 	GoldenHour = goldenHour,
-	BloodMoon = bloodMoon,
 	Aurora = aurora,
+	Starfall = starfall,
 	Disco = disco,
 	EggRain = eggRainSky,
+	BloodMoon = bloodMoon,
+	GoldMoon = goldMoon,
+	RainbowMoon = rainbowMoon,
+	MegaMoon = megaMoon,
 }
 
--- Looping sound beds ----------------------------------------------------------------------
+-- Looping sound beds -----------------------------------------------------------------------------
 
 local function loopSound(scene: Scene, id: string)
 	local def = Sounds.Weather[id]
@@ -835,7 +1360,7 @@ local function loopSound(scene: Scene, id: string)
 	end)
 end
 
--- Banner: name + one line, no box, fades in and out at the top of the screen ------------
+-- Banner: icon, name and one line, no box, fading in and out at the top of the screen ------
 
 local bannerGui: ScreenGui
 local bannerToken = 0
@@ -940,22 +1465,22 @@ local function showBanner(name: string, line: string, color: Color3, icon: strin
 	end)
 end
 
--- Mode switching --------------------------------------------------------------------------
+-- State -> scenes ----------------------------------------------------------------------------------
+-- Three slots run side by side: the Egg Rain, the weather and the moon. The sky uses the
+-- most important one (Egg Rain > weather > special moon > night > day).
 
-local mode = ""
-local scene: Scene? = nil
+type Slot = { id: string, scene: Scene? }
+local slots: { [string]: Slot } = { event = { id = "" }, weather = { id = "" }, moon = { id = "" } }
 
-local function endScene()
-	local old = scene
-	scene = nil
-	if not old then
+local function endScene(scene: Scene?)
+	if not scene then
 		return
 	end
-	for _, fn in old.cleanup do
+	for _, fn in scene.cleanup do
 		task.spawn(fn)
 	end
 	-- Let particles stop and fade instead of vanishing.
-	for _, inst in old.parts do
+	for _, inst in scene.parts do
 		for _, d in inst:GetDescendants() do
 			if d:IsA("ParticleEmitter") then
 				d.Enabled = false
@@ -965,48 +1490,71 @@ local function endScene()
 		end
 	end
 	task.delay(3, function()
-		for _, inst in old.parts do
+		for _, inst in scene.parts do
 			inst:Destroy()
 		end
 	end)
 end
 
-local function currentMode(): string
-	local event = State.server("EventState")
-	if event == "Shower" or event == "Countdown" then
-		return "EggRain"
+local function phaseNow(): string
+	local start = State.server("CycleStart")
+	if type(start) ~= "number" then
+		return "Day"
 	end
-	local weather = State.server("Weather")
-	return if type(weather) == "string" then weather else ""
+	local phase = Weather.phase(Workspace:GetServerTimeNow() - start)
+	return phase
 end
 
-local function refresh(announce: boolean)
-	local wanted = currentMode()
-	if wanted == mode then
+local function setSlot(key: string, id: string, announce: boolean)
+	local slot = slots[key]
+	if slot.id == id then
 		return
 	end
-	mode = wanted
-	endScene()
-	applySky(PRESETS[wanted])
-	local builder = BUILDERS[wanted]
+	endScene(slot.scene)
+	slot.id = id
+	slot.scene = nil
+	local builder = BUILDERS[id]
 	if builder then
-		local s = newScene()
-		builder(s)
-		loopSound(s, wanted)
-		scene = s
+		local scene = newScene()
+		builder(scene)
+		loopSound(scene, id)
+		slot.scene = scene
 	end
-	local def = Weather.ById[wanted]
-	if announce and def then
+	local def = Weather.ById[id]
+	if announce and def and def.Blurb ~= "" then
 		showBanner(def.Name, def.Blurb, def.Color, "Icon_Weather_" .. def.Id)
 		Ui.sound(if def.Id == "BloodMoon" then "BloodMoonStart" else "WeatherStart")
 	end
 end
 
--- Egg Rain: eggs fall out of the sky --------------------------------------------------------
+local skyKey = ""
+local function refreshSky()
+	local key = if slots.event.id ~= "" then slots.event.id
+		elseif slots.weather.id ~= "" then slots.weather.id
+		elseif slots.moon.id ~= "" and slots.moon.id ~= "NormalMoon" then slots.moon.id
+		elseif phaseNow() == "Night" then "Night"
+		else ""
+	if key ~= skyKey then
+		skyKey = key
+		applySky(PRESETS[key])
+	end
+end
+
+local function refresh(announce: boolean)
+	local event = State.server("EventState")
+	setSlot("event", if event == "Shower" or event == "Countdown" then "EggRain" else "", announce)
+	local weather = State.server("Weather")
+	setSlot("weather", if type(weather) == "string" then weather else "", announce)
+	local moon = State.server("Moon")
+	setSlot("moon", if type(moon) == "string" then moon else "", announce)
+	refreshSky()
+end
+
+-- Egg Rain / Mega Moon: eggs fall out of the sky -------------------------------------------------
 
 local function eggDrop(position: Vector3, rarity: string, fallSeconds: number)
 	local floor = groundAt(position)
-	if (floor - focus()).Magnitude > 700 then
+	if (floor - focus()).Magnitude > 900 then
 		return
 	end
 	local def = Eggs.ByName[rarity]
@@ -1090,8 +1638,7 @@ local function eggDrop(position: Vector3, rarity: string, fallSeconds: number)
 	local conn: RBXScriptConnection
 	conn = RunService.RenderStepped:Connect(function()
 		local t = math.clamp((os.clock() - began) / fall, 0, 1)
-		local eased = t * t
-		local at = start:Lerp(floor, eased)
+		local at = start:Lerp(floor, t * t)
 		-- Spin around the egg's middle; upright again when it lands.
 		local spin = CFrame.fromAxisAngle(spinAxis, (1 - t) * 9)
 		egg:PivotTo(CFrame.new(at + Vector3.new(0, size.Y / 2, 0)) * spin * CFrame.new(0, -size.Y / 2, 0))
@@ -1118,7 +1665,19 @@ local function eggDrop(position: Vector3, rarity: string, fallSeconds: number)
 	end)
 end
 
--- Start -------------------------------------------------------------------------------------
+-- A growing egg picked up a weather mutation: a burst in its colour.
+local function eggUpgraded(position: Vector3, mutation: string)
+	if (position - focus()).Magnitude > 300 then
+		return
+	end
+	local def = Eggs.MutationByName[mutation]
+	local color = if def then def.Color else Color3.new(1, 1, 1)
+	sparkBurst(position + Vector3.new(0, 2, 0), color, 30, nil, 0.6)
+	shockRing(position, color, 2, 14, 0.5)
+	soundAt("Sparkle", position)
+end
+
+-- Start ------------------------------------------------------------------------------------------
 
 function WeatherController:Init(controllers)
 	C = controllers
@@ -1137,41 +1696,52 @@ function WeatherController:Start()
 	capture()
 	refresh(false)
 	local state = State.serverState
-	state:GetAttributeChangedSignal("Weather"):Connect(function()
-		refresh(true)
-	end)
-	state:GetAttributeChangedSignal("EventState"):Connect(function()
-		refresh(true)
-	end)
+	for _, name in { "Weather", "Moon", "EventState" } do
+		state:GetAttributeChangedSignal(name):Connect(function()
+			refresh(true)
+		end)
+	end
 
 	Net.event("EggDrop").OnClientEvent:Connect(function(position: Vector3, rarity: string, fallSeconds: number)
 		eggDrop(position, rarity, fallSeconds)
 	end)
-	Net.event("WeatherStrike").OnClientEvent:Connect(function(position: Vector3)
-		if (position - focus()).Magnitude < 900 then
-			strikeAt(position, true)
+	Net.event("WeatherStrike").OnClientEvent:Connect(function(position: Vector3, kind: string?, hitEgg: boolean?)
+		if kind == "Star" then
+			starAt(position, hitEgg == true)
+		elseif (position - focus()).Magnitude < 1200 then
+			lightningAt(position, hitEgg == true, true)
 		end
 	end)
+	Net.event("EggUpgraded").OnClientEvent:Connect(eggUpgraded)
 
 	local lastGround = Vector3.zero
 	local groundCheck = 0
 	RunService.RenderStepped:Connect(function(dt)
-		local s = scene
+		-- Day/night: the clock follows the server's cycle.
+		local start = State.server("CycleStart")
+		if type(start) == "number" then
+			Lighting.ClockTime = Weather.clockTime(Workspace:GetServerTimeNow() - start)
+		end
 		local at = focus()
 		groundCheck -= dt
 		if groundCheck <= 0 then
 			groundCheck = 0.2
 			lastGround = groundAt(at)
+			refreshSky() -- night starts / ends
 		end
-		if s and s.update then
-			s.update(dt, at, Vector3.new(at.X, lastGround.Y, at.Z))
+		local floor = Vector3.new(at.X, lastGround.Y, at.Z)
+		for _, slot in slots do
+			local scene = slot.scene
+			if scene and scene.update then
+				scene.update(dt, at, floor)
+			end
 		end
 	end)
 	-- Camera shake on top of whatever the camera scripts did this frame.
 	RunService:BindToRenderStep("WeatherShake", Enum.RenderPriority.Camera.Value + 1, function()
 		local cam = camera()
 		if cam and os.clock() < shakeUntil then
-			local left = (shakeUntil - os.clock())
+			local left = shakeUntil - os.clock()
 			local p = shakePower * math.min(1, left * 4)
 			cam.CFrame *= CFrame.Angles(rng:NextNumber(-p, p) * 0.03, rng:NextNumber(-p, p) * 0.03, 0)
 				* CFrame.new(rng:NextNumber(-p, p), rng:NextNumber(-p, p), 0)

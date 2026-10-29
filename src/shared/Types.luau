@@ -15,6 +15,7 @@ export type Mutation =
 	| "Windswept"
 	| "Bloodlit"
 	| "Starlit"
+	| "Starstruck"
 	| "Disco"
 
 export type ToolDef = {
@@ -191,6 +192,7 @@ export type HatchEntry = {
 	Size: string?,
 	StartsAt: number?, -- when it was put down (the egg grows from then until EndsAt)
 	EndsAt: number,
+	Mutation: Mutation?, -- picked up from the weather while growing; the pet keeps it
 }
 
 export type ProfileData = {

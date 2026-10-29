@@ -49,7 +49,7 @@ Anything else in Output (red errors especially) is a bug worth reporting.
 
 ### Server events
 - [ ] The World Clean % bar fills as the server sweeps. At 100% an Egg Rain starts: the sky turns pink, eggs fall out of the sky onto glowing landing rings, then the leaves regrow.
-- [ ] Weather: a minute after the server starts (then every 2.5-4.5 min) a weather rolls. In Studio type `/weather Rain` (or Thunderstorm, Snow, Windy, Rainbow, GoldenHour, BloodMoon, Aurora, Disco, `off`) and `/eggrain` in chat to try each one.
+- [ ] Weather (Grow a Garden 2 style): 10 min day/night cycle (7:30 day, 0:30 sunset, 2:00 night), one weather rolled per day, a moon rolled per night. In Studio use chat: `/weather Rain` (Thunderstorm, Rainbow, Snow, Starfall, Aurora, GoldenHour, Windy, Disco, GoldMoon, RainbowMoon, BloodMoon, MegaMoon, `off`), `/night`, `/day`, `/eggrain`. Growing eggs in the park pick up the weather's mutation (lightning = Charged, stars = Starstruck) and the pet keeps it.
 - [ ] Server luck products show the luck banner for everyone.
 
 ### Monetization (after step 2)

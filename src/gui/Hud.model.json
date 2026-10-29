@@ -3650,11 +3650,11 @@
     "Size": [
      [
       0,
-      220
+      300
      ],
      [
       0,
-      180
+      260
      ]
     ],
     "Position": [
@@ -3688,7 +3688,7 @@
      "properties": {
       "Padding": [
        0,
-       2
+       4
       ],
       "FillDirection": "Vertical",
       "HorizontalAlignment": "Right",
@@ -3707,7 +3707,7 @@
        ],
        [
         0,
-        28
+        42
        ]
       ],
       "Position": [
@@ -3739,7 +3739,7 @@
        "properties": {
         "Padding": [
          0,
-         4
+         6
         ],
         "FillDirection": "Horizontal",
         "HorizontalAlignment": "Right",
@@ -3754,11 +3754,11 @@
         "Size": [
          [
           0,
-          26
+          40
          ],
          [
           0,
-          26
+          40
          ]
         ],
         "Position": [
@@ -3815,7 +3815,7 @@
         "BackgroundTransparency": 1,
         "Text": "",
         "TextColor3": "#FFFFFF",
-        "TextSize": 17,
+        "TextSize": 26,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": false,
@@ -3834,7 +3834,7 @@
          "className": "UIStroke",
          "properties": {
           "Color": "#17191E",
-          "Thickness": 2,
+          "Thickness": 3,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
          }

@@ -273,8 +273,12 @@ function DustService:Start()
 		while true do
 			task.wait(REGROW_CHECK_SECONDS)
 			local now = os.clock()
-			for _, queue in regrowQueues do
-				while queue.head <= queue.tail and queue.items[queue.head].at <= now do
+			-- Leaf Storm (Config/Weather RegrowMult): leaves blow back in faster.
+			local regrowMult = S.WeatherService:GetRegrowMult()
+			for zoneId, queue in regrowQueues do
+				local zone = zoneTiles[zoneId] and zoneOf[zoneTiles[zoneId][1]]
+				local early = if zone then zone.RegrowSeconds * (1 - regrowMult) else 0
+				while queue.head <= queue.tail and queue.items[queue.head].at - early <= now do
 					restore(queue.items[queue.head].id)
 					queue.items[queue.head] = nil
 					queue.head += 1

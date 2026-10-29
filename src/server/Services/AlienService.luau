@@ -185,6 +185,10 @@ function AlienService:RefreshBase(player: Player)
 		egg:SetAttribute("Weight", entry.Weight or Weights.eggKg(entry.Rarity))
 		egg:SetAttribute("Size", entry.Size or "Normal")
 		egg:SetAttribute("OwnerUserId", player.UserId)
+		if entry.Mutation then
+			-- Upgraded by the weather while growing (Config/Weather).
+			AssetLibrary.applyMutation(egg, entry.Mutation)
+		end
 		CollectionService:AddTag(egg, "HatchingEgg")
 		for _, part in egg:GetDescendants() do
 			if part:IsA("BasePart") then

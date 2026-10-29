@@ -319,6 +319,14 @@ local function renderBoosts()
 	if weather and weatherEnds > now then
 		add("Weather", "Icon_Weather_" .. weather.Id, Weather.chipLabel(weather), weatherEnds, weather.Name, weather.Blurb)
 	end
+	-- Special moons last the whole night.
+	local moon = Weather.ById[State.server("Moon") or ""]
+	local cycleStart = State.server("CycleStart")
+	if moon and moon.Blurb ~= "" and type(cycleStart) == "number" then
+		local cycles = math.floor((now - cycleStart) / Weather.CycleSeconds)
+		local nightEnds = math.floor(cycleStart + (cycles + 1) * Weather.CycleSeconds)
+		add("Moon", "Icon_Weather_" .. moon.Id, Weather.chipLabel(moon), nightEnds, moon.Name, moon.Blurb)
+	end
 	local data = State.data
 	if data and (data.Boosts.Cash2x or 0) > now then
 		add("Cash2x", "Icon_Cash", "2x", data.Boosts.Cash2x, "2x Cash", "Your pets and selling earn double cash.")

@@ -179,8 +179,7 @@ local function rollMutation(luck: number): string?
 			return mutation.Name
 		end
 	end
-	-- The live weather (Config/Weather) can give its own mutation.
-	return S.WeatherService:RollMutation(rng)
+	return nil
 end
 
 -- Opens a ready egg: rolls the pet and puts it in the inventory.
@@ -211,7 +210,8 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	local pool = Aliens.pool(entry.Zone, entry.Rarity)
 	local def = pool[rng:NextInteger(1, #pool)]
 	local luck = S.BoostService:GetServerLuck() * S.BoostService:GetPersonalLuck(player)
-	local mutation = rollMutation(luck)
+	-- An egg the weather upgraded while it grew hatches with that mutation.
+	local mutation = entry.Mutation or rollMutation(luck)
 	local huge = rng:NextNumber() < math.min(1, Aliens.HugeChance * luck * S.WeatherService:GetHugeMult())
 	local isNew = not data.Index[def.Id]
 	data.Index[def.Id] = true
@@ -387,6 +387,58 @@ function HatchService:StopHolding(player: Player)
 	local held = player.Character and player.Character:FindFirstChild("HeldEgg")
 	if held then
 		held:Destroy()
+	end
+end
+
+-- Weather (WeatherService): gives a growing egg a mutation. False if it already has one.
+function HatchService:SetEggMutation(player: Player, uid: string, mutation: string): boolean
+	local data = S.DataService:GetData(player)
+	if not data then
+		return false
+	end
+	for _, entry in data.Hatching do
+		if entry.Uid == uid then
+			if entry.Mutation then
+				return false
+			end
+			entry.Mutation = mutation :: any
+			changed(player)
+			return true
+		end
+	end
+	return false
+end
+
+-- Weather (Rain): every growing egg gets `seconds` closer to ready. Only the egg
+-- attributes are updated (no rebuild), so the park doesn't flicker.
+function HatchService:GrowFaster(player: Player, seconds: number, base: Instance?)
+	local data = S.DataService:GetData(player)
+	if not data then
+		return
+	end
+	local now = os.time()
+	local any = false
+	for _, entry in data.Hatching do
+		if entry.EndsAt > now then
+			local shift = math.min(seconds, entry.EndsAt - now)
+			entry.EndsAt -= shift
+			entry.StartsAt = (entry.StartsAt or entry.EndsAt) - shift
+			any = true
+			local folder = base and base:FindFirstChild("Hatching")
+			local egg = folder and folder:FindFirstChild(entry.Uid)
+			if egg then
+				egg:SetAttribute("EndsAt", entry.EndsAt)
+				egg:SetAttribute("StartsAt", entry.StartsAt)
+				for _, d in egg:GetDescendants() do
+					if d:GetAttribute("EndsAt") ~= nil then
+						d:SetAttribute("EndsAt", entry.EndsAt)
+					end
+				end
+			end
+		end
+	end
+	if any then
+		S.StateService:Mark(player)
 	end
 end
 

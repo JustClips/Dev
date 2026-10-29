@@ -9,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local Grid = require(Shared.Grid)
+local Zones = require(Shared.Config.Zones)
 local Net = require(Shared.Net)
 
 local TICK = 0.5
@@ -51,34 +52,51 @@ local function endShower()
 	Net.fireAll("Announce", "The leaves are back. Start sweeping!", "Event")
 end
 
--- Half the eggs land near someone so everybody gets to see (and chase) them.
+-- Snaps a spot to the nearest leaf tile (nil when it isn't on the field).
+local function onField(spot: Vector3): Vector3?
+	local found: Vector3? = nil
+	Grid.forEachInRadius(spot, 8, function(id)
+		found = found or Grid.tilePosition(id)
+	end)
+	return found
+end
+
+-- Half the eggs land near someone so everybody gets to see (and chase) them; the rest
+-- anywhere on the map, every zone.
 local function dropSpot(): Vector3
 	local players = Players:GetPlayers()
 	if #players > 0 and rng:NextNumber() < 0.5 then
 		local character = players[rng:NextInteger(1, #players)].Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 		if root then
-			local spot = root.Position + Vector3.new(rng:NextNumber(-35, 35), 0, rng:NextNumber(-35, 35))
-			local found: Vector3? = nil
-			Grid.forEachInRadius(spot, 8, function(id)
-				found = found or Grid.tilePosition(id)
-			end)
+			local found = onField(root.Position + Vector3.new(rng:NextNumber(-35, 35), 0, rng:NextNumber(-35, 35)))
 			if found then
 				return found
 			end
 		end
 	end
-	return S.DustService:GetRandomMoonPosition(rng)
+	local zone = Zones.List[rng:NextInteger(1, #Zones.List)]
+	return S.DustService:GetRandomTilePosition(zone.Id, rng) or S.DustService:GetRandomMoonPosition(rng)
 end
 
 -- An egg falls out of the sky (every client draws the fall and the landing mark), then
--- the real, pick-up-able egg appears where it lands.
-local function dropEgg()
-	local position = dropSpot()
-	local rarity = S.EggService:RollShowerRarity(S.BoostService:GetServerLuck())
-	Net.fireAll("EggDrop", position, rarity, FALL_SECONDS)
+-- the real, pick-up-able egg appears where it lands. Also used by the Mega Moon
+-- (WeatherService) with a spot and the zone's own rarity roll.
+function EventService:DropEgg(position: Vector3?, rarity: string?)
+	local spot = (position and onField(position)) or dropSpot()
+	local egg = rarity
+	if not egg then
+		if stateName == "Shower" then
+			egg = S.EggService:RollShowerRarity(S.BoostService:GetServerLuck())
+		else
+			local zone = Grid.zoneAt(spot)
+			egg = S.EggService:RollRarity(if zone then zone.MaxRarity else "Rare", S.BoostService:GetServerLuck())
+		end
+	end
+	local finalRarity = egg :: string
+	Net.fireAll("EggDrop", spot, finalRarity, FALL_SECONDS)
 	task.delay(FALL_SECONDS, function()
-		S.EggService:SpawnEgg(position, rarity, nil)
+		S.EggService:SpawnEgg(spot, finalRarity, nil)
 	end)
 end
 
@@ -124,7 +142,7 @@ function EventService:Start()
 			elseif stateName == "Shower" then
 				if os.clock() >= nextEgg then
 					nextEgg = os.clock() + Economy.Shower.EggInterval
-					dropEgg()
+					EventService:DropEgg()
 				end
 				if now >= stateEndsAt then
 					endShower()

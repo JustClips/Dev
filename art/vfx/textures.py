@@ -225,5 +225,146 @@ def note():
     save(alpha_from(m), "Note", (s, s))
 
 
-for f in (rain, snow, leaf, glow, star, ring, trail, rainbow, aurora, blood_moon, note):
+# Mirror-ball facets for a SpecialMesh sphere (UV wraps around it): bright square tiles
+# with dark grout and a few hot spots.
+def disco_tiles():
+    w, h = 512, 256
+    img = Image.new("RGBA", (w, h), (40, 40, 48, 255))
+    d = ImageDraw.Draw(img)
+    rng = random.Random(3)
+    cell = 16
+    for y in range(0, h, cell):
+        for x in range(0, w, cell):
+            v = rng.randint(150, 235)
+            tint = rng.choice([(1, 1, 1), (1, 0.9, 1), (0.9, 0.95, 1), (1, 1, 0.92)])
+            c = tuple(int(v * t) for t in tint)
+            if rng.random() < 0.06:
+                c = (255, 255, 255)
+            d.rectangle([x + 1, y + 1, x + cell - 2, y + cell - 2], fill=c + (255,))
+    img.save(os.path.join(OUT, "Vfx_DiscoTiles.png"))
+    print("wrote DiscoTiles")
+
+
+# Confetti: a small rectangle with a fold line (white so it tints).
+def confetti():
+    s = 64
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rectangle([14, 22, 50, 42], fill=(255, 255, 255, 255))
+    d.line([(32, 22), (32, 42)], fill=(215, 215, 215, 255), width=2)
+    img.save(os.path.join(OUT, "Vfx_Confetti.png"))
+    print("wrote Confetti")
+
+
+# Rain curtain for far-away rain sheets (Beam texture, tiles in both directions).
+def rain_sheet():
+    w, h = 256, 256
+    m = Image.new("L", (w, h), 0)
+    d = ImageDraw.Draw(m)
+    rng = random.Random(11)
+    for _ in range(260):
+        x = rng.randrange(w)
+        y = rng.randrange(h)
+        l = rng.randint(18, 46)
+        a = rng.randint(60, 200)
+        for k in (-h, 0, h):
+            d.line([(x, y + k), (x - 3, y + l + k)], fill=a, width=1)
+    m = m.filter(ImageFilter.GaussianBlur(0.6))
+    alpha_from(m).save(os.path.join(OUT, "Vfx_RainSheet.png"))
+    print("wrote RainSheet")
+
+
+# Scorch mark left by lightning (dark, soft, with cracks).
+def scorch():
+    s = 256
+    m = Image.new("L", (s * SS, s * SS), 0)
+    d = ImageDraw.Draw(m)
+    c = s * SS / 2
+    d.ellipse([c - s * SS * 0.3, c - s * SS * 0.3, c + s * SS * 0.3, c + s * SS * 0.3], fill=200)
+    rng = random.Random(5)
+    for i in range(9):
+        a = i / 9 * math.tau + rng.random() * 0.4
+        x, y = c, c
+        for _ in range(6):
+            nx = x + math.cos(a) * s * SS * 0.07
+            ny = y + math.sin(a) * s * SS * 0.07
+            d.line([(x, y), (nx, ny)], fill=230, width=SS * 4)
+            x, y, a = nx, ny, a + rng.uniform(-0.6, 0.6)
+    m = m.filter(ImageFilter.GaussianBlur(SS * 6))
+    alpha_from(m, (20, 16, 14)).resize((s, s), Image.LANCZOS).save(os.path.join(OUT, "Vfx_Scorch.png"))
+    print("wrote Scorch")
+
+
+# Soft filled light spot (disco floor lights, strike glow on the ground).
+def spot():
+    s = 128
+    m = Image.new("L", (s, s), 0)
+    px = m.load()
+    for y in range(s):
+        for x in range(s):
+            r = math.hypot(x - s / 2 + 0.5, y - s / 2 + 0.5) / (s / 2)
+            px[x, y] = int(255 * min(1, max(0, (1 - r) * 2.2)) ** 1.5)
+    alpha_from(m).save(os.path.join(OUT, "Vfx_Spot.png"))
+    print("wrote Spot")
+
+
+# Water droplet for splashes.
+def droplet():
+    s = 64
+    m = Image.new("L", (s * SS, s * SS), 0)
+    d = ImageDraw.Draw(m)
+    k = SS
+    d.ellipse([20 * k, 26 * k, 44 * k, 50 * k], fill=255)
+    d.polygon([(32 * k, 8 * k), (21 * k, 34 * k), (43 * k, 34 * k)], fill=255)
+    save(alpha_from(m), "Droplet", (s, s))
+
+
+def moon(name, base, crater, glow):
+    s = 256
+    img = Image.new("RGBA", (s * SS, s * SS), (0, 0, 0, 0))
+    c = s * SS / 2
+    r = s * SS * 0.36
+    halo = Image.new("L", img.size, 0)
+    ImageDraw.Draw(halo).ellipse([c - r * 1.25, c - r * 1.25, c + r * 1.25, c + r * 1.25], fill=150)
+    halo = halo.filter(ImageFilter.GaussianBlur(SS * 22))
+    img = Image.composite(Image.new("RGBA", img.size, glow + (255,)), img, halo)
+    disk = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(disk)
+    d.ellipse([c - r, c - r, c + r, c + r], fill=base + (255,))
+    rng = random.Random(7)
+    for _ in range(14):
+        a, k2 = rng.random() * math.tau, rng.random() ** 0.6 * 0.75
+        cr = r * (0.07 + rng.random() * 0.12)
+        x, y = c + math.cos(a) * r * k2, c + math.sin(a) * r * k2
+        d.ellipse([x - cr, y - cr, x + cr, y + cr], fill=crater + (255,))
+    img.alpha_composite(disk)
+    save(img, name, (s, s))
+
+
+def rainbow_moon():
+    s = 256
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    px = img.load()
+    c = s / 2
+    r = s * 0.36
+    for y in range(s):
+        for x in range(s):
+            dx, dy = x - c + 0.5, y - c + 0.5
+            dist = math.hypot(dx, dy)
+            hue = (math.atan2(dy, dx) / math.tau + 0.5 + dist / s * 0.6) % 1
+            import colorsys
+            cr, cg, cb = colorsys.hsv_to_rgb(hue, 0.55, 1)
+            if dist <= r:
+                px[x, y] = (int(cr * 255), int(cg * 255), int(cb * 255), 255)
+            elif dist <= r * 1.35:
+                a = int(170 * (1 - (dist - r) / (r * 0.35)) ** 2)
+                px[x, y] = (int(cr * 255), int(cg * 255), int(cb * 255), a)
+    img.save(os.path.join(OUT, "Vfx_RainbowMoon.png"))
+    print("wrote RainbowMoon")
+
+
+for f in (rain, snow, leaf, glow, star, ring, trail, rainbow, aurora, blood_moon, note,
+          disco_tiles, confetti, rain_sheet, scorch, spot, droplet, rainbow_moon):
     f()
+moon("GoldMoon", (255, 205, 70), (225, 160, 40), (255, 190, 60))
+moon("MegaMoon", (235, 240, 255), (190, 200, 225), (180, 210, 255))

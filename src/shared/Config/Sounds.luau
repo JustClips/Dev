@@ -59,6 +59,8 @@ Sounds.Weather = {
 	BloodMoon = { Id = id(140269757258221), Volume = 0.35 }, -- Eerie Drone (APM)
 	Aurora = { Id = id(9112835862), Volume = 0.3 }, -- Night Ambience 1
 	Disco = { Id = id(9038367768), Volume = 0.5, Music = true }, -- Funky Disco Beats (APM)
+	Starfall = { Id = id(9112835862), Volume = 0.25 }, -- Night Ambience 1
+	MegaMoon = { Id = id(9112836038), Volume = 0.25 }, -- Night Ambience 2
 } :: { [string]: { Id: string, Volume: number, Music: boolean? } }
 
 -- Background music, shuffled. Cute and calm so it never gets annoying.
