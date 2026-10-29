@@ -53,13 +53,17 @@ local SHAKE_TIME = 0.25
 local TILE_SPREAD = 1.4 -- ground image size vs the tile (clumps overlap into a carpet)
 local GOLD_IMAGE = "Ground_Gold"
 -- 3D leaves (only near you, so phones stay smooth).
-local MESH_DISTANCE = if TOUCH then 30 else 44 -- tiles closer than this get 3D leaves
+-- Close to you the ground IS the 3D leaves: a dense mound of real leaf meshes per tile
+-- (Dev: piles should be made of the leaves, not painted). Further out: the pile meshes.
+local MESH_DISTANCE = if TOUCH then 26 else 38 -- tiles closer than this are built from leaves
 local MESH_KEEP = MESH_DISTANCE + 10
-local LEAVES_PER_TILE = if TOUCH then 4 else 7
+local LEAVES_PER_TILE = if TOUCH then 9 else 16
+local LEAF_SIZE = if TOUCH then { 1.5, 2.2 } else { 1.2, 1.9 } -- per 4-stud tile (fewer, bigger on phones)
+local MOUND = 0.4 -- studs the leaves heap up in the middle of a 4-stud tile
 local EDGE_LEAVES = 3 -- extra leaves on tiles against a fence or edge (drifts)
 local EXTRA_FLYERS = if TOUCH then 1 else 2 -- more leaves fly off a cleared tile than lie on it
-local MAX_LEAF_FLIGHTS = if TOUCH then 220 else 450
-local DETAIL_BUDGET = 40 -- tiles given leaves per pass
+local MAX_LEAF_FLIGHTS = if TOUCH then 300 else 700
+local DETAIL_BUDGET = if TOUCH then 14 else 24 -- tiles given leaves per pass (10 passes a second)
 local MAX_DRIFT = 3 -- studs a kicked leaf can end up from its spot
 local KICK_SPEED = 3 -- walking slower than this doesn't move leaves
 local HOP = 0.25 -- part of a flight spent hopping up before the pull starts
@@ -72,7 +76,7 @@ local DRIFT_CHANCE = 0.65 -- edge tiles that get a drift heap
 -- Wind
 local GUST_EVERY = { 8, 15 } -- seconds between gusts
 local GUST_SPEED = 24 -- studs per second the gust front travels
-local GUST_SHARE = 0.35 -- part of the leaves a gust lifts
+local GUST_SHARE = 0.15 -- part of the leaves a gust lifts
 
 type Tile = {
 	id: number,
@@ -385,6 +389,7 @@ local function addProp(tile: Tile, name: string, scale: Vector3, rel: CFrame, cl
 	if not part then
 		return nil
 	end
+	part.Transparency = 0 -- pooled parts may come back hidden
 	local prop: Prop = { part = part, name = name, scale = scale, rel = rel, clump = clump }
 	local props = tile.props or {}
 	tile.props = props
@@ -531,21 +536,24 @@ local function addLeaves(tile: Tile)
 	local center = tile.base.Position
 	local groundY = zg.Zone.GroundY + 0.07
 	local edge = tile.edge
-	local n = if tile.trash then 2 else LEAVES_PER_TILE + (if edge then EDGE_LEAVES else 0)
-	local pile = if tile.props then 0.38 * size / 5 else 0 -- leaves lie on top of a 3D pile
+	local n = (if tile.trash then LEAVES_PER_TILE // 2 else LEAVES_PER_TILE) + (if edge then EDGE_LEAVES else 0)
+	local mound = MOUND * size / 4
+	local reach = size * 0.62 -- a little past the tile, so neighbours overlap into a carpet
 	local leaves = {}
 	for k = 1, n do
-		local r = size * 0.55 * math.sqrt(Grid.hash(id, 20 + k))
+		local u = Grid.hash(id, 20 + k)
+		local r = reach * math.sqrt(u)
 		local a = Grid.hash(id, 40 + k) * math.pi * 2
-		local onTop = pile * math.max(0, 1 - r / (size * 0.55))
+		-- Heaped in the middle, later leaves on top of earlier ones.
+		local onTop = mound * (1 - u) + k * 0.012
 		local shift = Vector3.zero
 		if edge and k > n - EDGE_LEAVES then
 			shift = edge * size * 0.35 -- the extra ones heap up against the edge
-			onTop += pile
+			onTop += mound
 		end
 		local kind = look.kinds[math.floor(Grid.hash(id, 80 + k) * #look.kinds) + 1]
 		local color = if golden[id] then LeafMeshes.Gold else leafColor(id, k, look)
-		local scale = size / 4 * (0.9 + Grid.hash(id, 60 + k) * 0.6)
+		local scale = size / 4 * (LEAF_SIZE[1] + Grid.hash(id, 60 + k) * (LEAF_SIZE[2] - LEAF_SIZE[1]))
 		local part = LeafMeshes.take(kind, color, scale)
 		if not part then
 			break
@@ -553,10 +561,11 @@ local function addLeaves(tile: Tile)
 		local leaf: Leaf = {
 			part = part,
 			tile = tile,
-			home = Vector3.new(center.X + math.cos(a) * r, groundY + onTop + k * 0.015, center.Z + math.sin(a) * r) + shift,
+			home = Vector3.new(center.X + math.cos(a) * r, groundY + onTop, center.Z + math.sin(a) * r) + shift,
 			off = Vector3.zero,
 			vel = Vector3.zero,
-			rot = Vector3.new(Grid.hash(id, 120 + k) * 0.5 - 0.25, Grid.hash(id, 140 + k) * math.pi * 2, Grid.hash(id, 160 + k) * 0.5 - 0.25),
+			-- Tilted a bit more toward the middle of the mound, like leaves lying on a heap.
+			rot = Vector3.new(Grid.hash(id, 120 + k) * 0.7 - 0.35, Grid.hash(id, 140 + k) * math.pi * 2, Grid.hash(id, 160 + k) * 0.7 - 0.35),
 			spin = Vector3.zero,
 			size = part.Size,
 			color = color,
@@ -569,6 +578,11 @@ local function addLeaves(tile: Tile)
 	end
 	tile.leaves = leaves
 	detailed[tile] = true
+	-- The real leaves are the ground here: hide the pile mesh and the ground image.
+	for _, prop in tile.props or {} do
+		prop.part.Transparency = 1
+	end
+	tile.decal.Transparency = 1
 end
 
 local function stripLeaves(tile: Tile)
@@ -581,6 +595,13 @@ local function stripLeaves(tile: Tile)
 	for _, leaf in leaves do
 		moving[leaf] = nil
 		LeafMeshes.give(leaf.part)
+	end
+	-- Back to the far look.
+	if tiles[tile.id] == tile then
+		for _, prop in tile.props or {} do
+			prop.part.Transparency = 0
+		end
+		tile.decal.Transparency = if tile.props then 1 else 0
 	end
 end
 
