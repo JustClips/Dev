@@ -1,7 +1,6 @@
 --!strict
--- Hover card for pets and eggs in any pet park: point the mouse at one (or tap it on a
--- phone) to see its name, weight and size class, cash per second, and for eggs the time
--- left and the pet weights it can hatch.
+-- Hover text for pets and eggs in any pet park: point the mouse at one (or tap it on a
+-- phone). Minimal, no panel: name, cash per second (pets) or time left (eggs), and weight.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -67,10 +66,11 @@ local function showPet(model: Model)
 	local mult = model:GetAttribute("WeightMult") or 1
 	local class = Weights.classFor(mult)
 	local weight = model:GetAttribute("Weight") or Weights.petKg(def.Rarity)
-	weightLabel.Text = `{Weights.format(weight)} · {class.Name} (x{string.format("%.2f", mult)} cash)`
+	weightLabel.Text = `{Weights.format(weight)} · {class.Name}`
 	weightLabel.TextColor3 = class.Color
 	incomeLabel.Text = `+{Format.cash(model:GetAttribute("Income") or 0)}/s`
-	extraLabel.Text = `{def.Rarity}{if huge then " · Huge x" .. Aliens.HugeIncomeMult else ""}`
+	incomeLabel.TextColor3 = Color3.fromRGB(124, 255, 140)
+	extraLabel.Visible = false
 	return true
 end
 
@@ -87,12 +87,10 @@ local function showEgg(model: Model)
 	nameLabel.TextColor3 = rarity.Color
 	weightLabel.Text = `{Weights.format(weight)} · {class.Name}`
 	weightLabel.TextColor3 = class.Color
-	local endsAt = model:GetAttribute("EndsAt") or 0
-	local left = endsAt - State.now()
-	local grown = Eggs.progress(model:GetAttribute("StartsAt"), endsAt, Workspace:GetServerTimeNow())
-	incomeLabel.Text = if left > 0 then `Grown {math.floor(grown * 100)}% · ready in {Format.time(left)}` else "Ready to open!"
-	local low, high = Weights.petRange(rarityName, rarityName, weight)
-	extraLabel.Text = `Pets: {Weights.format(low)} - {Weights.format(high)}`
+	local left = (model:GetAttribute("EndsAt") or 0) - State.now()
+	incomeLabel.Text = if left > 0 then `Ready in {Format.time(left)}` else "Ready to open!"
+	incomeLabel.TextColor3 = if left > 0 then Color3.new(1, 1, 1) else Color3.fromRGB(124, 255, 140)
+	extraLabel.Visible = false
 	return true
 end
 

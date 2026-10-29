@@ -68,41 +68,41 @@ function AlienService:GetIncomePerSec(player: Player): number
 end
 
 -- A small navy plate over a hatching egg (text on a plate, never straight on the world).
+-- Hatch timer over a growing egg: just outlined text and a thin growth bar, no panel. The
+-- client counts it down, fills the bar and only shows it when you're near (HatchController).
 local function label(parent: Instance, text: string, color: Color3, height: number, tag: string?, endsAt: number?)
 	local billboard = Instance.new("BillboardGui")
-	billboard.Size = UDim2.fromOffset(110, 34)
+	billboard.Size = UDim2.fromOffset(120, 40)
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, height, 0)
 	billboard.MaxDistance = 70
 	billboard.LightInfluence = 0
 	local plate = Instance.new("Frame")
 	plate.Size = UDim2.fromScale(1, 1)
-	plate.BackgroundColor3 = Color3.fromRGB(20, 26, 51)
+	plate.BackgroundTransparency = 1
 	plate.Parent = billboard
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = color
-	stroke.Thickness = 3
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Parent = plate
 	local text1 = Instance.new("TextLabel")
-	text1.Size = UDim2.fromScale(1, 1)
+	text1.Size = UDim2.new(1, 0, 1, -10)
 	text1.BackgroundTransparency = 1
-	text1.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
-	text1.TextSize = 22
-	text1.TextColor3 = color
+	text1.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Black)
+	text1.TextSize = 24
+	text1.TextColor3 = Color3.new(1, 1, 1)
 	text1.Text = text
 	text1.Parent = plate
+	local outline = Instance.new("UIStroke")
+	outline.Color = Color3.fromRGB(16, 18, 28)
+	outline.Thickness = 2.5
+	outline.LineJoinMode = Enum.LineJoinMode.Miter
+	outline.Parent = text1
 	if tag then
-		-- The client counts these down and fills the growth bar (HatchController).
 		text1:SetAttribute("EndsAt", endsAt)
 		CollectionService:AddTag(text1, tag)
-		billboard.Size = UDim2.fromOffset(110, 44)
-		text1.Size = UDim2.new(1, 0, 1, -12)
 		local bar = Instance.new("Frame")
 		bar.Name = "Bar"
 		bar.AnchorPoint = Vector2.new(0.5, 1)
-		bar.Position = UDim2.new(0.5, 0, 1, -5)
-		bar.Size = UDim2.new(1, -12, 0, 7)
-		bar.BackgroundColor3 = Color3.fromRGB(8, 10, 22)
+		bar.Position = UDim2.new(0.5, 0, 1, -2)
+		bar.Size = UDim2.new(0, 64, 0, 6)
+		bar.BackgroundColor3 = Color3.fromRGB(16, 18, 28)
+		bar.BackgroundTransparency = 0.3
 		bar.BorderSizePixel = 0
 		bar.Parent = plate
 		local fill = Instance.new("Frame")

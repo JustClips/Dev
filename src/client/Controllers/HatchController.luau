@@ -755,13 +755,26 @@ end
 
 ------------------------------------------------------------------ timers and prompts
 
+-- Egg timers only show when you're close to the egg; ready eggs turn green.
+local TIMER_RANGE = 22
+local READY_COLOR = Color3.fromRGB(110, 255, 120)
+
 local function updateTimers()
 	local now = State.now()
+	local char = Players.LocalPlayer.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
 	for _, label in CollectionService:GetTagged("HatchTimer") do
 		if label:IsA("TextLabel") then
 			local endsAt = label:GetAttribute("EndsAt") or 0
 			local left = endsAt - now
 			label.Text = if left > 0 then Format.time(left) else "READY!"
+			label.TextColor3 = if left > 0 then Color3.new(1, 1, 1) else READY_COLOR
+			local board = label:FindFirstAncestorWhichIsA("BillboardGui")
+			local part = board and board.Parent
+			if board and part and part:IsA("BasePart") then
+				local near = root ~= nil and (root.Position - part.Position).Magnitude < TIMER_RANGE + part.Size.X / 2
+				board.Enabled = near
+			end
 		end
 	end
 end

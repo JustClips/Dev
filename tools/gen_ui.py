@@ -774,14 +774,15 @@ def base_panels():
 
 # ---------------------------------------------------------------- Hover card (pets and eggs in parks)
 def hover():
-    line = lambda name, order, ts, color: text(name, "", U(1, 0, 0, ts + 6), ts=ts, color=color, display=True, stroke=2,
-                                               xa="Left", LayoutOrder=order, TextWrapped=False)
-    card = frame("Card", U(0, 250, 0, 0), bg=BG, BackgroundTransparency=0.08, AutomaticSize="Y", Visible=False, ZIndex=10, children=[
-        autoscale(), border(INK, 3), padding(12, 12, 8, 10), vlist(2, "Left", "Top"),
-        line("Name", 1, 22, WHITE),
-        line("Weight", 2, 18, WHITE),
-        line("Income", 3, 18, "#7CFF8C"),
-        line("Extra", 4, 15, "#C8D0E8"),
+    # Minimal: outlined text next to the cursor, no panel (it can pop up at any time).
+    line = lambda name, order, ts, color, stroke=2.5: text(name, "", U(1, 0, 0, ts + 4), ts=ts, color=color, display=True,
+                                                           stroke=stroke, xa="Left", LayoutOrder=order, TextWrapped=False)
+    card = frame("Card", U(0, 260, 0, 0), AutomaticSize="Y", Visible=False, ZIndex=10, children=[
+        autoscale(), vlist(0, "Left", "Top"),
+        line("Name", 1, 24, WHITE, 3),
+        line("Income", 2, 20, "#7CFF8C"),
+        line("Weight", 3, 16, WHITE, 2),
+        line("Extra", 4, 15, "#C8D0E8", 2),
     ])
     tree = screen([card], order=30, inset=True)
     tree["properties"]["ScreenInsets"] = "None"
