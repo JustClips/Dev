@@ -35,7 +35,7 @@ from lib import Asset  # noqa: E402
 U = 0.13            # cube size in studs (BASE_U times the pet's SCALE while it builds)
 BASE_U = U
 # Bigger pets: same cube grid, bigger cubes.
-SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6}
+SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6}
 FPS = 30
 IDLE = (0, 90)      # frames
 WALK = (120, 138)
@@ -1455,6 +1455,208 @@ def gargoyle():
     return a
 
 
+# ----------------------------------------------------------------- Snowy Peaks (zone Europa)
+
+
+def snow_hare():
+    W, B, K, P, N = "F6F8FC", "C8D4E4", "2A2E38", "F4B8C8", "E88AA0"   # white, blue-grey, black tips, inner ear, nose
+    parts = []
+    for name, x0, y0, big in (("LegFL", 1, -4, False), ("LegFR", -3, -4, False), ("LegBL", 1, 2, True), ("LegBR", -3, 2, True)):
+        p = Part(name, "Body", joint=(x0 + 1, y0 + 1, 3))
+        p.box(x0, x0 + 2, y0, y0 + 2, 0, 3, W)
+        if big:                                             # big snowshoe feet
+            p.box(x0, x0 + 2, y0 - 3, y0, 0, 1, lambda i, j, k: B if j == y0 - 3 else W)
+        parts.append(p)
+    body = Part("Body")
+    body.rbox(-3, 3, -5, 5, 2, 8, lambda i, j, k: B if (k == 7 and (i + j) % 3 == 0) else W)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -5, 7))
+    head.rbox(-4, 4, -10, -4, 6, 12, W, edges=(True, False, True))
+    eyes(head, -10, 9, shine=False)
+    head.box(-2, 2, -11, -10, 7, 9, W)
+    head.set([(-1, -11, 8), (0, -11, 8)], N)
+    head.set([(-3, -10, 8), (2, -10, 8)], P)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2, -7, 12))
+    ear.box(1, 3, -8, -6, 12, 19, lambda i, j, k: K if k >= 18 else (P if (j == -8 and i == 1 and 13 <= k <= 16) else W))
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 5, 5))
+    tail.rbox(-1, 1, 5, 7, 4, 7, W, edges=(False, False, False))
+    parts.append(tail)
+    return assemble("SnowHare", parts)
+
+
+def mountain_goat():
+    W, G, H, D, N = "F2F0EA", "C8C4BA", "4A4440", "2A2624", "8A8078"   # wool, shade, horn, hoof, nose
+    parts = legs(W, D, 6, -6, 4, sock=G, sock_h=2)
+    body = Part("Body")
+    body.rbox(-3, 3, -7, 7, 6, 12, lambda i, j, k: G if k == 6 or (k == 7 and (i + j) % 2) else W)   # shaggy belly fringe
+    body.box(-1, 1, -8, -6, 8, 12, W)                                  # neck ruff
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -7, 11))
+    head.box(-3, 3, -12, -7, 11, 16, W)
+    head.box(-2, 2, -14, -12, 11, 14, W)                               # long face
+    head.set([(-1, -14, 13), (0, -14, 13)], N)
+    head.box(-1, 1, -13, -11, 8, 11, lambda i, j, k: G if k == 8 else W)   # beard
+    eyes(head, -12, 14, xs=(-3, 2), w=1, h=1, shine=False)
+    parts.append(head)
+    horns = Part("Horns", "Head", joint=(0, -9, 16))
+    for x in (-2, 1):                                                  # short black horns curving back
+        horns.set([(x, -10, 16), (x, -10, 17), (x, -9, 18), (x, -8, 19), (x, -7, 19)], H)
+    parts.append(horns)
+    ear = Part("EarL", "Head", joint=(3, -9, 15))
+    ear.box(3, 5, -10, -9, 14, 15, lambda i, j, k: "E8C8C0" if i == 3 else W)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 7, 11))
+    tail.box(-1, 1, 7, 8, 10, 12, W)
+    parts.append(tail)
+    return assemble("MountainGoat", parts)
+
+
+def snow_leopard():
+    W, G, R, C, I = "E6E8EC", "C2C8D0", "4A4E58", "F8FAFC", "8ED8E8"    # pale grey, shade, rosette, belly, ice eyes
+    parts = legs(W, C, 4, -6, 4)
+    for p in parts:
+        for c in list(p.cells):
+            if (c[0] + c[1] + c[2]) % 4 == 0 and c[2] > 0:
+                p.cells[c] = R
+
+    def ros(i, j, k):                                                  # ring spots
+        a, b = (i + 7) % 4, (j + 9 + (k // 2) * 2) % 4
+        return R if (k >= 7 and ((a == 0 and b < 3) or (b == 0 and a < 3)) and (i + j + k) % 3) else None
+    body = Part("Body")
+    body.box(-3, 3, -7, 7, 4, 9, lambda i, j, k: C if k == 4 and -5 <= j <= 5 else (ros(i, j, k) or W))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -7, 8))
+    head.rbox(-4, 4, -12, -6, 7, 13, lambda i, j, k: R if (k == 12 and (i + j) % 3 == 0) else W, edges=(True, False, True))
+    head.box(-2, 2, -13, -12, 7, 10, C)
+    head.set([(-1, -13, 9), (0, -13, 9)], "D88A9A")
+    head.set([(-1, -13, 7), (0, -13, 7)], R)
+    eye_cells = [(x, -12, z) for x in (-3, -2, 1, 2) for z in (10,)]
+    for c in eye_cells:
+        head.cells.pop(c, None)
+    head.set([(x, -12, 11) for x in (-3, -2, 1, 2)], G)                # brow
+    parts.append(head)
+    glow = Part("Eyes_Glow", "Head", joint=(0, -12, 10.5), noise=False, glow=I)
+    glow.set(eye_cells, I)
+    parts.append(glow)
+    ear = Part("EarL", "Head", joint=(3, -9, 13))
+    ear.box(2, 4, -9, -8, 13, 14, lambda i, j, k: R if i == 3 else W)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 7, 8))                       # very long, very thick tail
+    tail.rbox(-2, 2, 7, 12, 6, 10, lambda i, j, k: R if j % 3 == 0 else W, edges=(True, False, False))
+    tail2 = Part("Tail2", "Tail", joint=(0, 12, 8))
+    tail2.rbox(-2, 2, 12, 17, 6, 10, lambda i, j, k: R if j % 3 == 0 or j == 16 else W, edges=(True, False, False))
+    parts += [tail, tail2]
+    return assemble("SnowLeopard", parts)
+
+
+def mammoth():
+    F, FD, S, T, E = "8A5A36", "6A4228", "A8744A", "F4ECDA", "241A16"   # fur, dark fur, light fur, tusk
+    parts = legs(FD, "3A2A20", 6, -7, 5, spread=1)
+    for p in parts:
+        p.box(min(c[0] for c in p.cells) - 0, max(c[0] for c in p.cells) + 1, min(c[1] for c in p.cells), max(c[1] for c in p.cells) + 1, 5, 6, F)
+    shag = lambda i, j, k: FD if (i * 5 + j * 3 + k * 7) % 7 == 0 else (S if (i + 2 * j + k) % 11 == 0 else F)   # noqa: E731
+    body = Part("Body")
+    body.rbox(-5, 5, -8, 8, 5, 15, shag)
+    body.rbox(-4, 4, -7, 2, 15, 17, shag)                               # shoulder hump
+    for c in [c for c in body.cells if c[2] <= 6 and (c[0] + c[1]) % 2 == 0]:   # shaggy dark underside
+        body.cells[c] = FD
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -8, 13))
+    head.rbox(-4, 4, -12, -7, 9, 17, shag, edges=(True, False, True))
+    head.rbox(-3, 3, -11, -8, 17, 19, FD)                               # domed top
+    eyes(head, -12, 13, xs=(-4, 3), w=1, h=1, shine=False)
+    parts.append(head)
+    trunk = Part("Trunk", "Head", joint=(0, -12.5, 11))
+    trunk.box(-1, 1, -14, -12, 6, 12, F)
+    trunk2 = Part("Trunk2", "Trunk", joint=(0, -13, 6))
+    trunk2.box(-1, 1, -14, -12, 3, 6, F)
+    trunk2.box(-1, 1, -16, -14, 3, 4, FD)                              # curled tip
+    parts += [trunk, trunk2]
+    for x, nm in ((2, "TuskL"), (-3, "TuskR")):
+        t = Part(nm, "Head", joint=(x + 0.5, -12, 10), noise=False)
+        t.set([(x, -12, 10), (x, -13, 9), (x, -14, 8), (x, -15, 8), (x, -16, 9), (x, -17, 10), (x, -17, 11)], T)
+        parts.append(t)
+    ear = Part("EarL", "Head", joint=(4, -9, 14))
+    ear.box(4, 5, -10, -8, 11, 15, FD)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 8, 12))
+    tail.box(-1, 1, 8, 9, 8, 12, F)
+    tail.box(-1, 1, 8, 9, 7, 8, FD)
+    parts.append(tail)
+    return assemble("Mammoth", parts)
+
+
+def frost_eagle():
+    W, B, BD, I, Y, K = "F6F8FC", "7AA8D8", "4A72A8", "B8F0FF", "F2C230", "2A2E38"   # white, ice blue, deep blue, ice, beak, talon
+    parts = []
+    leg = Part("LegL", "Body", joint=(1.5, 0, 3))
+    leg.box(1, 3, -1, 1, 1, 3, Y)
+    leg.box(1, 3, -2, 1, 0, 1, lambda i, j, k: K if j == -2 else Y)
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-3, 3, -4, 6, 3, 10, lambda i, j, k: BD if (k == 9 and j % 2) else (W if j == -4 else B))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -3, 10))
+    head.rbox(-3, 3, -7, -2, 9, 14, W, edges=(True, False, True))
+    head.box(-1, 1, -9, -7, 10, 13, Y)                                  # hooked beak
+    head.set([(-1, -9, 9), (0, -9, 9)], Y)
+    head.set([(-1, -9, 12), (0, -9, 12)], shade(Y, -0.25))
+    eyes(head, -7, 12, xs=(-3, 2), w=1, h=1, shine=False)
+    head.set([(-3, -7, 13), (2, -7, 13)], "C8CCD8")                     # fierce brow
+    parts.append(head)
+    wing = Part("WingL", "Body", joint=(3, -1, 9))
+    for d in range(10):                                                # long swept wing, ice-tipped
+        for j in range(-3, 4 - d // 3):
+            tip = d >= 7 and j >= 1 - d // 3
+            wing.cells[(3 + d, j, 9 - d // 4)] = I if tip else (BD if j == -3 or d % 3 == 0 else B)
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 6, 6))
+    tail.box(-2, 2, 6, 10, 5, 6, lambda i, j, k: I if j == 9 else BD)
+    parts.append(tail)
+    a = assemble("FrostEagle", parts)
+    a.extra["float"] = True
+    a.extra["aura"] = "Frost"
+    return a
+
+
+def yeti():
+    W, WS, F, FD, H, I, M = "F4F6FA", "D4DCE8", "8EA2BE", "6A7E9C", "C8E8FF", "7EE8FF", "3A2A40"   # fur, fur shade, face, dark face, horn, ice, mouth
+    fur = lambda i, j, k: WS if (i * 3 + j * 7 + k * 5) % 9 == 0 else W   # noqa: E731
+    parts = []
+    leg = Part("LegL", "Body", joint=(2.5, 0, 6))
+    leg.rbox(1, 5, -2, 2, 1, 7, fur, edges=(False, False, True))
+    leg.box(1, 5, -3, 2, 0, 1, F)                                       # big feet
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-5, 5, -3, 4, 6, 17, fur)
+    body.box(-3, 3, -4, -3, 8, 14, WS)                                  # chest
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -1, 16))
+    head.rbox(-4, 4, -5, 3, 16, 23, fur)
+    head.box(-3, 3, -6, -5, 16, 21, lambda i, j, k: FD if k <= 17 else F)   # blue face
+    eyes(head, -6, 19, xs=(-3, 1), w=2, h=1)
+    head.set([(-2, -6, 17), (1, -6, 17)], "FFFFFF")                     # fangs
+    head.set([(-1, -6, 17), (0, -6, 17)], M)
+    head.box(-2, 2, -6, -5, 21, 22, WS)                                 # brow tuft
+    parts.append(head)
+    horns = Part("Horns_Glow", "Head", joint=(0, -1, 23), noise=False, glow=H)
+    for x in (-4, 3):
+        horns.set([(x, -1, 23), (x, -1, 24), (x + (1 if x < 0 else -1) * 0, 0, 25)], H)
+    parts.append(horns)
+    arm = Part("ArmL", "Body", joint=(6, 0, 15))
+    arm.rbox(5, 8, -2, 2, 5, 16, fur, edges=(False, False, True))
+    arm.box(5, 8, -2, 2, 3, 5, F)                                       # hands
+    parts += [arm, arm.mirror("ArmR")]
+    ice = Part("Crystals_Glow", "Body", joint=(0, 4, 12), noise=False, glow=I)   # ice shards on its back
+    ice.set([(-2, 4, 12), (-2, 5, 13), (-2, 5, 14), (1, 4, 10), (1, 5, 11), (0, 4, 14), (0, 5, 15), (0, 6, 16)], I)
+    parts.append(ice)
+    a = assemble("Yeti", parts)
+    a.extra["aura"] = "Snowfall"
+    return a
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
@@ -1463,7 +1665,8 @@ PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon":
         "AutumnStag": autumn_stag,
         "Hedgehog": hedgehog, "Frog": frog, "Swan": swan, "Beaver": beaver, "Peacock": peacock, "Griffin": griffin,
         "Crab": crab, "Seagull": seagull, "Seal": seal, "Dolphin": dolphin, "Shark": shark, "SeaSerpent": sea_serpent,
-        "Pigeon": pigeon, "Rat": rat, "Corgi": corgi, "Bulldog": bulldog, "RoboPup": robo_pup, "Gargoyle": gargoyle}
+        "Pigeon": pigeon, "Rat": rat, "Corgi": corgi, "Bulldog": bulldog, "RoboPup": robo_pup, "Gargoyle": gargoyle,
+        "SnowHare": snow_hare, "MountainGoat": mountain_goat, "SnowLeopard": snow_leopard, "Mammoth": mammoth, "FrostEagle": frost_eagle, "Yeti": yeti}
 
 
 # ------------------------------------------------------------------------- animation
@@ -2038,6 +2241,79 @@ def robo_walk(w):
     return p
 
 
+def goat_idle(w):
+    chew = s(8 * w) * (s(w) < 0.3)
+    butt = max(0.0, s(w)) ** 6                              # lowers its head for a little headbutt
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (2 * butt, 0, 0)),
+        "Head": ((0, -0.05 * butt, 0), (30 * butt - 3 * chew, 0, 12 * s(w + 2) * (1 - butt))),
+        "EarL": ((0, 0, 0), (0, -10 * max(0.0, s(4 * w)) ** 6, 0)),
+        "EarR": ((0, 0, 0), (0, 10 * max(0.0, s(4 * w + 1)) ** 6, 0)),
+        "Tail": ((0, 0, 0), (-20 * max(0.0, s(6 * w)) ** 4, 0, 0)),
+    }
+
+
+def leopard_idle(w):
+    p = cat_idle(w)
+    p["Tail"] = ((0, 0, 0), (-10 + 6 * s(w), 0, 24 * s(w)))
+    p["Tail2"] = ((0, 0, 0), (-20 + 10 * s(w - 0.8), 0, 34 * s(w - 1.0)))
+    return p
+
+
+def mammoth_idle(w):
+    swing = s(w)
+    trumpet = max(0.0, s(w + 1)) ** 8                      # trunk up, trumpet
+    return {
+        "Body": ((0, 0, 0.02 * (1 - c(2 * w))), (0, 2 * s(w), 0)),
+        "Head": ((0, 0, 0), (-3 * s(2 * w) - 8 * trumpet, 0, 6 * s(w))),
+        "Trunk": ((0, 0, 0), (-60 * trumpet + 6 * swing * (1 - trumpet), 0, 14 * swing * (1 - trumpet))),
+        "Trunk2": ((0, 0, 0), (-50 * trumpet + 10 * s(2 * w), 0, 10 * swing)),
+        "EarL": ((0, 0, 0), (0, 0, -18 * max(0.0, s(3 * w)) ** 2)),
+        "EarR": ((0, 0, 0), (0, 0, 18 * max(0.0, s(3 * w)) ** 2)),
+        "Tail": ((0, 0, 0), (0, 0, 20 * s(4 * w))),
+    }
+
+
+def mammoth_walk(w):
+    p = walk(22, 0.04, 14, 0, 0)(w)
+    p["Body"] = ((0, 0, 0.04 * abs(s(w))), (1.5 * s(2 * w), 5 * s(w), 3 * s(w)))
+    p["Trunk"] = ((0, 0, 0), (8 * s(2 * w), 0, 14 * s(w)))
+    p["Trunk2"] = ((0, 0, 0), (12 * s(2 * w - 0.6), 0, 12 * s(w - 0.6)))
+    p["EarL"] = ((0, 0, 0), (0, 0, -10 * abs(s(w))))
+    p["EarR"] = ((0, 0, 0), (0, 0, 10 * abs(s(w))))
+    return p
+
+
+def eagle_idle(w):
+    return {
+        "Head": ((0, 0, 0), (-4 * s(2 * w), 6 * s(3 * w), 30 * max(-1.0, min(1.0, 2.5 * s(w))))),
+        "Tail": ((0, 0, 0), (6 * s(2 * w), 0, 8 * s(w))),
+    }
+
+
+def yeti_idle(w):
+    roar = max(0.0, s(w)) ** 4                              # arms up and a big roar
+    breathe = s(2 * w)
+    beat = s(10 * w) * (s(w) < -0.3)                        # chest thumps
+    return {
+        "Body": ((0, 0, 0.02 * breathe), (-6 * roar + 1.5 * breathe, 0, 0)),
+        "Head": ((0, 0, 0), (-18 * roar + 2 * breathe, 0, 10 * s(w + 2) * (1 - roar))),
+        "ArmL": ((0, 0, 0), (-30 * roar - 35 * abs(beat), -60 * roar - 6 * breathe, 25 * abs(beat))),
+        "ArmR": ((0, 0, 0), (-30 * roar - 35 * abs(s(10 * w + 1.5)) * (s(w) < -0.3), 60 * roar + 6 * breathe, -25 * abs(s(10 * w + 1.5)) * (s(w) < -0.3))),
+        "Horns_Glow": ((0, 0, 0), (0, 0, 0)),
+    }
+
+
+def yeti_walk(w):
+    swing = 28 * s(w)
+    return {
+        "Body": ((0, 0, 0.08 * abs(s(w))), (4, 5 * s(w), 6 * s(w))),
+        "Head": ((0, 0, 0), (-4 * s(2 * w), -4 * s(w), -5 * s(w))),
+        "LegL": ((0, 0, 0), (swing, 0, 0)), "LegR": ((0, 0, 0), (-swing, 0, 0)),
+        "ArmL": ((0, 0, 0), (-swing * 1.1, -8, 0)), "ArmR": ((0, 0, 0), (swing * 1.1, 8, 0)),
+    }
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -2076,6 +2352,12 @@ ANIMS = {
     "Bulldog": {"Idle": bulldog_idle, "Walk": heavy_walk},
     "RoboPup": {"Idle": robo_idle, "Walk": robo_walk},
     "Gargoyle": fly(35, quad=True, base=dragon_idle),
+    "SnowHare": {"Idle": bunny_idle, "Walk": hop},
+    "MountainGoat": {"Idle": goat_idle, "Walk": walk(34, 0.07, 0, 0, 6)},
+    "SnowLeopard": {"Idle": leopard_idle, "Walk": walk(30, 0.04, 16, -8, 3)},
+    "Mammoth": {"Idle": mammoth_idle, "Walk": mammoth_walk},
+    "FrostEagle": fly(40, base=eagle_idle),
+    "Yeti": {"Idle": yeti_idle, "Walk": yeti_walk},
 }
 
 
