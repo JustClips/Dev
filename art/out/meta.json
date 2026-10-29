@@ -9972,5 +9972,147 @@
    ]
   },
   "tris": 2960
+ },
+ "Alien_AutumnStag": {
+  "name": "Alien_AutumnStag",
+  "kind": "alien",
+  "parts": {
+   "LegFL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     1.04,
+     -0.91
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegFR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     1.04,
+     -0.91
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     1.04,
+     0.91
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     1.04,
+     0.91
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.69,
+     -1.04
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Eyes_Glow": {
+    "parent": "Head",
+    "joint": [
+     -0.0,
+     2.6,
+     -1.82
+    ],
+    "glow": "FFE07A",
+    "material": null,
+    "collide": false
+   },
+   "Antlers": {
+    "parent": "Head",
+    "joint": [
+     -0.0,
+     2.86,
+     -1.43
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarL": {
+    "parent": "Head",
+    "joint": [
+     -0.39,
+     2.73,
+     -1.365
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarR": {
+    "parent": "Head",
+    "joint": [
+     0.39,
+     2.73,
+     -1.365
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.56,
+     1.17
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_AutumnStag_Idle",
+   "walk": "Pet_AutumnStag_Walk"
+  },
+  "aura": "Leaves",
+  "bounds": {
+   "min": [
+    -0.91,
+    0.0,
+    -2.08
+   ],
+   "max": [
+    0.91,
+    4.16,
+    1.43
+   ]
+  },
+  "tris": 2884
  }
 }

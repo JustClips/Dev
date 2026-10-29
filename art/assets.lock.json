@@ -32,6 +32,14 @@
    "id": 113637784937445,
    "sha": "d6ee1a1bc49d97542f11a302e97e76dfd21e17b2af7e1044562dd2827f6a26dd"
   },
+  "Pet_AutumnStag_Idle": {
+   "id": 87222622243908,
+   "sha": "a9decbbf6d8387ca6d14f97a84dfd4bed21814b3c11639997406b18f162b8dfd"
+  },
+  "Pet_AutumnStag_Walk": {
+   "id": 124951267456138,
+   "sha": "5ecf71d032a8195307bc5eb4254c5fce11dc0ce974ac33033e2d0481683db139"
+  },
   "Pet_Bunny_Idle": {
    "id": 105761799747906,
    "sha": "1108e15e3411518e50fbb1d2c62590ec5b51e0044e72a481993b8bd62a258b8f"
@@ -641,6 +649,74 @@
   "PetSkin_ArcticWolf_Windswept": {
    "id": 70649189020943,
    "sha": "f0327345c8a23d09aec04aab597c630fdcddc07ba37fa0fd1a5719481444c459"
+  },
+  "PetSkin_AutumnStag_Bloodlit": {
+   "id": 76395795665153,
+   "sha": "898bba47442385f6ae3e66e79abdadda99707708b6e5f753e20d7a8efd71f6ce"
+  },
+  "PetSkin_AutumnStag_Disco_0": {
+   "id": 97571448780490,
+   "sha": "1b72e5ad2410c618466d2fe7724d94a035d6adceea8a753ba9b4b8bcae4da508"
+  },
+  "PetSkin_AutumnStag_Disco_1": {
+   "id": 97466268255556,
+   "sha": "9e83d493b16e858268b35532072a09fb32cb7682f5267ee78364741938a4027e"
+  },
+  "PetSkin_AutumnStag_Disco_2": {
+   "id": 98794737740900,
+   "sha": "9742cbcc0a2d60f7faa15eb0aa8e73cd13ee51bf51b85ea89127899ab46545a8"
+  },
+  "PetSkin_AutumnStag_Disco_3": {
+   "id": 91302364435746,
+   "sha": "5643777b691bd1c690fc2e749b27906f882282c43cc6405cc67c61e8ca9d5fd3"
+  },
+  "PetSkin_AutumnStag_Frozen": {
+   "id": 80811101883850,
+   "sha": "2fcc9aeee9d9614557de35cd3d987dbd0760f520e6881894faab9517bacc77c2"
+  },
+  "PetSkin_AutumnStag_Golden": {
+   "id": 109006534443121,
+   "sha": "4a062877083333cb9627b41537e478364518c7343f04e25781bb4f1e80b949a8"
+  },
+  "PetSkin_AutumnStag_MoonDusted": {
+   "id": 127771136406551,
+   "sha": "79228150ae365cbda616c1e9c0ebeffb4e7a3e4fca9461ac9c96fe6b96d462ac"
+  },
+  "PetSkin_AutumnStag_Rainbow_0": {
+   "id": 101613512141927,
+   "sha": "b6741f4db463e47ee2a72a2bd5f10579c11c33383243f3b44fd7a09a51e52c17"
+  },
+  "PetSkin_AutumnStag_Rainbow_1": {
+   "id": 111793917280958,
+   "sha": "8224b19f7d75ff183783295c48f021cb365395962fa8523bfd47090d6893a25e"
+  },
+  "PetSkin_AutumnStag_Rainbow_2": {
+   "id": 106449205961538,
+   "sha": "a99042c5c3456da9f1fa5c9dff8bd9e2bf5083c3d26465d006407dc0c8fe7b35"
+  },
+  "PetSkin_AutumnStag_Rainbow_3": {
+   "id": 106654107935281,
+   "sha": "6db0f63f5f12ec6e099220d259bcbd7c36bd98ed18497c1682a529b112cacd07"
+  },
+  "PetSkin_AutumnStag_Shocked": {
+   "id": 86127216576712,
+   "sha": "9b32ba5bc745488ac508f855180ae1ec20910a0daa2102117e5bbbb62c277a4e"
+  },
+  "PetSkin_AutumnStag_Starlit": {
+   "id": 107816217001479,
+   "sha": "4ba210c52ce58d1696c157a1db18dff98b781c25b00b7d4aaa48e25a5c515d7d"
+  },
+  "PetSkin_AutumnStag_Starstruck": {
+   "id": 74893522730637,
+   "sha": "0fd8d3e7322bfceacb3fec1bc2341abafb2bdd097525b6037821ae67ff0cee79"
+  },
+  "PetSkin_AutumnStag_Wet": {
+   "id": 73767154184681,
+   "sha": "da2d43bf845cf09a4491218cfbe06eaf299ecca24b342371726e10a45db49568"
+  },
+  "PetSkin_AutumnStag_Windswept": {
+   "id": 92513511392495,
+   "sha": "9b75cde94b31c1142d6501d1e1ac44c56602c40b476c9966b06e37a87064763a"
   },
   "PetSkin_Bunny_Bloodlit": {
    "id": 104474509615932,
@@ -1971,6 +2047,10 @@
   "Alien_AstroAxolotl": {
    "id": 104230502799322,
    "sha": "0e830c65e5970ffff6e33ec92ec6611f77d6e693528fc03eca4cc2246f56ff5d"
+  },
+  "Alien_AutumnStag": {
+   "id": 122385749480401,
+   "sha": "0da44d68f87c5f04cfc4e524b0f6f534be2f7f9f206c19b2ee051bfb01dd4407"
   },
   "Alien_Blip": {
    "id": 84675890297461,
