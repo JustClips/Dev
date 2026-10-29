@@ -1116,9 +1116,10 @@ def hatch():
         node("Viewport", "ViewportFrame", base(U(0, 440, 0, 440), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
                                                Ambient="#AEB8D8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=1)),
     ])
-    # What hatched: plain outlined text centred above the hotbar (HatchController sets the
+    # What hatched: outlined text on a dark plate centred above the hotbar (HatchController sets the
     # exact height). The pet goes to your park or bag by itself.
-    card = frame("Card", U(0, 560, 0, 118), U(0.5, 0, 1, -120), (0.5, 1), Visible=False, ZIndex=4, children=[
+    # Dev (2026-10-29): the card sits on a solid dark plate, not see-through.
+    card = plate("Card", U(0, 560, 0, 118), U(0.5, 0, 1, -120), (0.5, 1), tint=BG, Visible=False, ZIndex=4, children=[
         autoscale(),
         text("Rarity", "LEGENDARY", U(1, 0, 0, 22), U(0.5, 0, 0, 0), (0.5, 0), ts=20, display=True, stroke=2.5, ZIndex=5),
         text("Name", "", U(1, 0, 0, 46), U(0.5, 0, 0, 20), (0.5, 0), ts=40, display=True, stroke=3.5, ZIndex=5, TextScaled=True,

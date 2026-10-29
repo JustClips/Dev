@@ -8,11 +8,11 @@
 -- Opening, when you're near the egg: the egg floats up over a glowing ring and wobbles, bricks
 -- chip off it and a rarity name over it climbs up the rarities (one step per wobble) until it
 -- reaches what's inside. Then it charges (swells, turns white, light leaks out of the cracks,
--- sparks get sucked in), bursts into flying bricks with shockwaves and a star flash, the pets
--- roll, and the real one pops out. The camera leans toward the egg but stays yours.
--- The rarer the pet, the bigger the show (TIERS): an energy swirl from Rare, orbiting stars
--- from Epic, a light pillar, spike crown and confetti rain from Legendary, a dimmed world
--- from Mythic. Meshes are ours (art/blender/hatch_vfx.py, HatchFx). Far from your base the
+-- sparks get sucked in), bursts into flying bricks with a shockwave, the pets roll, and the
+-- real one pops out. The camera stays yours (only a little shake).
+-- The rarer the pet, the bigger the show (TIERS): a star flash from Rare, an energy swirl
+-- from Epic, a light pillar and orbiting stars from Legendary, a spike crown, confetti rain
+-- and a dimmed world from Mythic. Meshes are ours (art/blender/hatch_vfx.py, HatchFx). Far from your base the
 -- same show plays in a window. Click or tap to skip ahead.
 --
 -- Owner prompts on growing eggs: Skip Hatch (Robux) while growing, Open when ready.
@@ -419,24 +419,27 @@ end
 -- How big a show each pet rarity gets (Eggs order 1-7). Huge pets and mutations get one more.
 type Tier = {
 	wobbles: number, -- shakes before the burst (the rarity climb steps through them)
-	camera: number, -- how far the camera leans into the shot (0 = not at all)
 	shards: number, -- bricks the egg bursts into
 	rings: number, -- shockwaves at the burst
 	swirl: boolean, -- energy ribbon around the egg
-	pillar: boolean, -- light pillar to the sky + spike crown
+	star: boolean, -- star flash at the burst
+	pillar: boolean, -- light pillar to the sky
+	crown: boolean, -- spike crown out of the ground
 	darken: boolean, -- the world goes dim while it charges
 	stars: number, -- stars orbiting the revealed pet
 	rain: boolean, -- confetti rain over the pet
 	charge: number, -- seconds of charging
 }
+-- Dev (2026-10-29): the first version had too much going on, so it's toned down: fewer
+-- bricks and rings, swirl from Epic, star flash from Rare, crown/darken/rain only for Mythic+.
 local TIERS: { Tier } = {
-	{ wobbles = 3, camera = 0.35, shards = 14, rings = 1, swirl = false, pillar = false, darken = false, stars = 0, rain = false, charge = 0.6 },
-	{ wobbles = 3, camera = 0.45, shards = 16, rings = 1, swirl = false, pillar = false, darken = false, stars = 0, rain = false, charge = 0.65 },
-	{ wobbles = 3, camera = 0.55, shards = 20, rings = 2, swirl = true, pillar = false, darken = false, stars = 0, rain = false, charge = 0.75 },
-	{ wobbles = 4, camera = 0.7, shards = 24, rings = 2, swirl = true, pillar = false, darken = false, stars = 4, rain = false, charge = 0.9 },
-	{ wobbles = 5, camera = 0.85, shards = 28, rings = 3, swirl = true, pillar = true, darken = false, stars = 5, rain = true, charge = 1.1 },
-	{ wobbles = 6, camera = 1, shards = 32, rings = 3, swirl = true, pillar = true, darken = true, stars = 6, rain = true, charge = 1.3 },
-	{ wobbles = 7, camera = 1, shards = 36, rings = 4, swirl = true, pillar = true, darken = true, stars = 8, rain = true, charge = 1.5 },
+	{ wobbles = 3, shards = 8, rings = 1, swirl = false, star = false, pillar = false, crown = false, darken = false, stars = 0, rain = false, charge = 0.5 },
+	{ wobbles = 3, shards = 9, rings = 1, swirl = false, star = false, pillar = false, crown = false, darken = false, stars = 0, rain = false, charge = 0.55 },
+	{ wobbles = 3, shards = 11, rings = 1, swirl = false, star = true, pillar = false, crown = false, darken = false, stars = 0, rain = false, charge = 0.65 },
+	{ wobbles = 4, shards = 13, rings = 2, swirl = true, star = true, pillar = false, crown = false, darken = false, stars = 0, rain = false, charge = 0.75 },
+	{ wobbles = 4, shards = 15, rings = 2, swirl = true, star = true, pillar = true, crown = false, darken = false, stars = 3, rain = false, charge = 0.9 },
+	{ wobbles = 5, shards = 17, rings = 2, swirl = true, star = true, pillar = true, crown = true, darken = true, stars = 4, rain = true, charge = 1.05 },
+	{ wobbles = 5, shards = 19, rings = 3, swirl = true, star = true, pillar = true, crown = true, darken = true, stars = 5, rain = true, charge = 1.2 },
 }
 
 -- A rarity name floating over the egg that climbs up the rarities while it shakes.
@@ -584,7 +587,7 @@ local function play(info)
 		highlight = h
 	end
 
-	-- The camera leans in toward the egg (you keep control; it lets go after the show).
+	-- The camera stays yours (Dev didn't want it to focus on the egg); it only shakes a little.
 	local rig: HatchFx.Rig? = nil
 	if scene.world and not Ui.reducedMotion() then
 		local ignore: { Instance } = { scene.parent }
@@ -593,10 +596,7 @@ local function play(info)
 		end
 		rig = HatchFx.cameraRig(focus, math.clamp(eggHeight * 3.1, 9, 22), ignore)
 		local r = rig :: HatchFx.Rig
-		r.weight(tier.camera * (if quick then 0.5 else 1), 0.7 * tempo)
-		if power >= 4 and not quick then
-			r.orbit(if power >= 6 then 14 else 8)
-		end
+		r.weight(0, 0.01)
 	else
 		scene.camera.CFrame = CFrame.lookAt(Vector3.new(0, eggHeight * 0.85, -eggHeight * 2.9), Vector3.new(0, eggHeight * 0.6, 0))
 		Ui.popIn(gui)
@@ -672,9 +672,8 @@ local function play(info)
 		Ui.sound("Wobble", 0.9 + i * 0.1)
 		Ui.sound("HatchTier", 0.75 + step * 0.12)
 		Ui.sound("HatchChip", 0.9 + math.random() * 0.3)
-		HatchFx.shockwave(scene.parent, scene.origin, climbColor, eggWidth * (1.3 + i * 0.25), 0.45)
-		HatchFx.shards(scene.parent, focus, floorY, eggRarity, 1 + math.min(3, i), 14 + i * 2, scene.eggScale * 0.8)
-		setLeak(math.clamp((i - 1) / wobbles, 0, 1) * 0.7, climbColor)
+		HatchFx.shockwave(scene.parent, scene.origin, climbColor, eggWidth * (1.1 + i * 0.12), 0.4, 0.25)
+		HatchFx.shards(scene.parent, focus, floorY, eggRarity, if i >= 2 then 1 else 0, 12 + i * 2, scene.eggScale * 0.8)
 		if tier.swirl and i == 2 then
 			setSwirl, removeSwirl = HatchFx.swirl(scene.parent, scene.origin, eggWidth * 0.95, eggHeight * 1.5)
 		end
@@ -682,7 +681,7 @@ local function play(info)
 			setSwirl(2 + i * 1.2, 0, climbColor)
 		end
 		if rig then
-			rig.shake(0.05 + 0.03 * i, 0.3)
+			rig.shake(0.02 + 0.01 * i, 0.25)
 		end
 		local amp = math.rad(8 + i * 5)
 		local length = 0.36 * tempo
@@ -712,7 +711,7 @@ local function play(info)
 	local undim: (() -> ())? = nil
 	local endPillar: (() -> ())? = nil
 	if scene.world then
-		stopSuck = HatchFx.suckIn(scene.parent, focus, eggHeight * 1.6, climbColor, 30 + power * 12)
+		stopSuck = HatchFx.suckIn(scene.parent, focus, eggHeight * 1.4, climbColor, 12 + power * 5)
 		if tier.darken and not quick then
 			undim = HatchFx.darken(climbColor, tier.charge)
 		end
@@ -720,10 +719,9 @@ local function play(info)
 	if tier.pillar and not quick then
 		Ui.sound("HatchSuck")
 		endPillar = HatchFx.pillar(scene.parent, scene.origin, eggWidth * 0.75, if scene.world then 160 else eggHeight * 4, climbColor)
-		HatchFx.crown(scene.parent, scene.origin, eggWidth * 1.15, eggHeight * 0.8, climbColor)
 	end
-	if rig then
-		rig.weight(math.min(1, tier.camera * (if quick then 0.5 else 1) + 0.1), tier.charge * tempo)
+	if tier.crown and not quick then
+		HatchFx.crown(scene.parent, scene.origin, eggWidth * 1.15, eggHeight * 0.7, climbColor)
 	end
 	animate(tier.charge * tempo, function(t)
 		local shake = math.rad(4 + power) * t
@@ -731,7 +729,7 @@ local function play(info)
 		egg:PivotTo(lifted * CFrame.Angles(math.random(-100, 100) / 100 * shake, t * t * 6, math.random(-100, 100) / 100 * shake))
 		whiten(eggLooks, t)
 		light.Brightness = 5 + 6 * t
-		setLeak(0.7 + 0.6 * t, climbColor)
+		setLeak(0.3 + 0.6 * t, climbColor)
 		if setSwirl then
 			setSwirl(6 + 14 * t, t, climbColor)
 		end
@@ -739,7 +737,7 @@ local function play(info)
 			highlight.FillTransparency = 1 - t * 0.9
 		end
 		if rig then
-			rig.shake(0.08 + 0.2 * t * (power / 7), 0.2)
+			rig.shake(0.03 + 0.08 * t * (power / 7), 0.2)
 		end
 		if not scene.world then
 			glow.ImageTransparency = 1 - t * 0.7
@@ -753,7 +751,7 @@ local function play(info)
 	if power >= 3 then
 		Ui.sound("HatchBoom")
 	end
-	flashScreen(if big then 1 else 0.75, if big then 0.9 else 0.55)
+	flashScreen(if big then 0.7 else 0.45, if big then 0.7 else 0.45)
 	if stopSuck then
 		stopSuck()
 	end
@@ -771,20 +769,21 @@ local function play(info)
 		if visible then
 			screenPoint = Vector2.new(point.X, point.Y)
 		end
-		HatchFx.burst(scene.parent, focus, rarity.Color, 30 + power * 10, 26 + power * 3)
+		HatchFx.burst(scene.parent, focus, rarity.Color, 14 + power * 5, 22 + power * 2)
 	end
 	for k = 1, tier.rings do
-		local radius = math.max(10, eggHeight * 4) * (1 + (k - 1) * 0.45)
+		local radius = math.max(8, eggHeight * 3) * (1 + (k - 1) * 0.4)
 		task.delay((k - 1) * 0.09, function()
 			HatchFx.shockwave(scene.parent, scene.origin, if k % 2 == 0 then WHITE else rarity.Color, radius, 0.55 + k * 0.08)
 		end)
 	end
-	HatchFx.shards(scene.parent, focus, floorY, eggRarity, if quick then 10 else tier.shards, 22 + power * 2, scene.eggScale)
-	HatchFx.starFlash(scene.parent, focus, eggHeight * (1.1 + power * 0.15), rarity.Color, scene.camera)
-	burstConfetti(screenPoint, rarity.Color, if big then 30 else 18)
+	HatchFx.shards(scene.parent, focus, floorY, eggRarity, if quick then 6 else tier.shards, 18 + power * 2, scene.eggScale)
+	if tier.star then
+		HatchFx.starFlash(scene.parent, focus, eggHeight * (0.9 + power * 0.1), rarity.Color, scene.camera)
+	end
+	burstConfetti(screenPoint, rarity.Color, if big then 18 else 10)
 	if rig then
-		rig.shake(0.35 + power * 0.06, 0.45)
-		rig.punch(-(5 + power))
+		rig.shake(0.12 + power * 0.03, 0.35)
 	end
 	egg:Destroy()
 
@@ -828,7 +827,7 @@ local function play(info)
 	if happy then
 		happy:Play(0.05)
 	end
-	HatchFx.shockwave(scene.parent, scene.origin, rarity.Color, math.max(6, eggHeight * 2.2), 0.4)
+	HatchFx.shockwave(scene.parent, scene.origin, rarity.Color, math.max(5, eggHeight * 1.8), 0.4, 0.25)
 	animate(0.42, function(t)
 		model:ScaleTo(math.max(0.05, petScale * backOut(t)))
 		model:PivotTo(face * CFrame.new(0, math.sin(t * math.pi) * 1.2, 0))
@@ -843,9 +842,6 @@ local function play(info)
 	end
 	if power >= 6 then
 		Ui.sound("HatchGong")
-	end
-	if rig then
-		rig.punch(-3)
 	end
 
 	-- Rays behind the pet; stars around it and confetti for the rare ones.
