@@ -151,10 +151,12 @@ def assemble(key, parts):
 # ----------------------------------------------------------------------------- legs
 
 
-def legs(col, paw, h, front_y, back_y, sock=None, sock_h=1):
-    """Four 2x2 legs, h cubes tall. front_y/back_y: the y of each pair's front cube."""
+def legs(col, paw, h, front_y, back_y, sock=None, sock_h=1, spread=0):
+    """Four 2x2 legs, h cubes tall. front_y/back_y: the y of each pair's front cube.
+    spread moves each side out by that many cubes (for wider bodies)."""
     out = []
-    for name, x0, y0 in (("LegFL", 1, front_y), ("LegFR", -3, front_y), ("LegBL", 1, back_y), ("LegBR", -3, back_y)):
+    L, R = 1 + spread, -3 - spread
+    for name, x0, y0 in (("LegFL", L, front_y), ("LegFR", R, front_y), ("LegBL", L, back_y), ("LegBR", R, back_y)):
         p = Part(name, "Body", joint=(x0 + 1, y0 + 1, h))
         s = sock if (sock and name.startswith("LegF")) else None
         p.box(x0, x0 + 2, y0, y0 + 2, 0, h, lambda i, j, k, s=s: paw if k == 0 else (s if s and k <= sock_h else col))
@@ -508,8 +510,125 @@ def penguin():
     return assemble("Penguin", parts)
 
 
+# --------------------------------------------------------------------------- panda
+
+
+def panda():
+    W, K, G, GD = "F2F2EE", "232326", "6DBE45", "3F8A2A"
+    parts = legs(K, K, 4, -6, 4, spread=1)
+    body = Part("Body")
+    body.rbox(-4, 4, -7, 7, 4, 11, lambda i, j, k: K if -5 <= j <= -2 else W)    # black shoulder band
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -7, 10))
+    head.rbox(-5, 5, -13, -6, 9, 17, W)
+    for x0 in (-4, 2):                                       # eye patches, tilted
+        head.box(x0, x0 + 2, -13, -12, 11, 14, K)
+        head.set([(x0 + (1 if x0 < 0 else 0), -13, 10)], K)
+    head.set([(-3, -13, 13), (2, -13, 13)], SHINE)
+    head.set([(-3, -13, 12), (2, -13, 12)], EYE)
+    head.box(-2, 2, -14, -13, 9, 11, W)                      # muzzle
+    head.set([(-1, -14, 10), (0, -14, 10)], K)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(3.5, -9.5, 17))
+    ear.box(2, 5, -10, -9, 17, 19, K)
+    parts += [ear, ear.mirror("EarR")]
+    bamboo = Part("Bamboo", "Head", joint=(0, -14, 9), noise=False)
+    bamboo.box(-6, 6, -15, -14, 9, 10, lambda i, j, k: GD if i in (-3, 2) else G)
+    bamboo.box(5, 7, -15, -14, 10, 11, "8FD86A")             # leaf
+    parts.append(bamboo)
+    tail = Part("Tail", "Body", joint=(0, 7, 9))
+    tail.box(-1, 1, 7, 8, 8, 10, W)
+    parts.append(tail)
+    return assemble("Panda", parts)
+
+
+# ----------------------------------------------------------------------------- owl
+
+
+def owl():
+    W, G, Y, B, O = "F3F3F7", "C9CBD8", "FFD23F", "E7A93A", "D88A2A"
+    parts = []
+    foot = Part("LegL", "Body", joint=(2, -1, 2))
+    foot.box(1, 3, -3, 0, 0, 1, O)
+    foot.box(1, 3, -1, 0, 1, 2, O)
+    parts += [foot, foot.mirror("LegR")]
+    speck = lambda i, j, k: G if (i * 3 + j * 5 + k * 7) % 11 == 0 else W     # noqa: E731
+    body = Part("Body")
+    body.rbox(-4, 4, -3, 4, 2, 11, speck)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, 0, 11))
+    head.rbox(-4, 4, -3, 4, 11, 17, speck)
+    for x0 in (-4, 0):                                       # big yellow eyes, 4x4
+        head.box(x0, x0 + 4, -4, -3, 12, 16, lambda i, j, k, x0=x0: None if (i - x0 in (0, 3) and k in (12, 15)) else Y)
+        px = x0 + 1
+        head.box(px, px + 2, -4, -3, 13, 15, EYE)
+        head.set([(px if x0 < 0 else px + 1, -4, 14)], SHINE)
+    head.box(-1, 1, -5, -3, 11, 12, B)                       # beak
+    head.set([(-1, -4, 12), (0, -4, 12)], B)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2.5, 0.5, 17))
+    ear.box(2, 4, 0, 1, 17, 18, G)
+    ear.set([(3, 0, 18)], G)
+    parts += [ear, ear.mirror("EarR")]
+    wing = Part("WingL", "Body", joint=(4, 0.5, 10))
+    wing.box(4, 5, -2, 3, 4, 10, lambda i, j, k: G if (j + k) % 3 == 0 else W)
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 4, 3))
+    tail.box(-2, 2, 4, 5, 2, 5, lambda i, j, k: G if k == 2 else W)
+    parts.append(tail)
+    return assemble("Owl", parts)
+
+
+# --------------------------------------------------------------------------- tiger
+
+
+def tiger():
+    O, K, W, N = "F08A24", "1E1A18", "F8F1E4", "C8545A"
+    parts = legs(O, W, 5, -7, 5)
+    for p in parts:
+        for c in list(p.cells):
+            if c[2] in (2, 3) and (c[1] % 2 == 0):
+                p.cells[c] = K                               # leg stripes
+    body = Part("Body")
+    body.box(-3, 3, -8, 8, 5, 10, lambda i, j, k:
+             W if (k == 5 and -6 <= j <= 5) or (j == -8 and k <= 7 and -2 <= i <= 1)
+             else K if (j % 3 == 0 and k >= 7 and abs(i + 0.5) < 2.6 and (k == 9 or abs(i + 0.5) > 1.6)) else O)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -8, 9))
+
+    def hcol(i, j, k):
+        if j == -13 and k <= 9 and i in (-4, -3, 2, 3):
+            return W                                       # white cheeks
+        if k == 14 and i in (-2, 1) and j <= -10:
+            return K                                       # forehead stripes
+        if k == 13 and i in (-1, 0) and j == -13:
+            return K
+        if i in (-4, 3) and j in (-11, -9) and k >= 10:
+            return K                                       # side stripes
+        return O
+    head.box(-4, 4, -13, -7, 8, 15, hcol)
+    eyes(head, -13, 11)
+    head.box(-2, 2, -15, -13, 8, 11, W)                      # muzzle
+    head.set([(-1, -15, 10), (0, -15, 10)], N)
+    head.set([(-1, -15, 8), (0, -15, 8)], K)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(3, -10.5, 15))
+    ear.box(2, 4, -11, -10, 15, 17, lambda i, j, k: W if (k == 15 and i == 2) else O)
+    ear.set([(2, -10, 15), (3, -10, 15), (2, -10, 16), (3, -10, 16)], K)    # black backs
+    parts += [ear, ear.mirror("EarR")]
+    stripe = lambda i, j, k: K if j % 2 == 0 else O        # noqa: E731
+    tail = Part("Tail", "Body", joint=(0, 8, 8))
+    tail.box(-1, 1, 8, 12, 7, 9, stripe)
+    tail2 = Part("Tail2", "Tail", joint=(0, 12, 8))
+    tail2.box(-1, 1, 12, 14, 7, 9, stripe)
+    tail2.box(-1, 1, 13, 15, 9, 12, lambda i, j, k: K if k >= 11 or k == 10 else O)
+    parts += [tail, tail2]
+    return assemble("Tiger", parts)
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
-        "Fox": fox, "Turtle": turtle, "Penguin": penguin}
+        "Fox": fox, "Turtle": turtle, "Penguin": penguin,
+        "Panda": panda, "Owl": owl, "Tiger": tiger}
 
 
 # ------------------------------------------------------------------------- animation
@@ -686,6 +805,64 @@ def penguin_walk(w):
     return p
 
 
+def panda_idle(w):
+    chew = s(10 * w)
+    return {
+        "Body": ((0, 0, 0.012 * (1 - c(2 * w))), (0, 2.5 * s(w), 0)),
+        "Head": ((0, 0, 0.008 * chew), (-3 * chew, 3 * s(w), 6 * s(w))),
+        "Bamboo": ((0, 0, 0.01 * chew), (0, 4 * s(w), 6 * s(2 * w))),
+        "EarL": ((0, 0, 0), (0, -6 * max(0.0, s(3 * w)) ** 6, 0)),
+        "EarR": ((0, 0, 0), (0, 6 * max(0.0, s(3 * w + 2)) ** 6, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 10 * s(4 * w))),
+    }
+
+
+def heavy_walk(w):
+    p = walk(24, 0.03, 8, 0, 4)(w)
+    p["Body"] = ((0, 0, 0.03 * abs(s(w))), (2 * s(2 * w), 6 * s(w), 3 * s(w)))
+    p["Bamboo"] = ((0, 0, 0), (0, 3 * s(w), 0))
+    return p
+
+
+def owl_idle(w):
+    # Quick owl head turns: snaps to look left, holds, snaps right, holds.
+    turn = 70 * max(-1.0, min(1.0, 3 * s(w)))
+    blink = max(0.0, s(4 * w)) ** 10
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, -0.02 * blink), (0, 8 * s(2 * w), turn)),
+        "EarL": ((0, 0, 0), (0, -10 * blink, 0)), "EarR": ((0, 0, 0), (0, 10 * blink, 0)),
+        "WingL": ((0, 0, 0), (0, -6 - 20 * max(0.0, s(3 * w)) ** 6, 0)),
+        "WingR": ((0, 0, 0), (0, 6 + 20 * max(0.0, s(3 * w)) ** 6, 0)),
+        "Tail": ((0, 0, 0), (6 * s(2 * w), 0, 0)),
+    }
+
+
+def owl_walk(w):
+    up = max(0.0, s(w))
+    flap = 55 * abs(s(2 * w))
+    return {
+        "Body": ((0, 0, 0.25 * up), (-6 * up, 0, 0)),
+        "Head": ((0, 0, 0), (5 * up, 0, 0)),
+        "LegL": ((0, 0, 0), (-25 * up, 0, 0)), "LegR": ((0, 0, 0), (-25 * up, 0, 0)),
+        "WingL": ((0, 0, 0), (0, -flap, 0)), "WingR": ((0, 0, 0), (0, flap, 0)),
+        "Tail": ((0, 0, 0), (-12 * up, 0, 0)),
+    }
+
+
+def tiger_idle(w):
+    stretch = max(0.0, s(w)) ** 2                          # a long stretch, then a yawn
+    yawn = max(0.0, -s(w)) ** 2
+    return {
+        "Body": ((0, 0, -0.06 * stretch), (-8 * stretch, 0, 0)),
+        "Head": ((0, 0, 0), (-18 * yawn + 6 * stretch, 0, 6 * s(2 * w) * (1 - yawn))),
+        "LegFL": ((0, -0.12 * stretch, 0), (-30 * stretch, 0, 0)), "LegFR": ((0, -0.12 * stretch, 0), (-30 * stretch, 0, 0)),
+        "EarL": ((0, 0, 0), (0, -12 * yawn, 0)), "EarR": ((0, 0, 0), (0, 12 * yawn, 0)),
+        "Tail": ((0, 0, 0), (-4, 0, 16 * s(w))),
+        "Tail2": ((0, 0, 0), (10 * s(2 * w), 0, 24 * s(w - 1))),
+    }
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -696,6 +873,9 @@ ANIMS = {
     "Fox": {"Idle": fox_idle, "Walk": walk(32, 0.05, 18, 0, 6)},
     "Turtle": {"Idle": turtle_idle, "Walk": crawl},
     "Penguin": {"Idle": penguin_idle, "Walk": penguin_walk},
+    "Panda": {"Idle": panda_idle, "Walk": heavy_walk},
+    "Owl": {"Idle": owl_idle, "Walk": owl_walk},
+    "Tiger": {"Idle": tiger_idle, "Walk": walk(30, 0.04, 14, -4, 3)},
 }
 
 

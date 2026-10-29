@@ -35,6 +35,13 @@ local List: { AlienDef } = {
 		Passive = { Name = "Slow and Steady", Stat = "Offline", Value = 0.25 } },
 	{ Id = "Penguin", Name = "Penguin", Rarity = "Rare", Income = 50, Color = Color3.fromRGB(38, 40, 46), Size = 2.4,
 		Passive = { Name = "Ice Slide", Stat = "Golden", Value = 0.15 } },
+
+	{ Id = "Panda", Name = "Panda", Rarity = "Epic", Income = 180, Color = Color3.fromRGB(242, 242, 238), Size = 2.6,
+		Passive = { Name = "Bamboo Feast", Stat = "PetIncome", Value = 0.1 } },
+	{ Id = "Owl", Name = "Snowy Owl", Rarity = "Epic", Income = 230, Color = Color3.fromRGB(243, 243, 247), Size = 2.4,
+		Passive = { Name = "Night Vision", Stat = "Luck", Value = 0.15 } },
+	{ Id = "Tiger", Name = "Tiger", Rarity = "Epic", Income = 290, Color = Color3.fromRGB(240, 138, 36), Size = 2.6,
+		Passive = { Name = "Pounce", Stat = "Power", Value = 0.15 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new
