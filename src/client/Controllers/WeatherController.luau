@@ -1454,38 +1454,37 @@ local function eggRainSky(scene: Scene)
 	motes(scene, "Vfx_Sparkle", ColorSequence.new(rgb(255, 200, 230), rgb(255, 240, 170)), 26, 0.7, 1.5)
 end
 
--- Special moons are drawn as a screen image placed where the moon sits in the sky (at
--- least 28 degrees up so you can see it). A moon object far out in the world gets fogged
--- into a blue square, and the sky's own moon texture didn't show, so the sky's moon is
--- hidden (preset MoonAngularSize 0) and this draws it. It hides behind hills and buildings.
+-- Special moons: a moon image hung in the world along the moon's direction (at least 28
+-- degrees up), only MOON_DISTANCE studs from the camera and sized so it looks as big as a
+-- far moon. Close enough that the fog doesn't wash it out (far away it turned into a blue
+-- square), and being in the world, roofs, trees and posts in front of it cover it. The
+-- sky's own moon is hidden (preset CelestialBodiesShown off).
+local MOON_DISTANCE = 220
 local function screenMoon(scene: Scene, texture: string, degrees: number)
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "WeatherMoon"
-	gui.IgnoreGuiInset = true
-	gui.ResetOnSpawn = false
-	gui.DisplayOrder = -50
+	local holder = keep(scene, part("Moon", Vector3.new(1, 1, 1)))
+	local studs = 2 * MOON_DISTANCE * math.tan(math.rad(degrees) / 2) / 0.6 -- disc fills 60%
+	local board = Instance.new("BillboardGui")
+	board.Name = "Moon"
+	board.Size = UDim2.fromScale(studs, studs)
+	board.LightInfluence = 0
+	board.Brightness = 1.4
+	board.MaxDistance = math.huge
+	board.AlwaysOnTop = false
+	board.Parent = holder
 	local image = Instance.new("ImageLabel")
-	image.AnchorPoint = Vector2.new(0.5, 0.5)
+	image.Size = UDim2.fromScale(1, 1)
 	image.BackgroundTransparency = 1
 	image.Image = img(texture)
 	image.ImageTransparency = 1
-	image.Parent = gui
-	gui.Parent = player:WaitForChild("PlayerGui")
-	local shown = 0 -- fades in over 3 s
-	local leaving = false
-	local blocked = false
-	local nextRay = 0
-	local params = RaycastParams.new()
-	params.FilterType = Enum.RaycastFilterType.Exclude
+	image.Parent = board
+	TweenService:Create(image, TweenInfo.new(3), { ImageTransparency = 0 }):Play()
 	table.insert(scene.cleanup, function()
-		leaving = true
-		task.delay(2.5, function()
-			gui:Destroy()
-		end)
+		TweenService:Create(image, TweenInfo.new(2), { ImageTransparency = 1 }):Play()
 	end)
-	RunService:BindToRenderStep("WeatherMoon_" .. texture, Enum.RenderPriority.Camera.Value + 1, function(dt: number)
-		if not gui.Parent then
-			RunService:UnbindFromRenderStep("WeatherMoon_" .. texture)
+	local bind = "WeatherMoon_" .. texture
+	RunService:BindToRenderStep(bind, Enum.RenderPriority.Camera.Value + 1, function()
+		if not holder.Parent then
+			RunService:UnbindFromRenderStep(bind)
 			return
 		end
 		local cam = camera()
@@ -1499,21 +1498,7 @@ local function screenMoon(scene: Scene, texture: string, degrees: number)
 		end
 		local elevation = math.max(math.asin(math.clamp(dir.Y, -1, 1)), math.rad(28))
 		dir = flat.Unit * math.cos(elevation) + Vector3.yAxis * math.sin(elevation)
-		local eye = cam.CFrame.Position
-		local point, onScreen = cam:WorldToViewportPoint(eye + dir * 1000)
-		if os.clock() > nextRay then
-			nextRay = os.clock() + 0.2
-			local character = player.Character
-			params.FilterDescendantsInstances = if character then { folder, character } else { folder }
-			blocked = Workspace:Raycast(eye, dir * 3000, params) ~= nil
-		end
-		shown = math.clamp(shown + dt * (if leaving then -0.5 else 0.35), 0, 1)
-		local px = cam.ViewportSize.Y * math.rad(degrees) / math.rad(cam.FieldOfView)
-		image.Size = UDim2.fromOffset(px / 0.6, px / 0.6) -- the disc fills 60% of the texture
-		image.Position = UDim2.fromOffset(point.X, point.Y)
-		local target = if onScreen and point.Z > 0 and not blocked then shown else 0
-		local current = 1 - image.ImageTransparency
-		image.ImageTransparency = 1 - (current + (target - current) * math.min(1, dt * 8))
+		holder.CFrame = CFrame.new(cam.CFrame.Position + dir * MOON_DISTANCE)
 	end)
 end
 
