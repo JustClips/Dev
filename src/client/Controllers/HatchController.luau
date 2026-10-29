@@ -765,10 +765,11 @@ local function updateGrowing()
 			EggModel.retile(egg)
 		end
 		local ready = progress >= 1
-		-- Wobble now and then: more often and harder as it gets close.
+		-- Wobble now and then: a little more often and harder as it gets close.
 		if clock >= g.nextWobble then
 			g.wobbleAt = clock
-			local gap = if ready then 0.9 else 6 - 4.5 * progress
+			-- Dev: wobbling every second was too much; about every 10 s once ready.
+			local gap = if ready then 10 else 16 - 6 * progress
 			g.nextWobble = clock + gap * (0.7 + math.random() * 0.6)
 		end
 		local w = clock - g.wobbleAt
