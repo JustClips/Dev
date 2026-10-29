@@ -28,6 +28,7 @@ local Ui = require(Client.Ui)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AlienModel = require(Shared.AlienModel)
 local AssetLibrary = require(Shared.AssetLibrary)
+local EggModel = require(Shared.EggModel)
 local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
@@ -722,6 +723,7 @@ local function updateGrowing()
 		local target = full * grow
 		if math.abs(egg:GetScale() - target) > 0.003 then
 			egg:ScaleTo(target)
+			EggModel.retile(egg)
 		end
 		local ready = progress >= 1
 		-- Wobble now and then: more often and harder as it gets close.

@@ -1,13 +1,18 @@
 --!strict
--- Eggs built from Roblox parts with real stud surfaces (Dev wants the exact Roblox stud
--- look, like Steal an Egg): stacked square layers in an egg shape, a coloured band, a
--- few plates stuck on the sides, and a topper per rarity. Thin layers clip the 1-stud
--- stud squares into the little C and L marks. Pivot at the bottom centre, facing -Z.
+-- Eggs built from Roblox parts with a stud texture (Steal an Egg style): stacked square
+-- layers in an egg shape, a coloured band, a few plates stuck on the sides, and a topper
+-- per rarity. Pivot at the bottom centre, facing -Z.
+-- The studs are Texture instances sized to fit each face in whole tiles. Roblox's own
+-- stud surface stays 1 stud wide whatever the part size, and eggs get scaled all the time
+-- (growing, carried, big eggs), so those studs got cut off at random. The textures follow
+-- the part size instead (see retile).
+local Assets = require(script.Parent.Config.Assets)
+
 local EggModel = {}
 
-local STUDS = Enum.SurfaceType.Studs
 local SIZE = 0.8
-local FACES = { "TopSurface", "BottomSurface", "FrontSurface", "BackSurface", "LeftSurface", "RightSurface" }
+local TILE = 0.5 -- about this many studs per stud mark at full size
+local FACES = { Enum.NormalId.Top, Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Left, Enum.NormalId.Right }
 
 type Theme = {
 	main: Color3,
@@ -47,12 +52,8 @@ local function part(model: Model, name: string, size: Vector3, cf: CFrame, color
 	p.Size = size
 	p.CFrame = cf
 	p.Color = color
-	p.Material = if neon then Enum.Material.Neon else Enum.Material.Plastic
-	if not neon then
-		for _, face in FACES do
-			(p :: any)[face] = STUDS
-		end
-	end
+	p.Material = if neon then Enum.Material.Neon else Enum.Material.SmoothPlastic
+	p:SetAttribute("Studded", not neon)
 	p.Anchored = true
 	p.CanCollide = false
 	p.CanQuery = false
@@ -62,13 +63,74 @@ local function part(model: Model, name: string, size: Vector3, cf: CFrame, color
 	return p
 end
 
+-- Face width and height in studs for a part face.
+local function faceSize(size: Vector3, face: Enum.NormalId): (number, number)
+	if face == Enum.NormalId.Top or face == Enum.NormalId.Bottom then
+		return size.X, size.Z
+	elseif face == Enum.NormalId.Left or face == Enum.NormalId.Right then
+		return size.Z, size.Y
+	end
+	return size.X, size.Y
+end
+
+-- Whole tiles across a face length, about TILE studs each.
+local function fit(length: number): number
+	return length / math.max(1, math.floor(length / TILE + 0.5))
+end
+
+local function addStuds(p: BasePart)
+	local image = Assets.Images.Stud
+	if not image or image == "" then
+		return
+	end
+	p:SetAttribute("BaseSize", p.Size)
+	for _, face in FACES do
+		local u, v = faceSize(p.Size, face)
+		local t = Instance.new("Texture")
+		t.Name = "Studs"
+		t.Texture = image
+		t.Face = face
+		t.Color3 = p.Color
+		t.StudsPerTileU = fit(u)
+		t.StudsPerTileV = fit(v)
+		t:SetAttribute("TileU", t.StudsPerTileU)
+		t:SetAttribute("TileV", t.StudsPerTileV)
+		t.Parent = p
+	end
+end
+
+local function retilePart(p: BasePart)
+	local base = p:GetAttribute("BaseSize")
+	if typeof(base) ~= "Vector3" or base.X <= 0 then
+		return
+	end
+	local f = p.Size.X / base.X
+	for _, t in p:GetChildren() do
+		if t:IsA("Texture") and t.Name == "Studs" then
+			t.StudsPerTileU = (t:GetAttribute("TileU") :: number) * f
+			t.StudsPerTileV = (t:GetAttribute("TileV") :: number) * f
+		end
+	end
+end
+
+-- Keeps the stud tiles fitting after the egg was scaled (Model:ScaleTo). Parts built on
+-- this machine do it by themselves; call this after scaling an egg built elsewhere
+-- (a server egg the client grows).
+function EggModel.retile(model: Instance)
+	for _, p in model:GetDescendants() do
+		if p:IsA("BasePart") then
+			retilePart(p)
+		end
+	end
+end
+
 local function wedge(model: Model, name: string, size: Vector3, cf: CFrame, color: Color3, neon: boolean?): WedgePart
 	local w = Instance.new("WedgePart")
 	w.Name = name
 	w.Size = size
 	w.CFrame = cf
 	w.Color = color
-	w.Material = if neon then Enum.Material.Neon else Enum.Material.Plastic
+	w.Material = if neon then Enum.Material.Neon else Enum.Material.SmoothPlastic
 	w.Anchored = true
 	w.CanCollide = false
 	w.CanQuery = false
@@ -161,6 +223,16 @@ function EggModel.build(rarity: string): Model
 			local cf = d.CFrame
 			d.Size *= SIZE
 			d.CFrame = cf - cf.Position + cf.Position * SIZE
+		end
+	end
+
+	-- Stud textures on the final sizes, and they follow every later resize.
+	for _, d in model:GetChildren() do
+		if d:IsA("BasePart") and d:GetAttribute("Studded") then
+			addStuds(d)
+			d:GetPropertyChangedSignal("Size"):Connect(function()
+				retilePart(d)
+			end)
 		end
 	end
 
