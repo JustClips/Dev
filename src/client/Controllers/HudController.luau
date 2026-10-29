@@ -134,16 +134,20 @@ function HudController:Toast(text: string, kind: string?)
 	end)
 end
 
+local layout: (number, boolean) -> ()
+
 local announceToken = 0
 local function announce(text: string)
 	announceToken += 1
 	local token = announceToken
 	el.AnnouncementText.Text = text
 	el.Announcement.Visible = true
+	layout(Ui.scale(), Ui.compact()) -- toasts move down under it
 	Ui.sound("Announce")
 	task.delay(5, function()
 		if token == announceToken then
 			el.Announcement.Visible = false
+			layout(Ui.scale(), Ui.compact())
 		end
 	end)
 end
@@ -426,7 +430,7 @@ function HudController.rightStackTop(s: number): number
 	return RAIL_CENTRE - math.ceil((STACK_BUTTONS + STACK_GAP + STACK_RIGHT) * s / 2)
 end
 
-local function layout(s: number, compact: boolean)
+layout = function(s: number, compact: boolean)
 	local top = 6
 	local pillsH = math.ceil(52 * s)
 	-- Pills go up into Roblox's top bar row when they fit between its buttons (and our
@@ -445,7 +449,8 @@ local function layout(s: number, compact: boolean)
 	local barY = top + pillsH + math.ceil(8 * s)
 	el.MoonPanel.Position = UDim2.new(0.5, 0, 0, barY)
 	el.ZonePicker.Position = UDim2.new(0.5, 0, 0, barY)
-	el.Toasts.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(54 * s))
+	el.Announcement.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(52 * s))
+	el.Toasts.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(54 * s) + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
 	local hotbarTop = 12 + math.ceil(88 * s)
 	el.Hint.Position = UDim2.new(0.5, 0, 1, -(hotbarTop + math.ceil(12 * s)))
 	local walletLayout = el.Wallet:FindFirstChildOfClass("UIListLayout")

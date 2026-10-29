@@ -222,8 +222,9 @@ end
 local function renderStay()
 	local chip = Ui.find(stayGui, "Chip") :: Frame
 	local left = stayEndsAt and stayEndsAt - os.clock()
-	chip.Visible = left ~= nil and left > 0
-	if left and left > 0 then
+	-- Hidden while a window (shop, bag...) is open: it sat on top of them.
+	chip.Visible = left ~= nil and left > 0 and not Ui.anyWindowOpen()
+	if chip.Visible and left then
 		Ui.setText(chip, `Free potion in {Format.time(left)}`)
 		-- A small chip right next to the cash counter, out of the way of the game.
 		local hud = Ui.screen("Hud")

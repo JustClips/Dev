@@ -253,7 +253,7 @@ function PlacementController:HoldPet(uid: string)
 	local rarity = def and Eggs.ByName[def.Rarity]
 	titleLabel.Text = "Holding " .. (if pet.Huge then "Huge " else "") .. AlienModel.displayName(pet.Id, pet.Mutation)
 	local kg = pet.Weight or Weights.petKg(def and def.Rarity or "Common")
-	local passive = PetPassives.describe(pet.Id, pet.Huge)
+	local passive = PetPassives.short(pet.Id, pet.Huge) -- short form: the full one got cut off
 	subLabel.Text = `{def and def.Rarity or ""} · {Weights.format(kg)}` .. (if passive then ` · {passive}` else "")
 	subLabel.TextColor3 = if rarity then rarity.Color else Color3.new(1, 1, 1)
 	icon.Image = AssetLibrary.image("Icon_Alien")

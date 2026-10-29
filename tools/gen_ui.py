@@ -463,10 +463,12 @@ def hud():
                  LayoutOrder=3, Visible=False),
         ]),
     ])
-    announcement = plate("Announcement", U(0, 0, 0, 64), U(0.5, 0, 0.3, 0), (0.5, 0.5), BG, stud=0.5, AutomaticSize="X", Visible=False,
+    # Server-wide news (someone bought a server boost): a slim strip under the World
+    # Cleaned bar (HudController places it), out of the middle of the screen.
+    announcement = plate("Announcement", U(0, 0, 0, 44), U(0.5, 0, 0, 120), (0.5, 0), BG, stud=0.5, AutomaticSize="X", Visible=False,
                          children=[
-                             autoscale(), padding(24, 24, 0),
-                             text("Text", "", U(0, 0, 1, 0), ts=34, color=PREMIUM, display=True, stroke=3, AutomaticSize="X", TextWrapped=False),
+                             autoscale(), padding(16, 16, 0),
+                             text("Text", "", U(0, 0, 1, 0), ts=24, color=PREMIUM, display=True, stroke=2.5, AutomaticSize="X", TextWrapped=False),
                          ])
     # Wallet: two dark strips with big outlined numbers (readable on a phone at 60% size).
     # Cash: coin, amount, income under it, green + for the cash shop. Bag: leaf bag icon and
@@ -873,7 +875,8 @@ def placing():
         icon("Icon", "Egg", 76, U(0, 6, 0.5, 0), (0, 0.5)),
         text("Title", "Click a spot in your pet park", U(1, -250, 0, 32), U(0, 88, 0, 12), ts=22, color=WHITE, display=True,
              stroke=2.5, xa="Left", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 10})]),
-        text("Sub", "", U(1, -250, 0, 26), U(0, 88, 0, 50), ts=17, color=ACCENT, heavy=True, xa="Left", stroke=2),
+        text("Sub", "", U(1, -250, 0, 26), U(0, 88, 0, 50), ts=17, color=ACCENT, heavy=True, xa="Left", stroke=2,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 7})]),
         button("GoBase", U(0, 140, 0, 44), U(1, -10, 0, 8), (1, 0), color=SUCCESS, label="Go to Base", ts=18, Visible=False),
         button("PlacePet", U(0, 140, 0, 44), U(1, -10, 0, 8), (1, 0), color=SUCCESS, label="Place in park", ts=17, Visible=False),
         button("Cancel", U(0, 140, 0, 34), U(1, -10, 1, -8), (1, 1), color=DANGER, label="Cancel (Q)", ts=16),

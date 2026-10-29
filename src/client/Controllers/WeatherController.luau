@@ -605,7 +605,10 @@ end
 -- Falling star (Starfall): a bright star with a long trail that lands at a spot.
 local STAR = rgb(255, 230, 140)
 local function fallingStar(target: Vector3, seconds: number, onLand: (() -> ())?)
-	local from = target + Vector3.new(rng:NextNumber(-1, 1) * 160, 280, rng:NextNumber(-1, 1) * 160)
+	-- Always comes in at a slant (about 45 degrees), never straight down (Dev).
+	local heading = rng:NextNumber(0, math.pi * 2)
+	local across = rng:NextNumber(190, 260)
+	local from = target + Vector3.new(math.cos(heading) * across, rng:NextNumber(200, 240), math.sin(heading) * across)
 	local star = part("Star", Vector3.new(3, 3, 3))
 	star.Shape = Enum.PartType.Ball
 	star.Material = Enum.Material.Neon
