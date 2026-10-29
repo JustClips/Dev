@@ -77,7 +77,7 @@ World.Base = {
 	-- Props inside the park. Radius keeps wandering pets out of them; Size is the footprint
 	-- (X by Z before Yaw) that eggs can't be placed on (trees: just the trunk).
 	ParkProps = {
-		{ Asset = "Habitat", Position = Vector3.new(-29, 0, 31), Yaw = -33, Radius = 10, Size = Vector2.new(14.5, 13) },
+		{ Asset = "Habitat", Position = Vector3.new(-29, 0, 31), Yaw = 147, Radius = 10, Size = Vector2.new(14.5, 13) },
 		{ Asset = "Pond", Position = Vector3.new(19, 0, 22), Yaw = 0, Radius = 7, Size = Vector2.new(16.4, 11.8) },
 		{ Asset = "Tree_Bulb", Position = Vector3.new(36, 0, -6), Yaw = 30, Radius = 3, Size = Vector2.new(3, 3) },
 		{ Asset = "Tree_Puff", Position = Vector3.new(-37, 0, 2), Yaw = 80, Radius = 3, Size = Vector2.new(3, 3) },
