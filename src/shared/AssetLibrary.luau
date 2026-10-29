@@ -274,12 +274,123 @@ local function sparkles(body: BasePart, look: WeatherLook?, color: Color3)
 	fx.Parent = body
 end
 
+-- Voxel pets (art/blender/voxpets.py) don't get a coat: a mutation repaints the pet cube
+-- by cube with its own palette skin (tools/pet_skins.py, images PetSkin_<Pet>_<Mutation>),
+-- keeping the pixel shading and the eyes, plus square "pixel" particles that suit the
+-- blocky look. Rainbow and Disco skins have 4 frames that PetController cycles.
+type PixelFx = {
+	texture: string?, -- Assets.Images name, default Vfx_Pixel
+	colors: { Color3 },
+	size: number,
+	rate: number,
+	speed: number,
+	life: number?,
+	accel: Vector3?,
+	glow: number?,
+	spin: boolean?,
+}
+type VoxelLook = { frames: number?, reflect: number?, fx: PixelFx }
+local RAINBOW = {
+	Color3.fromRGB(255, 90, 90),
+	Color3.fromRGB(255, 200, 70),
+	Color3.fromRGB(110, 240, 110),
+	Color3.fromRGB(90, 180, 255),
+	Color3.fromRGB(200, 110, 255),
+}
+local VOXEL_LOOKS: { [string]: VoxelLook } = {
+	Golden = { reflect = 0.25, fx = { colors = { Color3.fromRGB(255, 236, 140), Color3.fromRGB(255, 200, 60) }, size = 0.14, rate = 5, speed = 0.5, accel = Vector3.new(0, 0.8, 0), glow = 1 } },
+	MoonDusted = { reflect = 0.1, fx = { colors = { Color3.new(1, 1, 1), Color3.fromRGB(210, 205, 255) }, size = 0.12, rate = 9, speed = 0.3, glow = 1 } },
+	Rainbow = { frames = 4, fx = { colors = RAINBOW, size = 0.13, rate = 7, speed = 0.6, accel = Vector3.new(0, 1, 0), glow = 0.8 } },
+	Disco = { frames = 4, fx = { texture = "Vfx_Note", colors = RAINBOW, size = 0.45, rate = 3, speed = 1.5, accel = Vector3.new(0, 1.5, 0), glow = 0.5, spin = true } },
+	Wet = { reflect = 0.3, fx = { colors = { Color3.fromRGB(130, 190, 255) }, size = 0.09, rate = 6, speed = 0, life = 0.5, accel = Vector3.new(0, -14, 0), glow = 0.2 } },
+	Frozen = { reflect = 0.2, fx = { colors = { Color3.new(1, 1, 1), Color3.fromRGB(200, 235, 255) }, size = 0.1, rate = 6, speed = 0.3, accel = Vector3.new(0, -1.5, 0), glow = 0.4 } },
+	Shocked = { fx = { colors = { Color3.fromRGB(255, 243, 110), Color3.fromRGB(170, 150, 255) }, size = 0.09, rate = 16, speed = 5, life = 0.18, glow = 1 } },
+	Windswept = { fx = { texture = "Vfx_Leaf", colors = { Color3.fromRGB(255, 150, 60), Color3.fromRGB(230, 90, 40) }, size = 0.3, rate = 3, speed = 2.5, accel = Vector3.new(-4, -1, 0), glow = 0, spin = true } },
+	Bloodlit = { fx = { colors = { Color3.fromRGB(255, 74, 72), Color3.fromRGB(150, 10, 20) }, size = 0.12, rate = 7, speed = 0.4, accel = Vector3.new(0, 2, 0), glow = 1 } },
+	Starlit = { fx = { colors = { Color3.fromRGB(184, 255, 240), Color3.new(1, 1, 1) }, size = 0.12, rate = 8, speed = 0.15, glow = 1 } },
+	Starstruck = { fx = { colors = { Color3.fromRGB(255, 244, 196), Color3.fromRGB(255, 210, 90) }, size = 0.14, rate = 8, speed = 0.9, glow = 1 } },
+}
+
+local function pixelSparkles(body: BasePart, fx: PixelFx)
+	local e = Instance.new("ParticleEmitter")
+	e.Name = "MutationSparkles"
+	e.Texture = Assets.Images[fx.texture or "Vfx_Pixel"] or "rbxasset://textures/particles/sparkles_main.dds"
+	local keys = {}
+	for i, c in fx.colors do
+		table.insert(keys, ColorSequenceKeypoint.new(if #fx.colors == 1 then 0 else (i - 1) / (#fx.colors - 1), c))
+	end
+	if #keys == 1 then
+		table.insert(keys, ColorSequenceKeypoint.new(1, fx.colors[1]))
+	end
+	e.Color = ColorSequence.new(keys)
+	-- Pixels hold their size, then blink out (no soft shrink).
+	e.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, fx.size),
+		NumberSequenceKeypoint.new(0.85, fx.size),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	local life = fx.life or 1.2
+	e.Lifetime = NumberRange.new(life * 0.7, life * 1.3)
+	e.Rate = fx.rate
+	e.Speed = NumberRange.new(fx.speed * 0.5, fx.speed * 1.5)
+	e.SpreadAngle = Vector2.new(180, 180)
+	e.Acceleration = fx.accel or Vector3.zero
+	e.LightEmission = fx.glow or 0.6
+	if fx.spin then
+		e.Rotation = NumberRange.new(0, 360)
+		e.RotSpeed = NumberRange.new(-90, 90)
+	end
+	e.Parent = body
+end
+
+local function skinId(alienId: string, name: string): string?
+	return Assets.Images[`PetSkin_{alienId}_{name}`]
+end
+
+-- Repaints a voxel pet for a mutation. False when it has no skin for it (then the
+-- coat is used).
+local function applyVoxelSkin(model: Model, mutation: string): boolean
+	local alienId = model:GetAttribute("AlienId")
+	local look = VOXEL_LOOKS[mutation]
+	local meta = type(alienId) == "string" and Assets.Models["Alien_" .. alienId]
+	if not (look and meta and (meta :: any).voxel) then
+		return false
+	end
+	local frames = {}
+	for f = 0, (look.frames or 1) - 1 do
+		local id = skinId(alienId :: string, if look.frames then `{mutation}_{f}` else mutation)
+		if not id then
+			return false
+		end
+		table.insert(frames, id)
+	end
+	for _, d in model:GetDescendants() do
+		if d:IsA("MeshPart") and not d:GetAttribute("Glow") and d.TextureID ~= "" then
+			d.TextureID = frames[1]
+			d.Reflectance = look.reflect or 0
+			d:SetAttribute("VoxelSkin", true)
+		end
+	end
+	if #frames > 1 then
+		model:SetAttribute("SkinFrames", table.concat(frames, ","))
+		model:AddTag("SkinCyclePet")
+	end
+	local body = (model:FindFirstChild("Body") or model.PrimaryPart) :: BasePart?
+	if body then
+		pixelSparkles(body, look.fx)
+	end
+	return true
+end
+
 function AssetLibrary.applyMutation(model: Model, mutation: string?)
 	if not mutation or model:GetAttribute("CoatFor") == mutation then
 		return
 	end
 	model:SetAttribute("Mutation", mutation)
 	model:SetAttribute("CoatFor", mutation)
+	if applyVoxelSkin(model, mutation) then
+		return
+	end
 	-- Pets sparkle from their Body; eggs (no Body) from their main part.
 	local body = (model:FindFirstChild("Body") or model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")) :: BasePart?
 	local coat = COATS[mutation]
