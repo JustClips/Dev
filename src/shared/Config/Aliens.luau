@@ -59,6 +59,20 @@ local List: { AlienDef } = {
 
 	{ Id = "AutumnStag", Name = "Autumn Stag", Rarity = "Cosmic", Income = 60_000, Color = Color3.fromRGB(232, 116, 42), Size = 3.8,
 		Passive = { Name = "Forest Spirit", Stat = "Cash", Value = 0.25 } },
+
+	-- Park (zone Crater): its own animals, income x4.
+	{ Id = "Hedgehog", Name = "Hedgehog", Rarity = "Common", Zone = "Crater", Income = 6, Color = Color3.fromRGB(140, 100, 64), Size = 1.6,
+		Passive = { Name = "Prickly Sweep", Stat = "Power", Value = 0.04 } },
+	{ Id = "Frog", Name = "Frog", Rarity = "Uncommon", Zone = "Crater", Income = 32, Color = Color3.fromRGB(108, 194, 74), Size = 1.6,
+		Passive = { Name = "Leap", Stat = "ComboMax", Value = 0.25 } },
+	{ Id = "Swan", Name = "Swan", Rarity = "Rare", Zone = "Crater", Income = 160, Color = Color3.fromRGB(247, 247, 244), Size = 2.4,
+		Passive = { Name = "Graceful", Stat = "Golden", Value = 0.2 } },
+	{ Id = "Beaver", Name = "Beaver", Rarity = "Epic", Zone = "Crater", Income = 920, Color = Color3.fromRGB(139, 90, 43), Size = 2,
+		Passive = { Name = "Busy Builder", Stat = "Backpack", Value = 0.2 } },
+	{ Id = "Peacock", Name = "Peacock", Rarity = "Legendary", Zone = "Crater", Income = 5_600, Color = Color3.fromRGB(31, 95, 208), Size = 3,
+		Passive = { Name = "Show Off", Stat = "Cash", Value = 0.12 } },
+	{ Id = "Griffin", Name = "Griffin", Rarity = "Mythic", Zone = "Crater", Income = 40_000, Color = Color3.fromRGB(217, 164, 90), Size = 4,
+		Passive = { Name = "Sky Hunter", Stat = "Luck", Value = 0.35 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new
@@ -97,8 +111,10 @@ local ZONE_SETS = {
 
 local landing: { [string]: AlienDef } = {}
 for _, alien in List do
-	alien.Zone = "Landing"
-	landing[alien.Id] = alien
+	alien.Zone = alien.Zone or "Landing" -- zone pets name their zone
+	if alien.Zone == "Landing" then
+		landing[alien.Id] = alien
+	end
 end
 for _, set in ZONE_SETS do
 	for _, baseId in set.Bases do

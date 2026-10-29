@@ -32,7 +32,10 @@ sys.path.insert(0, os.path.join(HERE, "..", "anim"))
 
 from lib import Asset  # noqa: E402
 
-U = 0.13            # cube size in studs
+U = 0.13            # cube size in studs (BASE_U times the pet's SCALE while it builds)
+BASE_U = U
+# Bigger pets: same cube grid, bigger cubes.
+SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6}
 FPS = 30
 IDLE = (0, 90)      # frames
 WALK = (120, 138)
@@ -914,12 +917,180 @@ def autumn_stag():
     return a
 
 
+# ===================================================================== zone: Park
+
+
+def hedgehog():
+    S, SD, C, N = "8C6440", "5E4128", "F1D9B5", "2A1C16"
+    parts = legs(C, shade(C, -0.2), 2, -4, 2)
+    body = Part("Body")
+    body.rbox(-4, 4, -5, 5, 2, 8, lambda i, j, k: C if (k == 2 or (j == -5 and k <= 4)) else (SD if (i + j + k) % 2 else S))
+    for i in range(-4, 4):                                   # spikes poking up and out
+        for j in range(-4, 5):
+            if (i + j) % 2 == 0:
+                body.cells[(i, j, 8)] = SD
+    for j in range(-3, 5, 2):
+        body.cells[(-5, j, 5)] = SD
+        body.cells[(4, j, 5)] = SD
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -5, 4))
+    head.rbox(-3, 3, -9, -4, 2, 7, C)
+    head.box(-1, 1, -11, -9, 3, 5, C)                         # pointy snout
+    head.set([(-1, -11, 4), (0, -11, 4)], N)
+    eyes(head, -9, 5, xs=(-2, 1), w=1, h=1)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2, -5.5, 7))
+    ear.set([(2, -6, 7)], C)
+    parts += [ear, ear.mirror("EarR")]
+    return assemble("Hedgehog", parts)
+
+
+def frog():
+    G, B, D, W = "6CC24A", "D8F0A0", "3E8A2E", "FFFFFF"
+    parts = []
+    for name, x0, side in (("LegBL", 3, 1), ("LegBR", -6, -1)):
+        p = Part(name, "Body", joint=(x0 + 1.5, 2, 3))
+        p.box(x0, x0 + 3, 0, 5, 0, 3, lambda i, j, k: D if (i + j) % 3 == 0 else G)
+        parts.append(p)
+    for name, x0 in (("LegFL", 2), ("LegFR", -4)):
+        p = Part(name, "Body", joint=(x0 + 1, -4, 2))
+        p.box(x0, x0 + 2, -5, -3, 0, 2, G)
+        parts.append(p)
+    body = Part("Body")
+    body.rbox(-4, 4, -5, 4, 1, 6, lambda i, j, k: B if (k == 1 or j == -5) else (D if (i * 2 + j + k) % 5 == 0 else G))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -3, 5))
+    head.rbox(-4, 4, -7, -2, 4, 8, lambda i, j, k: B if k == 4 else G, edges=(True, False, True))
+    head.box(-3, 3, -8, -7, 5, 6, D)                          # wide smile
+    for x0 in (-4, 2):                                        # eye bumps on top
+        head.box(x0, x0 + 2, -6, -4, 8, 10, W)
+        head.box(x0, x0 + 2, -7, -6, 8, 10, EYE)
+        head.set([(x0 if x0 < 0 else x0 + 1, -7, 9)], SHINE)
+    parts.append(head)
+    return assemble("Frog", parts)
+
+
+def swan():
+    W, O, K, G = "F7F7F4", "FF8A2A", "26262A", "5E5E66"
+    parts = []
+    leg = Part("LegL", "Body", joint=(2, -0.5, 2))
+    leg.box(2, 3, -1, 0, 0, 2, G)
+    leg.box(1, 4, -3, 0, 0, 1, G)
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-4, 4, -5, 6, 2, 8, W)
+    body.box(-2, 2, 6, 8, 6, 9, W)                            # tail up
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -5, 7))
+    head.box(-1, 1, -6, -4, 7, 14, W)                         # long neck
+    head.rbox(-2, 2, -8, -4, 14, 17, W, edges=(False, False, True))
+    head.box(-1, 1, -11, -8, 14, 16, lambda i, j, k: K if j == -8 else (shade(O, -0.15) if k == 14 else O))   # beak
+    eyes(head, -8, 16, xs=(-2, 1), w=1, h=1)
+    parts.append(head)
+    wing = Part("WingL", "Body", joint=(4, 0, 7))
+    wing.box(4, 5, -3, 6, 3, 8, lambda i, j, k: shade(W, -0.06) if (j + k) % 3 == 0 else W)
+    parts += [wing, wing.mirror("WingR")]
+    return assemble("Swan", parts)
+
+
+def beaver():
+    B, D, L, T, N = "8B5A2B", "5E3A1C", "C89A62", "3A2A20", "201410"
+    parts = legs(D, D, 2, -5, 2, spread=1)
+    body = Part("Body")
+    body.rbox(-4, 4, -6, 5, 2, 9, lambda i, j, k: L if (j == -6 and k <= 6 and -2 <= i <= 1) else B)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -6, 7))
+    head.rbox(-4, 4, -11, -5, 5, 11, B, edges=(True, False, True))
+    head.box(-2, 2, -12, -11, 5, 8, L)                        # muzzle
+    head.set([(-1, -12, 7), (0, -12, 7)], N)
+    head.set([(-1, -12, 5), (0, -12, 5), (-1, -12, 4), (0, -12, 4)], "FFF6E0")   # big teeth
+    eyes(head, -11, 8)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(3, -7.5, 11))
+    ear.set([(3, -8, 11), (2, -8, 11)], D)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 5, 3))
+    tail.box(-3, 3, 5, 12, 2, 3, lambda i, j, k: shade(T, 0.18) if (i + j) % 2 else T)   # flat paddle
+    parts.append(tail)
+    return assemble("Beaver", parts)
+
+
+def peacock():
+    B, T, G, Y, K, GR = "1F5FD0", "2AA6A0", "2E9E5A", "F2C14E", "1A2A6A", "8A8A92"
+    parts = []
+    leg = Part("LegL", "Body", joint=(1.5, 0.5, 4))
+    leg.box(1, 2, 0, 1, 1, 4, GR)
+    leg.box(1, 3, -1, 1, 0, 1, GR)
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-3, 3, -3, 4, 4, 10, B)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -2, 9))
+    head.box(-1, 1, -4, -2, 9, 14, T)                         # neck
+    head.rbox(-2, 2, -5, -1, 14, 17, B, edges=(False, False, True))
+    head.box(-1, 1, -7, -5, 15, 16, "C8B08A")                 # beak
+    eyes(head, -5, 16, xs=(-2, 1), w=1, h=1)
+    for x in (-1, 0, 1):                                      # crest
+        head.set([(x if x < 1 else 0, -2, 17 + (x % 2)), (x if x < 1 else 0, -2, 18 + (x % 2))], T)
+        head.set([(x if x < 1 else 0, -2, 19 + (x % 2))], Y)
+    parts.append(head)
+    fan = Part("Tail", "Body", joint=(0, 4, 8))
+    R = 12
+    for i in range(-R, R + 1):                                # the big fan behind it
+        for k in range(0, R + 1):
+            d = (i * i + k * k) ** 0.5
+            if d <= R:
+                x = i
+                z = 7 + k
+                ring = d % 4
+                col = G if d < 3 else (K if ring < 0.8 and d > 5 and (i + k) % 3 == 0 else (Y if ring < 1.4 and d > 5 and (i + k) % 3 == 0 else (T if d > R - 1.2 else G)))
+                fan.cells[(x, 5, z)] = col
+    parts.append(fan)
+    wing = Part("WingL", "Body", joint=(3, 0, 9))
+    wing.box(3, 4, -2, 4, 5, 9, shade(B, -0.15))
+    parts += [wing, wing.mirror("WingR")]
+    return assemble("Peacock", parts)
+
+
+def griffin():
+    T, TD, W, Y, BR, BW = "D9A45A", "A8743A", "F7F4EE", "F2B21E", "7A4A22", "E9D2A8"
+    parts = legs(T, Y, 5, -7, 5)
+    for p in parts:
+        if p.name.startswith("LegF"):
+            for c in list(p.cells):
+                p.cells[c] = W if c[2] >= 2 else Y            # feathered front legs, yellow talons
+    body = Part("Body")
+    body.box(-3, 3, -8, 8, 5, 11, lambda i, j, k: W if j <= -5 else (TD if k == 10 and abs(i + 0.5) < 2 else T))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -8, 10))
+    head.rbox(-3, 3, -13, -7, 10, 16, W, edges=(True, False, True))
+    head.box(-1, 1, -15, -13, 11, 14, lambda i, j, k: shade(Y, -0.2) if k == 11 else Y)    # hooked beak
+    eyes(head, -13, 14, xs=(-3, 1), w=2, h=1)
+    for x in (-3, 2):                                          # feather tufts
+        head.set([(x, -9, 16), (x, -8, 17)], W)
+    parts.append(head)
+    wing = Part("WingL", "Body", joint=(3, -4, 10))
+    for d in range(10):
+        for j in range(-7, -7 + 10 - d):
+            wing.cells[(3 + d, j, 10 + d // 3)] = BW if j >= -7 + 10 - d - 2 else (BR if (d + j) % 2 else shade(BR, 0.15))
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 8, 9))
+    tail.box(-1, 1, 8, 13, 8, 10, T)
+    tail2 = Part("Tail2", "Tail", joint=(0, 13, 9))
+    tail2.box(-2, 2, 13, 16, 7, 10, TD)
+    parts += [tail, tail2]
+    a = assemble("Griffin", parts)
+    a.extra["aura"] = "GoldDust"
+    return a
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
         "Lion": lion, "ArcticWolf": arctic_wolf, "Unicorn": unicorn,
         "Dragon": dragon, "Phoenix": phoenix, "Kitsune": kitsune,
-        "AutumnStag": autumn_stag}
+        "AutumnStag": autumn_stag,
+        "Hedgehog": hedgehog, "Frog": frog, "Swan": swan, "Beaver": beaver, "Peacock": peacock, "Griffin": griffin}
 
 
 # ------------------------------------------------------------------------- animation
@@ -1284,6 +1455,77 @@ def stag_walk(w):
     return p
 
 
+def hedgehog_idle(w):
+    sniff = s(12 * w) * max(0.0, s(w))
+    curl = max(0.0, -s(w)) ** 4                               # tucks in now and then
+    return {
+        "Body": ((0, 0, -0.04 * curl), (6 * curl, 0, 0)),
+        "Head": ((0, 0.04 * curl, 0), (-3 * sniff + 25 * curl, 0, 12 * s(2 * w) * (1 - curl))),
+        "LegFL": ((0, 0, 0), (-20 * curl, 0, 0)), "LegFR": ((0, 0, 0), (-20 * curl, 0, 0)),
+    }
+
+
+def frog_idle(w):
+    croak = max(0.0, s(3 * w)) ** 6
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, 0.02 * croak), (-8 * croak, 0, 8 * s(w))),
+    }
+
+
+def frog_hop(w):
+    up = max(0.0, s(w))
+    return {
+        "Body": ((0, 0, 0.45 * up), (-14 * c(w) * (up > 0), 0, 0)),
+        "Head": ((0, 0, 0), (8 * up, 0, 0)),
+        "LegBL": ((0, 0, 0), (55 * up, 0, 0)), "LegBR": ((0, 0, 0), (55 * up, 0, 0)),
+        "LegFL": ((0, 0, 0), (-30 * up, 0, 0)), "LegFR": ((0, 0, 0), (-30 * up, 0, 0)),
+    }
+
+
+def swan_idle(w):
+    preen = max(0.0, s(w)) ** 3
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 2 * s(w), 0)),
+        "Head": ((0, 0, 0), (-8 * s(2 * w) + 30 * preen, 0, 18 * s(w + 1) + 40 * preen)),
+        "WingL": ((0, 0, 0), (0, -25 * preen, 0)), "WingR": ((0, 0, 0), (0, 6 * s(2 * w), 0)),
+    }
+
+
+def beaver_idle(w):
+    slap = max(0.0, s(2 * w)) ** 8
+    gnaw = s(14 * w) * (s(w) < 0)
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, 0.005 * gnaw), (-3 * gnaw, 0, 10 * s(w) * (s(w) > 0))),
+        "Tail": ((0, 0, 0.0), (-40 * slap, 0, 0)),
+        "EarL": ((0, 0, 0), (0, -8 * max(0.0, s(5 * w)) ** 8, 0)),
+    }
+
+
+def peacock_idle(w):
+    show = (1 - c(w)) / 2                                     # fans the tail out and back
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 3 * s(3 * w) * show, 0)),
+        "Head": ((0, 0, 0), (-6 * s(2 * w), 0, 16 * s(w + 1))),
+        "Tail": ((0, 0, 0), (40 * (1 - show) - 6, 0, 4 * s(4 * w) * show)),
+        "WingL": ((0, 0, 0), (0, -6 * show, 0)), "WingR": ((0, 0, 0), (0, 6 * show, 0)),
+    }
+
+
+def peacock_walk(w):
+    p = waddle(w)
+    p["Tail"] = ((0, 0, 0), (36, 0, 6 * s(w)))
+    p["Body"] = ((0, 0, 0.04 * abs(s(w))), (2 * s(2 * w), 5 * s(w), 4 * s(w)))
+    return p
+
+
+def griffin_idle(w):
+    p = dragon_idle(w)
+    p["Head"] = ((0, 0, 0), (-5 * s(2 * w), 8 * s(3 * w), 24 * max(-1.0, min(1.0, 2 * s(w)))))   # bird-like head snaps
+    return p
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -1304,6 +1546,12 @@ ANIMS = {
     "Phoenix": {"Idle": phoenix_idle, "Walk": phoenix_walk},
     "Kitsune": {"Idle": kitsune_idle, "Walk": kitsune_walk},
     "AutumnStag": {"Idle": stag_idle, "Walk": stag_walk},
+    "Hedgehog": {"Idle": hedgehog_idle, "Walk": walk(44, 0.02, 0, 0, 0)},
+    "Frog": {"Idle": frog_idle, "Walk": frog_hop},
+    "Swan": {"Idle": swan_idle, "Walk": waddle},
+    "Beaver": {"Idle": beaver_idle, "Walk": walk(30, 0.03, 0, 0, 0)},
+    "Peacock": {"Idle": peacock_idle, "Walk": peacock_walk},
+    "Griffin": {"Idle": griffin_idle, "Walk": dragon_walk},
 }
 
 
@@ -1392,6 +1640,8 @@ def sample(a, empties, name, frames, priority):
 
 
 def build(key, out_dir=OUT):
+    global U
+    U = BASE_U * SCALE.get(key, 1)
     a = PETS[key]()
     path, meta = a.export(out_dir)
     empties = joint_empties(a)
