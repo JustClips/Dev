@@ -39,56 +39,117 @@ def on_egg(t, ang, h=2.4, r=0.95, out=1.0):
     return Vector((math.cos(a) * rad * out, math.sin(a) * rad * out, z))
 
 
-def egg(name, base, spots=None, band=None, glow=None, glow_spots=None, stars=False, ring=None):
+EGG_H, EGG_R, EGG_LAYERS = 2.4, 0.95, 7
+
+
+def egg_layers():
+    """Blocky egg silhouette: (z_bottom, z_top, half_width) for each stacked square layer,
+    following the old smooth egg's outline so sizes in game stay the same."""
+    out = []
+    th = EGG_H / EGG_LAYERS
+    for i in range(EGG_LAYERS):
+        t = (i + 0.5) / EGG_LAYERS
+        p = on_egg(t, 0)
+        half = max(0.3, round(math.hypot(p.x, p.y) / 0.05) * 0.05)
+        out.append((i * th, (i + 1) * th, half))
+    return out
+
+
+def stud_row(col, half, zc, step=0.34, size=(0.17, 0.05, 0.13)):
+    """Little raised stud tiles all round one layer (four faces), flush on the face."""
+    p = []
+    n = max(1, int((2 * half - 0.18) / step))
+    for side in range(4):
+        ang = math.radians(side * 90)
+        c, s_ = math.cos(ang), math.sin(ang)
+        for k in range(n):
+            u = (k - (n - 1) / 2) * step
+            x, y = half + size[1] / 2 - 0.01, u   # on the +X face, then turned round
+            p.append(box(col, loc=(x * c - y * s_, x * s_ + y * c, zc), size=(size[1], size[0], size[2]),
+                         rot=(0, 0, side * 90)))  # no bevel: keeps eggs light (they spawn by the dozen)
+    return p
+
+
+def egg(name, base, studs, band=None, glow=None, glow_studs=None, topper=None, accent=None):
+    """Stud-style blocky egg: stacked square layers in an egg silhouette, stud tiles on every
+    face, optional coloured band layers, glowing seams, and a themed topper. Every piece
+    touches the stack (the floating-piece check runs on all of them)."""
     a = Asset(f"Egg_{name}", "egg")
     use(a)
-    pieces = [egg_shell(base)]
     rnd = random.Random(name)
-    if spots:
-        for i in range(14):
-            t = rnd.uniform(0.15, 0.85)
-            ang = rnd.uniform(0, 360)
-            p = on_egg(t, ang, out=0.97)
-            s = rnd.uniform(0.12, 0.22)
-            pieces.append(sphere(spots, loc=p, scale=(s, s, s * 0.9), seg=10, rings=6))
-    if band:
-        for t, rr in ((0.42, 1.0), (0.58, 0.95)):
-            p = on_egg(t, 0)
-            pieces.append(torus(band, loc=(0, 0, p.z), R=p.length if False else math.hypot(p.x, p.y) * 1.0, r=0.06, seg=28, mseg=6))
-    a.part("Body", pieces)
-    gp = []
-    if glow_spots:
-        for i in range(10):
-            t = rnd.uniform(0.15, 0.85)
-            ang = rnd.uniform(0, 360)
-            p = on_egg(t, ang, out=0.98)
-            s = rnd.uniform(0.1, 0.16)
-            gp.append(ico(glow_spots, loc=p, scale=(s, s, s), sub=1))
-    if stars:
-        for i in range(9):
-            t = rnd.uniform(0.15, 0.85)
-            ang = rnd.uniform(0, 360)
-            p = on_egg(t, ang, out=1.0)
-            gp.append(ico("FFF5A0", loc=p, scale=0.09, sub=1))
-    if ring:
-        gp.append(torus(ring, loc=(0, 0, 1.25), R=1.4, r=0.07, rot=(20, 0, 0), seg=36))
+    layers = egg_layers()
+    body, gp = [], []
+    for i, (z0, z1, half) in enumerate(layers):
+        col = band if (band and i in (2, 4)) else base
+        body.append(box(col, loc=(0, 0, (z0 + z1) / 2), size=(2 * half, 2 * half, z1 - z0 + 0.02), bevel=0.06))
+        zc = (z0 + z1) / 2
+        tiles = stud_row(shade(col, -0.12), half, zc)
+        if glow_studs:
+            # a few studs glow instead (picked per egg, the same every build)
+            for t in tiles:
+                if rnd.random() < 0.3:
+                    a.paint(t, glow_studs)
+                    gp.append(t)
+                else:
+                    body.append(t)
+        else:
+            body += tiles
+    top_z, top_half = layers[-1][1], layers[-1][2]
+    # small cap block on top
+    body.append(box(shade(base, 0.08), loc=(0, 0, top_z + 0.09), size=(top_half * 1.1, top_half * 1.1, 0.2), bevel=0.04))
+    cap_top = top_z + 0.19
     if glow:
-        # glowing crack zig-zag around the middle
-        pts = [on_egg(0.5 + (0.06 if i % 2 else -0.06), i * 20, out=1.01) for i in range(19)]
-        gp.append(tube(glow, pts, 0.05, seg=6))
+        # glowing seams between the middle layers (slightly wider than the layer under them)
+        for i in (2, 4):
+            z = layers[i][1]
+            h = min(layers[i][2], layers[i + 1][2]) + 0.03
+            gp.append(box(glow, loc=(0, 0, z), size=(2 * h, 2 * h, 0.06)))
+    if topper == "sprout":
+        body.append(cyl("6B4A2E", loc=(0, 0, cap_top + 0.18), r=0.06, h=0.4, verts=8))
+        for x in (-1, 1):
+            body.append(box(accent, loc=(x * 0.18, 0, cap_top + 0.36), size=(0.34, 0.14, 0.06), rot=(0, x * -25, 0), bevel=0.03))
+    elif topper == "knobs":
+        mid = layers[3]
+        for x in (-1, 1):
+            body.append(cyl(accent, loc=(x * (mid[2] + 0.1), 0, (mid[0] + mid[1]) / 2), r=0.26, h=0.24, rot=(0, 90, 0), verts=8))
+            body.append(cyl(shade(accent, -0.2), loc=(x * (mid[2] + 0.23), 0, (mid[0] + mid[1]) / 2), r=0.14, h=0.06, rot=(0, 90, 0), verts=8))
+    elif topper == "crystals":
+        for (x, y, h, tilt) in ((0, 0, 0.6, 0), (0.17, 0.08, 0.38, 18), (-0.15, -0.1, 0.42, -16)):
+            gp.append(cone(accent, loc=(x, y, cap_top + h / 2 - 0.04), r=0.13, h=h, verts=4, rot=(tilt, tilt * 0.5, 45), smooth=False))
+    elif topper == "crown":
+        c = top_half * 0.5
+        for x in (-1, 1):
+            for y in (-1, 1):
+                body.append(cone(accent, loc=(x * c, y * c, cap_top + 0.12), r=0.11, h=0.3, verts=4, rot=(0, 0, 45), smooth=False))
+        gp.append(box("FFFFFF", loc=(0, 0, cap_top + 0.05), size=(0.16, 0.16, 0.16), rot=(0, 0, 45), bevel=0.02))
+    elif topper == "horns":
+        for x in (-1, 1):
+            hx = x * (top_half * 0.55)
+            body.append(tube(accent, [(hx, 0, cap_top - 0.12), (hx * 1.6, 0, cap_top + 0.25), (hx * 1.9, 0, cap_top + 0.62)],
+                             lambda i: 0.1 - i * 0.03, seg=8))
+    elif topper == "orbit":
+        mid = layers[3]
+        # the ring cuts through the middle layer's corners, so it's held by the egg
+        gp.append(torus(accent, loc=(0, 0, (mid[0] + mid[1]) / 2), R=mid[2] * 1.28, r=0.06, rot=(0, 12, 0), seg=40, mseg=6))
+        for i in range(6):
+            lz0, lz1, lh = layers[1 + i % 5]
+            ang = math.radians(i * 60 + 20)
+            gp.append(box("FFF5A0", loc=(math.cos(ang) * (lh + 0.02), math.sin(ang) * (lh + 0.02), (lz0 + lz1) / 2 + 0.08),
+                          size=(0.1, 0.1, 0.1), rot=(0, 0, 45)))
+    a.part("Body", body)
     if gp:
-        a.part("Body_Glow", gp, parent="Body", glow=glow or glow_spots or ring or "FFF5A0")
+        a.part("Body_Glow", gp, parent="Body", glow=glow or glow_studs or accent or "FFF5A0")
     return a
 
 
 EGGS = {
-    "Common": lambda: egg("Common", "F2EFE6", spots="BEB8A8"),
-    "Uncommon": lambda: egg("Uncommon", "7EE08A", spots="C8F5B4", band="3FA55A"),
-    "Rare": lambda: egg("Rare", "5A9BFF", spots="B4D2FF", band="2A5ACD"),
-    "Epic": lambda: egg("Epic", "A45AFF", glow_spots="F0B4FF", band="5A2AA0"),
-    "Legendary": lambda: egg("Legendary", "FFC83C", spots="FFF0A0", glow="FFFFFF", band="D28C14"),
-    "Mythic": lambda: egg("Mythic", "3A1420", glow_spots="FF5A3C", glow="FF7A3C"),
-    "Cosmic": lambda: egg("Cosmic", "5A2ABE", stars=True, ring="FF78E6", glow="78FFF0"),
+    "Common": lambda: egg("Common", "F2EFE6", studs=True),
+    "Uncommon": lambda: egg("Uncommon", "7EE08A", studs=True, band="3FA55A", topper="sprout", accent="3FA55A"),
+    "Rare": lambda: egg("Rare", "8CB8FF", studs=True, band="4A7ADF", topper="knobs", accent="DCE8FF"),
+    "Epic": lambda: egg("Epic", "A45AFF", studs=True, band="6A30C0", glow_studs="F0B4FF", topper="crystals", accent="F0B4FF"),
+    "Legendary": lambda: egg("Legendary", "FFC83C", studs=True, band="D28C14", glow="FFFFFF", topper="crown", accent="FFF0A0"),
+    "Mythic": lambda: egg("Mythic", "3A2A3A", studs=True, band="2A1A26", glow="FF7A3C", glow_studs="FF5A3C", topper="horns", accent="E8DCC8"),
+    "Cosmic": lambda: egg("Cosmic", "4A2AAE", studs=True, band="2A1A6E", glow="78FFF0", topper="orbit", accent="FF78E6"),
 }
 
 
