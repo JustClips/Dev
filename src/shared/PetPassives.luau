@@ -47,6 +47,18 @@ function PetPassives.describe(alienId: string, huge: boolean?): string?
 	return `{passive.Name}: {Upgrades.describeStat(passive.Stat, value)} {if stat then stat.Name else passive.Stat}`
 end
 
+-- "+2% Lucky Sweep" (for small labels like the bag cards).
+function PetPassives.short(alienId: string, huge: boolean?): string?
+	local def = Aliens.ById[alienId]
+	local passive = def and def.Passive
+	if not passive then
+		return nil
+	end
+	local stat = Upgrades.Stats[passive.Stat]
+	local value = passive.Value * (if huge then PetPassives.HugeMult else 1)
+	return `{Upgrades.describeStat(passive.Stat, value)} {if stat then stat.Name else passive.Stat}`
+end
+
 -- Server only: makes Upgrades.stat include each player's pet passives. Totals are cached
 -- for a second per player, since sweeping reads stats many times a second.
 function PetPassives.install(getSessions: () -> { [Player]: any })

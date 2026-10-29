@@ -20,6 +20,7 @@ local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
+local PetPassives = require(Shared.PetPassives)
 local Weights = require(Shared.Config.Weights)
 
 local TABS = { "Pets", "Eggs", "Items" }
@@ -205,6 +206,7 @@ local function cardFor(entry: Entry, data): Frame
 	local icon = card:FindFirstChild("Icon") :: ImageLabel
 	local nameLabel = card:FindFirstChild("Name") :: TextLabel
 	local count = card:FindFirstChild("Count") :: TextLabel
+	local passiveLabel = card:FindFirstChild("Passive") :: TextLabel?
 	showModel(viewport, icon, entry.kind, entry.key, data)
 	count.Visible = true
 	if entry.kind == "Pet" then
@@ -213,6 +215,11 @@ local function cardFor(entry: Entry, data): Frame
 		nameLabel.Text = petName(pet)
 		nameLabel.TextColor3 = Eggs.ByName[def.Rarity].Color
 		count.Text = Weights.format(petWeight(pet))
+		local passive = PetPassives.short(pet.Id, pet.Huge)
+		if passiveLabel and passive then
+			passiveLabel.Text = passive
+			passiveLabel.Visible = true
+		end
 	elseif entry.kind == "Egg" then
 		local egg = data.Eggs[entry.key]
 		nameLabel.Text = eggName(egg)

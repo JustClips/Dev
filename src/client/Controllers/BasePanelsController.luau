@@ -142,6 +142,14 @@ local function renderPets(data)
 		nameLabel.TextColor3 = Eggs.ByName[def.Rarity].Color
 		;(row:FindFirstChild("Sub") :: TextLabel).Text = `{Format.cash(entry.income * (data.CashMultiplier or 1))}/s`
 		ModelView.show(row:FindFirstChild("Viewport") :: ViewportFrame, AssetLibrary.alien(entry.pet.Id, entry.pet.Mutation), "Alien_" .. entry.pet.Id)
+		-- Tap the pet itself for its info card.
+		local select = row:FindFirstChild("Select") :: TextButton?
+		if select then
+			local uid = entry.uid
+			Ui.button(select, function()
+				C.PetInfoController:Open(uid)
+			end)
+		end
 		local button = row:FindFirstChild("Action") :: TextButton
 		if isPlaced then
 			setButton(button, "Unequip", RED)

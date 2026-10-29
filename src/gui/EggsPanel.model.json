@@ -1027,6 +1027,40 @@
          ]
         },
         {
+         "name": "Select",
+         "className": "TextButton",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            0
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Text": "",
+          "ZIndex": 1
+         }
+        },
+        {
          "name": "Action",
          "className": "TextButton",
          "properties": {

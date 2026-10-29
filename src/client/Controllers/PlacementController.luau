@@ -24,6 +24,7 @@ local Aliens = require(Shared.Config.Aliens)
 local EggSpots = require(Shared.EggSpots)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
+local PetPassives = require(Shared.PetPassives)
 local Weights = require(Shared.Config.Weights)
 local World = require(Shared.Config.World)
 
@@ -252,7 +253,8 @@ function PlacementController:HoldPet(uid: string)
 	local rarity = def and Eggs.ByName[def.Rarity]
 	titleLabel.Text = "Holding " .. (if pet.Huge then "Huge " else "") .. AlienModel.displayName(pet.Id, pet.Mutation)
 	local kg = pet.Weight or Weights.petKg(def and def.Rarity or "Common")
-	subLabel.Text = `{def and def.Rarity or ""} · {Weights.format(kg)} · Sell it at the Pet Trader`
+	local passive = PetPassives.describe(pet.Id, pet.Huge)
+	subLabel.Text = `{def and def.Rarity or ""} · {Weights.format(kg)}` .. (if passive then ` · {passive}` else "")
 	subLabel.TextColor3 = if rarity then rarity.Color else Color3.new(1, 1, 1)
 	icon.Image = AssetLibrary.image("Icon_Alien")
 	goBase.Visible = false

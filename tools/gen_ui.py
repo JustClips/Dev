@@ -737,6 +737,10 @@ def inventory():
         icon("Icon", "Potion", 62, U(0.5, 0, 0, 6), (0.5, 0), Visible=False),
         text("Name", "", U(1, -4, 0, 26), U(0.5, 0, 1, -1), (0.5, 1), ts=15, display=True, stroke=2, ZIndex=4,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 10})]),
+        # A pet's passive in short ("+3% Pet Income"), just above its name.
+        text("Passive", "", U(1, -4, 0, 18), U(0.5, 0, 1, -24), (0.5, 1), ts=14, color="#7CF58A", display=True, stroke=2,
+             Visible=False, ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 14, "MinTextSize": 7})]),
         text("Count", "", U(0, 80, 0, 20), U(1, -3, 0, 2), (1, 0), ts=16, display=True, stroke=2, xa="Right", Visible=False, ZIndex=4,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 9})]),
         frame("Held", U(0, 74, 0, 20), U(0, 3, 0, 3), bg=SUCCESS, Visible=False, ZIndex=5, children=[
@@ -789,6 +793,8 @@ def popup_list(screen_name, title, ico, header_color, head_button, row_children,
         text("Name", "", U(1, -190, 0, 26), U(0, 72, 0, 8), ts=20, display=True, stroke=2.5, xa="Left",
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 10})]),
         text("Sub", "", U(1, -190, 0, 22), U(0, 72, 0, 36), ts=17, color="#7CFF8C", display=True, stroke=2, xa="Left"),
+        # The whole row is a button (the Pets panel opens the pet's info); Action sits above it.
+        node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=1)),
     ] + row_children)
     list_bottom = 8 if not footer else 72 if len(footer) == 1 else 128
     title_room = 258 if head_button else 110  # the title stops before Open All / Close
@@ -999,6 +1005,36 @@ def confirm():
         button("No", U(0, 190, 0, 56), U(0.5, 100, 1, -16), (0.5, 1), color=DANGER, label="Cancel", ts=26),
     ])
     write("Confirm", screen([dim(), win], order=14, enabled=False))
+
+
+def pet_info():
+    """A pet's info card (PetInfoController), opened by tapping a pet in the Pets panel: the
+    pet turning in a viewport, name in its rarity colour, rarity and weight, cash per second,
+    its mutation, and its passive."""
+    line = lambda name, y, ts, color: text(name, "", U(1, -228, 0, ts + 8), U(0, 212, 0, y), ts=ts, color=color, display=True,
+                                           xa="Left", TextScaled=True,
+                                           children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": ts, "MinTextSize": 8})])
+    win = window(460, 350, "Pet Info", "Alien", popup=True, children=[
+        plate("Stage", U(0, 186, 0, 186), U(0, 14, 0, 76), tint="#2E3340", stroke=3, children=[
+            node("Viewport", "ViewportFrame", base(U(1, -8, 1, -8), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
+                                                   Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
+        ]),
+        line("Name", 78, 28, INK),  # rarity colour, outlined (grey Common text on white was faint)
+        line("Rarity", 114, 19, SUB),
+        line("Income", 144, 22, "#1E9E3A"),
+        line("Mutation", 176, 18, SUB),
+        plate("PassiveBox", U(1, -28, 0, 70), U(0, 14, 0, 272), tint="#E3F8E6", stroke=3, children=[
+            icon("Icon", "Star", 40, U(0, 8, 0.5, 0), (0, 0.5)),
+            text("Title", "Passive", U(1, -64, 0, 26), U(0, 56, 0, 6), ts=20, color=INK, display=True, xa="Left",
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 8})]),
+            text("Text", "", U(1, -64, 0, 28), U(0, 56, 0, 34), ts=18, color="#1E9E3A", display=True, xa="Left",
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 8})]),
+        ]),
+        button("Action", U(0, 180, 0, 50), U(1, -14, 0, 214), (1, 0), color=DANGER, label="Unequip", ts=22),
+    ])
+    name = next(c for c in win["children"] if c and c.get("name") == "Name")
+    name["children"] = [text_stroke(2.5)] + name.get("children", [])
+    write("PetInfo", screen([dim(), win], order=13, enabled=False))
 
 
 # ---------------------------------------------------------------- Offer + Welcome back
@@ -1294,6 +1330,7 @@ def main():
     placing()
     dialog()
     confirm()
+    pet_info()
     hover()
     rewards()
     rebirth()
