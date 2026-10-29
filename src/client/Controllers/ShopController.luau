@@ -261,7 +261,7 @@ local function sections(data): { Section }
 	return {
 		{ Key = "Boosts", Title = "Server Boosts", Icon = "Icon_Luck", Color = Color3.fromRGB(233, 162, 31), Note = "Everyone on the server gets it!", Items = boostItems(data) },
 		{ Key = "Passes", Title = "Gamepasses", Icon = "Icon_Star", Color = Color3.fromRGB(155, 107, 255), Note = "Yours forever", Items = passItems(data) },
-		{ Key = "Tools", Title = "Tools", Icon = "Icon_Tool", Color = Color3.fromRGB(76, 141, 255), Items = toolItems(data) },
+		{ Key = "Tools", Title = "Tools", Icon = "Icon_Tool", Color = Color3.fromRGB(76, 141, 255), Note = "", Items = toolItems(data) },
 		{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Color = Color3.fromRGB(255, 95, 162), Note = "", Items = eggItems(data) },
 		{ Key = "Cash", Title = "Cash", Icon = "Icon_Cash", Color = Color3.fromRGB(47, 191, 85), Note = "", Items = cashItems(data) },
 	}

@@ -42,12 +42,11 @@ local function tutorialStep(player: Player, session: any): string
 		return "Done"
 	end
 	local runtime = session.Runtime
-	if runtime.Carried and #runtime.Carried > 0 then
-		return "Base"
-	end
+	-- The egg steps only matter until the first hatch: picking up an egg later mustn't
+	-- send you back to "carry it home".
 	if data.Stats.Hatches == 0 then
-		-- An egg already in your park or bag comes first: a second egg found on the way
-		-- home mustn't send you back to "pick up the egg".
+		-- The furthest egg step wins: an egg growing, then one in the bag, then one on your
+		-- head, then one on the ground. A second egg found later never sends you back.
 		if #data.Hatching > 0 then
 			for _, entry in data.Hatching do
 				if entry.EndsAt <= os.time() then
@@ -58,6 +57,9 @@ local function tutorialStep(player: Player, session: any): string
 		end
 		if next(data.Eggs) ~= nil then
 			return "Place"
+		end
+		if runtime.Carried and #runtime.Carried > 0 then
+			return "Base"
 		end
 		if runtime.TutorialEggPosition then
 			return "Egg"

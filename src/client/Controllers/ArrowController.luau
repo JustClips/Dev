@@ -17,7 +17,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local World = require(Shared.Config.World)
 
-local DUST_AHEAD = 30 -- studs from your base toward the Rocket
+local FIELD_INSET = 14 -- studs into the leaf field for the "sweep" guide
 local REACHED = 9 -- hide the guide this close to the target
 local COLOR = Color3.fromRGB(255, 226, 92)
 local TRAIL_ARROWS = 12 -- arrows on the ground
@@ -73,9 +73,23 @@ local function targetFor(data): Vector3?
 	local pad = if hasBase then basePad(data.BaseIndex) else nil
 	local rocketModel = moon:FindFirstChild("Rocket")
 	local rocket = rocketModel and rocketModel:FindFirstChild("SellPad") :: BasePart?
-	if step == "Sweep" and pad then
-		local toCenter = (Vector3.zero - pad.Position) * Vector3.new(1, 0, 1)
-		return pad.Position + toCenter.Unit * DUST_AHEAD
+	if step == "Sweep" then
+		-- The nearest spot a little way into the leaf field.
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if not root then
+			return nil
+		end
+		local min, max = World.Field.Min, World.Field.Max
+		local x = math.clamp(root.Position.X, min.X + FIELD_INSET, max.X - FIELD_INSET)
+		local z = math.clamp(root.Position.Z, min.Y + FIELD_INSET, max.Y - FIELD_INSET)
+		local spot = Vector3.new(x, 0, z)
+		local rocket = Vector3.new(World.RocketPosition.X, 0, World.RocketPosition.Z)
+		local away = spot - rocket
+		if away.Magnitude < World.RocketClearRadius + 6 then
+			spot = rocket + (if away.Magnitude > 0.1 then away.Unit else Vector3.new(0, 0, 1)) * (World.RocketClearRadius + 6)
+		end
+		return spot
 	elseif step == "Egg" then
 		return data.TutorialTarget
 	elseif step == "Base" and pad then

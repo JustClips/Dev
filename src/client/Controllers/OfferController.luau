@@ -59,13 +59,15 @@ local function itemsFor(product: string): { Item }
 end
 
 local TAG_TEXT = { StarterPack = "BEST DEAL!" }
+-- A short line under the icons (the icons already say what's inside).
+local LINE_TEXT = { StarterPack = "One time only! Huge value!" }
 
 -- The card slides in next to the left rail (on phones the rail sits under the wallet).
 local function placeCard(window: GuiObject)
 	local hud = Ui.screen("Hud")
 	local rail = hud:FindFirstChild("Rail") :: GuiObject?
 	local s = Ui.scale()
-	local height = 222 * s
+	local height = 244 * s
 	local view = offerGui.AbsoluteSize
 	local x, y = 210 * s, view.Y / 2
 	if rail then
@@ -162,7 +164,7 @@ local function showOffer(offer)
 	showToken += 1
 	local token = showToken
 	Ui.find(offerGui, "Window.Header.Title").Text = offer.Title
-	Ui.find(offerGui, "Window.Text").Text = offer.Text
+	Ui.find(offerGui, "Window.Text").Text = LINE_TEXT[offer.Product] or offer.Text
 	Ui.setText(Ui.find(offerGui, "Window.Buy"), `{Ui.ROBUX} {offer.Price}`)
 	Ui.find(offerGui, "Window.Tag.Label").Text = TAG_TEXT[offer.Product] or "LIMITED!"
 	local items = Ui.find(offerGui, "Window.Items") :: Frame

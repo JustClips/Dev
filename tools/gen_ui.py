@@ -905,14 +905,14 @@ def rebirth():
 def offer():
     # Offer card: slides in next to the left rail (OfferController places it), with what you
     # get as big icons on spinning rays, a tilted sticker and a green Robux button.
-    item = frame("Template", U(0, 84, 0, 92), Visible=False, children=[
-        icon("Icon", "Star", 66, U(0.5, 0, 0, 0), (0.5, 0)),
-        text("Caption", "", U(1, 4, 0, 24), U(0.5, 0, 1, 0), (0.5, 1), ts=18, display=True, stroke=2.5, ZIndex=4,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 10})]),
+    item = frame("Template", U(0, 100, 0, 106), Visible=False, children=[
+        icon("Icon", "Star", 64, U(0.5, 0, 0, 0), (0.5, 0)),
+        text("Caption", "", U(1, 0, 0, 40), U(0.5, 0, 1, 0), (0.5, 1), ts=18, display=True, stroke=2.5, ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 12})]),
     ])
-    win = plate("Window", U(0, 312, 0, 222), U(0, 210, 0.5, -30), (0, 0.5), SURFACE, children=[
+    win = plate("Window", U(0, 340, 0, 244), U(0, 210, 0.5, -30), (0, 0.5), SURFACE, children=[
         autoscale(),
-        node("Rays", "ImageLabel", base(U(0, 260, 0, 260), U(0.5, 0, 0, 92), (0.5, 0.5), BackgroundTransparency=1,
+        node("Rays", "ImageLabel", base(U(0, 280, 0, 280), U(0.5, 0, 0, 96), (0.5, 0.5), BackgroundTransparency=1,
                                         Image=img("Rays"), ImageColor3=PREMIUM, ImageTransparency=0.35, ZIndex=1)),
         plate("Header", U(1, 0, 0, 42), tint=PREMIUM, children=[
             icon("Icon", "Gift", 34, U(0, 6, 0.5, 0), (0, 0.5)),
@@ -925,9 +925,9 @@ def offer():
             text("Label", "BEST DEAL!", U(1, -6, 1, 0), U(0, 3, 0, 0), ts=16, display=True, stroke=2, ZIndex=7,
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
         ]),
-        frame("Items", U(1, -16, 0, 92), U(0.5, 0, 0, 48), (0.5, 0), ZIndex=3, children=[hlist(6, "Center", "Center"), item]),
-        text("Text", "", U(1, -24, 0, 20), U(0.5, 0, 0, 144), (0.5, 0), ts=15, color=SUB, heavy=True, ZIndex=3,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 9})]),
+        frame("Items", U(1, -12, 0, 106), U(0.5, 0, 0, 48), (0.5, 0), ZIndex=3, children=[hlist(6, "Center", "Center"), item]),
+        text("Text", "", U(1, -24, 0, 24), U(0.5, 0, 0, 156), (0.5, 0), ts=17, color=INK, heavy=True, ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 12})]),
         button("Buy", U(1, -28, 0, 48), U(0.5, 0, 1, -10), (0.5, 1), color=SUCCESS, label="", ts=26, ZIndex=3),
     ])
     write("Offer", screen([win], order=12, enabled=False))
