@@ -376,6 +376,20 @@ local function step(park: Park, dt: number, now: number)
 end
 
 local function cycleRainbows(now: number)
+	-- Voxel pets with Rainbow / Disco skins flip through their skin frames.
+	local frame = math.floor(now * 4)
+	for _, model in CollectionService:GetTagged("SkinCyclePet") do
+		local list = model:GetAttribute("SkinFrames")
+		if type(list) == "string" and (model:IsDescendantOf(Workspace) or model:FindFirstAncestorOfClass("ViewportFrame")) then
+			local frames = string.split(list, ",")
+			local id = frames[frame % #frames + 1]
+			for _, d in model:GetDescendants() do
+				if d:IsA("MeshPart") and d:GetAttribute("VoxelSkin") and d.TextureID ~= id then
+					d.TextureID = id
+				end
+			end
+		end
+	end
 	for _, model in CollectionService:GetTagged("RainbowPet") do
 		if model:IsDescendantOf(Workspace) or model:FindFirstAncestorOfClass("ViewportFrame") then
 			for _, d in model:GetDescendants() do
