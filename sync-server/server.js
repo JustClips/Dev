@@ -3,7 +3,7 @@
 //
 // Env:
 //   SYNC_KEY       required. Shared key the Studio plugin sends as X-Sync-Key.
-//   REPO_URL       git URL of the game repo (default: megafartCc/gamedev).
+//   REPO_URL       git URL of the game repo (default: JustClips/Dev).
 //   GITHUB_TOKEN   read token for a private repo (fine-grained, Contents: read).
 //   BRANCH         default "main".
 //   POLL_SECONDS   how often to check GitHub for new commits (default 3).
@@ -19,7 +19,7 @@ const crypto = require("crypto");
 const { execFile } = require("child_process");
 
 const SYNC_KEY = process.env.SYNC_KEY || "";
-const REPO_URL = process.env.REPO_URL || "https://github.com/megafartCc/GAMEDEV.git";
+const REPO_URL = process.env.REPO_URL || "https://github.com/JustClips/Dev.git";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 const BRANCH = process.env.BRANCH || "main";
 const POLL_SECONDS = Number(process.env.POLL_SECONDS || 3);
