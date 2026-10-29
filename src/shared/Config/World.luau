@@ -115,9 +115,9 @@ World.Base = {
 		{ Asset = "Tree_Puff", Position = Vector3.new(-37, 0, 2), Yaw = 80, Radius = 3, Size = Vector2.new(3, 3) },
 		{ Asset = "Tree_Tall", Position = Vector3.new(4, 0, 37), Yaw = 140, Radius = 3, Size = Vector2.new(3, 3) },
 		{ Asset = "Mushroom_Glow", Position = Vector3.new(-12, 0, 12), Yaw = 0, Radius = 3, Size = Vector2.new(3.6, 3.6) },
-		{ Asset = "Rock_Moon1", Position = Vector3.new(34, 0, 36), Yaw = 60, Radius = 3, Size = Vector2.new(6.8, 5.2) },
+		{ Asset = "Boulder_1", Position = Vector3.new(34, 0, 35), Yaw = 60, Radius = 4, Size = Vector2.new(8.5, 7.4) },
 		{ Asset = "Crystal_Blue", Position = Vector3.new(-40, 0, 38), Yaw = 10, Radius = 2, Size = Vector2.new(2.6, 3.1) },
-		{ Asset = "Rock_Moon3", Position = Vector3.new(28, 0, 8), Yaw = 0, Radius = 1.5, Size = Vector2.new(3.1, 2.7) },
+		{ Asset = "Boulder_2", Position = Vector3.new(28, 0, 8), Yaw = 0, Radius = 2.5, Size = Vector2.new(5, 4.7) },
 	},
 }
 

@@ -29,15 +29,12 @@ local GOLD = Color3.fromRGB(255, 200, 60)
 -- the ground at y + 2. Checked on a live server, so every surface below is filled 2 lower.
 local LIFT = 2
 
--- The rock walls around the map. Terrain ridges (Rock) run along these lines and
--- buildProps stands a row of boulders at their foot, on the inside.
+-- The cliff walls around the map (buildProps, Cliff_* pieces), as lines of the front row.
 local HUB_X = World.BaseInner + World.BaseSize.Y + 2 -- outer edge of the bases
-local HUB_RIDGE = HUB_X + 53 -- hub sides
-local HUB_BOULDERS = HUB_X + 28
-local HUB_BACK = 258 -- behind the plaza
-local ZONE_RIDGE = 182 -- zone sides
-local ZONE_BOULDERS = 160
-local ZONE_BACK = Zones.List[#Zones.List].Min.Y - 58 -- behind the last zone
+local HUB_WALL = HUB_X + 23 -- hub sides
+local HUB_BACK = 236 -- behind the plaza
+local ZONE_WALL = 160 -- zone sides
+local ZONE_BACK = Zones.List[#Zones.List].Min.Y - 36 -- behind the last zone
 
 -- Where a corridor's ramp sits: z0..z1, snapped out to the 4-stud terrain grid so the
 -- carved cut and the ramp part line up exactly (an off-grid cut left a slot at the top).
@@ -66,18 +63,6 @@ local function carve(terrain: Terrain, x0: number, z0: number, x1: number, z1: n
 	)
 end
 
--- A strip of mountains: balls along a line from a to b (x, z), pushed outward.
-local function ridge(terrain: Terrain, rng: Random, a: Vector2, b: Vector2, material: Enum.Material, spacing: number, rMin: number, rMax: number, baseY: number)
-	local length = (b - a).Magnitude
-	local steps = math.max(1, math.floor(length / spacing))
-	for i = 0, steps do
-		local p = a:Lerp(b, i / steps)
-		local r = rng:NextNumber(rMin, rMax)
-		local jitter = Vector3.new(rng:NextNumber(-spacing * 0.4, spacing * 0.4), rng:NextNumber(-6, 2), rng:NextNumber(-spacing * 0.4, spacing * 0.4))
-		terrain:FillBall(Vector3.new(p.X, baseY, p.Y) + jitter, r, material)
-	end
-end
-
 local function rect(terrain: Terrain, x0: number, z0: number, x1: number, z1: number, surfaceY: number, material: Enum.Material, depth: number?)
 	slab(terrain, CFrame.new((x0 + x1) / 2, 0, (z0 + z1) / 2), math.abs(x1 - x0), math.abs(z1 - z0), surfaceY, material, depth)
 end
@@ -91,8 +76,6 @@ function MapBuilder.buildTerrain()
 	for name, color in World.TerrainColors do
 		terrain:SetMaterialColor((M :: any)[name], color)
 	end
-	local rng = Random.new(42)
-
 	-- Grass everywhere (surface y = 0), with a ground band per zone.
 	slab(terrain, CFrame.new(0, 0, -410), 1000, 1860, 0, M.Grass, 36)
 	rect(terrain, -500, -1340, 500, -976, 0, M.Snow) -- Snowy Peaks and beyond
@@ -134,22 +117,7 @@ function MapBuilder.buildTerrain()
 		local cf = World.baseCFrame(i)
 		slab(terrain, cf, World.BaseSize.X + 4, World.BaseSize.Y + 4, 0, M.Concrete)
 	end
-
-	-- Rocky mountains around everything (one unbroken line per side, so there are no gaps).
-	ridge(terrain, rng, Vector2.new(-HUB_RIDGE, HUB_BACK), Vector2.new(-HUB_RIDGE, -214), M.Rock, 22, 24, 36, -6)
-	ridge(terrain, rng, Vector2.new(HUB_RIDGE, HUB_BACK), Vector2.new(HUB_RIDGE, -214), M.Rock, 22, 24, 36, -6)
-	ridge(terrain, rng, Vector2.new(-HUB_RIDGE, HUB_BACK), Vector2.new(HUB_RIDGE, HUB_BACK), M.Rock, 22, 24, 36, -6)
-	ridge(terrain, rng, Vector2.new(-HUB_RIDGE, -214), Vector2.new(-ZONE_RIDGE, -232), M.Rock, 12, 24, 34, -6)
-	ridge(terrain, rng, Vector2.new(HUB_RIDGE, -214), Vector2.new(ZONE_RIDGE, -232), M.Rock, 12, 24, 34, -6)
-	ridge(terrain, rng, Vector2.new(-ZONE_RIDGE, -214), Vector2.new(-ZONE_RIDGE, ZONE_BACK), M.Rock, 22, 22, 34, -4)
-	ridge(terrain, rng, Vector2.new(ZONE_RIDGE, -214), Vector2.new(ZONE_RIDGE, ZONE_BACK), M.Rock, 22, 22, 34, -4)
-	ridge(terrain, rng, Vector2.new(-ZONE_RIDGE, ZONE_BACK), Vector2.new(ZONE_RIDGE, ZONE_BACK), M.Rock, 22, 22, 36, -4)
-	-- Low rocky ridges between zones, kept thin so they never cover dust on either side.
-	for _, c in World.Corridors do
-		local z = (c.Min.Y + c.Max.Y) / 2
-		ridge(terrain, rng, Vector2.new(30, z), Vector2.new(ZONE_RIDGE, z), M.Rock, 10, 8, 11, 0)
-		ridge(terrain, rng, Vector2.new(-30, z), Vector2.new(-ZONE_RIDGE, z), M.Rock, 10, 8, 11, 0)
-	end
+	-- The walls around everything are Cliff_* models (buildProps), not terrain.
 end
 
 -- Lighting -----------------------------------------------------------------------
@@ -872,49 +840,71 @@ local function scatter(rng: Random, zone, names: { string }, count: number)
 	end
 end
 
--- A row of boulders from a to b (x, z), overlapping so there are no gaps. inward points
--- into the map; the rocks turn their long side along the row. big: wall boulders, else the
--- smaller ones on the ridges between zones.
-local function boulderRow(rng: Random, a: Vector2, b: Vector2, inward: Vector2, big: boolean)
+local CLIFFS = { "Cliff_1", "Cliff_2", "Cliff_3" }
+local BOULDERS = { "Boulder_1", "Boulder_2", "Boulder_3", "Boulder_1", "Boulder_3" }
+
+-- A row of cliff pieces from a to b (x, z), stepped front facing inward. Pieces overlap a
+-- little (their turf tops run past the ends), so the wall has no gaps. scale > 1 makes a
+-- taller back row.
+local function cliffRow(rng: Random, a: Vector2, b: Vector2, inward: Vector2, scale: number)
 	local dir = (b - a).Unit
 	local length = (b - a).Magnitude
-	local angle = math.atan2(-dir.Y, dir.X)
-	local d = 0
-	while d <= length + 1 do
-		local name = if big or rng:NextNumber() < 0.4 then "Rock_Moon2" else "Rock_Moon1"
-		local meta = AssetLibrary.meta(name)
-		local size = if meta then meta.bounds.max - meta.bounds.min else Vector3.new(12, 5.5, 9)
-		local scale = if big then rng:NextNumber(3, 4) elseif name == "Rock_Moon2" then rng:NextNumber(1.1, 1.4) else rng:NextNumber(1.8, 2.5)
-		local p = a + dir * d + inward * rng:NextNumber(-2, 1)
-		local turn = angle + math.rad(rng:NextNumber(-12, 12)) + (if rng:NextNumber() < 0.5 then math.pi else 0)
-		-- Sunk a little so they sit in the ground, not on it.
-		place(name, CFrame.new(p.X, -size.Y * scale * 0.15, p.Y) * CFrame.Angles(0, turn, 0), scale)
-		if big and rng:NextNumber() < 0.5 then
-			-- a smaller rock tucked in front
-			local s2 = rng:NextNumber(1.3, 1.9)
-			local q = p + inward * (size.Z * scale * 0.35) + dir * rng:NextNumber(-6, 6)
-			place("Rock_Moon1", CFrame.new(q.X, -0.4, q.Y) * yaw(rng:NextNumber(0, 360)), s2)
-		end
-		d += size.X * scale * 0.55
+	local step = 21.5 * scale
+	local count = math.max(1, math.ceil(length / step))
+	local face = Vector3.new(inward.X, 0, inward.Y)
+	for k = 0, count do
+		local p = a + dir * (length * k / count)
+		local name = CLIFFS[rng:NextInteger(1, #CLIFFS)]
+		local pos = Vector3.new(p.X, 0, p.Y)
+		-- a touch of wobble so the line doesn't look ruled
+		local cf = CFrame.lookAt(pos, pos + face) * CFrame.Angles(0, math.rad(rng:NextNumber(-4, 4)), 0)
+		place(name, cf, scale * rng:NextNumber(0.95, 1.08))
 	end
 end
 
--- Boulders along the foot of every rock wall (see buildTerrain) and on the zone dividers.
+-- Boulders from a to b, rotated freely; spacing keeps them touching.
+local function boulderRow(rng: Random, a: Vector2, b: Vector2, spread: number)
+	local dir = (b - a).Unit
+	local side = Vector2.new(-dir.Y, dir.X)
+	local length = (b - a).Magnitude
+	local d = 0
+	while d <= length do
+		local name = BOULDERS[rng:NextInteger(1, #BOULDERS)]
+		local meta = AssetLibrary.meta(name)
+		local width = if meta then meta.bounds.max.X - meta.bounds.min.X else 8
+		local scale = rng:NextNumber(0.9, 1.4)
+		local p = a + dir * d + side * rng:NextNumber(-spread, spread)
+		place(name, CFrame.new(p.X, 0, p.Y) * yaw(rng:NextNumber(0, 360)), scale)
+		d += width * scale * 0.6
+	end
+end
+
+-- Cliff walls round the hub and the zones (two rows: the back one bigger, so the edge
+-- reads as a tall cliff), boulders at their foot and along the ridges between zones.
 local function rockWalls(rng: Random)
-	local hx, zx = HUB_BOULDERS, ZONE_BOULDERS
-	local hubBackZ = HUB_BACK - 22
-	local zoneBackZ = ZONE_BACK + 22
+	local hx, zx = HUB_WALL, ZONE_WALL
+	local BACK = 15 -- back row this far behind the front row
 	for _, side in { -1, 1 } do
-		boulderRow(rng, Vector2.new(side * hx, hubBackZ), Vector2.new(side * hx, -214), Vector2.new(-side, 0), true)
-		boulderRow(rng, Vector2.new(side * hx, -214), Vector2.new(side * zx, -232), Vector2.new(-side, 0), true)
-		boulderRow(rng, Vector2.new(side * zx, -232), Vector2.new(side * zx, zoneBackZ), Vector2.new(-side, 0), true)
+		local inward = Vector2.new(-side, 0)
+		local out = side * BACK
+		cliffRow(rng, Vector2.new(side * hx, HUB_BACK), Vector2.new(side * hx, -214), inward, 1)
+		cliffRow(rng, Vector2.new(side * (hx + BACK), HUB_BACK + BACK), Vector2.new(side * (hx + BACK), -214), inward, 1.7)
+		cliffRow(rng, Vector2.new(side * hx, -214), Vector2.new(side * zx, -232), inward, 1)
+		cliffRow(rng, Vector2.new(side * (hx + BACK), -214), Vector2.new(side * (zx + BACK), -232), inward, 1.7)
+		cliffRow(rng, Vector2.new(side * zx, -232), Vector2.new(side * zx, ZONE_BACK), inward, 1)
+		cliffRow(rng, Vector2.new(side * zx + out, -232), Vector2.new(side * zx + out, ZONE_BACK - BACK), inward, 1.7)
+		-- a few boulders at the foot of the hub walls (clear of the bases)
+		boulderRow(rng, Vector2.new(side * (hx - 8), HUB_BACK - 30), Vector2.new(side * (hx - 8), -200), 1.5)
+		-- low boulder ridges between zones
 		for _, c in World.Corridors do
 			local z = (c.Min.Y + c.Max.Y) / 2
-			boulderRow(rng, Vector2.new(side * 38, z), Vector2.new(side * (zx - 8), z), Vector2.new(0, 1), false)
+			boulderRow(rng, Vector2.new(side * 36, z), Vector2.new(side * (zx - 6), z), 2)
 		end
 	end
-	boulderRow(rng, Vector2.new(-hx, hubBackZ), Vector2.new(hx, hubBackZ), Vector2.new(0, -1), true)
-	boulderRow(rng, Vector2.new(-zx, zoneBackZ), Vector2.new(zx, zoneBackZ), Vector2.new(0, 1), true)
+	cliffRow(rng, Vector2.new(-hx, HUB_BACK), Vector2.new(hx, HUB_BACK), Vector2.new(0, -1), 1)
+	cliffRow(rng, Vector2.new(-hx - BACK, HUB_BACK + BACK), Vector2.new(hx + BACK, HUB_BACK + BACK), Vector2.new(0, -1), 1.7)
+	cliffRow(rng, Vector2.new(-zx, ZONE_BACK), Vector2.new(zx, ZONE_BACK), Vector2.new(0, 1), 1)
+	cliffRow(rng, Vector2.new(-zx - BACK, ZONE_BACK - BACK), Vector2.new(zx + BACK, ZONE_BACK - BACK), Vector2.new(0, 1), 1.7)
 end
 
 function MapBuilder.buildProps()
@@ -962,10 +952,6 @@ function MapBuilder.buildProps()
 	place("Flag", CFrame.new(10, 0, 186) * yaw(-20))
 	place("Satellite", CFrame.new(-56, 0, 194) * yaw(150), 1.4)
 	place("Satellite", CFrame.new(56, 0, 194) * yaw(210), 1.4)
-	for _, z in { -120, 60 } do
-		place("Satellite", CFrame.new(-190, 6, z) * yaw(rng:NextNumber(0, 360)), 1.6)
-		place("Satellite", CFrame.new(190, 6, z + 40) * yaw(rng:NextNumber(0, 360)), 1.6)
-	end
 	-- a car on display in the garage
 	place("Vehicle_SweeperCart", World.Garage * CFrame.new(3, 0.6, 2) * yaw(-25))
 	-- zone gates (sign faces the hub)
