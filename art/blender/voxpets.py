@@ -72,6 +72,16 @@ class Part:
                         self.cells[(i, j, k)] = cc
         return self
 
+    def rbox(self, x0, x1, y0, y1, z0, z1, col, edges=(True, True, True)):
+        """box() with the 12 edges trimmed off, for a rounder block. edges = which axes'
+        edge rows to trim (x-running, y-running, z-running)."""
+        def f(i, j, k):
+            ex, ey, ez = i in (x0, x1 - 1), j in (y0, y1 - 1), k in (z0, z1 - 1)
+            if (edges[0] and ey and ez) or (edges[1] and ex and ez) or (edges[2] and ex and ey):
+                return None
+            return col(i, j, k) if callable(col) else col
+        return self.box(x0, x1, y0, y1, z0, z1, f)
+
     def set(self, cells, col):
         for c in cells:
             self.cells[tuple(c)] = col
@@ -250,7 +260,156 @@ def dog():
     return assemble("Dog", parts)
 
 
-PETS = {"Cat": cat, "Dog": dog}
+def eyes(head, y, z, xs=(-3, 1), w=2, h=2, shine=True):
+    """Square black eyes with a white shine pixel at the top outer corner (no shine on
+    white faces, where it would read as a missing corner)."""
+    for x0 in xs:
+        head.box(x0, x0 + w, y, y + 1, z, z + h, EYE)
+        if shine:
+            head.set([(x0 if x0 < 0 else x0 + w - 1, y, z + h - 1)], SHINE)
+
+
+# --------------------------------------------------------------------------- bunny
+
+
+def bunny():
+    W, G, P, N = "F4F1EC", "B8B2AB", "FFB3C6", "FF8FA8"     # white, grey patch, inner ear, nose
+    parts = []
+    for name, x0, y0, big in (("LegFL", 1, -4, False), ("LegFR", -3, -4, False), ("LegBL", 1, 2, True), ("LegBR", -3, 2, True)):
+        p = Part(name, "Body", joint=(x0 + 1, y0 + 1, 3))
+        p.box(x0, x0 + 2, y0, y0 + 2, 0, 3, W)
+        if big:                                             # big back feet
+            p.box(x0, x0 + 2, y0 - 2, y0, 0, 1, W)
+        parts.append(p)
+    body = Part("Body")
+    body.rbox(-3, 3, -5, 5, 2, 8, lambda i, j, k: G if (k >= 6 and 0 <= j <= 3 and i >= -1) else W)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -5, 7))
+    head.rbox(-4, 4, -10, -4, 6, 12, lambda i, j, k: G if (k >= 10 and i >= 1 and j >= -8) else W, edges=(True, False, True))
+    eyes(head, -10, 9, shine=False)
+    head.box(-2, 2, -11, -10, 7, 9, W)                     # muzzle
+    head.set([(-1, -11, 8), (0, -11, 8)], N)
+    head.set([(-3, -10, 8), (2, -10, 8)], P)              # blush
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2, -7, 12))
+    ear.box(1, 3, -8, -6, 12, 18, lambda i, j, k: P if (j == -8 and i == 1 and 13 <= k <= 16) else (G if k >= 17 else W))
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 5, 5))
+    tail.rbox(-1, 1, 5, 7, 4, 7, W, edges=(False, False, False))
+    parts.append(tail)
+    return assemble("Bunny", parts)
+
+
+# ------------------------------------------------------------------------ squirrel
+
+
+def squirrel():
+    R, B, D, T = "B9582A", "F3D9B1", "7A3A18", "D98A55"     # red-brown, belly, dark, tail light
+    parts = legs(R, D, 3, -4, 2)
+    body = Part("Body")
+    body.rbox(-3, 3, -5, 4, 3, 8, lambda i, j, k: B if (k == 3 or (j == -5 and k <= 6 and -2 <= i <= 1)) else R, edges=(True, False, False))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -5, 7))
+    head.box(-4, 4, -10, -4, 6, 12, lambda i, j, k: B if (j == -10 and k <= 7 and -3 <= i <= 2) else R)
+    eyes(head, -10, 9)
+    head.box(-2, 2, -11, -10, 7, 9, B)
+    head.set([(-1, -11, 8), (0, -11, 8)], "3A2218")
+    head.set([(-1, -11, 7), (0, -11, 7)], "FFFFFF")       # buck teeth
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2.5, -6.5, 12))
+    ear.box(2, 4, -7, -6, 12, 14, R)
+    ear.set([(3, -7, 14)], D)                              # ear tuft
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 4, 5))
+    tail.box(-2, 2, 4, 7, 3, 9, lambda i, j, k: T if j == 6 and k % 2 else R)
+    tail2 = Part("Tail2", "Tail", joint=(0, 6, 9))
+    tail2.box(-2, 2, 5, 9, 9, 14, lambda i, j, k: T if j == 8 or k == 13 else R)
+    tail2.box(-2, 2, 3, 6, 13, 15, lambda i, j, k: T if k == 14 else R)    # curl over the back
+    parts += [tail, tail2]
+    acorn = Part("Acorn", "Body", joint=(0, -6, 3), noise=False)     # held between the front paws
+    acorn.box(-1, 1, -7, -5, 2, 4, "A8682E")
+    acorn.box(-1, 1, -7, -5, 4, 5, "6B4220")
+    parts.append(acorn)
+    return assemble("Squirrel", parts)
+
+
+# ------------------------------------------------------------------------- raccoon
+
+
+def raccoon():
+    G, L, M, D, N = "8F8C89", "E2DFDA", "45403D", "3A3634", "1E1A18"   # grey, light, mask, dark, nose
+    parts = legs(G, D, 4, -5, 3)
+    for p in parts:
+        for c in list(p.cells):
+            if c[2] <= 1:
+                p.cells[c] = D                             # dark paws
+    body = Part("Body")
+    body.box(-3, 3, -6, 6, 4, 9, lambda i, j, k: L if k == 4 and -4 <= j <= 3 else (shade(G, -0.12) if k == 8 else G))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -6, 8))
+
+    def hcol(i, j, k):
+        if j == -11:
+            if 9 <= k <= 11 and i not in (-1, 0):
+                return M                                   # the mask
+            if k == 12 and i in (-3, -2, 1, 2):
+                return L                                   # white brows
+            if k <= 8:
+                return L
+        return G
+    head.box(-4, 4, -11, -5, 7, 14, hcol)
+    eyes(head, -11, 10)
+    head.box(-2, 2, -13, -11, 7, 9, L)                     # snout
+    head.set([(-1, -13, 8), (0, -13, 8)], N)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(3, -7.5, 14))
+    ear.box(2, 4, -8, -7, 14, 16, lambda i, j, k: L if k == 15 else G)
+    ear.set([(2, -8, 14)], M)
+    parts += [ear, ear.mirror("EarR")]
+    ring = lambda i, j, k: D if j % 2 else G             # noqa: E731
+    tail = Part("Tail", "Body", joint=(0, 6, 7))
+    tail.box(-1, 1, 6, 10, 6, 8, ring)
+    tail.box(-2, 2, 7, 10, 6, 8, lambda i, j, k: ring(i, j, k) if abs(i + 0.5) < 2 else None)
+    tail2 = Part("Tail2", "Tail", joint=(0, 10, 7))
+    tail2.box(-2, 2, 10, 14, 5, 8, lambda i, j, k: None if (i in (-2, 1) and k in (5, 7)) else (D if j >= 13 else ring(i, j, k)))
+    parts += [tail, tail2]
+    return assemble("Raccoon", parts)
+
+
+# ---------------------------------------------------------------------------- duck
+
+
+def duck():
+    Y, O, LY = "FFD43B", "FF8A1F", "FFE680"
+    parts = []
+    leg = Part("LegL", "Body", joint=(1.5, -0.5, 3))
+    leg.box(1, 2, -1, 0, 1, 3, O)
+    leg.box(0, 3, -3, 0, 0, 1, O)                          # webbed foot
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-4, 4, -4, 5, 2, 9, lambda i, j, k: LY if (j == -4 or k == 2) else Y)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -2, 9))
+    head.rbox(-3, 3, -5, 1, 9, 15, Y, edges=(True, False, True))
+    eyes(head, -5, 12, xs=(-2, 1), w=1, h=2)
+    head.box(-1, 1, -3, -1, 15, 16, Y)                     # hair tuft
+    head.set([(0, -2, 16)], Y)
+    parts.append(head)
+    bill = Part("Bill", "Head", joint=(0, -5, 11), noise=False)
+    bill.box(-2, 2, -7, -5, 11, 12, O)
+    bill.box(-2, 2, -7, -5, 10, 11, shade(O, -0.15))
+    parts.append(bill)
+    wing = Part("WingL", "Body", joint=(4, -1, 8))
+    wing.box(4, 5, -2, 4, 4, 8, lambda i, j, k: shade(Y, -0.08) if j >= 2 and k <= 5 else LY)
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 5, 7))
+    tail.box(-1, 1, 5, 6, 7, 9, Y)
+    tail.set([(-1, 6, 8), (0, 6, 8)], Y)
+    parts.append(tail)
+    return assemble("Duck", parts)
+
+
+PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck}
 
 
 # ------------------------------------------------------------------------- animation
@@ -303,9 +462,85 @@ def walk(swing, bob, tail_wag, tail_up, ear_flop):
     return f
 
 
+def bunny_idle(w):
+    sniff = s(10 * w) * max(0.0, s(w))                      # nose twitches in bursts
+    return {
+        "Body": ((0, 0, 0.012 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, 0.006 * sniff), (-2 * sniff, 3 * s(w + 0.5), 10 * s(w))),
+        "EarL": ((0, 0, 0), (6 * s(w), -6 - 8 * max(0.0, s(2 * w)) ** 4, 0)),
+        "EarR": ((0, 0, 0), (6 * s(w + 0.4), 6, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 10 * s(6 * w))),
+    }
+
+
+def hop(w):
+    """Bunny hop: both front legs, then both back legs, with a big arc."""
+    up = max(0.0, s(w))
+    return {
+        "Body": ((0, 0, 0.32 * up), (-10 * c(w), 0, 0)),
+        "Head": ((0, 0, 0), (6 * c(w), 0, 0)),
+        "LegFL": ((0, 0, 0), (-30 * up, 0, 0)), "LegFR": ((0, 0, 0), (-30 * up, 0, 0)),
+        "LegBL": ((0, 0, 0), (40 * up, 0, 0)), "LegBR": ((0, 0, 0), (40 * up, 0, 0)),
+        "EarL": ((0, 0, 0), (22 * up, -6, 0)), "EarR": ((0, 0, 0), (22 * up, 6, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 0)),
+    }
+
+
+def squirrel_idle(w):
+    nib = s(12 * w) * (s(w) > 0)                          # nibbling the acorn
+    flick = 18 * max(0.0, s(3 * w)) ** 6
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (-3 + 1.5 * s(2 * w), 0, 0)),
+        "Head": ((0, 0, 0), (-5 - 4 * nib, 0, 12 * s(w + 2) * (s(w) <= 0))),
+        "Acorn": ((0, 0, 0.01 * nib), (0, 0, 0)),
+        "Tail": ((0, 0, 0), (-flick, 0, 6 * s(w))),
+        "Tail2": ((0, 0, 0), (12 * s(2 * w) + flick, 0, 10 * s(w - 0.8))),
+        "EarL": ((0, 0, 0), (0, -10 * max(0.0, s(4 * w + 1)) ** 8, 0)),
+    }
+
+
+def raccoon_idle(w):
+    rub = s(8 * w)                                        # rubbing its paws together
+    return {
+        "Body": ((0, 0, 0.012 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, 0), (-3 * s(2 * w), 0, 16 * s(w) * abs(s(w)))),   # shifty looks
+        "LegFL": ((0, 0, 0), (-14 + 8 * rub, 0, -6)),
+        "LegFR": ((0, 0, 0), (-14 - 8 * rub, 0, 6)),
+        "Tail": ((0, 0, 0), (4 * s(w), 0, 14 * s(w))),
+        "Tail2": ((0, 0, 0), (6 * s(w - 1), 0, 20 * s(w - 1))),
+        "EarL": ((0, 0, 0), (0, -8 * max(0.0, s(3 * w)) ** 6, 0)),
+    }
+
+
+def duck_idle(w):
+    flap = 35 * max(0.0, s(6 * w)) * (s(w) > 0.6)        # a little wing flutter now and then
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0.02 * s(2 * w), 0), (-5 * s(2 * w), 6 * s(w + 1), 14 * s(w))),
+        "Bill": ((0, 0, 0), (-6 * max(0.0, s(5 * w)) ** 6, 0, 0)),
+        "WingL": ((0, 0, 0), (0, -flap, 0)), "WingR": ((0, 0, 0), (0, flap, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 14 * s(4 * w))),
+    }
+
+
+def waddle(w):
+    leg = 30 * s(w)
+    return {
+        "Body": ((0, 0, 0.05 * abs(s(w))), (2 * s(2 * w), 9 * s(w), 6 * s(w))),
+        "Head": ((0, 0, 0), (-5 * s(2 * w), -5 * s(w), -4 * s(w))),
+        "LegL": ((0, 0, 0), (leg, 0, 0)), "LegR": ((0, 0, 0), (-leg, 0, 0)),
+        "WingL": ((0, 0, 0), (0, -12 * abs(s(w)), 0)), "WingR": ((0, 0, 0), (0, 12 * abs(s(w)), 0)),
+        "Tail": ((0, 0, 0), (0, 0, 20 * s(w))),
+    }
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
+    "Bunny": {"Idle": bunny_idle, "Walk": hop},
+    "Squirrel": {"Idle": squirrel_idle, "Walk": walk(36, 0.1, 10, -10, 0)},
+    "Raccoon": {"Idle": raccoon_idle, "Walk": walk(28, 0.04, 16, 4, 6)},
+    "Duck": {"Idle": duck_idle, "Walk": waddle},
 }
 
 

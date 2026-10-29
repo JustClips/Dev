@@ -95,6 +95,64 @@ Assets.Models = {
 			},
 		},
 	},
+	Alien_Bunny = {
+		anims = {
+			idle = "Pet_Bunny_Idle",
+			walk = "Pet_Bunny_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.52, 2.34, 0.91),
+			min = Vector3.new(-0.52, 0.0, -1.43),
+		},
+		id = 138878878870663,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 1.56, -0.91),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.26, 1.56, -0.91),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.91, -0.65),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.39, 0.39),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.39, 0.39),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.39, -0.39),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.39, -0.39),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.65, 0.65),
+				parent = "Body",
+			},
+		},
+		voxel = true,
+	},
 	Alien_Cat = {
 		anims = {
 			idle = "Pet_Cat_Idle",
@@ -658,6 +716,59 @@ Assets.Models = {
 				collide = false,
 				joint = Vector3.new(-0.0, 1.69, 1.04),
 				parent = "Tail",
+			},
+		},
+		voxel = true,
+	},
+	Alien_Duck = {
+		anims = {
+			idle = "Pet_Duck_Idle",
+			walk = "Pet_Duck_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.65, 2.21, 0.91),
+			min = Vector3.new(-0.65, 0.0, -0.91),
+		},
+		id = 126739095804296,
+		kind = "alien",
+		parts = {
+			Bill = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.43, -0.65),
+				parent = "Head",
+			},
+			Body = {
+				collide = false,
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.17, -0.26),
+				parent = "Body",
+			},
+			LegL = {
+				collide = false,
+				joint = Vector3.new(-0.195, 0.39, -0.065),
+				parent = "Body",
+			},
+			LegR = {
+				collide = false,
+				joint = Vector3.new(0.195, 0.39, -0.065),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.91, 0.65),
+				parent = "Body",
+			},
+			WingL = {
+				collide = false,
+				joint = Vector3.new(-0.52, 1.04, -0.13),
+				parent = "Body",
+			},
+			WingR = {
+				collide = false,
+				joint = Vector3.new(0.52, 1.04, -0.13),
+				parent = "Body",
 			},
 		},
 		voxel = true,
@@ -1768,6 +1879,69 @@ Assets.Models = {
 			},
 		},
 	},
+	Alien_Raccoon = {
+		anims = {
+			idle = "Pet_Raccoon_Idle",
+			walk = "Pet_Raccoon_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.52, 2.08, 1.82),
+			min = Vector3.new(-0.52, 0.0, -1.69),
+		},
+		id = 103381768574055,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.39, 1.82, -0.975),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.39, 1.82, -0.975),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.04, -0.78),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.52, 0.52),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.52, 0.52),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.52, -0.52),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.52, -0.52),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.91, 0.78),
+				parent = "Body",
+			},
+			Tail2 = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.91, 1.3),
+				parent = "Tail",
+			},
+		},
+		voxel = true,
+	},
 	Alien_ShadowDusty = {
 		bounds = {
 			max = Vector3.new(0.816, 2.22, 0.729),
@@ -2135,6 +2309,74 @@ Assets.Models = {
 				parent = "Zone",
 			},
 		},
+	},
+	Alien_Squirrel = {
+		anims = {
+			idle = "Pet_Squirrel_Idle",
+			walk = "Pet_Squirrel_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.52, 1.95, 1.17),
+			min = Vector3.new(-0.52, 0.0, -1.43),
+		},
+		id = 107654215011932,
+		kind = "alien",
+		parts = {
+			Acorn = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.39, -0.78),
+				parent = "Body",
+			},
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.325, 1.56, -0.845),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.325, 1.56, -0.845),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.91, -0.65),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.39, 0.39),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.39, 0.39),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.39, -0.39),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.39, -0.39),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.65, 0.52),
+				parent = "Body",
+			},
+			Tail2 = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.17, 0.78),
+				parent = "Tail",
+			},
+		},
+		voxel = true,
 	},
 	Alien_StarWhale = {
 		bounds = {
@@ -3956,12 +4198,20 @@ Assets.Animations = {
 	Egg_MythicIdle = 101861978498535,
 	Egg_RareIdle = 75646233175758,
 	Egg_UncommonIdle = 77677946832650,
+	Pet_Bunny_Idle = 105761799747906,
+	Pet_Bunny_Walk = 138731393273656,
 	Pet_Cat_Idle = 116879062487754,
 	Pet_Cat_Walk = 107848775286331,
 	Pet_Dog_Idle = 137526014819773,
 	Pet_Dog_Walk = 135950191965326,
+	Pet_Duck_Idle = 91610326371606,
+	Pet_Duck_Walk = 80574806898586,
 	Pet_Happy = 104759341584430,
 	Pet_Idle = 90304779560671,
+	Pet_Raccoon_Idle = 122273785089414,
+	Pet_Raccoon_Walk = 92497386642774,
+	Pet_Squirrel_Idle = 115743019468626,
+	Pet_Squirrel_Walk = 92620001039536,
 	Pet_Walk = 140251033269648,
 	Player_Hold = 129888683850993,
 	Player_Sweep = 98110507730768,
