@@ -564,71 +564,91 @@ def hud():
 
 
 # ---------------------------------------------------------------- Shop
-SHOP_CELL = (250, 236)  # 3 cards per row in the 778 px wide list
+SHOP_TABS_W = 150  # category tabs down the left side
+SHOP_CELL = (196, 232)  # 3 cards per row in the 612 px wide grid
 
 
 def shop():
-    """One scrolling page (Steal an Egg style): special offers on top, then server boosts,
-    gamepasses, tools, eggs and cash packs at the bottom. ShopController clones Section and
-    Card for each block and sizes each section to its rows."""
-    featured = plate("Featured", U(1, 0, 0, 160), tint=BG, stud=None, LayoutOrder=1, Visible=False, children=[
+    """Shop (Pet Sim style): category tabs down the left, one scrolling page on the right.
+    Special offers on top, then server boosts, gamepasses, tools, eggs and cash. Tapping a
+    tab scrolls to its section; the tab of the section you're looking at stays lit.
+    Cards are tinted in their section's colour with a big icon on a light burst, the name,
+    a short line and a price button. ShopController clones Tab, Section and Card."""
+    tab = button("Template", U(1, 0, 0, 58), color=HEADER, stroke=3, Visible=False, children=[
+        icon("Icon", "Star", 40, U(0, 6, 0.5, 0), (0, 0.5)),
+        text("Label", "Tab", U(1, -54, 1, -6), U(0, 50, 0.5, 0), (0, 0.5), ts=19, display=True, stroke=2.5, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 19, "MinTextSize": 7})]),
+        frame("Lit", U(0, 6, 1, 0), U(1, 0, 0, 0), (1, 0), bg=WHITE, Visible=False, ZIndex=4),
+    ])
+    tabs = plate("Tabs", U(0, SHOP_TABS_W, 1, -88), U(0, 12, 0, 76), tint="#E3E7EF", stroke=3, children=[
+        frame("List", U(1, -12, 1, -12), U(0, 6, 0, 6), children=[vlist(8), tab]),
+    ])
+    featured = plate("Featured", U(1, 0, 0, 150), tint=BG, LayoutOrder=1, Visible=False, children=[
         node("Banner", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("BannerStarter"), ScaleType="Crop", ZIndex=1)),
-        plate("Tag", U(0, 150, 0, 30), U(0, 14, 0, 12), tint=BADGE_RED, stroke=3, stud=None, ZIndex=3, children=[
+        plate("Tag", U(0, 150, 0, 28), U(0, 12, 0, 10), tint=BADGE_RED, stroke=3, ZIndex=3, children=[
             text("Label", "SPECIAL OFFER", U(1, 0, 1, 0), ts=16, display=True, stroke=2, ZIndex=4),
         ]),
-        text("Title", "Starter Pack", U(0.6, 0, 0, 40), U(0, 16, 0, 46), ts=34, display=True, stroke=3, xa="Left", ZIndex=3),
-        text("Desc", "", U(0.6, 0, 0, 44), U(0, 16, 0, 88), ts=18, heavy=True, stroke=2.5, xa="Left", ya="Top", ZIndex=3,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 11})]),
-        text("Note", "One time only", U(0, 170, 0, 22), U(1, -14, 0, 14), (1, 0), ts=16, display=True, stroke=2.5, xa="Right",
+        text("Title", "Starter Pack", U(0.6, 0, 0, 40), U(0, 14, 0, 42), ts=34, display=True, stroke=3, xa="Left", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 34, "MinTextSize": 10})]),
+        text("Desc", "", U(0.55, 0, 0, 44), U(0, 14, 0, 84), ts=18, heavy=True, stroke=2.5, xa="Left", ya="Top", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 8})]),
+        text("Note", "One time only", U(0, 170, 0, 22), U(1, -12, 0, 12), (1, 0), ts=16, display=True, stroke=2.5, xa="Right",
              color=PREMIUM, ZIndex=3),
-        button("Buy", U(0, 170, 0, 56), U(1, -14, 1, -14), (1, 1), color=PREMIUM, label="", ts=28, label_color=INK, ZIndex=3),
+        button("Buy", U(0, 170, 0, 54), U(1, -12, 1, -12), (1, 1), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
     ])
     # A limited offer the game made you (backpack full, rare egg growing...): stays here for a while.
-    offer = plate("Offer", U(1, 0, 0, 108), tint="#FF5FA2", stud=0.25, Visible=False, children=[
-        node("Glow", "ImageLabel", base(U(0, 150, 0, 150), U(0, 52, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
+    offer = plate("Offer", U(1, 0, 0, 104), tint="#FF5FA2", Visible=False, children=[
+        node("Glow", "ImageLabel", base(U(0, 140, 0, 140), U(0, 50, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
                                         ImageColor3=WHITE, ImageTransparency=0.35, ZIndex=1)),
-        icon("Icon", "Star", 82, U(0, 52, 0.5, 0), (0.5, 0.5)),
-        plate("Tag", U(0, 150, 0, 26), U(0, 104, 0, 10), tint=BADGE_RED, stroke=3, stud=None, ZIndex=3, children=[
+        icon("Icon", "Star", 78, U(0, 50, 0.5, 0), (0.5, 0.5)),
+        plate("Tag", U(0, 140, 0, 26), U(0, 98, 0, 10), tint=BADGE_RED, stroke=3, ZIndex=3, children=[
             text("Label", "LIMITED OFFER", U(1, 0, 1, 0), ts=15, display=True, stroke=2, ZIndex=4),
         ]),
-        text("Timer", "", U(0, 120, 0, 26), U(0, 262, 0, 10), ts=17, display=True, stroke=2.5, xa="Left", color=PREMIUM, ZIndex=3),
-        text("Title", "", U(1, -310, 0, 30), U(0, 104, 0, 38), ts=24, display=True, stroke=3, xa="Left", ZIndex=3,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 24, "MinTextSize": 12})]),
-        text("Desc", "", U(1, -310, 0, 34), U(0, 104, 0, 68), ts=15, heavy=True, stroke=2, xa="Left", ya="Top", ZIndex=3,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 10})]),
-        button("Buy", U(0, 170, 0, 56), U(1, -14, 0.5, 0), (1, 0.5), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
+        text("Timer", "", U(0, 120, 0, 26), U(0, 246, 0, 10), ts=17, display=True, stroke=2.5, xa="Left", color=PREMIUM, ZIndex=3),
+        text("Title", "", U(1, -290, 0, 30), U(0, 98, 0, 38), ts=24, display=True, stroke=3, xa="Left", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 24, "MinTextSize": 8})]),
+        text("Desc", "", U(1, -290, 0, 30), U(0, 98, 0, 68), ts=16, heavy=True, stroke=2, xa="Left", ya="Top", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+        button("Buy", U(0, 170, 0, 54), U(1, -12, 0.5, 0), (1, 0.5), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
     ])
     cw, ch = SHOP_CELL
+    # Section: a title line with the section's icon and a thick colour rule under it.
     section = frame("Section", U(1, 0, 0, 300), Visible=False, children=[
-        plate("Header", U(1, 0, 0, 44), tint=HEADER, stud=0.3, children=[
-            icon("Icon", "Star", 34, U(0, 8, 0.5, 0), (0, 0.5)),
-            text("Title", "Section", U(0.6, 0, 1, 0), U(0, 50, 0, 0), ts=24, display=True, stroke=3, xa="Left"),
-            text("Note", "", U(0.5, -20, 1, 0), U(1, -12, 0, 0), (1, 0), ts=15, display=True, stroke=2.5, xa="Right", color=PREMIUM),
-        ]),
-        frame("Grid", U(1, 0, 1, -54), U(0, 0, 0, 54), children=[
+        icon("Icon", "Star", 40, U(0, 0, 0, 0)),
+        text("Title", "Section", U(0.6, -50, 0, 40), U(0, 48, 0, 0), ts=28, color=INK, display=True, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 10})]),
+        text("Note", "", U(0.4, 0, 0, 40), U(1, 0, 0, 0), (1, 0), ts=17, color=SUB, display=True, xa="Right",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 7})]),
+        frame("Rule", U(1, 0, 0, 5), U(0, 0, 0, 42), bg=HEADER),
+        frame("Grid", U(1, 0, 1, -56), U(0, 0, 0, 56), children=[
             node("Layout", "UIGridLayout", {"CellSize": U(0, cw, 0, ch), "CellPadding": U(0, 12, 0, 12), "SortOrder": "LayoutOrder",
                                             "HorizontalAlignment": "Left"}),
         ]),
     ])
-    card = plate("Card", U(0, cw, 0, ch), tint=WHITE, stud=0.2, Visible=False, children=[
-        node("Glow", "ImageLabel", base(U(0, 140, 0, 140), U(0.5, 0, 0, 46), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
-                                        ImageColor3=PREMIUM, ImageTransparency=0.45, ZIndex=1)),
-        icon("Icon", "Shop", 76, U(0.5, 0, 0, 8), (0.5, 0)),
-        plate("Tag", U(0, 110, 0, 26), U(0, 8, 0, 8), tint=BADGE_RED, stroke=3, stud=None, Visible=False, ZIndex=4, children=[
-            text("Label", "BEST", U(1, 0, 1, 0), ts=15, display=True, stroke=2, ZIndex=5),
+    card = plate("Card", U(0, cw, 0, ch), tint=HEADER, stroke=3, Visible=False, children=[
+        # Light burst behind the icon, a darker band at the bottom for the price.
+        node("Glow", "ImageLabel", base(U(0, 170, 0, 170), U(0.5, 0, 0, 58), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
+                                        ImageColor3=WHITE, ImageTransparency=0.25, ZIndex=1)),
+        frame("Band", U(1, 0, 0, 62), U(0, 0, 1, 0), (0, 1), bg=INK, BackgroundTransparency=0.55, ZIndex=1),
+        icon("Icon", "Shop", 92, U(0.5, 0, 0, 10), (0.5, 0)),
+        plate("Tag", U(0, 104, 0, 24), U(0, -4, 0, 6), tint=BADGE_RED, stroke=2.5, Visible=False, ZIndex=4, children=[
+            text("Label", "BEST", U(1, -6, 1, 0), U(0, 3, 0, 0), ts=15, display=True, stroke=2, ZIndex=5,
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 7})]),
         ]),
         # Name and Desc shrink to fit their boxes, so long names ("16x Server Luck (15 min)")
-        # and descriptions never run into the Buy button.
-        text("Name", "Item", U(1, -16, 0, 40), U(0.5, 0, 0, 86), (0.5, 0), ts=20, color=INK, display=True,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 12})]),
-        text("Desc", "", U(1, -16, 0, 46), U(0.5, 0, 0, 128), (0.5, 0), ts=14, color=SUB, heavy=True, ya="Top",
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 14, "MinTextSize": 9})]),
-        button("Buy", U(1, -20, 0, 44), U(0.5, 0, 1, -10), (0.5, 1), color=SUCCESS, label="", ts=22),
-        button("Gift", U(0, 44, 0, 44), U(1, -10, 1, -10), (1, 1), color="#FF7EB6", ico="Gift", ico_px=34, Visible=False),
+        # never run into the price.
+        text("Name", "Item", U(1, -12, 0, 28), U(0.5, 0, 0, 106), (0.5, 0), ts=21, display=True, stroke=2.5, ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 21, "MinTextSize": 8})]),
+        text("Desc", "", U(1, -14, 0, 36), U(0.5, 0, 0, 134), (0.5, 0), ts=16, color="#F1F4FA", heavy=True, stroke=1.5,
+             ya="Top", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+        button("Buy", U(1, -16, 0, 46), U(0.5, 0, 1, -8), (0.5, 1), color=SUCCESS, label="", ts=22, ZIndex=3),
+        button("Gift", U(0, 46, 0, 46), U(1, -8, 1, -8), (1, 1), color="#FF7EB6", ico="Gift", ico_px=34, Visible=False, ZIndex=3),
     ])
-    lst = scroller("List", U(1, -24, 1, -86), U(0, 12, 0, 74), [vlist(14), padding(4, 14, 4, 10), featured, offer, section])
-    empty = text("Empty", "Nothing here right now. Check back soon!", U(1, -40, 0, 60), U(0.5, 0, 0.5, 0), (0.5, 0.5), ts=20, color=SUB,
-                 heavy=True, Visible=False)
+    lst = scroller("List", U(1, -(SHOP_TABS_W + 30), 1, -84), U(0, SHOP_TABS_W + 22, 0, 74),
+                   [vlist(16), padding(4, 14, 4, 12), featured, offer, section])
+    empty = text("Empty", "Nothing here right now. Check back soon!", U(1, -(SHOP_TABS_W + 60), 0, 60),
+                 U(0, SHOP_TABS_W + 40, 0.5, 0), (0, 0.5), ts=20, color=SUB, heavy=True, Visible=False)
     gift_row = button("Template", U(1, -10, 0, 46), color=HEADER, label="Player", ts=18, stroke=3, Visible=False)
     gift = plate("GiftPicker", U(0, 380, 0, 330), U(0.5, 0, 0.5, 20), (0.5, 0.5), SURFACE, Visible=False, ZIndex=10, children=[
         plate("Header", U(1, 0, 0, 52), tint="#FF7EB6", children=[
@@ -639,7 +659,7 @@ def shop():
         scroller("List", U(1, -24, 1, -72), U(0, 12, 0, 62), [vlist(8), padding(2), gift_row]),
         text("Empty", "No one else is here yet.", U(1, -24, 0, 40), U(0, 12, 0.5, 0), ts=18, color=SUB, heavy=True, Visible=False),
     ])
-    write("Shop", screen([dim(), window(WIN_W, WIN_H, "Shop", "Shop", [lst, card, empty, gift], header="#E9A21F")],
+    write("Shop", screen([dim(), window(WIN_W, WIN_H, "Shop", "Shop", [tabs, lst, card, empty, gift], header="#E9A21F")],
                          order=10, enabled=False))
 
 

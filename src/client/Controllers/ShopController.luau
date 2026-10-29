@@ -1,7 +1,9 @@
 --!strict
--- Shop: one scrolling page (Steal an Egg style). Special offers sit on top (the Starter
--- Pack banner and any limited offer the game made you in the last few minutes), then
--- server boosts, gamepasses, tools, eggs, and cash packs at the bottom. Cars are sold in
+-- Shop: category tabs down the left and one scrolling page on the right. Special offers
+-- sit on top (the Starter Pack banner and any limited offer the game made you in the last
+-- few minutes), then server boosts, gamepasses, tools, eggs, and cash packs at the bottom.
+-- A tab scrolls to its section, and the tab of the section in view stays lit. Cards are
+-- tinted in their section's colour. Cars are sold in
 -- the Garage. Cash prices are green buttons, Robux prices are gold with the Robux glyph.
 -- Robux items whose ID is still 0 are hidden. Giftable items have a pink gift button.
 -- The Shop button on the rail shows how many special offers are up right now.
@@ -29,12 +31,12 @@ local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(27, 31, 58)
 
 -- Layout numbers shared with tools/gen_ui.py shop().
-local LIST_GAP = 14
+local LIST_GAP = 16
 local LIST_TOP_PAD = 4
-local FEATURED_H = 160
-local OFFER_H = 108
-local HEADER_H = 54
-local CELL_H = 236 -- SHOP_CELL in tools/gen_ui.py
+local FEATURED_H = 150
+local OFFER_H = 104
+local HEADER_H = 56
+local CELL_H = 232 -- SHOP_CELL in tools/gen_ui.py
 local CELL_GAP = 12
 local COLUMNS = 3
 
@@ -68,6 +70,9 @@ local TAGS = {
 	VIP = "POPULAR",
 }
 
+-- Short names for the tabs (the section titles are too long for them).
+local TAB_NAMES = { Boosts = "Boosts", Passes = "Passes", Tools = "Tools", Eggs = "Eggs", Cash = "Cash", Offers = "Offers" }
+
 local PASS_ICONS = {
 	Cash2x = "Icon_Cash",
 	AutoSweep = "Icon_Auto",
@@ -93,6 +98,10 @@ local giftList: ScrollingFrame
 local giftTemplate: TextButton
 local giftEmpty: TextLabel
 local shopBadge: Frame?
+local tabList: Frame
+local tabTemplate: TextButton
+local tabs: { { key: string, button: TextButton } } = {}
+local litTab: string? = nil
 local sectionTop: { [string]: number } = {}
 local offerTimers: { { Label: TextLabel, Expires: number } } = {}
 
@@ -260,7 +269,7 @@ end
 
 local function sections(data): { Section }
 	return {
-		{ Key = "Boosts", Title = "Server Boosts", Icon = "Icon_Luck", Color = Color3.fromRGB(233, 162, 31), Note = "Everyone on the server gets it!", Items = boostItems(data) },
+		{ Key = "Boosts", Title = "Server Boosts", Icon = "Icon_Luck", Color = Color3.fromRGB(255, 128, 48), Note = "Everyone on the server gets it!", Items = boostItems(data) },
 		{ Key = "Passes", Title = "Gamepasses", Icon = "Icon_Star", Color = Color3.fromRGB(155, 107, 255), Note = "Yours forever", Items = passItems(data) },
 		{ Key = "Tools", Title = "Tools", Icon = "Icon_Tool", Color = Color3.fromRGB(76, 141, 255), Note = "", Items = toolItems(data) },
 		{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Color = Color3.fromRGB(255, 95, 162), Note = "", Items = eggItems(data) },
@@ -370,15 +379,16 @@ local function setPrice(buy: GuiButton, price: string, color: Color3)
 	end
 end
 
-local function buildCard(item: Item, order: number, glow: Color3): Frame
+local function buildCard(item: Item, order: number, color: Color3): Frame
 	local card = cardTemplate:Clone()
 	card.Name = "Card"
 	card.LayoutOrder = order
 	card.Visible = true
+	-- Locked or owned cards go grey so the ones you can buy stand out.
+	tint(card, if item.Enabled then color else GREY)
 	Ui.find(card, "Name").Text = item.Name
 	Ui.find(card, "Desc").Text = item.Desc
 	Ui.find(card, "Icon").Image = AssetLibrary.image(item.Icon or "Icon_Shop")
-	Ui.find(card, "Glow").ImageColor3 = glow
 	local tag = Ui.find(card, "Tag") :: Frame
 	tag.Visible = item.Tag ~= nil
 	if item.Tag then
@@ -396,8 +406,8 @@ local function buildCard(item: Item, order: number, glow: Color3): Frame
 	if giftKey then
 		-- Buy button makes room for the gift button on its right.
 		buy.AnchorPoint = Vector2.new(0, 1)
-		buy.Position = UDim2.new(0, 10, 1, -10)
-		buy.Size = UDim2.new(1, -74, 0, 44)
+		buy.Position = UDim2.new(0, 8, 1, -8)
+		buy.Size = UDim2.new(1, -64, 0, 46)
 		Ui.button(gift, function()
 			openGiftPicker(giftKey)
 		end)
@@ -415,6 +425,63 @@ local function renderFeatured(data): boolean
 		Ui.setText(Ui.find(featured, "Buy"), robuxPrice(def.Price))
 	end
 	return show
+end
+
+local function setLit(key: string?)
+	if key == litTab then
+		return
+	end
+	litTab = key
+	for _, t in tabs do
+		local on = t.key == key
+		local lit = t.button:FindFirstChild("Lit") :: GuiObject?
+		if lit then
+			lit.Visible = on
+		end
+		local stroke = t.button:FindFirstChild("Stroke") :: UIStroke?
+		if stroke then
+			stroke.Color = if on then WHITE else INK
+		end
+	end
+end
+
+-- Lights the tab of the section at the top of the list.
+local function followScroll()
+	local y = list.CanvasPosition.Y + 40
+	local best, bestTop = nil, -math.huge
+	for key, top in sectionTop do
+		if top <= y and top > bestTop then
+			best, bestTop = key, top
+		end
+	end
+	setLit(best or (tabs[1] and tabs[1].key))
+end
+
+local scrollTo: (string?) -> ()
+
+local function buildTabs(entries: { { key: string, title: string, icon: string, color: Color3 } })
+	for _, t in tabs do
+		t.button:Destroy()
+	end
+	table.clear(tabs)
+	litTab = nil
+	for i, entry in entries do
+		local button = tabTemplate:Clone()
+		button.Name = "Tab_" .. entry.key
+		button.LayoutOrder = i
+		button.Visible = true
+		tint(button, entry.color)
+		Ui.setText(button, TAB_NAMES[entry.key] or entry.title)
+		Ui.find(button, "Icon").Image = AssetLibrary.image(entry.icon)
+		button.Parent = tabList
+		local key = entry.key
+		Ui.button(button, function()
+			scrollTo(key)
+			setLit(key)
+		end)
+		table.insert(tabs, { key = key, button = button })
+	end
+	followScroll()
 end
 
 local function render()
@@ -435,11 +502,14 @@ local function render()
 	table.clear(offerTimers)
 	local y = LIST_TOP_PAD
 	local anything = false
+	local tabEntries = {}
 	if renderFeatured(data) then
+		sectionTop.Offers = y
 		y += FEATURED_H + LIST_GAP
 		anything = true
 	end
 	for i, offer in liveOffers(data) do
+		sectionTop.Offers = sectionTop.Offers or y
 		local row = offerTemplate:Clone()
 		row.Name = "Offer_" .. offer.Key
 		row:SetAttribute("Built", true)
@@ -468,11 +538,11 @@ local function render()
 		frame:SetAttribute("Built", true)
 		frame.LayoutOrder = 100 + i
 		frame.Visible = true
-		local header = Ui.find(frame, "Header") :: Frame
-		tint(header, section.Color)
-		Ui.find(header, "Title").Text = section.Title
-		Ui.find(header, "Note").Text = section.Note
-		Ui.find(header, "Icon").Image = AssetLibrary.image(section.Icon)
+		Ui.find(frame, "Rule").BackgroundColor3 = section.Color
+		Ui.find(frame, "Title").Text = section.Title
+		Ui.find(frame, "Note").Text = section.Note
+		Ui.find(frame, "Icon").Image = AssetLibrary.image(section.Icon)
+		table.insert(tabEntries, { key = section.Key, title = section.Title, icon = section.Icon, color = section.Color })
 		local grid = Ui.find(frame, "Grid") :: Frame
 		for n, item in section.Items do
 			buildCard(item, n, section.Color).Parent = grid
@@ -485,6 +555,20 @@ local function render()
 		frame.Parent = list
 	end
 	emptyLabel.Visible = not anything
+	if sectionTop.Offers then
+		table.insert(tabEntries, 1, { key = "Offers", title = "Offers", icon = "Icon_Star", color = Color3.fromRGB(255, 77, 94) })
+	end
+	local tabSig = {}
+	for _, entry in tabEntries do
+		table.insert(tabSig, entry.key)
+	end
+	local sig = table.concat(tabSig, ",")
+	if sig ~= tabList:GetAttribute("Sig") or #tabs == 0 then
+		tabList:SetAttribute("Sig", sig)
+		buildTabs(tabEntries)
+	else
+		followScroll()
+	end
 end
 
 local function tickTimers()
@@ -498,7 +582,7 @@ local function tickTimers()
 	return expired
 end
 
-local function scrollTo(section: string?)
+function scrollTo(section: string?)
 	local top = if section then sectionTop[section] else 0
 	if top == nil then
 		return
@@ -549,6 +633,8 @@ function ShopController:Init(controllers)
 	giftTemplate = Ui.find(gui, "Window.GiftPicker.List.Template")
 	giftEmpty = Ui.find(gui, "Window.GiftPicker.Empty")
 	shopBadge = Ui.find(Ui.screen("Hud"), "Rail.ShopButton.Badge")
+	tabList = Ui.find(gui, "Window.Tabs.List")
+	tabTemplate = Ui.find(gui, "Window.Tabs.List.Template")
 end
 
 function ShopController:Start()
@@ -564,6 +650,7 @@ function ShopController:Start()
 	Ui.button(Ui.find(gui, "Window.GiftPicker.Close"), function()
 		giftPicker.Visible = false
 	end)
+	list:GetPropertyChangedSignal("CanvasPosition"):Connect(followScroll)
 	-- Income changes cash every second; only rebuild when something the page shows changed.
 	local lastSignature = ""
 	State.Changed:Connect(function(data)
