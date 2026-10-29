@@ -364,8 +364,7 @@ def rainbow_moon():
     print("wrote RainbowMoon")
 
 
-for f in (rain, snow, leaf, glow, star, ring, trail, rainbow, aurora, blood_moon, note,
-          disco_tiles, confetti, rain_sheet, scorch, spot, droplet, rainbow_moon):
+# The rain streak, splash and the moons now come from fx2.py (run it after this file).
+for f in (snow, leaf, glow, star, ring, trail, rainbow, aurora, note,
+          disco_tiles, confetti, rain_sheet, scorch, spot, droplet):
     f()
-moon("GoldMoon", (255, 205, 70), (225, 160, 40), (255, 190, 60))
-moon("MegaMoon", (235, 240, 255), (190, 200, 225), (180, 210, 255))
