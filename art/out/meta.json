@@ -5694,7 +5694,7 @@
    3.78,
    1.35
   ],
-  "tris": 9984
+  "tris": 11288
  },
  "Vehicle_HoverSweeper": {
   "bounds": {
@@ -5757,13 +5757,13 @@
    4.2,
    1.5
   ],
-  "tris": 5840
+  "tris": 6728
  },
  "Vehicle_MoonBuggy": {
   "bounds": {
    "max": [
     3.92,
-    6.44,
+    6.21,
     5.865
    ],
    "min": [
@@ -5820,7 +5820,7 @@
    3.22,
    1.15
   ],
-  "tris": 11060
+  "tris": 12400
  },
  "Vehicle_MoonCrawler": {
   "bounds": {
@@ -5883,13 +5883,13 @@
    5.04,
    1.8
   ],
-  "tris": 10296
+  "tris": 11600
  },
  "Vehicle_RocketSweeper": {
   "bounds": {
    "max": [
     10.956,
-    11.0,
+    9.13,
     14.08
    ],
    "min": [
@@ -5946,7 +5946,7 @@
    6.16,
    2.2
   ],
-  "tris": 9882
+  "tris": 11186
  },
  "Vehicle_SolarRover": {
   "bounds": {
@@ -6009,7 +6009,7 @@
    5.6,
    2.0
   ],
-  "tris": 11448
+  "tris": 13248
  },
  "Vehicle_SweeperCart": {
   "bounds": {
@@ -6072,7 +6072,7 @@
    2.8,
    1.0
   ],
-  "tris": 9384
+  "tris": 10940
  },
  "ZoneGate": {
   "bounds": {

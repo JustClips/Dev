@@ -2829,7 +2829,7 @@ Assets.Models = {
 			max = Vector3.new(4.61, 6.777, 6.885),
 			min = Vector3.new(-4.61, -0.027, -8.302),
 		},
-		id = 125228503038373,
+		id = 78243046900871,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2862,7 +2862,7 @@ Assets.Models = {
 			max = Vector3.new(5.25, 5.987, 7.65),
 			min = Vector3.new(-5.25, 0.0, -9.225),
 		},
-		id = 134841130831606,
+		id = 72240447380338,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2892,10 +2892,10 @@ Assets.Models = {
 	},
 	Vehicle_MoonBuggy = {
 		bounds = {
-			max = Vector3.new(3.92, 6.44, 5.865),
+			max = Vector3.new(3.92, 6.21, 5.865),
 			min = Vector3.new(-3.92, -0.023, -7.073),
 		},
-		id = 133923013850111,
+		id = 118398449501138,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2928,7 +2928,7 @@ Assets.Models = {
 			max = Vector3.new(6.28, 11.34, 9.18),
 			min = Vector3.new(-6.28, -0.036, -11.07),
 		},
-		id = 100663684263414,
+		id = 98428431878820,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2958,10 +2958,10 @@ Assets.Models = {
 	},
 	Vehicle_RocketSweeper = {
 		bounds = {
-			max = Vector3.new(10.956, 11.0, 14.08),
+			max = Vector3.new(10.956, 9.13, 14.08),
 			min = Vector3.new(-10.956, -0.044, -13.53),
 		},
-		id = 102904479407677,
+		id = 101851130950472,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2994,7 +2994,7 @@ Assets.Models = {
 			max = Vector3.new(12.2, 11.6, 10.2),
 			min = Vector3.new(-12.2, -0.04, -12.3),
 		},
-		id = 134137234844886,
+		id = 104187341689312,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -3027,7 +3027,7 @@ Assets.Models = {
 			max = Vector3.new(3.402, 5.425, 5.1),
 			min = Vector3.new(-3.402, -0.02, -6.15),
 		},
-		id = 81737068918542,
+		id = 90323898930348,
 		kind = "vehicle",
 		parts = {
 			Body = {
