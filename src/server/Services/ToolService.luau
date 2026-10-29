@@ -274,7 +274,7 @@ local function buildVehicle(player: Player, def): Model
 	brush.Color = Color3.fromRGB(255, 230, 120)
 	brush.Material = Enum.Material.Fabric
 	brush.CanCollide = false
-	attach(brush, CFrame.new(0, -0.3 * s, -5 * s))
+	attach(brush, CFrame.new(0, -0.1 * s, -5 * s)) -- bottom level with the chassis bottom
 
 	for _, x in { -1, 1 } do
 		for _, z in { -1, 1 } do
@@ -284,7 +284,7 @@ local function buildVehicle(player: Player, def): Model
 			wheel.Size = Vector3.new(0.8 * s, 2 * s, 2 * s)
 			wheel.Color = Color3.fromRGB(30, 30, 35)
 			wheel.CanCollide = false
-			attach(wheel, CFrame.new(x * 3.1 * s, -0.4 * s, z * 3 * s))
+			attach(wheel, CFrame.new(x * 3.1 * s, 0.2 * s, z * 3 * s)) -- resting on the ground
 		end
 	end
 
@@ -312,7 +312,8 @@ local function buildVehicle(player: Player, def): Model
 			visual:ScaleTo(k)
 		end
 		visual:SetAttribute("VisualScale", k)
-		local base = chassis.CFrame * CFrame.new(0, -1.4 * s, 0)
+		-- The body stands where the chassis box rests on the ground (its bottom face).
+		local base = chassis.CFrame * CFrame.new(0, -chassis.Size.Y / 2, 0)
 		visual:PivotTo(base)
 		local parts = meta and meta.parts or {}
 		for _, part in visual:GetDescendants() do

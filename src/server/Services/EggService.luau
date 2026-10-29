@@ -15,12 +15,13 @@ local Upgrades = require(Shared.Config.Upgrades)
 local World = require(Shared.Config.World)
 local Zones = require(Shared.Config.Zones)
 local Net = require(Shared.Net)
-local Touch = require(script.Parent.Parent.Lib.Touch)
 
 local EggService = {}
 
 local S: any
 local rng = Random.new()
+local PICKUP_HOLD = 0.35 -- seconds to hold the egg prompt
+local PICKUP_DISTANCE = 10 -- studs
 local eggFolder: Folder
 
 function EggService:GetCarryLimit(player: Player): number
@@ -128,13 +129,15 @@ local function pickup(player: Player, egg: BasePart)
 	if not session or not egg.Parent then
 		return
 	end
-	-- An egg you just dropped stays put for a moment, so you don't grab it straight back.
-	if egg:GetAttribute("DroppedBy") == player.UserId and os.clock() < (egg:GetAttribute("NoPickupUntil") or 0) then
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not root or (root.Position - egg.Position).Magnitude > PICKUP_DISTANCE + 8 then
 		return
 	end
 	local owner = egg:GetAttribute("OwnerUserId")
 	local freeAt = egg:GetAttribute("FreeAt") or 0
 	if owner and owner ~= player.UserId and os.time() < freeAt then
+		Net.fire("Notify", player, `Not yours yet! Free in {math.max(1, freeAt - os.time())}s.`, "Bad")
 		return
 	end
 	local carried = table.clone(session.Runtime.Carried or {})
@@ -164,7 +167,7 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 	local zoneDef = Zones.ById[zone or ""] or Grid.zoneAt(position)
 	local zoneId = if zoneDef then zoneDef.Id else "Landing"
 	local title = if zoneId == "Landing" then `{rarity} Egg` else `{zoneDef.Name} {rarity} Egg`
-	-- The egg entity is an invisible touch box; the Blender egg model sits inside it.
+	-- The egg entity is an invisible box holding the pick-up prompt; the Blender egg model sits inside it.
 	local egg = Instance.new("Part")
 	egg.Name = rarity .. "Egg"
 	egg.Size = Vector3.new(3, 3.4, 3)
@@ -172,6 +175,7 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 	egg.Anchored = true
 	egg.CanCollide = false
 	egg.CanQuery = false
+	egg.CanTouch = false
 	egg.Transparency = 1
 	local visual = AssetLibrary.egg(rarity)
 	visual:PivotTo(CFrame.new(position) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0))
@@ -211,9 +215,19 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 		end)
 	end
 
-	egg.Touched:Connect(Touch.debounced(0.3, function(player)
+	-- Picked up on purpose: walk up to it and hold the prompt (E, or press and hold on touch).
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "PickUp"
+	prompt.ActionText = "Pick up"
+	prompt.ObjectText = title
+	prompt.HoldDuration = PICKUP_HOLD
+	prompt.MaxActivationDistance = PICKUP_DISTANCE
+	prompt.RequiresLineOfSight = false
+	prompt.KeyboardKeyCode = Enum.KeyCode.E
+	prompt.Parent = egg
+	prompt.Triggered:Connect(function(player)
 		pickup(player, egg)
-	end))
+	end)
 	egg.Parent = eggFolder
 	task.delay(Economy.EggDespawnSeconds, function()
 		if egg.Parent then
@@ -273,9 +287,8 @@ function EggService:OnTileCleared(player: Player, zone, position: Vector3)
 end
 
 -- Puts the top egg you're carrying down on the ground in front of you. It stays yours for
--- a while (like a found egg), and you can walk over it again to pick it back up.
+-- a while (like a found egg), and you can pick it back up with the prompt.
 local DROP_AHEAD = 4 -- studs in front of you
-local DROP_HOLD = 1.5 -- seconds before you can pick it back up
 
 function EggService:DropCarried(player: Player): (boolean, string?)
 	local session = S.DataService:GetSession(player)
@@ -301,7 +314,6 @@ function EggService:DropCarried(player: Player): (boolean, string?)
 	local ground = if hit then hit.Position else root.Position - Vector3.new(0, 3, 0)
 	local egg = EggService:SpawnEgg(ground, entry.Rarity, player, entry.Zone)
 	egg:SetAttribute("DroppedBy", player.UserId)
-	egg:SetAttribute("NoPickupUntil", os.clock() + DROP_HOLD)
 	trackTutorialEgg(player, session, egg)
 	setCarried(player, carried)
 	return true, `Dropped your {entry.Rarity} egg`

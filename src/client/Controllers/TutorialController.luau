@@ -37,7 +37,12 @@ type Step = { key: string, text: string, touch: string?, icon: string }
 
 local STEPS: { Step } = {
 	{ key = "Sweep", text = "Sweep the leaves to find an egg!", icon = "Icon_Dust" },
-	{ key = "Egg", text = "You found an egg! Walk into it to pick it up.", icon = "Icon_Egg" },
+	{
+		key = "Egg",
+		text = "You found an egg! Walk up to it and hold E to pick it up.",
+		touch = "You found an egg! Walk up to it and hold the button to pick it up.",
+		icon = "Icon_Egg",
+	},
 	{ key = "Base", text = "Carry the egg home to your base!", icon = "Icon_Base" },
 	{
 		key = "Place",
