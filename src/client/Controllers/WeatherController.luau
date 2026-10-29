@@ -147,28 +147,28 @@ local PRESETS: { [string]: Preset } = {
 		Atmosphere = { Density = 0.45, Color = rgb(120, 20, 30), Decay = rgb(60, 0, 10), Haze = 1.5, Glare = 0.3 },
 		Grade = { Saturation = 0.1, TintColor = rgb(255, 165, 165), Contrast = 0.15 },
 		Clouds = { Color = rgb(90, 20, 25), Cover = 0.5 },
-		Sky = { MoonTextureId = "Vfx_BloodMoon", MoonAngularSize = 24, StarCount = 1500 },
+		Sky = { MoonTextureId = "Vfx_BloodMoon", MoonAngularSize = 0, StarCount = 1500 },
 	},
 	GoldMoon = {
 		Lighting = { Brightness = 1.4, Ambient = rgb(110, 95, 60), OutdoorAmbient = rgb(140, 120, 70), ColorShift_Top = rgb(255, 210, 110) },
 		Atmosphere = { Density = 0.32, Color = rgb(120, 100, 50), Decay = rgb(60, 45, 20), Haze = 1.2, Glare = 0.4 },
 		Grade = { Saturation = 0.15, TintColor = rgb(255, 235, 190) },
 		Clouds = { Color = rgb(120, 100, 60), Cover = 0.4 },
-		Sky = { MoonTextureId = "Vfx_GoldMoon", MoonAngularSize = 22, StarCount = 2500 },
+		Sky = { MoonTextureId = "Vfx_GoldMoon", MoonAngularSize = 0, StarCount = 2500 },
 	},
 	RainbowMoon = {
 		Lighting = { Brightness = 1.4, Ambient = rgb(110, 80, 120), OutdoorAmbient = rgb(130, 100, 150), ColorShift_Top = rgb(255, 170, 240) },
 		Atmosphere = { Density = 0.3, Color = rgb(110, 70, 130), Decay = rgb(50, 30, 80), Haze = 1 },
 		Grade = { Saturation = 0.35, TintColor = rgb(250, 230, 255) },
 		Clouds = { Color = rgb(130, 90, 150), Cover = 0.35 },
-		Sky = { MoonTextureId = "Vfx_RainbowMoon", MoonAngularSize = 22, StarCount = 3000 },
+		Sky = { MoonTextureId = "Vfx_RainbowMoon", MoonAngularSize = 0, StarCount = 3000 },
 	},
 	MegaMoon = {
 		Lighting = { Brightness = 1.6, Ambient = rgb(80, 95, 130), OutdoorAmbient = rgb(110, 125, 165), ColorShift_Top = rgb(200, 225, 255) },
 		Atmosphere = { Density = 0.28, Color = rgb(80, 100, 150), Decay = rgb(30, 45, 90), Haze = 1 },
 		Grade = { TintColor = rgb(225, 235, 255) },
 		Clouds = { Color = rgb(100, 115, 160), Cover = 0.3 },
-		Sky = { MoonTextureId = "Vfx_MegaMoon", MoonAngularSize = 40, StarCount = 3000 },
+		Sky = { MoonTextureId = "Vfx_MegaMoon", MoonAngularSize = 0, StarCount = 3000 },
 	},
 }
 
@@ -186,20 +186,38 @@ local targets: { [string]: any } = {}
 local baseline: { [string]: { [string]: any } } = {}
 local currentPreset: Preset? = nil
 
+local function find(group: string): Instance?
+	if group == "Lighting" then
+		return Lighting
+	elseif group == "Atmosphere" then
+		return Lighting:FindFirstChildOfClass("Atmosphere")
+	elseif group == "Grade" then
+		return Lighting:FindFirstChild("WorldGrade") or Lighting:FindFirstChildOfClass("ColorCorrectionEffect")
+	elseif group == "Clouds" then
+		return Workspace.Terrain:FindFirstChildOfClass("Clouds")
+	elseif group == "Bloom" then
+		return Lighting:FindFirstChildOfClass("BloomEffect")
+	elseif group == "SunRays" then
+		return Lighting:FindFirstChildOfClass("SunRaysEffect")
+	end
+	return Lighting:FindFirstChildOfClass("Sky")
+end
+
+-- Finds the sky objects and remembers the map's own values. Safe to call again: anything
+-- the server hadn't built yet (it builds the sky while the client is starting) is picked
+-- up the next time.
 local function capture()
-	targets.Lighting = Lighting
-	targets.Atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
-	targets.Grade = Lighting:FindFirstChild("WorldGrade") or Lighting:FindFirstChildOfClass("ColorCorrectionEffect")
-	targets.Clouds = Workspace.Terrain:FindFirstChildOfClass("Clouds")
-	targets.Bloom = Lighting:FindFirstChildOfClass("BloomEffect")
-	targets.SunRays = Lighting:FindFirstChildOfClass("SunRaysEffect")
-	targets.Sky = Lighting:FindFirstChildOfClass("Sky")
 	for group, props in PROPS do
 		local target = targets[group]
-		if target then
+		if target and target.Parent then
+			continue
+		end
+		local found = find(group) :: any
+		if found and (found:IsA("ColorCorrectionEffect") == false or found.Name ~= "WeatherFlash") then
+			targets[group] = found
 			baseline[group] = {}
 			for _, prop in props do
-				baseline[group][prop] = target[prop]
+				baseline[group][prop] = found[prop]
 			end
 		end
 	end
@@ -215,6 +233,7 @@ local function skyValue(group: string, prop: string): any
 end
 
 local function applySky(preset: Preset?)
+	capture()
 	currentPreset = preset
 	for group, props in PROPS do
 		local target = targets[group]
@@ -699,74 +718,59 @@ local function motes(scene: Scene, texture: string, color: ColorSequence, rate: 
 	return box
 end
 
--- Rain: two layers of streaks, splashes and bouncing drops on the ground, low mist, and
--- rain curtains in the distance all around (so it rains over the whole map, not just here).
+-- Rain: long stretched streaks (Squash makes each particle tall and thin) in two layers
+-- around the camera, small droplets bouncing off the ground, and rain curtains in the
+-- distance all around (so it rains over the whole map, not just here). No splash rings or
+-- fog blobs: from a normal camera they just read as circles.
 local function rain(scene: Scene, storm: boolean)
 	local slant = WIND * (if storm then 30 else 10)
-	local sky = follower(scene, "RainSky", Vector3.new(170, 1, 170))
+	local sky = follower(scene, "RainSky", Vector3.new(200, 1, 200))
 	emitter(sky, {
 		Texture = img("Vfx_Rain"),
 		Orientation = Enum.ParticleOrientation.VelocityParallel,
 		EmissionDirection = Enum.NormalId.Bottom,
-		Size = seq(if storm then 2 else 1.7),
-		Speed = NumberRange.new(if storm then 135 else 115, if storm then 155 else 130),
-		Lifetime = NumberRange.new(0.6, 0.7),
-		Rate = if storm then 1400 else 1000,
+		Size = seq(if storm then 0.9 else 0.75),
+		Squash = seq(2.4),
+		Speed = NumberRange.new(if storm then 120 else 100, if storm then 140 else 115),
+		Lifetime = NumberRange.new(0.8, 0.9),
+		Rate = if storm then 1600 else 1100,
 		SpreadAngle = Vector2.new(2, 2),
 		Acceleration = slant,
-		Color = ColorSequence.new(rgb(200, 215, 240)),
-		Transparency = seq(0.35),
-		LightEmission = 0.1,
+		Color = ColorSequence.new(rgb(215, 228, 250)),
+		Transparency = seq(0.15),
+		LightEmission = 0.3,
+		LightInfluence = 0.2,
 	})
-	emitter(sky, {
+	-- A few big near streaks so it feels like it's falling right past you.
+	local near = follower(scene, "RainNear", Vector3.new(60, 1, 60))
+	emitter(near, {
 		Texture = img("Vfx_Rain"),
 		Orientation = Enum.ParticleOrientation.VelocityParallel,
 		EmissionDirection = Enum.NormalId.Bottom,
-		Size = seq(3.4),
-		Speed = NumberRange.new(150, 170),
-		Lifetime = NumberRange.new(0.55, 0.6),
-		Rate = if storm then 300 else 180,
+		Size = seq(1.3),
+		Squash = seq(2.8),
+		Speed = NumberRange.new(130, 150),
+		Lifetime = NumberRange.new(0.4, 0.45),
+		Rate = if storm then 260 else 160,
 		SpreadAngle = Vector2.new(2, 2),
 		Acceleration = slant,
-		Color = ColorSequence.new(rgb(225, 235, 250)),
-		Transparency = seq(0.5),
+		Color = ColorSequence.new(rgb(235, 242, 255)),
+		Transparency = seq(0.3),
+		LightEmission = 0.3,
+		LightInfluence = 0.2,
 	})
-	local ground = follower(scene, "RainGround", Vector3.new(100, 0.2, 100))
-	emitter(ground, {
-		Texture = img("Vfx_Ring"),
-		Orientation = Enum.ParticleOrientation.VelocityPerpendicular,
-		EmissionDirection = Enum.NormalId.Top,
-		Size = seq(0.1, 1.4),
-		Speed = NumberRange.new(0.01),
-		Lifetime = NumberRange.new(0.22, 0.32),
-		Rate = if storm then 320 else 240,
-		Color = ColorSequence.new(rgb(225, 238, 255)),
-		Transparency = seq(0.3, 1),
-	})
+	local ground = follower(scene, "RainGround", Vector3.new(90, 0.2, 90))
 	emitter(ground, {
 		Texture = img("Vfx_Droplet"),
 		EmissionDirection = Enum.NormalId.Top,
-		Size = seq(0.22, 0.1),
-		Speed = NumberRange.new(5, 10),
-		Lifetime = NumberRange.new(0.25, 0.4),
+		Size = seq(0.18, 0.08),
+		Speed = NumberRange.new(5, 9),
+		Lifetime = NumberRange.new(0.2, 0.35),
 		SpreadAngle = Vector2.new(35, 35),
 		Acceleration = Vector3.new(0, -60, 0),
-		Rate = if storm then 260 else 180,
-		Color = ColorSequence.new(rgb(220, 235, 255)),
-		Transparency = seq(0.2, 0.8),
-	})
-	emitter(ground, {
-		Texture = "rbxasset://textures/particles/smoke_main.dds",
-		EmissionDirection = Enum.NormalId.Top,
-		Size = seq(14, 22),
-		Speed = NumberRange.new(0.3, 1),
-		Lifetime = NumberRange.new(6, 9),
-		Rate = 5,
-		Acceleration = WIND * 0.8,
-		Color = ColorSequence.new(rgb(200, 210, 225)),
-		Transparency = fadeSeq(0.86),
-		RotSpeed = NumberRange.new(-10, 10),
-		Rotation = NumberRange.new(0, 360),
+		Rate = if storm then 300 else 200,
+		Color = ColorSequence.new(rgb(225, 238, 255)),
+		Transparency = seq(0.25, 0.9),
 	})
 	-- Distant rain curtains: tall scrolling sheets in a ring around the camera.
 	local ring = keep(scene, part("RainCurtains", Vector3.new(1, 1, 1)))
@@ -791,13 +795,15 @@ local function rain(scene: Scene, storm: boolean)
 		beam.Color = ColorSequence.new(if storm then rgb(170, 180, 205) else rgb(205, 215, 235))
 		beam.Transparency = NumberSequence.new({
 			NumberSequenceKeypoint.new(0, 1),
-			NumberSequenceKeypoint.new(0.25, if storm then 0.55 else 0.65),
-			NumberSequenceKeypoint.new(1, if storm then 0.5 else 0.6),
+			NumberSequenceKeypoint.new(0.25, if storm then 0.72 else 0.8),
+			NumberSequenceKeypoint.new(1, if storm then 0.68 else 0.78),
 		})
 		beam.Parent = ring
 	end
 	addUpdate(scene, function(_, at, floor)
-		sky.CFrame = CFrame.new(at + Vector3.new(0, 75, 0) - slant * 0.3)
+		local eye = cameraPosition()
+		sky.CFrame = CFrame.new(Vector3.new(eye.X, floor.Y + 80, eye.Z) - slant * 0.4)
+		near.CFrame = CFrame.new(Vector3.new(eye.X, floor.Y + 55, eye.Z) - slant * 0.2)
 		ground.CFrame = CFrame.new(floor + Vector3.new(0, 0.15, 0))
 		ring.CFrame = CFrame.new(Vector3.new(at.X, floor.Y, at.Z))
 	end)
@@ -879,7 +885,8 @@ local function windy(scene: Scene)
 		Texture = img("Vfx_Rain"),
 		Orientation = Enum.ParticleOrientation.VelocityParallel,
 		EmissionDirection = Enum.NormalId.Right,
-		Size = seq(5),
+		Size = seq(2.5),
+		Squash = seq(-3), -- long and flat: wind streaks fly sideways
 		Speed = NumberRange.new(80, 110),
 		Lifetime = NumberRange.new(1.4, 1.8),
 		Rate = 30,
@@ -1294,20 +1301,54 @@ local function eggRainSky(scene: Scene)
 	motes(scene, "Vfx_Star", ColorSequence.new(rgb(255, 200, 230), rgb(255, 240, 170)), 26, 0.7, 1.5)
 end
 
+-- A big coloured moon (with its halo) hung in the sky where the real moon is, so special
+-- moons really look different. Far away and drawn behind the hills.
+local function bigMoon(scene: Scene, texture: string, studs: number)
+	local holder = keep(scene, part("MoonHolder", Vector3.new(1, 1, 1)))
+	local board = Instance.new("BillboardGui")
+	board.Name = "Moon"
+	board.Size = UDim2.fromScale(studs, studs)
+	board.LightInfluence = 0
+	board.MaxDistance = math.huge
+	board.Parent = holder
+	local image = Instance.new("ImageLabel")
+	image.Size = UDim2.fromScale(1, 1)
+	image.BackgroundTransparency = 1
+	image.Image = img(texture)
+	image.ImageTransparency = 1
+	image.Parent = board
+	TweenService:Create(image, TweenInfo.new(3), { ImageTransparency = 0 }):Play()
+	table.insert(scene.cleanup, function()
+		TweenService:Create(image, TweenInfo.new(2), { ImageTransparency = 1 }):Play()
+	end)
+	addUpdate(scene, function()
+		local dir = Lighting:GetMoonDirection()
+		if dir.Y < -0.05 then
+			-- Below the horizon (it's day): park it high up instead.
+			dir = Vector3.new(0.3, 0.6, -0.7).Unit
+		end
+		holder.CFrame = CFrame.new(cameraPosition() + dir * 1400)
+	end)
+end
+
 local function bloodMoon(scene: Scene)
+	bigMoon(scene, "Vfx_BloodMoon", 260)
 	motes(scene, "Vfx_Glow", ColorSequence.new(rgb(255, 120, 60), rgb(160, 0, 0)), 70, 0.35, 3)
 end
 
 local function goldMoon(scene: Scene)
+	bigMoon(scene, "Vfx_GoldMoon", 240)
 	motes(scene, "Vfx_Glow", ColorSequence.new(rgb(255, 215, 90)), 50, 0.4, 1.2)
 	motes(scene, "Vfx_Star", ColorSequence.new(rgb(255, 230, 140)), 14, 0.7, 0.8)
 end
 
 local function rainbowMoon(scene: Scene)
+	bigMoon(scene, "Vfx_RainbowMoon", 240)
 	motes(scene, "Vfx_Star", RAINBOW, 35, 0.7, 1.5)
 end
 
 local function megaMoon(scene: Scene)
+	bigMoon(scene, "Vfx_MegaMoon", 520)
 	motes(scene, "Vfx_Glow", ColorSequence.new(rgb(190, 220, 255)), 30, 0.4, 1)
 end
 
@@ -1702,8 +1743,11 @@ end
 
 function WeatherController:Start()
 	makeBanner()
-	-- The map's own sky is set up by the server at start; give it a moment to replicate.
-	task.wait(1)
+	-- The map's own sky is built by the server while we start up: wait for it.
+	Lighting:WaitForChild("WorldSky", 15)
+	Lighting:WaitForChild("WorldAtmosphere", 5)
+	Lighting:WaitForChild("WorldGrade", 5)
+	task.wait(0.5)
 	capture()
 	refresh(false)
 	local state = State.serverState
