@@ -27,8 +27,7 @@ STONE = ["DDD3C2", "BFB4A1", "9C917F", "776E61"]   # lit .. shadow (warm cartoon
 GRASS = ["8EDC55", "6CC23E", "52A12F", "3D8226"]   # lit .. shadow
 LIGHT = Vector((0.35, -0.55, 0.76)).normalized()
 
-LENGTH, DEPTH, HEIGHT = 24.0, 14.0, 15.0
-NX = 12                                             # columns along the length (2 studs)
+LENGTH, DEPTH, HEIGHT = 24.0, 16.0, 30.0
 
 
 def band(normal, rnd, wobble=True):
@@ -66,94 +65,92 @@ def make_mesh(name, verts, tris):
     return o
 
 
-# ------------------------------------------------------------------ cliff wall
+# ------------------------------------------------------------------ cliffs
+
+def mesa(a, rnd, center, radius, height, sides=None, tilt=0.0):
+    """One chunky rock mass: an irregular prism with faceted sides (each ring nudged in or
+    out), a strata step, a flat grass top and a grass lip that spills over the edge in uneven
+    drips. Built as one closed mesh, so the grass can't float or leave bare spots."""
+    n = sides or rnd.randint(7, 9)
+    cx, cy = center
+    rx, ry = radius
+    ang = [k * math.tau / n + rnd.uniform(-0.25, 0.25) for k in range(n)]
+    base = [rnd.uniform(0.85, 1.15) for _ in range(n)]
+    h = height
+    step = rnd.uniform(0.4, 0.6) * h
+    drip = [rnd.choice((0.6, 1.0, 1.5, 2.2)) for _ in range(n)]
+    # rings: (height, radius scale, jitter, kind); the lip rings are per point
+    rings = [
+        (lambda k: -1.0, 1.08, 0.06, "stone"),
+        (lambda k: step - 0.6, 1.0, 0.1, "stone"),
+        (lambda k: step + rnd.uniform(-0.8, 0.8), 0.9, 0.05, "stone"),   # strata ledge steps in
+        (lambda k: h - 0.9 - drip[k], 0.88, 0.08, "stone"),
+        (lambda k: h - 0.7 - drip[k] * 0.9, 0.95, 0.0, "grass"),   # bottom of the turf drip
+        (lambda k: h - 0.35, 0.97, 0.0, "grass"),            # lip bulge
+        (lambda k: h, 0.91, 0.0, "grass"),
+    ]
+    verts, ring_idx, ring_kind = [], [], []
+    for zf, sc, jit, kind in rings:
+        idx = []
+        for k in range(n):
+            r = base[k] * sc * (1 + rnd.uniform(-jit, jit))
+            x = cx + math.cos(ang[k]) * rx * r
+            y = cy + math.sin(ang[k]) * ry * r
+            z = zf(k)
+            idx.append(len(verts))
+            verts.append(Vector((x + tilt * z * 0.08, y, z)))
+        ring_idx.append(idx)
+        ring_kind.append(kind)
+    tris, kinds = [], []
+    for r in range(len(rings) - 1):
+        lo, hi = ring_idx[r], ring_idx[r + 1]
+        kind = "grass" if ring_kind[r] == "grass" else "stone"
+        for k in range(n):
+            j = (k + 1) % n
+            tris += [(lo[k], lo[j], hi[j]), (lo[k], hi[j], hi[k])]
+            kinds += [kind, kind]
+    # flat grass top with a slight dome
+    top = ring_idx[-1]
+    c = len(verts)
+    verts.append(Vector((cx, cy, h + 0.3)))
+    for k in range(n):
+        tris.append((top[k], top[(k + 1) % n], c))
+        kinds.append("grass")
+    o = make_mesh("mesa", verts, tris)
+    paint(a, o, kinds, rnd)
+    return o
+
 
 def cliff(name, seed):
+    """A 24-stud stretch of border: a cluster of rock masses in three rows, low ones in front,
+    tall ones behind, each a different height, with gaps and cracks between them and fallen
+    rocks at the foot. Masses run a little past both ends so neighbouring pieces interlock."""
     def make():
         a = Asset(name, "prop")
         use(a)
         rnd = random.Random(seed)
-        xs = [-LENGTH / 2 + LENGTH * i / NX for i in range(NX + 1)]
-
-        def fade(i):              # 0 at both ends, 1 in the middle: ends match every piece
-            t = i / NX
-            return min(1.0, min(t, 1 - t) * 5)
-
-        # rock pillars: neighbouring columns share a pillar now and then
-        pillar, p = [], rnd.uniform(0, 1.2)
-        for i in range(NX + 1):
-            if rnd.random() < 0.8:
-                p = rnd.uniform(0, 2.6)
-            pillar.append(p)
-        top_bump = [0.0] * (NX + 1)
-        for _ in range(3):
-            c, w, h = rnd.uniform(0.2, 0.8) * NX, rnd.uniform(1.5, 3.5), rnd.uniform(-1.2, 2.6)
-            for i in range(NX + 1):
-                top_bump[i] += h * math.exp(-((i - c) / w) ** 2)
-        lip = [rnd.choice((0.9, 1.3, 1.7, 2.3, 3.0)) for _ in range(NX + 1)]
-        strata = rnd.uniform(0.45, 0.6)
-
-        face = -DEPTH / 2                         # the front face line
-
-        def profile(i):
-            """Cross-section at column i: (y, z, kind) from the front foot, up the face,
-            over the top and down the back."""
-            f = fade(i)
-            top = HEIGHT + top_bump[i] * f
-
-            def out(k):
-                return face - pillar[i] * k * f
-
-            lip_low = top - (lip[i] if 0 < i < NX else 1.6)
-            return [
-                (face - 1.5 - 0.7 * f * rnd.random(), -1.0, "stone"),   # talus at the foot
-                (face - 0.9 - 0.4 * f * rnd.random(), 1.4, "stone"),
-                (out(1.0), top * 0.3, "stone"),
-                (out(1.0) + 0.35 * f, top * strata, "stone"),          # strata step
-                (out(0.8), top * strata + 0.4, "stone"),
-                (out(0.6), lip_low - 0.7, "stone"),
-                (face - 0.1, lip_low, "grass"),                        # bottom of the turf lip
-                (face - 0.8, top - 0.5, "grass"),                      # the lip bulges out
-                (face - 0.4, top, "grass"),
-                (face + DEPTH * 0.3, top + 0.35 * f, "grass"),
-                (face + DEPTH * 0.65, top + 0.2 * f, "grass"),
-                (DEPTH / 2, top - 0.2, "grass"),
-                (DEPTH / 2 + 0.4, top * 0.5, "stone"),
-                (DEPTH / 2 + 0.2, -1.0, "stone"),
-            ]
-
-        cols = [profile(i) for i in range(NX + 1)]
-        m = len(cols[0])
-        verts = [Vector((xs[i], y, z)) for i in range(NX + 1) for (y, z, _) in cols[i]]
-        tris, kinds = [], []
-        for i in range(NX):
-            for j in range(m - 1):
-                a0, a1 = i * m + j, i * m + j + 1
-                b0, b1 = (i + 1) * m + j, (i + 1) * m + j + 1
-                kind = "grass" if cols[i][j][2] == "grass" else "stone"
-                if (i + j) % 2:
-                    tris += [(a0, b0, b1), (a0, b1, a1)]
-                else:
-                    tris += [(a0, b0, a1), (b0, b1, a1)]
-                kinds += [kind, kind]
-        # close both ends with the profile polygon (fan from its centre)
-        for i in (0, NX):
-            c = sum((verts[i * m + j] for j in range(m)), Vector()) / m
-            ci = len(verts)
-            verts.append(c)
-            for j in range(m):
-                tris.append((ci, i * m + j, i * m + (j + 1) % m))
-                kinds.append("grass" if cols[i][j][2] == "grass" and cols[i][(j + 1) % m][2] == "grass" else "stone")
-        wall = make_mesh("wall", verts, tris)
-        paint(a, wall, kinds, rnd)
-        # boulders at the foot, varied
-        pieces = [wall]
-        for _ in range(rnd.randint(2, 4)):
-            x = rnd.uniform(-LENGTH / 2 + 3, LENGTH / 2 - 3)
-            s = rnd.uniform(2.4, 4.2)
-            pieces.append(lump(a, rnd, (s * 1.35, s, s * 0.9), (x, face - 1.4 - s * 0.35, -0.4), grass_top=s > 3.2, sub=1))
-        o = join(pieces, "Body")
-        a.part("Body", [o], collide=True)
+        pieces = []
+        rows = (                     # (y of row, radius range, height range, count)
+            (DEPTH * 0.3, (7.0, 9.0), (20, 30), 2),     # back: tall masses and peaks
+            (0.0, (5.5, 7.0), (12, 19), 3),             # middle
+            (-DEPTH * 0.35, (3.6, 5.0), (5, 10), 3),    # front: low shoulders
+        )
+        for y, (r0, r1), (h0, h1), count in rows:
+            for k in range(count):
+                x = -LENGTH / 2 + LENGTH * (k + 0.5) / count + rnd.uniform(-2.0, 2.0)
+                r = rnd.uniform(r0, r1)
+                hgt = rnd.uniform(h0, h1)
+                if rnd.random() < 0.25:
+                    hgt *= 0.7            # a broken-down one now and then
+                pieces.append(mesa(a, rnd, (x, y + rnd.uniform(-1.2, 1.2)), (r * rnd.uniform(0.9, 1.25), r * rnd.uniform(0.75, 1.0)),
+                                   hgt, tilt=rnd.uniform(-1, 1)))
+        # fallen rocks at the foot
+        for _ in range(rnd.randint(3, 5)):
+            x = rnd.uniform(-LENGTH / 2 + 2, LENGTH / 2 - 2)
+            s = rnd.uniform(1.8, 3.6)
+            pieces.append(lump(a, rnd, (s * 1.35, s, s * 0.9), (x, -DEPTH * 0.35 - 3.5 - rnd.uniform(0, 2), -0.4),
+                               grass_top=s > 3.0, sub=1))
+        a.part("Body", pieces, collide=True)
         a.extra["segment"] = {"length": LENGTH, "depth": DEPTH, "height": HEIGHT}
         return a
     return make

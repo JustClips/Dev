@@ -5048,10 +5048,10 @@ Assets.Models = {
 	},
 	Cliff_1 = {
 		bounds = {
-			max = Vector3.new(12.0, 19.44, 7.4),
-			min = Vector3.new(-12.0, -1.0, -11.03),
+			max = Vector3.new(15.765, 24.0, 13.546),
+			min = Vector3.new(-14.819, -1.0, -11.585),
 		},
-		id = 106334597635633,
+		id = 76408303618333,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -5059,17 +5059,17 @@ Assets.Models = {
 			},
 		},
 		segment = {
-			depth = 14.0,
-			height = 15.0,
+			depth = 16.0,
+			height = 30.0,
 			length = 24.0,
 		},
 	},
 	Cliff_2 = {
 		bounds = {
-			max = Vector3.new(12.0, 17.866, 7.4),
-			min = Vector3.new(-12.0, -1.0, -11.787),
+			max = Vector3.new(15.439, 18.857, 12.6),
+			min = Vector3.new(-15.53, -1.0, -11.913),
 		},
-		id = 128237294114914,
+		id = 116448438934555,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -5077,17 +5077,17 @@ Assets.Models = {
 			},
 		},
 		segment = {
-			depth = 14.0,
-			height = 15.0,
+			depth = 16.0,
+			height = 30.0,
 			length = 24.0,
 		},
 	},
 	Cliff_3 = {
 		bounds = {
-			max = Vector3.new(12.0, 15.326, 7.4),
-			min = Vector3.new(-12.0, -1.0, -11.664),
+			max = Vector3.new(16.141, 29.499, 14.146),
+			min = Vector3.new(-17.469, -1.0, -12.142),
 		},
-		id = 74401617642270,
+		id = 90439112541416,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -5095,17 +5095,17 @@ Assets.Models = {
 			},
 		},
 		segment = {
-			depth = 14.0,
-			height = 15.0,
+			depth = 16.0,
+			height = 30.0,
 			length = 24.0,
 		},
 	},
 	Cliff_4 = {
 		bounds = {
-			max = Vector3.new(12.0, 19.959, 7.4),
-			min = Vector3.new(-12.0, -1.0, -11.121),
+			max = Vector3.new(18.105, 25.505, 13.034),
+			min = Vector3.new(-16.857, -1.0, -12.318),
 		},
-		id = 74209602932766,
+		id = 107462340405907,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -5113,8 +5113,8 @@ Assets.Models = {
 			},
 		},
 		segment = {
-			depth = 14.0,
-			height = 15.0,
+			depth = 16.0,
+			height = 30.0,
 			length = 24.0,
 		},
 	},
