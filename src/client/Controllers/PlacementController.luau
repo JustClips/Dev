@@ -5,8 +5,9 @@
 -- (Shared/EggSpots, the same rules the server checks). Click or tap to place it. If you
 -- still have eggs and room, the next best egg is in your hands right away. Q, Backspace,
 -- Cancel or equipping a tool puts it away.
--- Pets from the bag can be held out too (HoldPet): the bar then offers Place in park and
--- Put away, and the Pet Trader buys what you hold.
+-- Pets from the bag or hotbar can be held out too (HoldPet): carry it to your base, then
+-- click or tap anywhere to let it out in your park. Put away (Q) puts it back, and the
+-- Pet Trader buys what you hold.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -14,6 +15,7 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
+local ModelView = require(Client.ModelView)
 local State = require(Client.State)
 local Ui = require(Client.Ui)
 
@@ -43,6 +45,7 @@ local titleLabel: TextLabel
 local subLabel: TextLabel
 local goBase: GuiButton
 local icon: ImageLabel
+local modelView: ViewportFrame
 
 local holding: string? = nil
 local heldPet: string? = nil
@@ -79,6 +82,18 @@ end
 local function parkCentre(cf: CFrame): Vector3
 	local c = (World.Base.ParkMin + World.Base.ParkMax) / 2
 	return cf * Vector3.new(c.X, 0, c.Y)
+end
+
+-- True when you're close enough to your park to let a pet out.
+local function nearBase(): boolean
+	local cf = baseCFrame()
+	local character = Players.LocalPlayer.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not cf or not root then
+		return false
+	end
+	local centre = parkCentre(cf)
+	return (Vector3.new(root.Position.X, centre.Y, root.Position.Z) - centre).Magnitude <= NEAR_BASE
 end
 
 local function clearGhost()
@@ -259,9 +274,11 @@ function PlacementController:HoldPet(uid: string)
 	local passive = PetPassives.short(pet.Id, pet.Huge) -- short form: the full one got cut off
 	subLabel.Text = `{def and def.Rarity or ""} · {Weights.format(kg)}` .. (if passive then ` · {passive}` else "")
 	subLabel.TextColor3 = if rarity then rarity.Color else Color3.new(1, 1, 1)
-	icon.Image = AssetLibrary.image("Icon_Alien")
+	icon.Visible = false
+	modelView.Visible = true
+	ModelView.show(modelView, AssetLibrary.alien(pet.Id, pet.Mutation), "Alien_" .. pet.Id)
 	goBase.Visible = false
-	placePet.Visible = true
+	placePet.Visible = false -- tap anywhere at your base instead (Dev)
 	Ui.setText(cancelButton, "Put away (Q)")
 	gui.Enabled = true
 	Ui.popIn(gui)
@@ -328,7 +345,9 @@ function PlacementController:Hold(uid: string)
 	local size = egg.Size or "Normal"
 	subLabel.Text = `{if size ~= "Normal" then size .. " " else ""}{egg.Rarity} Egg · {Weights.format(egg.Weight or Weights.eggKg(egg.Rarity))} · {left} in bag`
 	subLabel.TextColor3 = Eggs.ByName[egg.Rarity].Color
-	icon.Image = AssetLibrary.image("Icon_Egg")
+	icon.Visible = false
+	modelView.Visible = true
+	ModelView.show(modelView, AssetLibrary.egg(egg.Rarity), "Egg_" .. egg.Rarity)
 	gui.Enabled = true
 	Ui.popIn(gui)
 	if not stepConn then
@@ -391,6 +410,7 @@ function PlacementController:Init(controllers)
 	subLabel = Ui.find(gui, "Bar.Sub")
 	goBase = Ui.find(gui, "Bar.GoBase")
 	icon = Ui.find(gui, "Bar.Icon")
+	modelView = Ui.find(gui, "Bar.Model")
 	placePet = Ui.find(gui, "Bar.PlacePet")
 	cancelButton = Ui.find(gui, "Bar.Cancel")
 end
@@ -399,26 +419,57 @@ function PlacementController:Start()
 	Ui.button(cancelButton, function()
 		PlacementController:Stop()
 	end)
-	Ui.button(placePet, function()
+	-- Let the held pet out in your park (a click or tap anywhere while at your base).
+	local releasing = false
+	local function releasePet()
 		local uid = heldPet
-		if not uid then
+		if not uid or releasing then
 			return
 		end
+		if not nearBase() then
+			toast("Take your pet to your base, then tap anywhere to let it out!", "Info")
+			return
+		end
+		releasing = true
 		local ok, message = invoke("PlacePet", uid)
+		releasing = false
 		if ok then
 			Ui.sound("Pop")
 			stopPet(true)
-			toast("Your pet is on your base now!", "Good")
+			toast("Your pet is in your park now!", "Good")
 		elseif message then
 			toast(message, "Bad")
 		end
+	end
+	Ui.button(placePet, function()
+		task.spawn(releasePet)
 	end)
+	-- The bar says what to do: go home first, or tap to let it out.
+	task.spawn(function()
+		while true do
+			task.wait(0.3)
+			if heldPet and not holding and gui.Enabled then
+				local near = nearBase()
+				titleLabel.Text = if near then "Tap anywhere to let it out!" else "Take it to your base"
+				goBase.Visible = not near
+			end
+		end
+	end)
+	local petTouch: Vector2? = nil
 	Ui.button(goBase, function()
 		Net.func("Teleport"):InvokeServer("Base")
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if heldPet and not holding and (input.KeyCode == Enum.KeyCode.Q or input.KeyCode == Enum.KeyCode.Backspace) then
 			stopPet()
+			return
+		end
+		if heldPet and not holding and not processed then
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				task.spawn(releasePet)
+			elseif input.UserInputType == Enum.UserInputType.Touch then
+				petTouch = Vector2.new(input.Position.X, input.Position.Y)
+			end
 			return
 		end
 		if not holding then
@@ -440,6 +491,15 @@ function PlacementController:Start()
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input, processed)
+		local start = petTouch
+		if heldPet and not holding and start and input.UserInputType == Enum.UserInputType.Touch then
+			petTouch = nil
+			-- A tap lets it out; a drag only turned the camera.
+			if not processed and (Vector2.new(input.Position.X, input.Position.Y) - start).Magnitude <= TAP_SLOP then
+				task.spawn(releasePet)
+			end
+			return
+		end
 		if holding and not processed and input.UserInputType == Enum.UserInputType.Touch and pointer then
 			-- A tap places where the finger is; a drag only turned the camera.
 			local now = Vector2.new(input.Position.X, input.Position.Y)

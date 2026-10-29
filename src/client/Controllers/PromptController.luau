@@ -76,17 +76,21 @@ local function build(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInp
 	gui.Adornee = prompt.Parent :: Instance
 	gui.ResetOnSpawn = false
 	gui.Active = true -- so taps on it reach the button
-	local scale = Instance.new("UIScale")
-	scale.Scale = SCALE * 0.6
-	scale.Parent = gui
-
 	local holder = Instance.new("TextButton")
 	holder.Name = "Holder"
 	holder.Text = ""
 	holder.AutoButtonColor = false
 	holder.BackgroundTransparency = 1
 	holder.Size = UDim2.fromScale(1, 1)
+	-- Centred, so the UIScale below shrinks it around the middle of the object. (A UIScale
+	-- on the BillboardGui itself shrinks toward its top-left corner, which pushed every
+	-- prompt off to the left.)
+	holder.AnchorPoint = Vector2.new(0.5, 0.5)
+	holder.Position = UDim2.fromScale(0.5, 0.5)
 	holder.Parent = gui
+	local scale = Instance.new("UIScale")
+	scale.Scale = SCALE * 0.6
+	scale.Parent = holder
 
 	-- Key box with the hold fill.
 	local key = Instance.new("Frame")

@@ -1,13 +1,13 @@
 --!strict
--- The bag (B or `, or the Bag button on the hotbar). Works like Roblox's backpack: the
--- hotbar (slots 3-8, HotbarController) holds what you use most, everything else is in
--- here. Category tabs down the left (All, Pets, Eggs, Items) with counts, a search box,
--- and a grid of cards in each thing's rarity colour.
---   Drag a card onto a hotbar slot to put it there (what was there comes back to the bag).
---   Tap a card to pick it: the bar at the bottom says what it is and what you can do
---     (Hold / Plant / Use, Equip for pets, To hotbar / To bag). Tap it again to do the
---     main thing. With the bag open, tapping a hotbar slot picks what's in it, or puts the
---     picked card there.
+-- The bag: a copy of Roblox's backpack inventory (B, `, or the Bag button on the hotbar).
+-- The hotbar (slots 3-8, 3 on phones; HotbarController) holds pets and eggs you use most;
+-- everything else is in here, in a see-through panel above the hotbar with a search box
+-- and a grid of tiles in the hotbar's style. Things in the hotbar aren't listed, and the
+-- counts at the top are only what's in the bag.
+--   Tap a tile to use it: hold a pet or an egg out, or use a potion (after "Use item?").
+--   Drag a tile onto a hotbar slot to put it there (what was there comes back to the bag),
+--   drag a hotbar slot onto the panel to put it back in the bag, or onto another slot to
+--   swap. Hover a tile (PC) to see its rarity, weight and passive at the top.
 -- Pets on your base aren't in the bag (the Pets button manages those). Sell pets at the
 -- Pet Trader on your base (TraderController).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -20,19 +20,11 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Aliens = require(Shared.Config.Aliens)
-local Items = require(Shared.Config.Items)
-local Net = require(Shared.Net)
 local PetPassives = require(Shared.PetPassives)
 local Weights = require(Shared.Config.Weights)
 
-local TABS = { "All", "Pets", "Eggs", "Items" }
-local TAB_ON = Color3.fromRGB(61, 220, 90)
-local TAB_OFF = Color3.fromRGB(11, 14, 30)
 local INK = Color3.fromRGB(23, 25, 30)
-local WHITE = Color3.new(1, 1, 1)
-local GREEN = Color3.fromRGB(61, 220, 90)
-local BLUE = Color3.fromRGB(76, 141, 255)
-local GREY = Color3.fromRGB(150, 156, 176)
+local HELD = Color3.fromRGB(124, 245, 200)
 local DRAG_START = 8 -- pixels the pointer moves before a press becomes a drag
 
 local InventoryController = {}
@@ -41,192 +33,202 @@ local C: any
 local gui: ScreenGui
 local window: Frame
 local grid: ScrollingFrame
-local template: Frame
+local template: TextButton
 local emptyLabel: TextLabel
-local countsLabel: TextLabel
+local infoLabel: TextLabel
 local searchBox: TextBox
-local details: Frame
-local hint: TextLabel
-local tabButtons: { [string]: TextButton } = {}
-local currentTab = "All"
-local cards: { [string]: { frame: Frame, entry: BagItems.Entry } } = {}
+local tiles: { [string]: { frame: TextButton, entry: BagItems.Entry } } = {}
 local lastSignature = ""
-local picked: BagItems.Entry? = nil
-local pickedFromSlot: number? = nil
-local drag: { entry: BagItems.Entry, start: Vector2, ghost: Frame?, input: InputObject }? = nil
+local summary = ""
+local justDragged = 0
 
--- Card colour: the rarity colour, darkened so white text reads on it.
-local function cardColor(color: Color3): Color3
-	return color:Lerp(Color3.fromRGB(20, 22, 30), 0.5)
+type Drag = { key: string, slot: number?, start: Vector2, ghost: Frame?, input: InputObject, name: string, color: Color3 }
+local drag: Drag? = nil
+
+local function at(input: InputObject): Vector2
+	return Vector2.new(input.Position.X, input.Position.Y)
 end
 
-local function toast(ok: boolean, message: string?)
-	if message and message ~= "" then
-		C.HudController:Toast(message, if ok then "Good" else "Bad")
-	end
+local function inside(frame: GuiObject, point: Vector2): boolean
+	local p, s = frame.AbsolutePosition, frame.AbsoluteSize
+	return point.X >= p.X and point.X <= p.X + s.X and point.Y >= p.Y and point.Y <= p.Y + s.Y
 end
 
-local function setButton(button: TextButton, text: string, color: Color3, visible: boolean?)
-	Ui.setText(button, text)
-	button.BackgroundColor3 = color
-	button.Visible = visible ~= false
-end
+------------------------------------------------------------------ info line
 
------------------------------------------------------------------- details bar
-
-local function showDetails()
-	local data = State.data
-	local entry = picked
-	details.Visible = entry ~= nil
-	hint.Visible = entry == nil
-	if not data or not entry then
-		return
-	end
-	local title = Ui.find(details, "Title") :: TextLabel
-	local sub = Ui.find(details, "Sub") :: TextLabel
-	local primary = Ui.find(details, "Primary") :: TextButton
-	local secondary = Ui.find(details, "Secondary") :: TextButton
-	local move = Ui.find(details, "PinButton") :: TextButton
-	title.Text = entry.name
-	title.TextColor3 = entry.color
-	local held = BagItems.isHeld(C, data, entry, pickedFromSlot ~= nil)
+local function describe(entry: BagItems.Entry, data): string
 	if entry.kind == "Pet" then
 		local pet = data.Pets[entry.id]
 		local def = Aliens.ById[pet.Id]
 		local passive = def and def.Passive
 		local short = PetPassives.short(pet.Id, pet.Huge)
-		sub.Text = `{entry.rarity} · {Weights.format(BagItems.petWeight(pet))}`
-			.. (if passive and short then `\n{passive.Name}: {short}` else "")
-		setButton(primary, if held then "Put away" else "Hold", if held then GREY else GREEN)
-		local full = data.PlacedCount >= data.Slots
-		setButton(secondary, if full then "Base full" else "Equip", if full then GREY else BLUE)
+		return `{entry.name} · {entry.rarity} · {Weights.format(BagItems.petWeight(pet))}`
+			.. (if passive and short then ` · {passive.Name}: {short}` else "")
 	elseif entry.kind == "Egg" then
-		local egg = data.Eggs[entry.id]
-		sub.Text = if entry.count > 1
-			then `{entry.count} eggs · plant one in your park to hatch it`
-			else `{entry.rarity} · {Weights.format(BagItems.eggWeight(egg))} · plant it in your park to hatch it`
-		setButton(primary, if held then "Put away" else "Plant", if held then GREY else GREEN)
-		secondary.Visible = false
-	else
-		local def = Items.ById[entry.id]
-		sub.Text = if def then `{def.Description} (you have {entry.count})` else ""
-		setButton(primary, "Use", GREEN)
-		secondary.Visible = false
+		return `{entry.name} x{entry.count} · plant it in your park to hatch it`
 	end
-	local inHotbar = C.HotbarController:InHotbar(entry.key)
-	setButton(move, if inHotbar then "To bag" else "To hotbar", Color3.fromRGB(255, 200, 60))
-	local viewport = Ui.find(details, "Viewport") :: ViewportFrame
-	local icon = Ui.find(details, "Icon") :: ImageLabel
-	if details:GetAttribute("Shown") ~= entry.key .. entry.id then
-		details:SetAttribute("Shown", entry.key .. entry.id)
-		BagItems.show(viewport, icon, entry, data)
-	end
+	return `{entry.name} x{entry.count} · tap to use`
 end
 
-local function markCards()
+local function showInfo(text: string?)
+	infoLabel.Text = text or summary
+end
+
+------------------------------------------------------------------ tiles
+
+local function markHeld()
 	local data = State.data
 	if not data then
 		return
 	end
-	for _, c in cards do
-		local on = picked ~= nil and pickedFromSlot == nil and picked.id == c.entry.id
-		local stroke = c.frame:FindFirstChild("Stroke") :: UIStroke?
+	for _, t in tiles do
+		local stroke = t.frame:FindFirstChild("Stroke") :: UIStroke?
 		if stroke then
-			stroke.Color = if on then WHITE else INK
-			stroke.Thickness = if on then 4 else 3
+			local held = BagItems.isHeld(C, data, t.entry, true)
+			stroke.Color = if held then HELD else INK
+			stroke.Thickness = if held then 5 else 3
 		end
-		local tag = c.frame:FindFirstChild("Held") :: GuiObject?
-		if tag then
-			tag.Visible = BagItems.isHeld(C, data, c.entry)
-		end
-	end
-	-- The hotbar slot you picked from stays lit while the bag is open.
-	if not drag then
-		C.HotbarController:MarkSlot(pickedFromSlot)
 	end
 end
 
-local function pick(entry: BagItems.Entry?, slot: number?)
-	picked = entry
-	pickedFromSlot = slot
-	showDetails()
-	markCards()
-end
-
------------------------------------------------------------------- cards and drag
-
-local render: (boolean?) -> ()
-
-local function primaryAction(entry: BagItems.Entry)
-	Ui.sound("Click")
+local function useEntry(entry: BagItems.Entry)
 	BagItems.use(C, entry)
 	if entry.kind == "Egg" and C.PlacementController:IsHolding() then
-		Ui.close("Inventory") -- go click your park
+		Ui.close("Inventory") -- go click a spot in your park
 	end
-	task.defer(function()
-		showDetails()
-		markCards()
+	task.defer(markHeld)
+end
+
+local function tileFor(entry: BagItems.Entry, data): TextButton
+	local tile = template:Clone()
+	tile.Name = entry.key
+	tile.Visible = true
+	local viewport = tile:FindFirstChild("Viewport") :: ViewportFrame
+	local icon = tile:FindFirstChild("Icon") :: ImageLabel
+	local nameLabel = tile:FindFirstChild("Name") :: TextLabel
+	local count = tile:FindFirstChild("Count") :: TextLabel
+	local passiveLabel = tile:FindFirstChild("Passive") :: TextLabel
+	BagItems.show(viewport, icon, entry, data)
+	nameLabel.Text = entry.name
+	nameLabel.TextColor3 = entry.color
+	count.Visible = entry.count > 1
+	count.Text = `x{entry.count}`
+	if entry.kind == "Pet" then
+		local pet = data.Pets[entry.id]
+		local passive = PetPassives.short(pet.Id, pet.Huge)
+		passiveLabel.Visible = passive ~= nil
+		passiveLabel.Text = passive or ""
+	end
+	Ui.button(tile, function()
+		if os.clock() - justDragged < 0.3 then
+			return
+		end
+		useEntry(entry)
 	end)
+	tile.MouseEnter:Connect(function()
+		local d = State.data
+		if d then
+			showInfo(describe(entry, d))
+		end
+	end)
+	tile.MouseLeave:Connect(function()
+		showInfo(nil)
+	end)
+	-- Pets and eggs can be dragged onto the hotbar (potions stay in the bag).
+	if entry.kind ~= "Item" then
+		tile.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				InventoryController:BeginDrag(entry.key, nil, input)
+			end
+		end)
+	end
+	return tile
 end
 
-
--- Pointer positions are in GUI space (InputObject.Position), like AbsolutePosition.
-local function at(input: InputObject): Vector2
-	return Vector2.new(input.Position.X, input.Position.Y)
+local function signature(data): string
+	local hot = {}
+	for i = 1, 6 do
+		table.insert(hot, C.HotbarController:SlotKey(i))
+	end
+	return table.concat({ searchBox.Text, data.InvVersion or 0, table.concat(hot, ","), tostring(Ui.compact()) }, "|")
 end
 
-local function endDrag(point: Vector2?)
-	local d = drag
-	drag = nil
-	if not d then
+local function render(force: boolean?)
+	local data = State.data
+	if not data or not gui.Enabled then
 		return
 	end
-	local ghost = d.ghost
-	if ghost then
-		ghost:Destroy()
-		local slot = point and C.HotbarController:SlotAt(point)
-		if slot then
-			Ui.sound("Pop")
-			C.HotbarController:SetSlot(slot, d.entry.key)
-			pick(nil)
-			render(true)
-		end
-		C.HotbarController:MarkSlot(pickedFromSlot)
-		local card = cards[d.entry.id]
-		if card then
-			card.frame.BackgroundTransparency = 0
-		end
+	local sig = signature(data)
+	if sig == lastSignature and not force then
+		markHeld()
 		return
 	end
-	-- A tap: pick it, or do the main thing if it was already picked.
-	if picked and pickedFromSlot == nil and picked.id == d.entry.id then
-		primaryAction(d.entry)
-	else
-		Ui.sound("Click")
-		pick(d.entry)
+	lastSignature = sig
+	for _, t in tiles do
+		t.frame:Destroy()
 	end
+	table.clear(tiles)
+	local inHotbar = function(key: string): boolean
+		return C.HotbarController:InHotbar(key)
+	end
+	local list = BagItems.bagEntries(data, searchBox.Text, inHotbar)
+	for i, entry in list do
+		local tile = tileFor(entry, data)
+		tile.LayoutOrder = i
+		tile.Parent = grid
+		tiles[entry.key] = { frame = tile, entry = entry }
+	end
+	-- Counts: only what's in the bag right now (not the hotbar).
+	local pets, eggs, items = 0, 0, 0
+	for _, entry in BagItems.bagEntries(data, nil, inHotbar) do
+		if entry.kind == "Pet" then
+			pets += 1
+		elseif entry.kind == "Egg" then
+			eggs += entry.count
+		else
+			items += entry.count
+		end
+	end
+	local parts = {}
+	if pets > 0 then
+		table.insert(parts, `{pets} pet{if pets == 1 then "" else "s"}`)
+	end
+	if eggs > 0 then
+		table.insert(parts, `{eggs} egg{if eggs == 1 then "" else "s"}`)
+	end
+	if items > 0 then
+		table.insert(parts, `{items} potion{if items == 1 then "" else "s"}`)
+	end
+	summary = if #parts > 0 then table.concat(parts, " · ") else ""
+	showInfo(nil)
+	emptyLabel.Visible = #list == 0
+	emptyLabel.Text = if searchBox.Text ~= ""
+		then "Nothing matches."
+		else "Your bag is empty. New pets and eggs go to the hotbar first, then here."
+	markHeld()
 end
 
-local function startGhost(d)
-	local card = cards[d.entry.id]
+------------------------------------------------------------------ dragging
+
+local function startGhost(d: Drag)
 	local ghost = Instance.new("Frame")
 	ghost.Name = "DragGhost"
-	ghost.Size = UDim2.fromOffset(84, 84)
+	ghost.Size = UDim2.fromOffset(76, 76)
 	ghost.AnchorPoint = Vector2.new(0.5, 0.5)
-	ghost.BackgroundColor3 = cardColor(d.entry.color)
-	ghost.BackgroundTransparency = 0.15
+	ghost.BackgroundColor3 = Color3.fromRGB(11, 14, 30)
+	ghost.BackgroundTransparency = 0.2
 	ghost.ZIndex = 50
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = WHITE
+	stroke.Color = HELD
 	stroke.Thickness = 3
 	stroke.Parent = ghost
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.new(1, -6, 1, -6)
 	label.Position = UDim2.fromOffset(3, 3)
 	label.BackgroundTransparency = 1
-	label.Text = d.entry.name
+	label.Text = d.name
 	label.TextScaled = true
-	label.TextColor3 = WHITE
+	label.TextColor3 = d.color
 	label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
 	label.ZIndex = 51
 	label.Parent = ghost
@@ -236,12 +238,24 @@ local function startGhost(d)
 	textStroke.Parent = label
 	ghost.Parent = gui
 	d.ghost = ghost
-	if card then
-		card.frame.BackgroundTransparency = 0.6
+	local tile = tiles[d.key]
+	if tile then
+		tile.frame.BackgroundTransparency = 0.8
 	end
 end
 
-local function moveGhost(point: Vector2)
+-- A press on a bag tile (slot = nil) or a hotbar slot (slot = its index) while the bag is
+-- open. It turns into a drag once the pointer moves; a press that doesn't move is a tap.
+function InventoryController:BeginDrag(key: string, slot: number?, input: InputObject)
+	local data = State.data
+	local entry = data and BagItems.resolve(data, key)
+	if not entry then
+		return
+	end
+	drag = { key = key, slot = slot, start = at(input), ghost = nil, input = input, name = entry.name, color = entry.color }
+end
+
+local function moveDrag(point: Vector2)
 	local d = drag
 	if not d then
 		return
@@ -253,119 +267,31 @@ local function moveGhost(point: Vector2)
 	if ghost then
 		local origin = gui.AbsolutePosition
 		ghost.Position = UDim2.fromOffset(point.X - origin.X, point.Y - origin.Y)
-		-- Light up the slot under the pointer.
 		C.HotbarController:MarkSlot(C.HotbarController:SlotAt(point))
 	end
 end
 
-local function cardFor(entry: BagItems.Entry, data): Frame
-	local card = template:Clone()
-	card.Name = entry.id
-	card.Visible = true
-	card.BackgroundColor3 = cardColor(entry.color)
-	local viewport = card:FindFirstChild("Viewport") :: ViewportFrame
-	local icon = card:FindFirstChild("Icon") :: ImageLabel
-	local nameLabel = card:FindFirstChild("Name") :: TextLabel
-	local count = card:FindFirstChild("Count") :: TextLabel
-	local passiveLabel = card:FindFirstChild("Passive") :: TextLabel
-	local glow = card:FindFirstChild("Glow") :: ImageLabel
-	glow.ImageColor3 = entry.color:Lerp(WHITE, 0.5)
-	BagItems.show(viewport, icon, entry, data)
-	nameLabel.Text = entry.name
-	nameLabel.TextColor3 = WHITE
-	if entry.kind == "Pet" then
-		local pet = data.Pets[entry.id]
-		count.Text = Weights.format(BagItems.petWeight(pet))
-		local passive = PetPassives.short(pet.Id, pet.Huge)
-		passiveLabel.Visible = passive ~= nil
-		passiveLabel.Text = passive or ""
-	elseif entry.kind == "Egg" then
-		count.Text = Weights.format(BagItems.eggWeight(data.Eggs[entry.id]))
-	else
-		count.Text = `x{entry.count}`
-	end
-	local pin = card:FindFirstChild("Pin")
-	if pin then
-		pin:Destroy() -- (old pin star; moving to the hotbar is by dragging now)
-	end
-	local select = card:FindFirstChild("Select") :: TextButton
-	select.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			drag = { entry = entry, start = at(input), ghost = nil, input = input }
-		end
-	end)
-	return card
-end
-
-local function signature(data): string
-	local hot = {}
-	for i = 1, 6 do
-		table.insert(hot, C.HotbarController:SlotKey(i))
-	end
-	return table.concat({ currentTab, searchBox.Text, data.InvVersion or 0, data.PlacedCount, data.Slots, table.concat(hot, ","), tostring(Ui.compact()) }, "|")
-end
-
-render = function(force: boolean?)
-	local data = State.data
-	if not data or not gui.Enabled then
+local function endDrag(point: Vector2?)
+	local d = drag
+	drag = nil
+	if not d or not d.ghost then
 		return
 	end
-	local sig = signature(data)
-	if sig == lastSignature and not force then
-		markCards()
-		return
+	d.ghost:Destroy()
+	justDragged = os.clock()
+	C.HotbarController:DragEnded()
+	C.HotbarController:MarkSlot(nil)
+	local target = point and C.HotbarController:SlotAt(point)
+	if target then
+		-- Onto a slot: put it there (from another slot, the two swap).
+		C.HotbarController:SetSlot(target, d.key)
+		Ui.sound("Pop")
+	elseif point and d.slot and inside(window, point) then
+		-- A hotbar slot dropped on the bag: back into the bag.
+		C.HotbarController:Remove(d.key)
+		Ui.sound("Pop")
 	end
-	lastSignature = sig
-	for name, button in tabButtons do
-		button.BackgroundColor3 = if name == currentTab then TAB_ON else TAB_OFF
-	end
-	for _, c in cards do
-		c.frame:Destroy()
-	end
-	table.clear(cards)
-	local shown = 0
-	for _, entry in BagItems.list(data, currentTab, searchBox.Text) do
-		-- Things in the hotbar aren't listed (like Roblox's backpack).
-		if C.HotbarController:InHotbar(entry.key) then
-			continue
-		end
-		shown += 1
-		local card = cardFor(entry, data)
-		card.LayoutOrder = shown
-		card.Parent = grid
-		cards[entry.id] = { frame = card, entry = entry }
-	end
-	emptyLabel.Visible = shown == 0
-	emptyLabel.Text = if currentTab == "All" and searchBox.Text == ""
-		then "Nothing else in your bag. New things go to the hotbar first!"
-		else "Nothing here."
-	local pets, eggs, items = BagItems.counts(data)
-	countsLabel.Text = `Pets {pets}/{data.PetBagSize}  ·  Eggs {eggs}/{data.EggBagSize}`
-	local counts = { All = pets + eggs + items, Pets = pets, Eggs = eggs, Items = items }
-	for name, button in tabButtons do
-		local label = button:FindFirstChild("Count") :: TextLabel?
-		if label then
-			label.Text = tostring(counts[name] or 0)
-		end
-	end
-	-- Keep the picked thing if it's still there.
-	if picked then
-		local still = if pickedFromSlot then BagItems.resolve(data, picked.key) else nil
-		if not still and not pickedFromSlot then
-			for _, entry in BagItems.list(data, "All") do
-				if entry.id == picked.id then
-					still = entry
-					break
-				end
-			end
-		end
-		picked = still
-		if not still then
-			pickedFromSlot = nil
-		end
-	end
-	showDetails()
-	markCards()
+	render(true)
 end
 
 ------------------------------------------------------------------ "new" badge
@@ -418,8 +344,7 @@ end
 
 ------------------------------------------------------------------ public
 
-function InventoryController:Open(tab: string?)
-	currentTab = if tab and table.find(TABS, tab) then tab else currentTab
+function InventoryController:Open(_tab: string?)
 	Ui.open("Inventory")
 	markSeen()
 	render(true)
@@ -436,37 +361,8 @@ end
 -- Called when what you hold changes (PlacementController).
 function InventoryController:RefreshHeld()
 	if gui and gui.Enabled then
-		showDetails()
-		markCards()
+		markHeld()
 	end
-end
-
--- A hotbar slot was tapped while the bag is open: put the picked card there, or pick what
--- the slot holds. Returns true when it handled the tap.
-function InventoryController:SlotTapped(index: number): boolean
-	local data = State.data
-	if not data then
-		return false
-	end
-	if picked and pickedFromSlot == nil then
-		C.HotbarController:SetSlot(index, picked.key)
-		Ui.sound("Pop")
-		pick(nil)
-		render(true)
-		return true
-	end
-	local key = C.HotbarController:SlotKey(index)
-	local entry = if key ~= "" then BagItems.resolve(data, key) else nil
-	if entry then
-		if pickedFromSlot == index then
-			primaryAction(entry)
-		else
-			Ui.sound("Click")
-			pick(entry, index)
-		end
-		return true
-	end
-	return false
 end
 
 function InventoryController:Init(controllers)
@@ -476,75 +372,26 @@ function InventoryController:Init(controllers)
 	grid = Ui.find(gui, "Window.Grid")
 	template = Ui.find(gui, "Window.Grid.Template")
 	emptyLabel = Ui.find(gui, "Window.Empty")
-	countsLabel = Ui.find(gui, "Window.Count")
+	infoLabel = Ui.find(gui, "Window.Info")
 	searchBox = Ui.find(gui, "Window.Search")
-	details = Ui.find(gui, "Window.Details")
-	hint = Ui.find(gui, "Window.Hint")
-	for _, name in TABS do
-		tabButtons[name] = Ui.find(gui, "Window.Tabs.Tab" .. name)
-	end
 end
 
 function InventoryController:Start()
-	for name, button in tabButtons do
-		Ui.button(button, function()
-			currentTab = name
-			render(true)
-		end)
-	end
 	Ui.button(Ui.find(window, "Close"), function()
 		Ui.close("Inventory")
-	end)
-	Ui.button(Ui.find(details, "Primary"), function()
-		if picked then
-			primaryAction(picked)
-		end
-	end)
-	Ui.button(Ui.find(details, "Secondary"), function()
-		local entry = picked
-		if not entry or entry.kind ~= "Pet" then
-			return
-		end
-		local ok, message = Net.func("Inventory"):InvokeServer("PlacePet", entry.id)
-		toast(ok, if ok then "Pet put on your base!" else message)
-	end)
-	Ui.button(Ui.find(details, "PinButton"), function()
-		local entry = picked
-		if not entry then
-			return
-		end
-		if C.HotbarController:InHotbar(entry.key) then
-			C.HotbarController:Remove(entry.key)
-		else
-			local free = C.HotbarController:FreeSlot()
-			if not free then
-				toast(false, "Hotbar is full. Drag it onto a slot to swap!")
-				return
-			end
-			C.HotbarController:SetSlot(free, entry.key)
-		end
-		Ui.sound("Pop")
-		pick(nil)
-		render(true)
 	end)
 	searchBox:GetPropertyChangedSignal("Text"):Connect(function()
 		render(false)
 	end)
 	UserInputService.InputChanged:Connect(function(input)
 		local d = drag
-		if not d then
-			return
-		end
-		if input.UserInputType == Enum.UserInputType.MouseMovement or (input.UserInputType == Enum.UserInputType.Touch and input == d.input) then
-			moveGhost(at(input))
+		if d and (input.UserInputType == Enum.UserInputType.MouseMovement or input == d.input) then
+			moveDrag(at(input))
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input)
 		local d = drag
-		if not d then
-			return
-		end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or (input.UserInputType == Enum.UserInputType.Touch and input == d.input) then
+		if d and (input.UserInputType == Enum.UserInputType.MouseButton1 or input == d.input) then
 			endDrag(at(input))
 		end
 	end)
@@ -552,7 +399,6 @@ function InventoryController:Start()
 		C.HotbarController:SetBagOpen(gui.Enabled)
 		if not gui.Enabled then
 			endDrag(nil)
-			pick(nil)
 		end
 	end)
 	State.Changed:Connect(function()

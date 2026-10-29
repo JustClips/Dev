@@ -114,6 +114,47 @@
      }
     },
     {
+     "name": "Model",
+     "className": "ViewportFrame",
+     "properties": {
+      "Size": [
+       [
+        0,
+        80
+       ],
+       [
+        0,
+        80
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        4
+       ],
+       [
+        0.5,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0.5
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Ambient": "#C8D0E8",
+      "LightColor": "#FFFFFF",
+      "LightDirection": [
+       -1,
+       -1,
+       -1
+      ],
+      "ZIndex": 2,
+      "Visible": false
+     }
+    },
+    {
      "name": "Title",
      "className": "TextLabel",
      "properties": {

@@ -145,6 +145,40 @@ function BagItems.list(data, tab: string, query: string?): { Entry }
 	return list
 end
 
+-- What the bag window lists: pets one by one, eggs stacked by rarity ("Rare Egg x3",
+-- like the hotbar), potions stacked. `skip(key)` leaves out what's in the hotbar.
+function BagItems.bagEntries(data, query: string?, skip: ((string) -> boolean)?): { Entry }
+	local q = string.lower(query or "")
+	local function keep(e: Entry): boolean
+		return (q == "" or string.find(string.lower(e.name), q, 1, true) ~= nil) and not (skip and skip(e.key))
+	end
+	local list: { Entry } = {}
+	for _, e in BagItems.list(data, "Pets") do
+		if keep(e) then
+			table.insert(list, e)
+		end
+	end
+	local rarities = {}
+	for _, egg in data.Eggs or {} do
+		if not table.find(rarities, egg.Rarity) then
+			table.insert(rarities, egg.Rarity)
+		end
+	end
+	for _, rarity in rarities do
+		local e = BagItems.resolve(data, "E:" .. rarity)
+		if e and keep(e) then
+			table.insert(list, e)
+		end
+	end
+	for _, e in BagItems.list(data, "Items") do
+		if keep(e) then
+			table.insert(list, e)
+		end
+	end
+	sortEntries(list)
+	return list
+end
+
 -- How many pets (in the bag), eggs and potions there are.
 function BagItems.counts(data): (number, number, number)
 	local pets, eggs, items = 0, 0, 0
@@ -204,8 +238,8 @@ function BagItems.resolve(data, key: string): Entry?
 	return nil
 end
 
--- Everything that can go in the hotbar, in the order an empty hotbar fills up: egg stacks
--- (best rarity first), potions, then your best pets.
+-- Everything that can go in the hotbar (pets and egg stacks; potions stay in the bag), in
+-- the order an empty hotbar fills up: egg stacks (best rarity first), then your best pets.
 function BagItems.fillOrder(data): { Entry }
 	local out: { Entry } = {}
 	local rarities = {}
@@ -219,12 +253,6 @@ function BagItems.fillOrder(data): { Entry }
 	end)
 	for _, rarity in rarities do
 		local e = BagItems.resolve(data, "E:" .. rarity)
-		if e then
-			table.insert(out, e)
-		end
-	end
-	for _, def in Items.List do
-		local e = BagItems.resolve(data, "I:" .. def.Id)
 		if e then
 			table.insert(out, e)
 		end

@@ -2,10 +2,10 @@
 -- Our own hotbar, working like Roblox's backpack (the default one is hidden):
 --   1 = your sweeping tool (equip / put away)
 --   2 = your car (spawn under you / put away). With no car it points you to the Garage.
---   3-8 = pets, egg stacks (one slot per rarity) and potions. Something new goes into the
---     first free slot; when they're all full it goes in the bag. Open the bag to drag
---     things between the bag and the hotbar (InventoryController). The layout is saved.
---     Phones show the first 4 of these slots.
+--   3-8 = pets and egg stacks (one slot per rarity; potions stay in the bag). Something
+--     new goes into the first free slot; when they're all full it goes in the bag. Open
+--     the bag to drag things between the bag and the hotbar, or between slots
+--     (InventoryController). The layout is saved. Phones have 3 of these slots.
 --   Bag (B or `) = the bag. A badge counts what's new in it since you last opened it.
 --   G = drop the egg on your head. Only shown while you carry one.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -50,7 +50,7 @@ local bagOpen = false
 local markedSlot: number? = nil -- lit by the bag (picked slot, or the slot you drag over)
 
 local function visibleSlots(): number
-	return if Ui.compact() then 4 else SLOTS
+	return if Ui.compact() then 3 else SLOTS
 end
 
 local function save()
@@ -76,7 +76,9 @@ local function syncSlots(data): boolean
 		end
 	end
 	for i = 1, SLOTS do
-		if slotKeys[i] ~= "" and not BagItems.resolve(data, slotKeys[i]) then
+		local key = slotKeys[i]
+		-- Gone, or a potion (those are only used from the bag).
+		if key ~= "" and (string.sub(key, 1, 2) == "I:" or not BagItems.resolve(data, key)) then
 			slotKeys[i] = ""
 			changed = true
 		end
@@ -89,7 +91,7 @@ local function syncSlots(data): boolean
 			-- First load with a saved layout: what isn't in it stays in the bag.
 			local savedLayout = known == nil and data.Settings and data.Settings.Hotbar ~= nil
 			if not savedLayout then
-				local free = table.find(slotKeys, "")
+				local free = HotbarController:FreeSlot()
 				if free then
 					slotKeys[free] = e.key
 					changed = true
@@ -102,6 +104,13 @@ local function syncSlots(data): boolean
 		save()
 	end
 	return changed
+end
+
+local justDragged = 0
+
+-- The bag says a drag just ended (so the slot's click that follows is ignored).
+function HotbarController:DragEnded()
+	justDragged = os.clock()
 end
 
 -- Puts a hotbar key in a slot (1-6). If it's already in another slot the two swap.
@@ -365,11 +374,17 @@ function HotbarController:Start()
 	end)
 	for i, slot in itemSlots do
 		Ui.button(slot, function()
-			-- With the bag open, the bag handles taps (drag / move); otherwise use it.
-			if bagOpen and C.InventoryController:SlotTapped(i) then
-				return
+			if os.clock() - justDragged < 0.3 then
+				return -- that was the end of a drag
 			end
 			useSlot(i)
+		end)
+		-- With the bag open, slots can be dragged (to another slot, or back into the bag).
+		slot.InputBegan:Connect(function(input)
+			local touch = input.UserInputType == Enum.UserInputType.Touch
+			if bagOpen and slotKeys[i] ~= "" and (touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
+				C.InventoryController:BeginDrag(slotKeys[i], i, input)
+			end
 		end)
 	end
 	UserInputService.InputBegan:Connect(function(input, processed)

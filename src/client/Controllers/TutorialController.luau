@@ -57,7 +57,7 @@ local STEPS: { Step } = {
 		touch = "It's ready! Walk up to your egg and tap Open.",
 		icon = "Icon_Egg",
 	},
-	{ key = "PlacePet", text = "Put your pet in your park: open your Bag (B), tap the pet and press Equip.", icon = "Icon_Alien" },
+	{ key = "PlacePet", text = "Put your pet in your park: hold it from your hotbar, go to your base and tap anywhere.", icon = "Icon_Alien" },
 	{ key = "Sell", text = "Dump your leaves at the market for cash!", icon = "Icon_Sell" },
 	{ key = "Shop", text = "Open Tools and buy a better tool. It sweeps faster!", icon = "Icon_Tool" },
 	{
