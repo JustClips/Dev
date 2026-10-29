@@ -2938,10 +2938,10 @@ Assets.Models = {
 	},
 	Vehicle_MoonBuggy = {
 		bounds = {
-			max = Vector3.new(1.926, 4.013, 3.134),
+			max = Vector3.new(1.926, 4.393, 3.134),
 			min = Vector3.new(-1.926, -0.012, -3.921),
 		},
-		id = 132709698819455,
+		id = 115752653703252,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -3150,10 +3150,10 @@ Assets.Models = {
 	},
 	Vehicle_SweeperCart = {
 		bounds = {
-			max = Vector3.new(1.925, 4.09, 3.1),
+			max = Vector3.new(1.925, 4.84, 3.1),
 			min = Vector3.new(-1.925, -0.03, -4.13),
 		},
-		id = 90827218525425,
+		id = 120325796292947,
 		kind = "vehicle",
 		parts = {
 			Body = {

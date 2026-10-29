@@ -187,13 +187,14 @@ def sweeper_cart(color):
         b.append(box(GLASS, loc=(0, 2.78, 2.0), size=(1.7, 0.04, 0.8)))
         b.append(box("E09A3C", loc=(0, 2.8, 1.75), size=(1.6, 0.04, 0.3)))
         b.append(box(METAL, loc=(0, 2.8, 2.55), size=(0.8, 0.12, 0.1), bevel=0.03))
-        # canopy
+        # canopy, tall enough for a seated avatar's head (roof underside ~4.1 studs over the
+        # cushion once the game scales the cart up)
         for x in (-1.3, 1.3):
             for y in (-1.25, 1.1):
-                b.append(cyl("E6E6EE", loc=(x, y, 2.47), r=0.07, h=2.34, verts=8))
-        b.append(box("FFFFFF", loc=(0, -0.08, 3.68), size=(3.0, 2.9, 0.15), bevel=0.05))
-        b.append(box(shade(color, -0.25), loc=(0, -0.08, 3.58), size=(3.1, 3.0, 0.08)))
-        bb, bg = beacon(0, -0.08, 3.75)
+                b.append(cyl("E6E6EE", loc=(x, y, 2.845), r=0.07, h=3.09, verts=8))
+        b.append(box("FFFFFF", loc=(0, -0.08, 4.43), size=(3.0, 2.9, 0.15), bevel=0.05))
+        b.append(box(shade(color, -0.25), loc=(0, -0.08, 4.33), size=(3.1, 3.0, 0.08)))
+        bb, bg = beacon(0, -0.08, 4.5)
         b += bb
         glow += bg
         for y in (-2.95, 2.95):
@@ -231,9 +232,9 @@ def golf_cart(color):
         # roof on four posts and a windshield between the front posts
         for x in (-1.05, 1.05):
             for y in (-1.0, 1.3):
-                b.append(cyl("F0F0F0", loc=(x, y, 2.14), r=0.06, h=2.33, verts=8))
-        b.append(box("FFFFFF", loc=(0, 0.15, 3.36), size=(2.5, 3.0, 0.12), bevel=0.05))
-        b.append(box(GLASS, loc=(0, -1.0, 2.3), size=(2.04, 0.04, 1.0)))
+                b.append(cyl("F0F0F0", loc=(x, y, 2.34), r=0.06, h=2.73, verts=8))
+        b.append(box("FFFFFF", loc=(0, 0.15, 3.76), size=(2.5, 3.0, 0.12), bevel=0.05))
+        b.append(box(GLASS, loc=(0, -1.0, 2.5), size=(2.04, 0.04, 1.4)))
         for y in (-2.6, 2.6):
             b.append(box(DARK, loc=(0, y, 0.65), size=(2.4, 0.25, 0.28), bevel=0.08))
         tail += taillights((-0.95, 0.95), 2.42, 1.27)
