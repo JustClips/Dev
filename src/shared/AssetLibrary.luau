@@ -323,14 +323,98 @@ function AssetLibrary.egg(rarity: string): Model
 	return placeholder
 end
 
--- Glow and sparkles per rarity, added to the egg's Body (they scale with Model:ScaleTo).
-local EGG_FX: { [string]: { light: Color3, sparkle: { Color3 }, rate: number } } = {
+-- Glow and particles per rarity, added to the egg's Body (they scale with Model:ScaleTo).
+-- Common and Uncommon get none: the better the egg, the more it shines.
+type EggFx = {
+	light: Color3?,
+	brightness: number?,
+	colors: { Color3 },
+	rate: number,
+	texture: string?,
+	embers: boolean?, -- rise up and fade (Mythic) instead of twinkling around
+	size: number?,
+}
+local EGG_FX: { [string]: EggFx } = {
+	Rare = { colors = { Color3.fromRGB(255, 255, 255), Color3.fromRGB(150, 205, 255) }, rate = 2, size = 0.4 },
+	Epic = {
+		light = Color3.fromRGB(210, 140, 255),
+		brightness = 0.8,
+		colors = { Color3.fromRGB(255, 220, 255), Color3.fromRGB(200, 120, 255) },
+		rate = 4,
+		size = 0.45,
+	},
+	Legendary = {
+		light = Color3.fromRGB(255, 210, 90),
+		brightness = 1,
+		colors = { Color3.fromRGB(255, 255, 230), Color3.fromRGB(255, 200, 60) },
+		rate = 6,
+		size = 0.5,
+	},
+	Mythic = {
+		light = Color3.fromRGB(255, 110, 50),
+		brightness = 1.2,
+		colors = { Color3.fromRGB(255, 220, 120), Color3.fromRGB(255, 110, 40), Color3.fromRGB(200, 40, 20) },
+		rate = 10,
+		texture = "Vfx_Glow",
+		embers = true,
+		size = 0.35,
+	},
 	Cosmic = {
 		light = Color3.fromRGB(120, 240, 255),
-		sparkle = { Color3.fromRGB(255, 255, 255), Color3.fromRGB(110, 245, 225), Color3.fromRGB(255, 150, 235) },
+		brightness = 1.2,
+		colors = { Color3.fromRGB(255, 255, 255), Color3.fromRGB(110, 245, 225), Color3.fromRGB(255, 150, 235) },
 		rate = 7,
+		size = 0.55,
 	},
 }
+
+local function addEggFx(body: BasePart, fx: EggFx)
+	if fx.light then
+		local light = Instance.new("PointLight")
+		light.Color = fx.light
+		light.Brightness = fx.brightness or 1
+		light.Range = 9
+		light.Shadows = false
+		light.Parent = body
+	end
+	local keys = {}
+	for i, c in fx.colors do
+		table.insert(keys, ColorSequenceKeypoint.new((i - 1) / math.max(1, #fx.colors - 1), c))
+	end
+	if #keys == 1 then
+		table.insert(keys, ColorSequenceKeypoint.new(1, fx.colors[1]))
+	end
+	local size = fx.size or 0.5
+	local p = Instance.new("ParticleEmitter")
+	p.Name = "EggSparkles"
+	p.Texture = Assets.Images[fx.texture or "Vfx_Sparkle"] or Assets.Images.Sparkle or ""
+	p.Color = ColorSequence.new(keys)
+	p.LightEmission = 1
+	p.Rate = fx.rate
+	p.Rotation = NumberRange.new(0, 360)
+	p.RotSpeed = NumberRange.new(-90, 90)
+	if fx.embers then
+		p.Lifetime = NumberRange.new(1.2, 2.2)
+		p.Speed = NumberRange.new(0.5, 1.5)
+		p.SpreadAngle = Vector2.new(25, 25)
+		p.EmissionDirection = Enum.NormalId.Top
+		p.Acceleration = Vector3.new(0, 1.5, 0)
+		p.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.1),
+			NumberSequenceKeypoint.new(1, 1),
+		})
+	else
+		p.Lifetime = NumberRange.new(0.8, 1.6)
+		p.Speed = NumberRange.new(0.3, 1.2)
+		p.SpreadAngle = Vector2.new(180, 180)
+	end
+	p.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(0.35, size),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	p.Parent = body
+end
 
 -- Rigged eggs (wings, halo, rings) play their Blender idle loop while they're in the
 -- world, and get their glow and sparkles. Carried eggs are welded to the head, so they
@@ -347,33 +431,7 @@ function AssetLibrary.eggExtras(model: Model, rarity: string)
 	end
 	local fx = EGG_FX[rarity]
 	if fx and body then
-		local light = Instance.new("PointLight")
-		light.Color = fx.light
-		light.Brightness = 1.2
-		light.Range = 9
-		light.Shadows = false
-		light.Parent = body
-		local keys = {}
-		for i, c in fx.sparkle do
-			table.insert(keys, ColorSequenceKeypoint.new((i - 1) / math.max(1, #fx.sparkle - 1), c))
-		end
-		local sparkles = Instance.new("ParticleEmitter")
-		sparkles.Name = "EggSparkles"
-		sparkles.Texture = Assets.Images.Vfx_Sparkle or Assets.Images.Sparkle or ""
-		sparkles.Color = ColorSequence.new(keys)
-		sparkles.LightEmission = 1
-		sparkles.Rate = fx.rate
-		sparkles.Lifetime = NumberRange.new(0.8, 1.6)
-		sparkles.Speed = NumberRange.new(0.3, 1.2)
-		sparkles.SpreadAngle = Vector2.new(180, 180)
-		sparkles.Rotation = NumberRange.new(0, 360)
-		sparkles.RotSpeed = NumberRange.new(-90, 90)
-		sparkles.Size = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0),
-			NumberSequenceKeypoint.new(0.35, 0.55),
-			NumberSequenceKeypoint.new(1, 0),
-		})
-		sparkles.Parent = body
+		addEggFx(body, fx)
 	end
 	local animName = meta and (meta :: any).anim
 	if typeof(animName) ~= "string" or not model:FindFirstChildOfClass("AnimationController") then

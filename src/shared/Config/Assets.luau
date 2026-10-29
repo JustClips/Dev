@@ -2261,10 +2261,10 @@ Assets.Models = {
 	},
 	Egg_Common = {
 		bounds = {
-			max = Vector3.new(1.26, 3.12, 1.26),
-			min = Vector3.new(-1.26, 0.0, -1.26),
+			max = Vector3.new(1.32, 3.168, 1.32),
+			min = Vector3.new(-1.32, 0.0, -1.32),
 		},
-		id = 130386544112081,
+		id = 106875191261029,
 		kind = "egg",
 		parts = {
 			Body = {
@@ -2275,10 +2275,10 @@ Assets.Models = {
 	Egg_Cosmic = {
 		anim = "Egg_CosmicIdle",
 		bounds = {
-			max = Vector3.new(2.852, 3.798, 2.196),
-			min = Vector3.new(-2.852, -0.004, -2.196),
+			max = Vector3.new(3.198, 3.864, 2.196),
+			min = Vector3.new(-3.199, -0.004, -2.196),
 		},
-		id = 115108585012609,
+		id = 78923662402991,
 		kind = "egg",
 		parts = {
 			Body = {
@@ -2291,7 +2291,7 @@ Assets.Models = {
 			},
 			Halo = {
 				collide = false,
-				joint = Vector3.new(-0.0, 3.624, 0.0),
+				joint = Vector3.new(-0.0, 3.66, 0.0),
 				parent = "Body",
 			},
 			RingA = {
@@ -2313,23 +2313,24 @@ Assets.Models = {
 			},
 			WingL = {
 				collide = false,
-				joint = Vector3.new(-1.356, 1.872, 0.144),
+				joint = Vector3.new(-1.308, 1.872, 0.144),
 				parent = "Body",
 			},
 			WingR = {
 				collide = false,
-				joint = Vector3.new(1.356, 1.872, 0.144),
+				joint = Vector3.new(1.308, 1.872, 0.144),
 				parent = "Body",
 			},
 		},
 		rig = true,
 	},
 	Egg_Epic = {
+		anim = "Egg_EpicIdle",
 		bounds = {
-			max = Vector3.new(1.26, 3.744, 1.26),
-			min = Vector3.new(-1.26, 0.0, -1.26),
+			max = Vector3.new(1.32, 3.768, 1.32),
+			min = Vector3.new(-1.32, 0.0, -1.32),
 		},
-		id = 122271978892336,
+		id = 70596230482238,
 		kind = "egg",
 		parts = {
 			Body = {
@@ -2340,14 +2341,47 @@ Assets.Models = {
 				glow = "F3BFFF",
 				parent = "Body",
 			},
+			Crystals = {
+				collide = false,
+				glow = "F3BFFF",
+				joint = Vector3.new(-0.0, 2.904, 0.0),
+				parent = "Body",
+			},
 		},
+		rig = true,
 	},
 	Egg_Legendary = {
+		anim = "Egg_LegendaryIdle",
 		bounds = {
-			max = Vector3.new(1.26, 3.496, 1.26),
-			min = Vector3.new(-1.26, 0.0, -1.26),
+			max = Vector3.new(2.028, 3.744, 1.947),
+			min = Vector3.new(-1.979, 0.0, -2.006),
 		},
-		id = 88907477529336,
+		id = 136078012700727,
+		kind = "egg",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Crown = {
+				collide = false,
+				joint = Vector3.new(-0.0, 3.264, 0.0),
+				parent = "Body",
+			},
+			RingA = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.4976, 0.0),
+				parent = "Body",
+			},
+		},
+		rig = true,
+	},
+	Egg_Mythic = {
+		anim = "Egg_MythicIdle",
+		bounds = {
+			max = Vector3.new(1.579, 3.437, 1.591),
+			min = Vector3.new(-2.073, 0.0, -2.061),
+		},
+		id = 75263823103928,
 		kind = "egg",
 		parts = {
 			Body = {
@@ -2355,49 +2389,57 @@ Assets.Models = {
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "FFFFFF",
+				glow = "FF7A3C",
+				parent = "Body",
+			},
+			Orbit = {
+				collide = false,
+				glow = "FF7A3C",
+				joint = Vector3.new(-0.0, 1.404, 0.0),
 				parent = "Body",
 			},
 		},
-	},
-	Egg_Mythic = {
-		bounds = {
-			max = Vector3.new(1.26, 3.377, 1.26),
-			min = Vector3.new(-1.26, 0.0, -1.26),
-		},
-		id = 136581919723290,
-		kind = "egg",
-		parts = {
-			Body = {
-				collide = false,
-			},
-		},
+		rig = true,
 	},
 	Egg_Rare = {
+		anim = "Egg_RareIdle",
 		bounds = {
-			max = Vector3.new(1.26, 3.12, 1.26),
-			min = Vector3.new(-1.26, 0.0, -1.26),
+			max = Vector3.new(1.968, 3.168, 1.889),
+			min = Vector3.new(-1.92, 0.0, -1.936),
 		},
-		id = 76528707678910,
+		id = 74512937357364,
 		kind = "egg",
 		parts = {
 			Body = {
 				collide = false,
 			},
+			RingA = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.56, 0.0),
+				parent = "Body",
+			},
 		},
+		rig = true,
 	},
 	Egg_Uncommon = {
+		anim = "Egg_UncommonIdle",
 		bounds = {
-			max = Vector3.new(1.26, 3.625, 1.26),
-			min = Vector3.new(-1.26, 0.0, -1.26),
+			max = Vector3.new(1.32, 3.636, 1.32),
+			min = Vector3.new(-1.32, 0.0, -1.32),
 		},
-		id = 79356633766910,
+		id = 133502637134183,
 		kind = "egg",
 		parts = {
 			Body = {
 				collide = false,
 			},
+			Sprout = {
+				collide = false,
+				joint = Vector3.new(-0.0, 3.024, 0.0),
+				parent = "Body",
+			},
 		},
+		rig = true,
 	},
 	Fence = {
 		bounds = {
@@ -3304,7 +3346,12 @@ Assets.Models = {
 }
 
 Assets.Animations = {
-	Egg_CosmicIdle = 116261640744771,
+	Egg_CosmicIdle = 126142615123261,
+	Egg_EpicIdle = 81694835784309,
+	Egg_LegendaryIdle = 106554547026556,
+	Egg_MythicIdle = 101861978498535,
+	Egg_RareIdle = 75646233175758,
+	Egg_UncommonIdle = 77677946832650,
 	Pet_Happy = 104759341584430,
 	Pet_Idle = 90304779560671,
 	Pet_Walk = 140251033269648,

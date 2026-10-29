@@ -4507,14 +4507,14 @@
  "Egg_Common": {
   "bounds": {
    "max": [
-    1.26,
-    3.12,
-    1.26
+    1.32,
+    3.168,
+    1.32
    ],
    "min": [
-    -1.26,
+    -1.32,
     0.0,
-    -1.26
+    -1.32
    ]
   },
   "kind": "egg",
@@ -4528,18 +4528,18 @@
     "parent": null
    }
   },
-  "tris": 3920
+  "tris": 3856
  },
  "Egg_Cosmic": {
   "anim": "Egg_CosmicIdle",
   "bounds": {
    "max": [
-    2.852,
-    3.798,
+    3.198,
+    3.864,
     2.196
    ],
    "min": [
-    -2.852,
+    -3.199,
     -0.004,
     -2.196
    ]
@@ -4566,7 +4566,7 @@
     "glow": null,
     "joint": [
      -0.0,
-     3.624,
+     3.66,
      0.0
     ],
     "material": null,
@@ -4605,7 +4605,7 @@
     "collide": false,
     "glow": null,
     "joint": [
-     -1.356,
+     -1.308,
      1.872,
      0.144
     ],
@@ -4616,7 +4616,7 @@
     "collide": false,
     "glow": null,
     "joint": [
-     1.356,
+     1.308,
      1.872,
      0.144
     ],
@@ -4625,19 +4625,20 @@
    }
   },
   "rig": true,
-  "tris": 14232
+  "tris": 18592
  },
  "Egg_Epic": {
+  "anim": "Egg_EpicIdle",
   "bounds": {
    "max": [
-    1.26,
-    3.744,
-    1.26
+    1.32,
+    3.768,
+    1.32
    ],
    "min": [
-    -1.26,
+    -1.32,
     0.0,
-    -1.26
+    -1.32
    ]
   },
   "kind": "egg",
@@ -4656,21 +4657,34 @@
     "joint": null,
     "material": null,
     "parent": "Body"
+   },
+   "Crystals": {
+    "collide": false,
+    "glow": "F3BFFF",
+    "joint": [
+     -0.0,
+     2.904,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
-  "tris": 3970
+  "rig": true,
+  "tris": 4764
  },
  "Egg_Legendary": {
+  "anim": "Egg_LegendaryIdle",
   "bounds": {
    "max": [
-    1.26,
-    3.496,
-    1.26
+    2.028,
+    3.744,
+    1.947
    ],
    "min": [
-    -1.26,
+    -1.979,
     0.0,
-    -1.26
+    -2.006
    ]
   },
   "kind": "egg",
@@ -4683,27 +4697,44 @@
     "material": null,
     "parent": null
    },
-   "Body_Glow": {
+   "Crown": {
     "collide": false,
-    "glow": "FFFFFF",
-    "joint": null,
+    "glow": null,
+    "joint": [
+     -0.0,
+     3.264,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "RingA": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.0,
+     1.4976,
+     0.0
+    ],
     "material": null,
     "parent": "Body"
    }
   },
-  "tris": 4694
+  "rig": true,
+  "tris": 6376
  },
  "Egg_Mythic": {
+  "anim": "Egg_MythicIdle",
   "bounds": {
    "max": [
-    1.26,
-    3.377,
-    1.26
+    1.579,
+    3.437,
+    1.591
    ],
    "min": [
-    -1.26,
+    -2.073,
     0.0,
-    -1.26
+    -2.061
    ]
   },
   "kind": "egg",
@@ -4715,21 +4746,41 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Body_Glow": {
+    "collide": false,
+    "glow": "FF7A3C",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Orbit": {
+    "collide": false,
+    "glow": "FF7A3C",
+    "joint": [
+     -0.0,
+     1.404,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
-  "tris": 5120
+  "rig": true,
+  "tris": 5412
  },
  "Egg_Rare": {
+  "anim": "Egg_RareIdle",
   "bounds": {
    "max": [
-    1.26,
-    3.12,
-    1.26
+    1.968,
+    3.168,
+    1.889
    ],
    "min": [
-    -1.26,
+    -1.92,
     0.0,
-    -1.26
+    -1.936
    ]
   },
   "kind": "egg",
@@ -4741,21 +4792,34 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "RingA": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.0,
+     1.56,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
-  "tris": 3920
+  "rig": true,
+  "tris": 5708
  },
  "Egg_Uncommon": {
+  "anim": "Egg_UncommonIdle",
   "bounds": {
    "max": [
-    1.26,
-    3.625,
-    1.26
+    1.32,
+    3.636,
+    1.32
    ],
    "min": [
-    -1.26,
+    -1.32,
     0.0,
-    -1.26
+    -1.32
    ]
   },
   "kind": "egg",
@@ -4767,9 +4831,21 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Sprout": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.0,
+     3.024,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
-  "tris": 4404
+  "rig": true,
+  "tris": 4124
  },
  "Fence": {
   "bounds": {
