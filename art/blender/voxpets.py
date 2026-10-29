@@ -854,11 +854,72 @@ def kitsune():
     return a
 
 
+# ---------------------------------------------------------------------- autumn stag
+
+
+LEAVES = ["E8742A", "D8452C", "F2B33A", "B8562A", "F0943A"]
+
+
+def leafy(i, j, k):
+    """A patchwork of autumn leaf colours, in 2x2 clumps."""
+    h = ((i // 2) * 73856093) ^ ((j // 2) * 19349663) ^ ((k // 2) * 83492791)
+    return LEAVES[h % len(LEAVES)]
+
+
+def autumn_stag():
+    W, H, T, N = "8A5A30", "3E2A1A", "C8955A", "2A1C16"
+    parts = legs(W, H, 8, -8, 6)
+    for p in parts:
+        for c in list(p.cells):
+            if c[2] >= 6:
+                p.cells[c] = leafy(*c)                        # leaves creep down the legs
+    body = Part("Body")
+    body.rbox(-3, 3, -9, 9, 8, 14, leafy, edges=(True, False, False))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -8, 13))
+    head.box(-2, 2, -10, -6, 12, 18, leafy)                   # neck
+    head.rbox(-3, 3, -14, -9, 17, 22, lambda i, j, k: T if j == -14 else leafy(i, j, k), edges=(True, False, False))
+    head.box(-2, 2, -16, -14, 17, 20, T)                      # muzzle
+    head.set([(-1, -16, 19), (0, -16, 19)], N)
+    eye_cells = [(x, -14, z) for x in (-3, -2, 1, 2) for z in (20,)]
+    for c in eye_cells:
+        head.cells.pop(c, None)
+    parts.append(head)
+    glow = Part("Eyes_Glow", "Head", joint=(0, -14, 20), noise=False, glow="FFE07A")
+    glow.set(eye_cells, "FFE07A")
+    parts.append(glow)
+    antlers = Part("Antlers", "Head", joint=(0, -11, 22))
+    for side in (-1, 1):
+        def put(x, y, z, col=W):
+            antlers.cells[(x if side > 0 else -1 - x, y, z)] = col
+        for t in range(9):                                    # main beam: up and out
+            put(1 + t // 2, -11 + t // 4, 22 + t)
+        for t in range(4):                                    # front tines
+            put(2 + t // 3, -12 - t, 25 + t // 2)
+            put(4 + t // 3, -11 - t, 28 + t // 2)
+        for (x0, y0, z0) in ((5, -9, 30), (3, -15, 26), (5, -14, 29)):   # leaf clumps on the tips
+            for dx in (0, 1):
+                for dy in (0, 1):
+                    for dz in (0, 1):
+                        put(x0 + dx, y0 + dy, z0 + dz, leafy(x0 + dx, y0 + dy, z0 + dz))
+    parts.append(antlers)
+    ear = Part("EarL", "Head", joint=(3, -10.5, 21))
+    ear.box(3, 5, -11, -10, 20, 22, T)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 9, 12))
+    tail.box(-1, 1, 9, 11, 11, 13, "F6E6C8")
+    parts.append(tail)
+    a = assemble("AutumnStag", parts)
+    a.extra["aura"] = "Leaves"
+    return a
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
         "Lion": lion, "ArcticWolf": arctic_wolf, "Unicorn": unicorn,
-        "Dragon": dragon, "Phoenix": phoenix, "Kitsune": kitsune}
+        "Dragon": dragon, "Phoenix": phoenix, "Kitsune": kitsune,
+        "AutumnStag": autumn_stag}
 
 
 # ------------------------------------------------------------------------- animation
@@ -1202,6 +1263,27 @@ def kitsune_walk(w):
     return p
 
 
+def stag_idle(w):
+    graze = max(0.0, s(w)) ** 2                              # lowers its head to graze, then looks up
+    return {
+        "Body": ((0, 0, 0.015 * (1 - c(2 * w))), (-2 * graze, 0, 0)),
+        "Head": ((0, 0, 0), (28 * graze - 4 * s(2 * w) * (1 - graze), 0, 10 * s(w + 2) * (1 - graze))),
+        "Antlers": ((0, 0, 0), (0, 3 * s(3 * w), 0)),
+        "EarL": ((0, 0, 0), (0, -14 * max(0.0, s(5 * w)) ** 8, 0)),
+        "EarR": ((0, 0, 0), (0, 14 * max(0.0, s(5 * w + 2)) ** 8, 0)),
+        "Tail": ((0, 0, 0), (-10 * max(0.0, s(6 * w)) ** 4, 0, 0)),
+    }
+
+
+def stag_walk(w):
+    p = walk(30, 0.05, 0, 0, 3)(w)
+    p["Head"] = ((0, 0, 0), (-4 * s(2 * w), 0, 3 * s(w)))
+    p["Antlers"] = ((0, 0, 0), (0, 2 * s(2 * w), 0))
+    p["Tail"] = ((0, 0, 0), (-8 * abs(s(w)), 0, 0))
+    p.pop("Tail2")
+    return p
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -1221,6 +1303,7 @@ ANIMS = {
     "Dragon": {"Idle": dragon_idle, "Walk": dragon_walk},
     "Phoenix": {"Idle": phoenix_idle, "Walk": phoenix_walk},
     "Kitsune": {"Idle": kitsune_idle, "Walk": kitsune_walk},
+    "AutumnStag": {"Idle": stag_idle, "Walk": stag_walk},
 }
 
 

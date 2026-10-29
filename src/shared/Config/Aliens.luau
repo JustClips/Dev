@@ -56,6 +56,9 @@ local List: { AlienDef } = {
 		Passive = { Name = "Rebirth Flame", Stat = "HatchSpeed", Value = 0.3 } },
 	{ Id = "Kitsune", Name = "Kitsune", Rarity = "Mythic", Income = 12_500, Color = Color3.fromRGB(248, 246, 242), Size = 3.2,
 		Passive = { Name = "Fox Fire", Stat = "Incubators", Value = 1 } },
+
+	{ Id = "AutumnStag", Name = "Autumn Stag", Rarity = "Cosmic", Income = 60_000, Color = Color3.fromRGB(232, 116, 42), Size = 3.8,
+		Passive = { Name = "Forest Spirit", Stat = "Cash", Value = 0.25 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new
