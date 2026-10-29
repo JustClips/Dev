@@ -153,7 +153,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		TutorialTarget = runtime.TutorialEggPosition,
 		AutoSweep = data.Settings.AutoSweep == true,
 		AutoSell = data.Settings.AutoSell ~= false,
-		Settings = { Music = data.Settings.Music, Sfx = data.Settings.Sfx },
+		Settings = { Music = data.Settings.Music, Sfx = data.Settings.Sfx, Hotbar = data.Settings.Hotbar },
 		ServerTime = os.time(),
 	} :: any
 end

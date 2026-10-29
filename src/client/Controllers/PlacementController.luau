@@ -217,6 +217,9 @@ local function refreshBag()
 	if C.InventoryController then
 		C.InventoryController:RefreshHeld()
 	end
+	if C.HotbarController and C.HotbarController.Refresh then
+		C.HotbarController:Refresh()
+	end
 end
 
 local function stopPet(silent: boolean?)

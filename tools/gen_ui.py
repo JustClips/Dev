@@ -353,6 +353,26 @@ def hot_slot(name, key, ico, label, order):
     ])
 
 
+def item_slot(name, key, order):
+    """A hotbar slot for a pet, a stack of eggs or a potion: the model (or icon), its name
+    in its rarity colour, a count for stacks, and its key number."""
+    slot = hot_slot(name, key, "Egg", "", order)
+    slot["properties"]["Visible"] = False
+    kids = slot["children"]
+    for k in kids:
+        if k and k.get("name") == "Name":
+            k["properties"].update(TextScaled=True, TextWrapped=False)
+            k["children"] = [c for c in k.get("children", []) if c.get("name") != "Fit"] + [
+                node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]
+        if k and k.get("name") == "Icon":
+            k["properties"]["Visible"] = False
+    kids.insert(0, node("Viewport", "ViewportFrame", base(U(1, -8, 1, -24), U(0.5, 0, 0, 3), (0.5, 0), BackgroundTransparency=1,
+                                                          Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)))
+    kids.append(text("Count", "", U(0, 40, 0, 20), U(1, -4, 0, 2), (1, 0), ts=16, display=True, stroke=2, xa="Right", ZIndex=5,
+                     Visible=False))
+    return slot
+
+
 def zone_row(zone_id, title, order):
     return button("Zone_" + zone_id, U(1, 0, 0, 50), color=HEADER, stroke=3, LayoutOrder=order, children=[
         icon("Icon", "Zones", 36, U(0, 8, 0.5, 0), (0, 0.5)),
@@ -507,18 +527,21 @@ def hud():
         icon("Icon", "Tool", 64, U(0.5, 0, 0, 6), (0.5, 0)),
         text("Label", "SWEEP", U(1, 0, 0, 28), U(0.5, 0, 1, -8), (0.5, 1), ts=22, display=True, stroke=2.5),
     ])
-    # Own hotbar (the default Roblox backpack is hidden): slot 1 = tool, slot 2 = car,
-    # 3 = bag, 4 = drop the egg on your head (only shown while you carry one).
-    bag = hot_slot("BagSlot", "3", "Backpack", "Bag", 3)
+    # Own hotbar (the default Roblox backpack is hidden), Roblox-tool style: 1 = tool,
+    # 2 = car, 3-8 = pets / egg stacks / potions (pinned ones first, HotbarController), then
+    # the bag button (B) and, while you carry an egg on your head, Drop egg (G).
+    bag = hot_slot("BagSlot", "B", "Backpack", "Bag", 20)
     bag["children"].append(badge())
-    drop = hot_slot("DropSlot", "4", "Egg", "Drop egg", 4)
+    drop = hot_slot("DropSlot", "G", "Egg", "Drop egg", 21)
     drop["properties"]["BackgroundColor3"] = DANGER
     drop["properties"]["BackgroundTransparency"] = 0.15
     drop["properties"]["Visible"] = False
-    hotbar = frame("Hotbar", U(0, 382, 0, 88), U(0.5, 0, 1, -12), (0.5, 1), children=[
-        autoscale(), hlist(8, "Center", "Bottom"),
+    items = [item_slot(f"Item{i}", str(i + 2), 10 + i) for i in range(1, 7)]
+    hotbar = frame("Hotbar", U(0, 900, 0, 88), U(0.5, 0, 1, -12), (0.5, 1), children=[
+        autoscale(0.84), hlist(8, "Center", "Bottom"),
         hot_slot("ToolSlot", "1", "Tool", "Toothbrush", 1),
         hot_slot("CarSlot", "2", "Vehicle", "No car", 2),
+    ] + items + [
         bag,
         drop,
     ])
@@ -715,56 +738,91 @@ SEE = "#0B0E1E"  # see-through dark (native backpack look)
 
 
 def inv_tab(name, label, ico, order):
-    return button("Tab" + name, U(0, 116, 0, 44), color=SEE, stroke=3, LayoutOrder=order, ico=ico, ico_px=34, children=[
-        text("Label", label, U(1, -50, 1, 0), U(0, 46, 0, 0), ts=20, display=True, stroke=2, xa="Left", ZIndex=4),
+    return button("Tab" + name, U(1, 0, 0, 50), color=SEE, stroke=3, LayoutOrder=order, ico=ico, ico_px=34, children=[
+        text("Label", label, U(1, -48, 0, 24), U(0, 44, 0, 4), ts=19, display=True, stroke=2, xa="Left", ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 19, "MinTextSize": 7})]),
+        text("Count", "", U(1, -48, 0, 18), U(0, 44, 1, -4), (0, 1), ts=15, color="#C8D0E8", display=True, stroke=1.5, xa="Left",
+             ZIndex=4, TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 7})]),
     ])
 
 
 def inventory():
-    """Bag (Steal an Egg style), sized for phones: one solid window above the hotbar.
-    Pets / Eggs / Items tabs, a search box and a close button along the top, then a grid of
-    cards. Tapping a card holds the pet or egg out (HOLDING tag) or uses the potion."""
-    W, H = 720, 330
-    inner = W - 24
-    tabs = frame("Tabs", U(0, 364, 0, 44), U(0, 12, 0, 10), children=[
-        hlist(8, "Left", "Center"),
+    """Bag: one window above the hotbar. Category tabs down the left (All, Pets, Eggs,
+    Items) with counts, a search box, and a grid of cards tinted in each thing's rarity
+    colour (pets show their passive, a star pins them to the hotbar). Tapping a card picks
+    it and shows the action bar at the bottom with what it is and what you can do (Hold,
+    Equip, Use, Pin); tapping the picked card again does the main action."""
+    W, H = 780, 400
+    TABS_W = 132
+    gx = TABS_W + 20
+    inner = W - gx - 12
+    BAR_H = 78
+    tabs = frame("Tabs", U(0, TABS_W, 1, -74), U(0, 12, 0, 62), children=[
+        vlist(8, "Center", "Top"),
+        inv_tab("All", "All", "Backpack", 0),
         inv_tab("Pets", "Pets", "Alien", 1),
         inv_tab("Eggs", "Eggs", "Egg", 2),
         inv_tab("Items", "Items", "Potion", 3),
     ])
     card = frame("Template", U(0, 0, 0, 0), bg="#3A404D", Visible=False, children=[
-        border("#FFFFFF", 0, "Stroke"),
-        node("Viewport", "ViewportFrame", base(U(1, -6, 1, -24), U(0.5, 0, 0, 2), (0.5, 0), BackgroundTransparency=1,
+        border(INK, 3, "Stroke"),
+        node("Glow", "ImageLabel", base(U(0, 120, 0, 120), U(0.5, 0, 0.4, 0), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
+                                        ImageColor3=WHITE, ImageTransparency=0.55, ZIndex=1)),
+        frame("Band", U(1, 0, 0, 30), U(0, 0, 1, 0), (0, 1), bg=INK, BackgroundTransparency=0.45, ZIndex=1),
+        node("Viewport", "ViewportFrame", base(U(1, -10, 1, -40), U(0.5, 0, 0, 6), (0.5, 0), BackgroundTransparency=1,
                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-        icon("Icon", "Potion", 62, U(0.5, 0, 0, 6), (0.5, 0), Visible=False),
-        text("Name", "", U(1, -4, 0, 26), U(0.5, 0, 1, -1), (0.5, 1), ts=15, display=True, stroke=2, ZIndex=4,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 10})]),
+        icon("Icon", "Potion", 66, U(0.5, 0, 0, 12), (0.5, 0), Visible=False),
+        text("Name", "", U(1, -6, 0, 24), U(0.5, 0, 1, -3), (0.5, 1), ts=16, display=True, stroke=2, ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
         # A pet's passive in short ("+3% Pet Income"), just above its name.
-        text("Passive", "", U(1, -4, 0, 18), U(0.5, 0, 1, -24), (0.5, 1), ts=14, color="#7CF58A", display=True, stroke=2,
+        text("Passive", "", U(1, -6, 0, 16), U(0.5, 0, 1, -30), (0.5, 1), ts=13, color="#7CF58A", display=True, stroke=2,
              Visible=False, ZIndex=4,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 14, "MinTextSize": 7})]),
-        text("Count", "", U(0, 80, 0, 20), U(1, -3, 0, 2), (1, 0), ts=16, display=True, stroke=2, xa="Right", Visible=False, ZIndex=4,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 9})]),
-        frame("Held", U(0, 74, 0, 20), U(0, 3, 0, 3), bg=SUCCESS, Visible=False, ZIndex=5, children=[
+        text("Count", "", U(0, 70, 0, 20), U(1, -5, 0, 4), (1, 0), ts=16, display=True, stroke=2, xa="Right", ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+        node("Pin", "ImageButton", base(U(0, 26, 0, 26), U(0, 3, 0, 3), BackgroundTransparency=1, Image=img("Star"),
+                                        ImageTransparency=0.7, ZIndex=8)),
+        frame("Held", U(0, 74, 0, 20), U(0.5, 0, 0, 34), (0.5, 0), bg=SUCCESS, Visible=False, ZIndex=5, children=[
             border(INK, 2), text("Label", "HOLDING", U(1, 0, 1, 0), ts=13, display=True, stroke=1.5, ZIndex=6),
         ]),
         node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=7)),
     ])
-    grid = scroller("Grid", U(0, inner, 1, -104), U(0, 12, 0, 64), [
-        node("Layout", "UIGridLayout", {"CellSize": U(0, 104, 0, 104), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
+    grid = scroller("Grid", U(0, inner, 1, -(62 + BAR_H + 18)), U(0, gx, 0, 62), [
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 108, 0, 128), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
                                         "HorizontalAlignment": "Left"}),
-        padding(2), card,
+        padding(4, 12, 4, 4), card,
     ])
-    search = node("Search", "TextBox", base(U(0, inner - 364 - 8 - 52, 0, 44), U(0, 384, 0, 10), BackgroundColor3="#14171D",
+    search = node("Search", "TextBox", base(U(0, 230, 0, 40), U(1, -64, 0, 12), (1, 0), BackgroundColor3="#14171D",
                                             Text="", PlaceholderText="Search", PlaceholderColor3="#9AA3B8",
-                                            TextColor3=WHITE, TextSize=20, FontFace=BODY_HEAVY, ClearTextOnFocus=False,
+                                            TextColor3=WHITE, TextSize=18, FontFace=BODY_HEAVY, ClearTextOnFocus=False,
                                             TextXAlignment="Left", ZIndex=3), [padding(10, 10, 0), border(INK, 2)])
-    close = button("Close", U(0, 44, 0, 44), U(1, -12, 0, 10), (1, 0), color=DANGER, label="X", ts=26, stroke=3)
+    close = button("Close", U(0, 44, 0, 44), U(1, -10, 0, 10), (1, 0), color=DANGER, label="X", ts=26, stroke=3)
+    # The action bar for the picked card.
+    act_button = lambda name, label, color, x, ink=False: button(name, U(0, 98, 0, 46), U(1, x, 0.5, 0), (1, 0.5), color=color,
+                                                                  label=label, ts=16, label_color=INK if ink else WHITE, stroke=3)
+    bar = frame("Details", U(0, inner, 0, BAR_H), U(0, gx, 1, -10), (0, 1), bg="#14171D", Visible=False, children=[
+        border(INK, 3),
+        node("Viewport", "ViewportFrame", base(U(0, 66, 0, 66), U(0, 6, 0.5, 0), (0, 0.5), BackgroundTransparency=1,
+                                               Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
+        icon("Icon", "Potion", 58, U(0, 10, 0.5, 0), (0, 0.5), Visible=False),
+        text("Title", "", U(1, -400, 0, 30), U(0, 80, 0, 8), ts=22, display=True, stroke=2.5, xa="Left", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 8})]),
+        text("Sub", "", U(1, -400, 0, 34), U(0, 80, 0, 38), ts=15, color="#C8D0E8", heavy=True, xa="Left", ya="Top", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 7})]),
+        act_button("Primary", "Hold", SUCCESS, -220),
+        act_button("Secondary", "Equip", "#4C8DFF", -114),
+        act_button("PinButton", "To hotbar", PREMIUM, -8, ink=True),
+    ])
+    hint = text("Hint", "Tap something to see what you can do with it", U(0, inner, 0, BAR_H), U(0, gx, 1, -10), (0, 1), ts=17,
+                color="#9AA3B8", heavy=True)
     win = frame("Window", U(0, W, 0, H), U(0.5, 0, 1, -112), (0.5, 1), bg=BG, children=[
         autoscale(), border(INK, 3),
-        text("Count", "Pets: 0/60", U(0, inner, 0, 26), U(0, 12, 1, -8), (0, 1), ts=18, display=True, stroke=2, xa="Left"),
-        tabs, search, close, grid,
-        text("Empty", "Nothing here yet. Sweep leaves to find eggs!", U(0, inner, 0, 60), U(0, 12, 0.5, 10), ts=20, color="#C8D0E8",
+        icon("BagIcon", "Backpack", 42, U(0, 12, 0, 10)),
+        text("Title", "Bag", U(0, 90, 0, 40), U(0, 60, 0, 12), ts=28, display=True, stroke=2.5, xa="Left"),
+        text("Count", "", U(0, 260, 0, 40), U(0, 150, 0, 12), ts=16, color="#C8D0E8", display=True, stroke=1.5, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+        tabs, search, close, grid, hint, bar,
+        text("Empty", "Nothing here yet. Sweep leaves to find eggs!", U(0, inner, 0, 60), U(0, gx, 0.4, 0), ts=20, color="#C8D0E8",
              heavy=True, Visible=False),
     ])
     write("Inventory", screen([win], order=6, enabled=False))

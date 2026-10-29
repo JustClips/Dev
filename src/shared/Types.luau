@@ -289,7 +289,7 @@ export type PlayerSnapshot = {
 	TutorialTarget: Vector3?,
 	AutoSweep: boolean,
 	AutoSell: boolean,
-	Settings: { Music: number?, Sfx: number? },
+	Settings: { Music: number?, Sfx: number?, Hotbar: { string }? },
 	ServerTime: number,
 }
 

@@ -148,6 +148,14 @@ function SweepService:Init(services)
 		local data = S.DataService:GetData(player)
 		if data and (key == "Music" or key == "Sfx") and type(value) == "number" and value == value then
 			data.Settings[key] = math.clamp(math.floor(value * 100 + 0.5) / 100, 0, 1)
+		elseif data and key == "Hotbar" and type(value) == "table" then
+			-- What sits in hotbar slots 3-8 ("P:<uid>", "E:<rarity>", "I:<item>" or "").
+			local slots = {}
+			for i = 1, 6 do
+				local v = value[i]
+				slots[i] = if type(v) == "string" and #v <= 48 and (v == "" or string.match(v, "^[PEI]:[%w_%-]+$")) then v else ""
+			end
+			data.Settings.Hotbar = slots
 		end
 	end)
 end
