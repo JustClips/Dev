@@ -24,6 +24,14 @@
    "id": 77677946832650,
    "sha": "9edcbaa0872fbde377f35c41a07006b44299f676357c958657ce01dec22fc381"
   },
+  "Pet_Bunny_Idle": {
+   "id": 105761799747906,
+   "sha": "1108e15e3411518e50fbb1d2c62590ec5b51e0044e72a481993b8bd62a258b8f"
+  },
+  "Pet_Bunny_Walk": {
+   "id": 138731393273656,
+   "sha": "3857a2c64b929ef5b952843fd18ffff8db954a6d0f06f90ad4e5b06e821c7863"
+  },
   "Pet_Cat_Idle": {
    "id": 116879062487754,
    "sha": "da74738af5fb3ae0354b47cc86c22fbda98ac69a8ea9b4839087298d359e8fd0"
@@ -40,6 +48,14 @@
    "id": 135950191965326,
    "sha": "1660d895ca0bcc58901231051dab2d8686ff13afb5d222635dd51bcfbff63362"
   },
+  "Pet_Duck_Idle": {
+   "id": 91610326371606,
+   "sha": "420500e663558202d8fc3b0022aec2b5be0eba0e1c5f2e4cb2cc451e0164b40e"
+  },
+  "Pet_Duck_Walk": {
+   "id": 80574806898586,
+   "sha": "e1bd937421cf56d5c2dc8c7a2ce593e3e1e7063a144dfa8bb304bc46f5ae93b4"
+  },
   "Pet_Happy": {
    "id": 104759341584430,
    "sha": "a40b382a682d5bbe2a05a20293135b58a33f9b5b32f5201c252f27f3cb3f9e0c"
@@ -47,6 +63,22 @@
   "Pet_Idle": {
    "id": 90304779560671,
    "sha": "268e2852459d4b5a354615e3d7bed4b62a86fb1b0206603a595dfb6cb9051cd2"
+  },
+  "Pet_Raccoon_Idle": {
+   "id": 122273785089414,
+   "sha": "a22424f79aa93326be80353cf05b44faeeb33f919fbfc66e91e90431a37981b6"
+  },
+  "Pet_Raccoon_Walk": {
+   "id": 92497386642774,
+   "sha": "4e7f10d92fc5f4473bdcec340e8dc7aad80a4c15a1a5028f5ad1fb7ddc90ab31"
+  },
+  "Pet_Squirrel_Idle": {
+   "id": 115743019468626,
+   "sha": "35e0a45c197dd0a76f8388084231cc5f06a99f974ab3dd1fabf0736c46c2f0ed"
+  },
+  "Pet_Squirrel_Walk": {
+   "id": 92620001039536,
+   "sha": "6db83cb3923e2ce5551297be7e099bea59d4282e234da09090173cd5e0edf31d"
   },
   "Pet_Walk": {
    "id": 140251033269648,
@@ -616,6 +648,10 @@
    "id": 84675890297461,
    "sha": "083a72aa3b713caf6ef39fc36c5a95332c8e51576c98a27b927f5caa04bf567a"
   },
+  "Alien_Bunny": {
+   "id": 138878878870663,
+   "sha": "bf21050a0393daade86502639de93e75636f17a5760d612735da65f1a0fa4049"
+  },
   "Alien_Cat": {
    "id": 98115194406864,
    "sha": "54b4f8a5207d598288612aea08f95240647e5e72bc5ee29edada61eda4e2469b"
@@ -663,6 +699,10 @@
   "Alien_Dog": {
    "id": 134555901794284,
    "sha": "ec583db829abcc3fbfadc04be86c8df97718a60b3382834a564bf4164cfa993f"
+  },
+  "Alien_Duck": {
+   "id": 126739095804296,
+   "sha": "96d3b1b4484cfac4f2469c6554f27860c35ab193451d58c0e7a51ace307d03de"
   },
   "Alien_Dusty": {
    "id": 91580234759228,
@@ -760,6 +800,10 @@
    "id": 115937635188361,
    "sha": "f76d6240d38d06e90b00f61aa903a2b4f68fa82f4fe0498b2db7789a5afb5cf0"
   },
+  "Alien_Raccoon": {
+   "id": 103381768574055,
+   "sha": "bc459daacaf8c39c442427b47fcc594b36e15042e4ac862b1f821eb2c0ec9db9"
+  },
   "Alien_ShadowDusty": {
    "id": 81782182299377,
    "sha": "1e86b986ba4f3c355665f6e70215d485f3a446c08366c5274bf8dfe1ad187b81"
@@ -787,6 +831,10 @@
   "Alien_ShadowZorblax": {
    "id": 84343841361655,
    "sha": "94f6bdef4fc3386b73ae0946ec423cf73a0a3945e67827cc6d2f048f406d66b4"
+  },
+  "Alien_Squirrel": {
+   "id": 107654215011932,
+   "sha": "f86d8f6c5892340953e76cc0bbc31e10ce038ce35a674c0d708faad8164933fe"
   },
   "Alien_StarWhale": {
    "id": 109378360580053,

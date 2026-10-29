@@ -11,12 +11,17 @@ local Weights = require(script.Parent.Weights)
 type AlienDef = Types.AlienDef
 
 -- Dev is remaking every pet from scratch in the voxel style (art/blender/voxpets.py,
--- 2026-10-29). For now only the Cat and Dog exist, both Common. Eggs of other rarities
--- fall back to the Common pool (Aliens.pool). Saves holding removed pets are converted
+-- 2026-10-29). Roster: the "Voxel Pet Roster" doc. Rarities with no pets yet fall
+-- back to the Common pool (Aliens.pool). Saves holding removed pets are converted
 -- to these on load (DataService).
 local List: { AlienDef } = {
 	{ Id = "Cat", Name = "Cat", Rarity = "Common", Income = 1, Color = Color3.fromRGB(242, 138, 46), Size = 1.8 },
 	{ Id = "Dog", Name = "Dog", Rarity = "Common", Income = 1.5, Color = Color3.fromRGB(217, 140, 69), Size = 2 },
+	{ Id = "Bunny", Name = "Bunny", Rarity = "Common", Income = 2, Color = Color3.fromRGB(244, 241, 236), Size = 2.2 },
+
+	{ Id = "Squirrel", Name = "Squirrel", Rarity = "Uncommon", Income = 6, Color = Color3.fromRGB(185, 88, 42), Size = 2 },
+	{ Id = "Raccoon", Name = "Raccoon", Rarity = "Uncommon", Income = 8, Color = Color3.fromRGB(143, 140, 137), Size = 2.1 },
+	{ Id = "Duck", Name = "Duck", Rarity = "Uncommon", Income = 10, Color = Color3.fromRGB(255, 212, 59), Size = 2 },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new
