@@ -11,6 +11,7 @@ local ORDER = {
 	"HotbarController",
 	"LeafController",
 	"DumpController",
+	"BackpackController",
 	"SweepController",
 	"ToolFxController",
 	"ToolGroundController",

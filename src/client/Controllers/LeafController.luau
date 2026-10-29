@@ -11,12 +11,20 @@
 --   * a cleared tile's leaves hop up, swirl and get sucked into the sweeper's tool tip (or
 --     the car's brush), shrinking as they go, with a small leaf burst,
 --   * grown-back tiles pop in, golden piles shine.
+-- Close to you every tile also gets a few real 3D leaves (LeafMeshes) on top of its ground
+-- image. Walking or driving through kicks them up and aside, they flutter down and lie where
+-- they land; sweeping makes them hop; clearing a tile sends each leaf flying into the
+-- nozzle on its own path while the ground image fades. Trash uses the Trash_* meshes.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+local Client = script.Parent.Parent
+local LeafMeshes = require(Client.LeafMeshes)
+
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
 local Assets = require(Shared.Config.Assets)
 local Grid = require(Shared.Grid)
 local Net = require(Shared.Net)
@@ -37,6 +45,16 @@ local GROW_TIME = 0.35
 local SHAKE_TIME = 0.25
 local TILE_SPREAD = 1.4 -- ground image size vs the tile (clumps overlap into a carpet)
 local GOLD_IMAGE = "Ground_Gold"
+-- 3D leaves (only near you, so phones stay smooth).
+local MESH_DISTANCE = if TOUCH then 30 else 44 -- tiles closer than this get 3D leaves
+local MESH_KEEP = MESH_DISTANCE + 10
+local LEAVES_PER_TILE = if TOUCH then 3 else 5
+local EXTRA_FLYERS = if TOUCH then 1 else 2 -- more leaves fly off a cleared tile than lie on it
+local MAX_LEAF_FLIGHTS = if TOUCH then 220 else 450
+local DETAIL_BUDGET = 40 -- tiles given leaves per pass
+local MAX_DRIFT = 3 -- studs a kicked leaf can end up from its spot
+local KICK_SPEED = 3 -- walking slower than this doesn't move leaves
+local HOP = 0.25 -- part of a flight spent hopping up before the pull starts
 local DEFAULT_GROUND = { "Ground_Autumn1", "Ground_Autumn2", "Ground_Autumn3" }
 
 type Tile = {
@@ -48,6 +66,21 @@ type Tile = {
 	trash: Model?,
 	trashBase: CFrame?,
 	trashScale: number,
+	leaves: { Leaf }?,
+}
+-- A 3D leaf lying on a tile. `off` is how far it was kicked from its spot.
+type Leaf = {
+	part: BasePart,
+	tile: Tile,
+	home: Vector3,
+	off: Vector3,
+	vel: Vector3,
+	rot: Vector3,
+	spin: Vector3,
+	size: Vector3,
+	color: Color3,
+	phase: number,
+	kicked: number,
 }
 type Chunk = { ids: { number }, center: Vector3, radius: number, built: boolean }
 
@@ -62,11 +95,27 @@ local pool: { BasePart } = {}
 local ready = false
 local queued: { () -> () } = {}
 
-type Fly = { tile: Tile, start: number, from: CFrame, target: (() -> Vector3)?, spin: number, swirl: number }
+type Fly = { tile: Tile, start: number, from: CFrame, target: (() -> Vector3)?, spin: number, swirl: number, fade: boolean }
 local flying: { Fly } = {}
 type Grow = { tile: Tile, start: number }
 local growing: { Grow } = {}
 local shaking: { [Tile]: number } = {}
+local detailed: { [Tile]: boolean } = {} -- tiles that have 3D leaves
+local moving: { [Leaf]: boolean } = {} -- kicked leaves still in the air or sliding
+type LeafFlight = {
+	part: BasePart,
+	from: Vector3,
+	rot: Vector3,
+	spin: Vector3,
+	start: number,
+	time: number,
+	target: (() -> Vector3)?,
+	swirl: number,
+	side: number,
+	hop: number,
+	size: Vector3,
+}
+local leafFlights: { LeafFlight } = {}
 local bursts: { [string]: ParticleEmitter } = {}
 local burstPart: BasePart
 
@@ -151,6 +200,20 @@ local TRASH: { [string]: (Model, number) -> () } = {
 }
 
 local function buildTrash(kind: string, id: number, at: CFrame, scale: number): Model?
+	-- The Blender piece when it's loaded (pivot on the ground, lying on its side).
+	local mesh = AssetLibrary.get("Trash_" .. kind)
+	if mesh then
+		for _, d in mesh:GetDescendants() do
+			if d:IsA("BasePart") then
+				d.CastShadow = false
+			end
+		end
+		mesh:SetAttribute("Mesh", true)
+		mesh:ScaleTo(scale)
+		mesh:PivotTo(at)
+		mesh.Parent = folder
+		return mesh
+	end
 	local builder = TRASH[kind]
 	if not builder then
 		return nil
@@ -187,10 +250,21 @@ local function takePart(): BasePart
 	return part
 end
 
+local function leafColor(id: number, k: number, look: LeafMeshes.Look): Color3
+	return look.colors[math.floor(Grid.hash(id, 100 + k) * #look.colors) + 1]
+end
+
 local function setGoldLook(tile: Tile, on: boolean)
 	local zg = Grid.zoneGridOfId(tile.id)
 	local ground = zg and zg.Zone.Ground or DEFAULT_GROUND
 	tile.decal.Texture = image(if on then GOLD_IMAGE else ground[math.floor(Grid.hash(tile.id, 3) * #ground) + 1])
+	if tile.leaves then
+		local look = LeafMeshes.lookOf(tile.id)
+		for k, leaf in tile.leaves do
+			leaf.color = if on then LeafMeshes.Gold else leafColor(tile.id, k, look)
+			leaf.part.Color = leaf.color
+		end
+	end
 	local sparkle = tile.part:FindFirstChild("Gold")
 	if on and not sparkle then
 		local e = Instance.new("ParticleEmitter")
@@ -240,10 +314,78 @@ local function makeTile(id: number): Tile?
 	return tile
 end
 
+------------------------------------------------------------------ 3D leaves
+
+local function leafCFrame(leaf: Leaf): CFrame
+	local p = leaf.home + leaf.off
+	return CFrame.new(p) * CFrame.fromEulerAnglesYXZ(leaf.rot.X, leaf.rot.Y, leaf.rot.Z)
+end
+
+-- Lays a few real leaves on a tile (on top of its ground image).
+local function addLeaves(tile: Tile)
+	if tile.leaves then
+		return
+	end
+	local id = tile.id
+	local zg = Grid.zoneGridOfId(id)
+	if not zg then
+		return
+	end
+	local size = zg.Zone.TileSize
+	local look = LeafMeshes.lookOf(id)
+	local center = tile.base.Position
+	local groundY = zg.Zone.GroundY + 0.07
+	local n = if tile.trash then 2 else LEAVES_PER_TILE
+	local leaves = {}
+	for k = 1, n do
+		local r = size * 0.55 * math.sqrt(Grid.hash(id, 20 + k))
+		local a = Grid.hash(id, 40 + k) * math.pi * 2
+		local kind = look.kinds[math.floor(Grid.hash(id, 80 + k) * #look.kinds) + 1]
+		local color = if golden[id] then LeafMeshes.Gold else leafColor(id, k, look)
+		local scale = size / 4 * (0.9 + Grid.hash(id, 60 + k) * 0.6)
+		local part = LeafMeshes.take(kind, color, scale)
+		if not part then
+			break
+		end
+		local leaf: Leaf = {
+			part = part,
+			tile = tile,
+			home = Vector3.new(center.X + math.cos(a) * r, groundY + k * 0.015, center.Z + math.sin(a) * r),
+			off = Vector3.zero,
+			vel = Vector3.zero,
+			rot = Vector3.new(Grid.hash(id, 120 + k) * 0.5 - 0.25, Grid.hash(id, 140 + k) * math.pi * 2, Grid.hash(id, 160 + k) * 0.5 - 0.25),
+			spin = Vector3.zero,
+			size = part.Size,
+			color = color,
+			phase = Grid.hash(id, 180 + k) * math.pi * 2,
+			kicked = 0,
+		}
+		part.CFrame = leafCFrame(leaf)
+		part.Parent = folder
+		table.insert(leaves, leaf)
+	end
+	tile.leaves = leaves
+	detailed[tile] = true
+end
+
+local function stripLeaves(tile: Tile)
+	local leaves = tile.leaves
+	detailed[tile] = nil
+	if not leaves then
+		return
+	end
+	tile.leaves = nil
+	for _, leaf in leaves do
+		moving[leaf] = nil
+		LeafMeshes.give(leaf.part)
+	end
+end
+
 local function release(tile: Tile)
 	if tiles[tile.id] == tile then
 		tiles[tile.id] = nil
 	end
+	stripLeaves(tile)
 	shaking[tile] = nil
 	local sparkle = tile.part:FindFirstChild("Gold")
 	if sparkle then
@@ -349,6 +491,230 @@ local function buildSome()
 	end
 end
 
+local function flatDistance(a: Vector3, b: Vector3): number
+	local dx, dz = a.X - b.X, a.Z - b.Z
+	return math.sqrt(dx * dx + dz * dz)
+end
+
+-- Gives tiles close to you their 3D leaves and takes them off tiles you've left behind.
+local function refreshDetail()
+	local at = focus()
+	if not at then
+		return
+	end
+	for tile in detailed do
+		if tiles[tile.id] ~= tile or flatDistance(tile.base.Position, at) > MESH_KEEP then
+			stripLeaves(tile)
+		end
+	end
+	if not LeafMeshes.ready() then
+		return
+	end
+	local budget = DETAIL_BUDGET
+	Grid.forEachInRadius(at, MESH_DISTANCE, function(id)
+		if budget <= 0 then
+			return
+		end
+		local tile = tiles[id]
+		if tile and not tile.leaves then
+			budget -= 1
+			addLeaves(tile)
+			-- Trash built before the meshes loaded: swap in the Blender piece.
+			if tile.trash and not tile.trash:GetAttribute("Mesh") and tile.trashBase then
+				local kind = Grid.trashKind(id)
+				local mesh = kind and AssetLibrary.has("Trash_" .. kind) and buildTrash(kind, id, tile.trashBase, tile.trashScale)
+				if mesh then
+					tile.trash:Destroy()
+					tile.trash = mesh
+				end
+			end
+		end
+	end)
+end
+
+-- Someone walks or drives through: leaves in front of them get kicked up and aside.
+local function kick(at: Vector3, radius: number, velocity: Vector3, now: number)
+	local speed = Vector3.new(velocity.X, 0, velocity.Z).Magnitude
+	Grid.forEachInRadius(at, radius + 2, function(id)
+		local tile = tiles[id]
+		if not tile or not tile.leaves then
+			return
+		end
+		for _, leaf in tile.leaves do
+			if now - leaf.kicked < 0.3 then
+				continue
+			end
+			local p = leaf.home + leaf.off
+			local dx, dz = p.X - at.X, p.Z - at.Z
+			local d = math.sqrt(dx * dx + dz * dz)
+			if d > radius or math.abs(p.Y - at.Y) > 4 then
+				continue
+			end
+			local dir = if d > 0.05 then Vector3.new(dx / d, 0, dz / d) else Vector3.new(math.random() - 0.5, 0, math.random() - 0.5).Unit
+			local push = 1 - d / radius * 0.6
+			local add = dir * (2.5 + speed * 0.45) * push + Vector3.new(velocity.X, 0, velocity.Z) * 0.2 + Vector3.new(0, (2 + speed * 0.3) * push, 0)
+			local v = leaf.vel + add
+			if v.Magnitude > 22 then
+				v = v.Unit * 22
+			end
+			leaf.vel = v
+			leaf.spin += Vector3.new(math.random() * 16 - 8, math.random() * 12 - 6, math.random() * 16 - 8) * push
+			leaf.kicked = now
+			moving[leaf] = true
+		end
+	end)
+end
+
+local function kickers(now: number)
+	local at = focus()
+	if not at then
+		return
+	end
+	for _, player in Players:GetPlayers() do
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		if not root or not root:IsA("BasePart") or not humanoid then
+			continue
+		end
+		if flatDistance(root.Position, at) > MESH_KEEP then
+			continue
+		end
+		local seat = humanoid.SeatPart
+		if seat and seat:IsA("VehicleSeat") and seat.Parent then
+			local v = seat.AssemblyLinearVelocity
+			if Vector3.new(v.X, 0, v.Z).Magnitude > KICK_SPEED then
+				local brush = seat.Parent:FindFirstChild("Brush", true)
+				local p = if brush and brush:IsA("BasePart") then brush.Position else seat.Position
+				kick(Vector3.new(p.X, root.Position.Y - 3, p.Z), 5, v, now)
+			end
+		else
+			local v = root.AssemblyLinearVelocity
+			if Vector3.new(v.X, 0, v.Z).Magnitude > KICK_SPEED then
+				local feet = root.Position - Vector3.new(0, humanoid.HipHeight + root.Size.Y / 2, 0)
+				kick(feet, 2.4, v, now)
+			end
+		end
+	end
+end
+
+-- Kicked leaves: fly, flutter down, slide to a stop and lie flat where they land.
+local movedParts: { BasePart } = {}
+local movedCFrames: { CFrame } = {}
+local function stepMoving(now: number, dt: number)
+	table.clear(movedParts)
+	table.clear(movedCFrames)
+	dt = math.min(dt, 1 / 20)
+	for leaf in moving do
+		local v, o = leaf.vel, leaf.off
+		if o.Y > 0.001 or v.Y > 0 then
+			-- In the air: heavy drag and a side-to-side flutter, falling slowly.
+			local drag = math.max(0, 1 - 1.8 * dt)
+			local fx = math.sin(now * 7 + leaf.phase) * 9 * dt
+			local fz = math.cos(now * 6 + leaf.phase) * 9 * dt
+			v = Vector3.new(v.X * drag + fx, math.max(v.Y - 24 * dt, -4.5), v.Z * drag + fz)
+		else
+			v = Vector3.new(v.X, 0, v.Z) * math.max(0, 1 - 9 * dt)
+		end
+		o += v * dt
+		if o.Y < 0 then
+			o = Vector3.new(o.X, 0, o.Z)
+			v = Vector3.new(v.X * 0.5, 0, v.Z * 0.5)
+		end
+		local flat = Vector3.new(o.X, 0, o.Z)
+		if flat.Magnitude > MAX_DRIFT then
+			flat = flat.Unit * MAX_DRIFT
+			o = Vector3.new(flat.X, o.Y, flat.Z)
+		end
+		local r = leaf.rot + leaf.spin * dt
+		if o.Y <= 0 then
+			-- On the ground: settle flat again.
+			leaf.spin *= math.max(0, 1 - 10 * dt)
+			local k = math.min(1, 8 * dt)
+			local rx = (r.X + math.pi) % (math.pi * 2) - math.pi
+			local rz = (r.Z + math.pi) % (math.pi * 2) - math.pi
+			r = Vector3.new(rx * (1 - k), r.Y, rz * (1 - k))
+		else
+			leaf.spin *= math.max(0, 1 - 1.2 * dt)
+		end
+		leaf.vel, leaf.off, leaf.rot = v, o, r
+		if o.Y <= 0 and v.Magnitude < 0.15 and leaf.spin.Magnitude < 0.3 then
+			moving[leaf] = nil
+		end
+		table.insert(movedParts, leaf.part)
+		table.insert(movedCFrames, leafCFrame(leaf))
+	end
+	if #movedParts > 0 then
+		Workspace:BulkMoveTo(movedParts, movedCFrames, Enum.BulkMoveMode.FireCFrameChanged)
+	end
+end
+
+-- A leaf leaving a cleared tile on its own path: a hop, then sucked into the nozzle with
+-- a swirl (or, with nobody close, puffed up and faded).
+local function launchLeaf(part: BasePart, from: Vector3, rot: Vector3, target: (() -> Vector3)?, delay: number)
+	if #leafFlights >= MAX_LEAF_FLIGHTS then
+		LeafMeshes.give(part)
+		return
+	end
+	part.Parent = folder
+	table.insert(leafFlights, {
+		part = part,
+		from = from,
+		rot = rot,
+		spin = Vector3.new(math.random() * 24 - 12, math.random() * 16 - 8, math.random() * 24 - 12),
+		start = os.clock() + delay,
+		time = FLY_TIME * (0.8 + math.random() * 0.5),
+		target = target,
+		swirl = math.random() * math.pi * 2,
+		side = 0.6 + math.random() * 1.2,
+		hop = 1 + math.random() * 1.8,
+		size = part.Size,
+	})
+end
+
+local flightParts: { BasePart } = {}
+local flightCFrames: { CFrame } = {}
+local function stepLeafFlights(now: number)
+	table.clear(flightParts)
+	table.clear(flightCFrames)
+	for i = #leafFlights, 1, -1 do
+		local f = leafFlights[i]
+		local t = math.max(0, (now - f.start) / f.time)
+		if t >= 1 then
+			table.remove(leafFlights, i)
+			LeafMeshes.give(f.part)
+			continue
+		end
+		local hop = f.from + Vector3.new(0, f.hop, 0)
+		local pos: Vector3
+		local k = 1
+		if not f.target then
+			local e = t * t * (3 - 2 * t)
+			pos = f.from:Lerp(hop + Vector3.new(math.cos(f.swirl) * 2, 3, math.sin(f.swirl) * 2), e)
+			f.part.Transparency = t * t
+		elseif t < HOP then
+			local u = t / HOP
+			pos = f.from:Lerp(hop, 1 - (1 - u) * (1 - u))
+		else
+			local u = (t - HOP) / (1 - HOP)
+			local line = hop:Lerp(f.target(), u * u)
+			local side = (1 - u) * f.side
+			local a = f.swirl + u * 10
+			pos = line + Vector3.new(math.cos(a) * side, math.sin(u * math.pi) * 0.8, math.sin(a) * side)
+			k = 0.85 * (1 - u) + 0.15
+		end
+		if k < 1 then
+			f.part.Size = f.size * k
+		end
+		local r = f.rot + f.spin * t
+		table.insert(flightParts, f.part)
+		table.insert(flightCFrames, CFrame.new(pos) * CFrame.fromEulerAnglesYXZ(r.X, r.Y, r.Z))
+	end
+	if #flightParts > 0 then
+		Workspace:BulkMoveTo(flightParts, flightCFrames, Enum.BulkMoveMode.FireCFrameChanged)
+	end
+end
+
 ------------------------------------------------------------------ feel
 
 local function makeBursts()
@@ -442,13 +808,37 @@ local function flyAway(tile: Tile, target: (() -> Vector3)?)
 	tiles[tile.id] = nil
 	shaking[tile] = nil
 	local from = tile.part.CFrame
+	-- With 3D leaves, every leaf flies on its own and the ground image just fades.
+	local leaves = tile.leaves
+	local fade = leaves ~= nil
+	if leaves then
+		tile.leaves = nil
+		detailed[tile] = nil
+		for k, leaf in leaves do
+			moving[leaf] = nil
+			launchLeaf(leaf.part, leaf.home + leaf.off, leaf.rot, target, k * 0.03 + math.random() * 0.05)
+		end
+		local zg = Grid.zoneGridOfId(tile.id)
+		local size = zg and zg.Zone.TileSize or 4
+		local look = LeafMeshes.lookOf(tile.id)
+		for k = 1, EXTRA_FLYERS do
+			local part = if golden[tile.id] then LeafMeshes.take(look.kinds[1], LeafMeshes.Gold, size / 4) else LeafMeshes.random(look, size / 4 * (0.9 + math.random() * 0.5))
+			if part then
+				local a = math.random() * math.pi * 2
+				local r = math.random() * size * 0.4
+				local at = from.Position + Vector3.new(math.cos(a) * r, 0.05, math.sin(a) * r)
+				launchLeaf(part, at, Vector3.new(0, math.random() * math.pi * 2, 0), target, 0.05 + k * 0.04)
+			end
+		end
+	end
 	table.insert(flying, {
 		tile = tile,
-		start = os.clock() + Grid.hash(tile.id, 10) * 0.08, -- a little stagger so they stream in
+		start = os.clock() + (if fade then 0 else Grid.hash(tile.id, 10) * 0.08), -- a little stagger so they stream in
 		from = from,
 		target = target,
 		spin = (Grid.hash(tile.id, 9) - 0.5) * 18,
 		swirl = Grid.hash(tile.id, 11) * math.pi * 2,
+		fade = fade,
 	})
 	burstPart.Position = from.Position
 	local e = bursts[burstKind(tile.id)]
@@ -457,7 +847,6 @@ local function flyAway(tile: Tile, target: (() -> Vector3)?)
 	end
 end
 
-local HOP = 0.25 -- part of the flight spent hopping up before the pull starts
 
 local function stepFlying(now: number)
 	for i = #flying, 1, -1 do
@@ -497,8 +886,14 @@ local function stepFlying(now: number)
 			tile.decal.Transparency = if u > 0.85 then (u - 0.85) / 0.15 else 0
 		end
 		local cf = CFrame.new(pos) * f.from.Rotation * CFrame.Angles(t * f.spin * 0.4, t * f.spin, 0)
-		tile.part.CFrame = cf
-		tile.part.Size = tile.size * Vector3.new(k, 1, k)
+		if f.fade then
+			-- The leaves fly on their own: the ground image stays put and fades out fast.
+			tile.part.CFrame = f.from
+			tile.decal.Transparency = math.min(1, t * 3)
+		else
+			tile.part.CFrame = cf
+			tile.part.Size = tile.size * Vector3.new(k, 1, k)
+		end
 		if tile.trash then
 			tile.trash:PivotTo(cf * CFrame.Angles(t * 6, 0, t * 4))
 			if f.target and t > HOP then
@@ -520,8 +915,18 @@ local function stepGrowing(now: number)
 		-- Overshoot a little, then settle.
 		local k = if t < 0.7 then t / 0.7 * 1.12 else 1.12 - (t - 0.7) / 0.3 * 0.12
 		tile.part.Size = tile.size * Vector3.new(math.max(k, 0.05), 1, math.max(k, 0.05))
+		if tile.leaves then
+			for _, leaf in tile.leaves do
+				leaf.part.Size = leaf.size * math.clamp(k, 0.05, 1.12)
+			end
+		end
 		if t >= 1 then
 			tile.part.Size = tile.size
+			if tile.leaves then
+				for _, leaf in tile.leaves do
+					leaf.part.Size = leaf.size
+				end
+			end
 			table.remove(growing, i)
 		end
 	end
@@ -626,6 +1031,15 @@ function LeafController:Disturb(position: Vector3, radius: number)
 		local tile = tiles[id]
 		if tile and not shaking[tile] then
 			shaking[tile] = now - math.random() * 0.1
+			-- 3D leaves hop and spin a little.
+			for _, leaf in tile.leaves or {} do
+				if now - leaf.kicked > 0.25 then
+					leaf.kicked = now
+					leaf.vel += Vector3.new(math.random() * 3 - 1.5, 2.5 + math.random() * 2.5, math.random() * 3 - 1.5)
+					leaf.spin += Vector3.new(math.random() * 10 - 5, math.random() * 8 - 4, math.random() * 10 - 5)
+					moving[leaf] = true
+				end
+			end
 		end
 	end)
 end
@@ -687,12 +1101,15 @@ function LeafController:Start()
 		queued = {}
 	end)
 
-	local acc = 0
+	local acc, detailAcc = 0, 0
 	RunService.RenderStepped:Connect(function(dt)
 		local now = os.clock()
 		stepFlying(now)
+		stepLeafFlights(now)
 		stepGrowing(now)
 		stepShaking(now)
+		kickers(now)
+		stepMoving(now, dt)
 		if not ready then
 			return
 		end
@@ -700,6 +1117,11 @@ function LeafController:Start()
 		if acc > 0.25 then
 			acc = 0
 			refreshChunks()
+		end
+		detailAcc += dt
+		if detailAcc > 0.1 then
+			detailAcc = 0
+			refreshDetail()
 		end
 		buildSome()
 	end)

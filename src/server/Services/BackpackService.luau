@@ -5,11 +5,16 @@
 --     bag pours in bit by bit, cash ticking up (like making honey in Bee Swarm).
 --   * Sell Anywhere pass: the HUD Sell button sells the whole bag on the spot, and Auto Sell
 --     does it whenever the bag fills up.
+-- Every character wears the voxel leaf backpack ("Backpack" model, welded to the torso as
+-- "LeafBag"). Player attribute BagFill (0..1 in 5% steps) says how full it is, and
+-- BackpackController grows the leaf heap inside it on every client.
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
+local Assets = require(Shared.Config.Assets)
 local Upgrades = require(Shared.Config.Upgrades)
 local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
@@ -229,6 +234,71 @@ local function dumpStep(player: Player, session, spot: number, dt: number)
 	end
 end
 
+-- Worn backpack -----------------------------------------------------------------------
+
+local BAG_SCALE = 0.8 -- of the modelled size, on a standard 2-stud-wide torso
+
+local function wear(character: Model)
+	local torso = (character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")) :: BasePart?
+	if not torso or character:FindFirstChild("LeafBag") then
+		return
+	end
+	local model = AssetLibrary.get("Backpack")
+	local body = model and model:FindFirstChild("Body") :: BasePart?
+	local fill = model and model:FindFirstChild("Fill") :: BasePart?
+	if not model or not body then
+		if model then
+			model:Destroy()
+		end
+		return
+	end
+	model.Name = "LeafBag"
+	local scale = BAG_SCALE * math.clamp(torso.Size.X / 2, 0.6, 1.6)
+	model:ScaleTo(scale)
+	model:PivotTo(torso.CFrame * CFrame.new(0, 0.05 * scale, torso.Size.Z / 2))
+	for _, part in model:GetDescendants() do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.CanCollide = false
+			part.CanQuery = false
+			part.CanTouch = false
+			part.Massless = true
+		end
+	end
+	for _, part in model:GetChildren() do
+		if part:IsA("BasePart") and part ~= fill then
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = torso
+			weld.Part1 = part
+			weld.Parent = part
+		end
+	end
+	if fill then
+		-- A plain Weld so clients can move the heap's centre as it grows from the bottom.
+		local meta = Assets.Models.Backpack
+		local joint = (meta and meta.parts.Fill and (meta.parts.Fill :: any).joint) or Vector3.new(0, -1.18, 0.6)
+		local bottom = model:GetPivot() * CFrame.new(joint * scale)
+		local weld = Instance.new("Weld")
+		weld.Name = "FillWeld"
+		weld.Part0 = body
+		weld.Part1 = fill
+		weld.C0 = body.CFrame:Inverse() * fill.CFrame
+		weld.Parent = fill
+		fill:SetAttribute("FullSize", fill.Size)
+		fill:SetAttribute("Bottom", body.CFrame:PointToObjectSpace(bottom.Position))
+		fill.Color = Color3.fromRGB(232, 140, 45)
+	end
+	model.Parent = character
+end
+
+local function updateFill(player: Player, session)
+	local capacity = math.max(1, S.ToolService:GetCapacity(player))
+	local fill = math.floor(math.clamp(session.Data.Backpack / capacity, 0, 1) * 20 + 0.5) / 20
+	if player:GetAttribute("BagFill") ~= fill then
+		player:SetAttribute("BagFill", fill)
+	end
+end
+
 function BackpackService:Init(services)
 	S = services
 	Net.onInvoke("SellNow", function(player: Player)
@@ -283,10 +353,22 @@ function BackpackService:Start()
 			if not ok then
 				warn("[BackpackService] selling failed: " .. tostring(err))
 			end
+			updateFill(player, session)
 		end
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		lastSell[player] = nil
+	end)
+	S.BaseService.CharacterReady:Connect(function(_player: Player, character: Model)
+		if AssetLibrary.has("Backpack") then
+			wear(character)
+		else
+			task.spawn(function()
+				if AssetLibrary.waitReady(180) and character.Parent then
+					wear(character)
+				end
+			end)
+		end
 	end)
 end
 

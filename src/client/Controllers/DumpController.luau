@@ -1,7 +1,7 @@
 --!strict
 -- Leaf dumps (like making honey in Bee Swarm): while a player stands or drives on a dump's
--- circle (player attribute "Dumping" = dump index, set by BackpackService), leaves pour out
--- of them in an arc into the hopper, the rollers spin, the pile inside rises and coins pop
+-- circle (player attribute "Dumping" = dump index, set by BackpackService), 3D leaves pour
+-- out of their backpack (or car) one by one in an arc into the hopper, the rollers spin, the pile inside rises and coins pop
 -- out of the slot. For you, a "+$" counter over the dump adds up each bit of cash (DumpTick)
 -- with a coin blip that climbs in pitch. Sell Anywhere gets a quick leaf burst (SellBurst).
 local Players = game:GetService("Players")
@@ -11,6 +11,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
+local LeafMeshes = require(Client.LeafMeshes)
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -27,7 +28,7 @@ local MAX_LEAVES = 90
 local PILE_MAX = 1.6 -- studs the pile rises while someone dumps
 local LEAF_IMAGES = { "Vfx_LeafMaple", "Vfx_LeafOval", "Vfx_LeafGreen", "Vfx_LeafMaple" }
 
-type Leaf = { part: BasePart, from: Vector3, to: () -> Vector3, start: number, spin: Vector3, time: number, rise: number }
+type Leaf = { part: BasePart, from: Vector3, to: () -> Vector3, start: number, spin: Vector3, time: number, rise: number, mesh: boolean }
 type DumpVisual = {
 	model: Model,
 	rollers: { { part: BasePart, base: CFrame } },
@@ -80,15 +81,22 @@ local function launch(from: Vector3, to: () -> Vector3, time: number, rise: numb
 	if #leaves >= MAX_LEAVES then
 		return
 	end
-	local part = takeLeaf()
-	local texture = image(LEAF_IMAGES[math.random(1, #LEAF_IMAGES)])
-	for _, d in part:GetChildren() do
-		if d:IsA("Decal") then
-			d.Texture = texture
+	-- 3D leaves (LeafMeshes) once loaded, flat leaf images until then.
+	local mesh = if LeafMeshes.ready() then LeafMeshes.random(LeafMeshes.lookFor(nil), 1 + math.random() * 0.6) else nil
+	local part: BasePart
+	if mesh then
+		part = mesh
+	else
+		part = takeLeaf()
+		local texture = image(LEAF_IMAGES[math.random(1, #LEAF_IMAGES)])
+		for _, d in part:GetChildren() do
+			if d:IsA("Decal") then
+				d.Texture = texture
+			end
 		end
+		local size = 0.9 + math.random() * 0.7
+		part.Size = Vector3.new(size, 0.05, size)
 	end
-	local size = 0.9 + math.random() * 0.7
-	part.Size = Vector3.new(size, 0.05, size)
 	part.CFrame = CFrame.new(from)
 	part.Parent = folder
 	table.insert(leaves, {
@@ -99,6 +107,7 @@ local function launch(from: Vector3, to: () -> Vector3, time: number, rise: numb
 		spin = Vector3.new(math.random() * 8 - 4, math.random() * 10 - 5, math.random() * 8 - 4),
 		time = time,
 		rise = rise,
+		mesh = mesh ~= nil,
 	})
 end
 
@@ -108,8 +117,12 @@ local function stepLeaves(now: number)
 		local t = (now - l.start) / l.time
 		if t >= 1 then
 			table.remove(leaves, i)
-			l.part.Parent = nil
-			table.insert(pool, l.part)
+			if l.mesh then
+				LeafMeshes.give(l.part)
+			else
+				l.part.Parent = nil
+				table.insert(pool, l.part)
+			end
 			continue
 		end
 		local to = l.to()
@@ -180,7 +193,7 @@ local function mouthOf(v: DumpVisual): () -> Vector3
 	end
 end
 
--- Where a player's leaves come out: the car they drive, or their back.
+-- Where a player's leaves come out: the car they drive, or their backpack.
 local function source(player: Player): Vector3?
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -191,6 +204,12 @@ local function source(player: Player): Vector3?
 	local seat = humanoid and humanoid.SeatPart
 	if seat and seat.Parent and seat.Parent:IsA("Model") then
 		return seat.Parent:GetPivot().Position + Vector3.new(0, 3, 0)
+	end
+	-- Out of the top of the backpack they wear.
+	local bag = character and character:FindFirstChild("LeafBag")
+	local body = bag and bag:FindFirstChild("Body")
+	if body and body:IsA("BasePart") then
+		return body.Position + Vector3.new(0, body.Size.Y * 0.5, 0)
 	end
 	return root.Position - root.CFrame.LookVector * 0.8 + Vector3.new(0, 1, 0)
 end
