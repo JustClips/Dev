@@ -257,11 +257,17 @@ def vehicle(name, s, color, kind):
     seat = box("2A2A3A", loc=(0, 1 * s, wr + 1.5 * s), size=(1.6 * s, 1.4 * s, 0.6 * s), bevel=0.15 * s)
     back = box("2A2A3A", loc=(0, 1.75 * s, wr + 2.2 * s), size=(1.6 * s, 0.35 * s, 1.4 * s), bevel=0.12 * s)
     pieces += [seat, back]
+    top = wr + 1.2 * s  # top face of the chassis: everything on the car stands on it
     if kind == "cart":
+        # canopy posts run from the chassis top up into the roof (they used to stop short)
+        roof_z = wr + 4.3 * s
+        post_h = roof_z - top
         for x in (-1, 1):
             for y in (-1, 1):
-                pieces.append(cyl("E6E6EE", loc=(x * (W / 2 - 0.6), y * 1.6 * s + 0.4 * s, wr + 3.0 * s), r=0.08 * s, h=2.6 * s, verts=8))
-        pieces.append(box("FFFFFF", loc=(0, 0.4 * s, wr + 4.3 * s), size=(W - 0.6, 4 * s, 0.25 * s), bevel=0.1 * s))
+                pieces.append(cyl("E6E6EE", loc=(x * (W / 2 - 0.6), y * 1.6 * s + 0.4 * s, top + post_h / 2), r=0.1 * s, h=post_h, verts=8))
+                pieces.append(cyl("C8C8D2", loc=(x * (W / 2 - 0.6), y * 1.6 * s + 0.4 * s, top + 0.08 * s), r=0.2 * s, h=0.16 * s, verts=10))
+        pieces.append(box("FFFFFF", loc=(0, 0.4 * s, roof_z), size=(W - 0.6, 4 * s, 0.25 * s), bevel=0.1 * s))
+        pieces.append(box(shade(color, -0.25), loc=(0, 0.4 * s, roof_z - 0.12 * s), size=(W - 0.4, 4.2 * s, 0.12 * s), bevel=0.05 * s))
         pieces.append(box(shade(color, -0.25), loc=(0, -2.6 * s, wr + 1.5 * s), size=(W - 1.2, 1.8 * s, 0.8 * s), bevel=0.2 * s))
     elif kind == "truck":
         pieces.append(box(shade(color, -0.1), loc=(0, -2.3 * s, wr + 2.2 * s), size=(W - 0.8, 2.6 * s, 2.2 * s), bevel=0.3 * s))
@@ -277,8 +283,10 @@ def vehicle(name, s, color, kind):
         pieces.append(cyl("E6E6EE", loc=(0, -0.6 * s, wr + 3.4 * s), r=0.12 * s, h=W - 1.2, rot=(0, 90, 0), verts=8))
         pieces.append(cyl("E6E6EE", loc=(0, 1.0 * s, wr + 3.4 * s), r=0.12 * s, h=W - 1.2, rot=(0, 90, 0), verts=8))
         pieces.append(box(shade(color, -0.3), loc=(0, -L / 2 + 0.2, wr + 0.6 * s), size=(W + 0.4, 0.6 * s, 0.8 * s), bevel=0.2 * s))
-        pieces.append(cyl("C8C8D2", loc=(-W / 2 + 0.8, 2.6 * s, wr + 3.0 * s), r=0.06 * s, h=3.2 * s, verts=8))
-        pieces.append(box("FF5A78", loc=(-W / 2 + 1.3, 2.6 * s, wr + 4.2 * s), size=(1.0 * s, 0.06, 0.6 * s)))
+        # antenna stands on the chassis, the flag hangs from its top
+        pieces.append(cyl("C8C8D2", loc=(-W / 2 + 0.8, 2.6 * s, top + 1.6 * s), r=0.06 * s, h=3.2 * s, verts=8))
+        pieces.append(cyl("3A3A46", loc=(-W / 2 + 0.8, 2.6 * s, top + 0.1 * s), r=0.18 * s, h=0.2 * s, verts=10))
+        pieces.append(box("FF5A78", loc=(-W / 2 + 0.8 + 0.5 * s, 2.6 * s, top + 2.85 * s), size=(1.0 * s, 0.06, 0.6 * s)))
     elif kind == "hover":
         # no wheels: hover pads with glowing rings, sleek nose and fins
         for p in pieces:
@@ -287,10 +295,12 @@ def vehicle(name, s, color, kind):
         pieces = [chassis]
         for x in (-1, 1):
             for y in (-1, 1):
-                pieces.append(cyl("3A3A46", loc=(x * (W / 2 - 0.6), y * L * 0.32, wr * 0.7), r=0.9 * s, h=0.5 * s, verts=20))
+                # pads tucked under the chassis (their top sinks into its underside)
+                pieces.append(cyl("3A3A46", loc=(x * (W / 2 - 0.6), y * L * 0.32, wr - 0.2 * s), r=0.9 * s, h=0.5 * s, verts=20))
         pieces += [seat, back]
         pieces.append(sphere(shade(color, 0.15), loc=(0, -L / 2 + 0.8 * s, wr + 1.0 * s), scale=(W / 2 - 0.4, 1.8 * s, 0.7 * s)))
-        pieces.append(sphere("9BE6FF", loc=(0, -0.9 * s, wr + 2.0 * s), scale=(1.3 * s, 1.0 * s, 0.7 * s)))
+        # glass bubble sits on the chassis (its bottom dips into the top)
+        pieces.append(sphere("9BE6FF", loc=(0, -0.9 * s, top + 0.6 * s), scale=(1.3 * s, 1.0 * s, 0.7 * s)))
         for x in (-1, 1):
             pieces.append(box(shade(color, -0.25), loc=(x * (W / 2 - 0.8), L / 2 - 0.8 * s, wr + 2.0 * s), size=(0.25 * s, 1.6 * s, 1.6 * s), bevel=0.1 * s, rot=(20, 0, 0)))
     elif kind == "rover":
@@ -298,11 +308,15 @@ def vehicle(name, s, color, kind):
         for x in (-1, 1):
             pieces += wheel("2A2A33", x * (W / 2 - 0.1), 0, wr, 0.8 * s)
         pieces.append(box(shade(color, -0.1), loc=(0, -1.8 * s, wr + 2.0 * s), size=(W - 1.4, 3.0 * s, 1.8 * s), bevel=0.3 * s))
+        wing_z = wr + 2.2 * s
         for x in (-1, 1):
-            pieces.append(box("2A4AA0", loc=(x * (W / 2 + 1.6 * s), 1.2 * s, wr + 2.2 * s), size=(3.0 * s, 4.0 * s, 0.12 * s)))
+            pieces.append(box("2A4AA0", loc=(x * (W / 2 + 1.6 * s), 1.2 * s, wing_z), size=(3.0 * s, 4.0 * s, 0.12 * s)))
             for k in range(3):
-                pieces.append(box("8CB4FF", loc=(x * (W / 2 + 1.6 * s), 1.2 * s + (k - 1) * 1.3 * s, wr + 2.29 * s), size=(2.7 * s, 1.1 * s, 0.03)))
-            pieces.append(cyl("C8C8D2", loc=(x * (W / 2 + 0.1), 1.2 * s, wr + 2.2 * s), r=0.1 * s, h=0.9 * s, rot=(0, 90, 0), verts=8))
+                pieces.append(box("8CB4FF", loc=(x * (W / 2 + 1.6 * s), 1.2 * s + (k - 1) * 1.3 * s, wing_z + 0.075 * s), size=(2.7 * s, 1.1 * s, 0.03 * s)))
+            # wing mount: a post up from the chassis top, then an arm out to the panel's edge
+            px = x * (W / 2 - 0.6)
+            pieces.append(cyl("C8C8D2", loc=(px, 1.2 * s, (top + wing_z) / 2), r=0.14 * s, h=wing_z - top + 0.14 * s, verts=10))
+            pieces.append(tube("C8C8D2", [(px, 1.2 * s, wing_z), (x * (W / 2 + 0.2 * s), 1.2 * s, wing_z)], 0.12 * s, seg=8))
         pieces.append(cyl("C8C8D2", loc=(0, -2.4 * s, wr + 3.6 * s), r=0.15 * s, h=1.6 * s, verts=10))
         pieces.append(box("3A3A46", loc=(0, -2.5 * s, wr + 4.5 * s), size=(1.2 * s, 0.7 * s, 0.6 * s), bevel=0.1 * s))
     elif kind == "rocket":
@@ -313,7 +327,8 @@ def vehicle(name, s, color, kind):
             pieces.append(cyl("C8C8D2", loc=(x * 1.6 * s, L / 2 - 0.4 * s, wr + 1.8 * s), r=0.8 * s, h=3.0 * s, rot=(90, 0, 0), verts=16))
             pieces.append(cone("FF5A3C", loc=(x * 1.6 * s, L / 2 + 1.3 * s, wr + 1.8 * s), r=0.6 * s, h=1.2 * s, rot=(-90, 0, 0), verts=12))
             pieces.append(box(shade(color, -0.25), loc=(x * (W / 2 + 0.9 * s), 1.0 * s, wr + 1.0 * s), size=(2.2 * s, 2.6 * s, 0.2 * s), bevel=0.08 * s, rot=(0, x * -12, 0)))
-        pieces.append(box(shade(color, -0.25), loc=(0, L / 2 - 0.6 * s, wr + 3.0 * s), size=(0.25 * s, 1.8 * s, 2.0 * s), bevel=0.08 * s))
+        # tail fin stands on the chassis (it used to hover above it)
+        pieces.append(box(shade(color, -0.25), loc=(0, L / 2 - 0.6 * s, top + 0.95 * s), size=(0.25 * s, 1.8 * s, 2.0 * s), bevel=0.08 * s))
     else:  # crawler
         for x in (-1, 1):
             pieces.append(box("3A3A46", loc=(x * (W / 2 - 0.2), 0, wr * 0.9), size=(1.2 * s, L * 0.95, wr * 1.8), bevel=0.5 * s))
@@ -329,7 +344,14 @@ def vehicle(name, s, color, kind):
     bristle = [box("FFB43C" if i % 2 else "FF8C3C", loc=(0, by + math.cos(t) * 0.68 * s, 0.75 * s + math.sin(t) * 0.68 * s), size=(W * 1.05, 0.14 * s, 0.3 * s),
                    rot=(math.degrees(t), 0, 0), bevel=0.04 * s) for i, t in enumerate([i * math.pi / 6 for i in range(12)])]
     bristle += [cyl(shade(color, -0.3), loc=(x * W * 0.53, by, 0.75 * s), r=0.4 * s, h=0.12 * s, rot=(0, 90, 0), verts=12) for x in (-1, 1)]
-    arm = [box("3A3A46", loc=(x * (W / 2 + 0.2), by / 2 - 0.5, 1.0 * s), size=(0.25 * s, abs(by) - L / 2 + 2.5 * s, 0.25 * s)) for x in (-1, 1)]
+    # arms run from inside the chassis' front face out to the brush hubs, in front of the
+    # front wheels (they used to run through the wheels and stop short of the hubs)
+    arm = []
+    for x in (-1, 1):
+        start = (x * (W / 2 - 0.6), -L / 2 + 0.4 * s, wr + 0.35 * s)
+        end = (x * W * 0.53, by, 0.75 * s)
+        arm.append(tube("3A3A46", [start, end], 0.16 * s, seg=8))
+        arm.append(cyl("C8C8D2", loc=end, r=0.24 * s, h=0.2 * s, rot=(0, 90, 0), verts=10))
     a.part("Body_Arms", arm, parent="Body")
     a.part("Brush", [brush] + bristle, parent="Body", joint=(0, by, 0.75 * s))
     lights = [sphere("FFF5C8", loc=(x * (W / 2 - 0.8), -L / 2 - 0.12 * s, wr + 0.8 * s), scale=(0.34 * s, 0.12 * s, 0.3 * s)) for x in (-1, 1)]
@@ -347,18 +369,43 @@ def car_details(s, W, L, wr, color, kind):
     p = []
     p.append(box("FFFFFF", loc=(0, 0, top + 0.02), size=(0.9 * s, L * 0.98, 0.06 * s), bevel=0.02 * s))
     p.append(box(shade(color, -0.35), loc=(0, 0, top + 0.03), size=(0.25 * s, L * 0.99, 0.07 * s)))
+    # bumpers the same width as the body (they used to stick out past its sides)
     for y in (-1, 1):
-        p.append(box("3A3A46", loc=(0, y * (L / 2 + 0.1 * s), wr + 0.45 * s), size=(W - 0.2, 0.45 * s, 0.45 * s), bevel=0.15 * s))
+        p.append(box("3A3A46", loc=(0, y * (L / 2 + 0.1 * s), wr + 0.45 * s), size=(W - 0.7, 0.45 * s, 0.45 * s), bevel=0.15 * s))
     for k in range(4):
         p.append(box("2A2A33", loc=(-0.75 * s + k * 0.5 * s, -L / 2 - 0.02, wr + 1.0 * s), size=(0.12 * s, 0.1 * s, 0.45 * s)))
     for x in (-1, 1):
         p.append(box(shade(color, -0.2), loc=(x * (W / 2 - 0.25), 0, wr + 0.25 * s), size=(0.35 * s, L * 0.55, 0.3 * s), bevel=0.1 * s))
     if kind != "hover":
-        p.append(cyl("2A2A3A", loc=(0, 0.1 * s, wr + 2.0 * s), r=0.12 * s, h=1.2 * s, rot=(-40, 0, 0), verts=8))
-        p.append(torus("2A2A3A", loc=(0, -0.3 * s, wr + 2.45 * s), R=0.45 * s, r=0.07 * s, rot=(50, 0, 0), seg=18, mseg=6))
+        # dashboard in front of the seat, steering column out of it, wheel with spokes on
+        # the column's end (they used to float above the floor)
+        dash_y = -0.9 * s
+        p.append(box("2A2A3A", loc=(0, dash_y, top + 0.35 * s), size=(W * 0.55, 0.5 * s, 0.7 * s), bevel=0.15 * s))
+        p.append(box("9BE6FF", loc=(-0.6 * s, dash_y + 0.26 * s, top + 0.45 * s), size=(0.45 * s, 0.03 * s, 0.25 * s)))
+        p.append(box("FFD23C", loc=(0.6 * s, dash_y + 0.26 * s, top + 0.45 * s), size=(0.3 * s, 0.03 * s, 0.25 * s)))
+        col0 = Vector((0, dash_y + 0.1 * s, top + 0.55 * s))
+        col1 = Vector((0, -0.35 * s, top + 1.1 * s))
+        p.append(tube("2A2A3A", [tuple(col0), tuple(col1)], 0.09 * s, seg=8))
+        tilt = 50
+        p.append(torus("2A2A3A", loc=tuple(col1), R=0.45 * s, r=0.07 * s, rot=(tilt, 0, 0), seg=18, mseg=6))
+        for ang in (0, 120, 240):
+            sp = box("2A2A3A", loc=(0, 0, 0), size=(0.9 * s, 0.07 * s, 0.07 * s), rot=(0, 0, ang))
+            sp.location = col1
+            sp.rotation_euler = (math.radians(tilt), 0, 0)
+            bpy.context.view_layer.update()
+            sp.select_set(True)
+            bpy.context.view_layer.objects.active = sp
+            bpy.ops.object.transform_apply(location=True, rotation=True)
+            sp.select_set(False)
+            p.append(sp)
+        p.append(cyl("FF4A4A", loc=tuple(col1), r=0.12 * s, h=0.12 * s, rot=(tilt, 0, 0), verts=10))
     for x in (-1, 1):
         p.append(cyl("C8C8D2", loc=(x * (W / 2 - 0.9 * s), L / 2 + 0.2 * s, wr + 0.6 * s), r=0.18 * s, h=0.8 * s, rot=(90, 0, 0), verts=10))
-        p.append(sphere("C8C8D2", loc=(x * (W / 2 + 0.15 * s), -0.6 * s, wr + 2.1 * s), scale=(0.15 * s, 0.1 * s, 0.22 * s)))
+        # mirrors on short stalks from the body's top edge (they used to float beside the car)
+        base_pt = (x * (W / 2 - 0.45), -1.3 * s, top - 0.05 * s)
+        tip = (x * (W / 2 + 0.05 * s), -1.3 * s, top + 0.55 * s)
+        p.append(tube("C8C8D2", [base_pt, tip], 0.06 * s, seg=6))
+        p.append(sphere("C8C8D2", loc=(tip[0] + x * 0.1 * s, tip[1], tip[2] + 0.12 * s), scale=(0.18 * s, 0.1 * s, 0.24 * s)))
     if kind in ("cart", "buggy", "crawler"):
         hy = 2.9 * s if kind != "crawler" else 2.6 * s
         p.append(box(shade(color, -0.15), loc=(0, hy, wr + 2.0 * s), size=(W * 0.62, 1.6 * s, 1.6 * s), bevel=0.3 * s))
