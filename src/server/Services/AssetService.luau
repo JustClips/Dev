@@ -11,11 +11,25 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local Assets = require(Shared.Config.Assets)
 local Signal = require(Shared.Signal)
 
-local PARALLEL = 8
+local PARALLEL = 12
 
 local AssetService = {
 	Ready = Signal.new() :: Signal.Signal<>,
+	-- Eggs load first, then pets, then everything else, so bases and the hotbar show the
+	-- real models within a few seconds instead of after every model is in.
+	EggsReady = Signal.new() :: Signal.Signal<>,
+	CoreReady = Signal.new() :: Signal.Signal<>,
 }
+
+-- 0 = eggs, 1 = pets, 2 = the rest.
+local function rank(name: string): number
+	if string.sub(name, 1, 4) == "Egg_" then
+		return 0
+	elseif string.sub(name, 1, 6) == "Alien_" then
+		return 1
+	end
+	return 2
+end
 
 local folder: Folder
 local loaded = 0
@@ -64,6 +78,10 @@ function AssetService:IsReady(): boolean
 	return folder:GetAttribute("Ready") == true
 end
 
+function AssetService:IsCoreReady(): boolean
+	return folder:GetAttribute("CoreReady") == true
+end
+
 function AssetService:WaitReady(timeout: number?)
 	local deadline = os.clock() + (timeout or 60)
 	while not AssetService:IsReady() and os.clock() < deadline do
@@ -79,9 +97,27 @@ function AssetService:Init()
 	task.spawn(function()
 		local started = os.clock()
 		local queue = {}
+		local pending = { [0] = 0, [1] = 0, [2] = 0 }
 		for name, meta in Assets.Models do
-			table.insert(queue, { name = name, id = meta.id, fallback = meta.fallback })
+			local r = rank(name)
+			pending[r] += 1
+			table.insert(queue, { name = name, id = meta.id, fallback = meta.fallback, rank = r })
 		end
+		table.sort(queue, function(a, b)
+			return a.rank < b.rank
+		end)
+		local function milestones()
+			if pending[0] == 0 and folder:GetAttribute("EggsReady") ~= true then
+				folder:SetAttribute("EggsReady", true)
+				AssetService.EggsReady:Fire()
+			end
+			if pending[0] == 0 and pending[1] == 0 and folder:GetAttribute("CoreReady") ~= true then
+				folder:SetAttribute("CoreReady", true)
+				print(string.format("[AssetService] eggs and pets ready in %.1f s", os.clock() - started))
+				AssetService.CoreReady:Fire()
+			end
+		end
+		milestones()
 		local running = 0
 		for _, job in queue do
 			while running >= PARALLEL do
@@ -91,6 +127,8 @@ function AssetService:Init()
 			task.spawn(function()
 				loadOne(job.name, job.id, job.fallback)
 				running -= 1
+				pending[job.rank] -= 1
+				milestones()
 			end)
 		end
 		while running > 0 do

@@ -140,6 +140,30 @@ function AssetLibrary.waitReady(timeout: number?): boolean
 	return f:GetAttribute("Ready") == true
 end
 
+-- Milestones while the server loads models (AssetService): "EggsReady" (egg models in),
+-- "CoreReady" (eggs and pets in), "Ready" (everything). Waits up to timeout seconds.
+function AssetLibrary.waitFor(milestone: string, timeout: number?): boolean
+	local f = folder() or ReplicatedStorage:WaitForChild(FOLDER_NAME, timeout or 30)
+	if not f then
+		return false
+	end
+	local deadline = os.clock() + (timeout or 30)
+	while f:GetAttribute(milestone) ~= true and f:GetAttribute("Ready") ~= true and os.clock() < deadline do
+		task.wait(0.2)
+	end
+	return f:GetAttribute(milestone) == true or f:GetAttribute("Ready") == true
+end
+
+-- Runs fn once the egg and pet models are in (right away if they already are), so views
+-- built from placeholders can redraw.
+function AssetLibrary.onCoreReady(fn: () -> ())
+	task.spawn(function()
+		if AssetLibrary.waitFor("CoreReady", 300) then
+			fn()
+		end
+	end)
+end
+
 -- A fresh copy of a loaded model, or nil if it isn't available.
 function AssetLibrary.get(name: string): Model?
 	local f = folder()

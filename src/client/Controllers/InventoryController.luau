@@ -19,6 +19,7 @@ local State = require(Client.State)
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
 local PetPassives = require(Shared.PetPassives)
 local Weights = require(Shared.Config.Weights)
@@ -377,6 +378,11 @@ function InventoryController:Init(controllers)
 end
 
 function InventoryController:Start()
+	-- Tiles drawn before the pet/egg models loaded show placeholders: redraw once they're in.
+	AssetLibrary.onCoreReady(function()
+		lastSignature = ""
+		render(true)
+	end)
 	Ui.button(Ui.find(window, "Close"), function()
 		Ui.close("Inventory")
 	end)

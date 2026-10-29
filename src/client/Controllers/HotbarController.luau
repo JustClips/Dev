@@ -363,6 +363,11 @@ function HotbarController:Refresh()
 end
 
 function HotbarController:Start()
+	-- Slots drawn before the pet/egg models loaded show placeholders: redraw once they're in.
+	AssetLibrary.onCoreReady(function()
+		table.clear(shownKeys)
+		HotbarController:Refresh()
+	end)
 	task.spawn(hideDefaultBackpack)
 	Ui.button(toolSlot, toggleTool)
 	Ui.button(carSlot, toggleCar)

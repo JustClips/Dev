@@ -413,7 +413,7 @@ end
 
 function PetController:Start()
 	-- Wait for the Blender models so parks don't fill with placeholders first.
-	AssetLibrary.waitReady(45)
+	AssetLibrary.waitFor("CoreReady", 45)
 	local bases = Workspace:WaitForChild("Moon"):WaitForChild("Bases")
 	for i = 1, World.BaseCount do
 		local base = bases:WaitForChild("Base" .. i, 30)

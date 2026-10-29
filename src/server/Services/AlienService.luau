@@ -273,14 +273,16 @@ function AlienService:Init(services)
 end
 
 function AlienService:Start()
-	-- Bases built before the models finished loading show part-built placeholder eggs and
-	-- pets: rebuild them once the real models are in.
-	if not S.AssetService:IsReady() then
-		S.AssetService.Ready:Connect(function()
-			for player in S.DataService:GetSessions() do
-				AlienService:RefreshBase(player)
-			end
-		end)
+	-- Bases built before the models finished loading show part-built placeholder eggs:
+	-- rebuild them as soon as the egg models are in (they load first, see AssetService).
+	local function refreshAll()
+		for player in S.DataService:GetSessions() do
+			AlienService:RefreshBase(player)
+		end
+	end
+	local folder = ReplicatedStorage:FindFirstChild("Assets")
+	if not (folder and folder:GetAttribute("EggsReady")) then
+		S.AssetService.EggsReady:Connect(refreshAll)
 	end
 	task.spawn(function()
 		while true do
