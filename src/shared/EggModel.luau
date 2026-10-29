@@ -132,8 +132,8 @@ function EggModel.build(rarity: string): Model
 		-- crown points around the top
 		for k = 0, 3 do
 			local a = math.rad(45 + 90 * k)
-			part(model, "Crown" .. k, Vector3.new(0.3, 0.6, 0.3), CFrame.new(math.cos(a) * 0.55, top + 0.3, math.sin(a) * 0.55), theme.band)
-			part(model, "Gem" .. k, Vector3.new(0.18, 0.18, 0.18), CFrame.new(math.cos(a) * 0.55, top + 0.68, math.sin(a) * 0.55), theme.glow :: Color3, true)
+			part(model, "Crown" .. k, Vector3.new(0.3, 0.6, 0.3), CFrame.new(math.cos(a) * 0.55, top + 0.2, math.sin(a) * 0.55), theme.band)
+			part(model, "Gem" .. k, Vector3.new(0.18, 0.18, 0.18), CFrame.new(math.cos(a) * 0.55, top + 0.55, math.sin(a) * 0.55), theme.glow :: Color3, true)
 		end
 	elseif rarity == "Mythic" then
 		-- horns and lava glowing through the bottom
