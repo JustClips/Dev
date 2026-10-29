@@ -101,6 +101,20 @@ local List: { AlienDef } = {
 		Passive = { Name = "Overclock", Stat = "HatchSpeed", Value = 0.25 } },
 	{ Id = "Gargoyle", Name = "Gargoyle", Rarity = "Mythic", Zone = "Mars", Income = 600_000, Color = Color3.fromRGB(110, 112, 124), Size = 4.4,
 		Passive = { Name = "Stone Guardian", Stat = "Backpack", Value = 0.35 } },
+
+	-- Snowy Peaks (zone Europa): income x250.
+	{ Id = "SnowHare", Name = "Snow Hare", Rarity = "Common", Zone = "Europa", Income = 375, Color = Color3.fromRGB(246, 248, 252), Size = 2.2,
+		Passive = { Name = "Snowshoes", Stat = "ComboTime", Value = 0.4 } },
+	{ Id = "MountainGoat", Name = "Mountain Goat", Rarity = "Uncommon", Zone = "Europa", Income = 2_000, Color = Color3.fromRGB(242, 240, 234), Size = 2.4,
+		Passive = { Name = "Sure Footed", Stat = "Power", Value = 0.1 } },
+	{ Id = "SnowLeopard", Name = "Snow Leopard", Rarity = "Rare", Zone = "Europa", Income = 10_000, Color = Color3.fromRGB(230, 232, 236), Size = 2.4,
+		Passive = { Name = "Silent Stalk", Stat = "Crit", Value = 0.04 } },
+	{ Id = "Mammoth", Name = "Mammoth", Rarity = "Epic", Zone = "Europa", Income = 57_500, Color = Color3.fromRGB(138, 90, 54), Size = 4,
+		Passive = { Name = "Ice Age Hoard", Stat = "Backpack", Value = 0.25 } },
+	{ Id = "FrostEagle", Name = "Frost Eagle", Rarity = "Legendary", Zone = "Europa", Income = 350_000, Color = Color3.fromRGB(122, 168, 216), Size = 3.6,
+		Passive = { Name = "Eagle Eye", Stat = "Luck", Value = 0.3 } },
+	{ Id = "Yeti", Name = "Yeti", Rarity = "Mythic", Zone = "Europa", Income = 2_500_000, Color = Color3.fromRGB(244, 246, 250), Size = 5,
+		Passive = { Name = "Avalanche", Stat = "Radius", Value = 0.35 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new

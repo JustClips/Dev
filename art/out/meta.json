@@ -12546,5 +12546,766 @@
    ]
   },
   "tris": 976
+ },
+ "Alien_SnowHare": {
+  "name": "Alien_SnowHare",
+  "kind": "alien",
+  "parts": {
+   "LegFL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     0.39,
+     -0.39
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegFR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     0.39,
+     -0.39
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     0.39,
+     0.39
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     0.39,
+     0.39
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     -0.65
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarL": {
+    "parent": "Head",
+    "joint": [
+     -0.26,
+     1.56,
+     -0.91
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarR": {
+    "parent": "Head",
+    "joint": [
+     0.26,
+     1.56,
+     -0.91
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.65,
+     0.65
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_SnowHare_Idle",
+   "walk": "Pet_SnowHare_Walk"
+  },
+  "bounds": {
+   "min": [
+    -0.52,
+    0.0,
+    -1.43
+   ],
+   "max": [
+    0.52,
+    2.47,
+    0.91
+   ]
+  },
+  "tris": 1744
+ },
+ "Alien_MountainGoat": {
+  "name": "Alien_MountainGoat",
+  "kind": "alien",
+  "parts": {
+   "LegFL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     0.78,
+     -0.65
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegFR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     0.78,
+     -0.65
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     0.78,
+     0.65
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     0.78,
+     0.65
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.43,
+     -0.91
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Horns": {
+    "parent": "Head",
+    "joint": [
+     -0.0,
+     2.08,
+     -1.17
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarL": {
+    "parent": "Head",
+    "joint": [
+     -0.39,
+     1.95,
+     -1.17
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarR": {
+    "parent": "Head",
+    "joint": [
+     0.39,
+     1.95,
+     -1.17
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.43,
+     0.91
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_MountainGoat_Idle",
+   "walk": "Pet_MountainGoat_Walk"
+  },
+  "bounds": {
+   "min": [
+    -0.65,
+    0.0,
+    -1.82
+   ],
+   "max": [
+    0.65,
+    2.6,
+    1.04
+   ]
+  },
+  "tris": 1864
+ },
+ "Alien_SnowLeopard": {
+  "name": "Alien_SnowLeopard",
+  "kind": "alien",
+  "parts": {
+   "LegFL": {
+    "parent": "Body",
+    "joint": [
+     -0.286,
+     0.572,
+     -0.715
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegFR": {
+    "parent": "Body",
+    "joint": [
+     0.286,
+     0.572,
+     -0.715
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBL": {
+    "parent": "Body",
+    "joint": [
+     -0.286,
+     0.572,
+     0.715
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBR": {
+    "parent": "Body",
+    "joint": [
+     0.286,
+     0.572,
+     0.715
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.144,
+     -1.001
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Eyes_Glow": {
+    "parent": "Head",
+    "joint": [
+     -0.0,
+     1.5015,
+     -1.716
+    ],
+    "glow": "8ED8E8",
+    "material": null,
+    "collide": false
+   },
+   "EarL": {
+    "parent": "Head",
+    "joint": [
+     -0.429,
+     1.859,
+     -1.287
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarR": {
+    "parent": "Head",
+    "joint": [
+     0.429,
+     1.859,
+     -1.287
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.144,
+     1.001
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail2": {
+    "parent": "Tail",
+    "joint": [
+     -0.0,
+     1.144,
+     1.716
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_SnowLeopard_Idle",
+   "walk": "Pet_SnowLeopard_Walk"
+  },
+  "bounds": {
+   "min": [
+    -0.572,
+    0.0,
+    -1.859
+   ],
+   "max": [
+    0.572,
+    2.002,
+    2.431
+   ]
+  },
+  "tris": 2108
+ },
+ "Alien_Mammoth": {
+  "name": "Alien_Mammoth",
+  "kind": "alien",
+  "parts": {
+   "LegFL": {
+    "parent": "Body",
+    "joint": [
+     -0.624,
+     1.248,
+     -1.248
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegFR": {
+    "parent": "Body",
+    "joint": [
+     0.624,
+     1.248,
+     -1.248
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBL": {
+    "parent": "Body",
+    "joint": [
+     -0.624,
+     1.248,
+     1.248
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBR": {
+    "parent": "Body",
+    "joint": [
+     0.624,
+     1.248,
+     1.248
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     2.704,
+     -1.664
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Trunk": {
+    "parent": "Head",
+    "joint": [
+     -0.0,
+     2.288,
+     -2.6
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Trunk2": {
+    "parent": "Trunk",
+    "joint": [
+     -0.0,
+     1.248,
+     -2.704
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "TuskL": {
+    "parent": "Head",
+    "joint": [
+     -0.52,
+     2.08,
+     -2.496
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "TuskR": {
+    "parent": "Head",
+    "joint": [
+     0.52,
+     2.08,
+     -2.496
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarL": {
+    "parent": "Head",
+    "joint": [
+     -0.832,
+     2.912,
+     -1.872
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarR": {
+    "parent": "Head",
+    "joint": [
+     0.832,
+     2.912,
+     -1.872
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     2.496,
+     1.664
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_Mammoth_Idle",
+   "walk": "Pet_Mammoth_Walk"
+  },
+  "bounds": {
+   "min": [
+    -1.04,
+    0.0,
+    -3.536
+   ],
+   "max": [
+    1.04,
+    3.952,
+    1.872
+   ]
+  },
+  "tris": 3308
+ },
+ "Alien_FrostEagle": {
+  "name": "Alien_FrostEagle",
+  "kind": "alien",
+  "parts": {
+   "LegL": {
+    "parent": "Body",
+    "joint": [
+     -0.2925,
+     0.585,
+     0.0
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegR": {
+    "parent": "Body",
+    "joint": [
+     0.2925,
+     0.585,
+     0.0
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.95,
+     -0.585
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "WingL": {
+    "parent": "Body",
+    "joint": [
+     -0.585,
+     1.755,
+     -0.195
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "WingR": {
+    "parent": "Body",
+    "joint": [
+     0.585,
+     1.755,
+     -0.195
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.17,
+     1.17
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_FrostEagle_Idle",
+   "walk": "Pet_FrostEagle_Walk"
+  },
+  "float": true,
+  "aura": "Frost",
+  "bounds": {
+   "min": [
+    -2.535,
+    0.0,
+    -1.755
+   ],
+   "max": [
+    2.535,
+    2.73,
+    1.95
+   ]
+  },
+  "tris": 1952
+ },
+ "Alien_Yeti": {
+  "name": "Alien_Yeti",
+  "kind": "alien",
+  "parts": {
+   "LegL": {
+    "parent": "Body",
+    "joint": [
+     -0.52,
+     1.248,
+     0.0
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegR": {
+    "parent": "Body",
+    "joint": [
+     0.52,
+     1.248,
+     0.0
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     3.328,
+     -0.208
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Horns_Glow": {
+    "parent": "Head",
+    "joint": [
+     -0.0,
+     4.784,
+     -0.208
+    ],
+    "glow": "C8E8FF",
+    "material": null,
+    "collide": false
+   },
+   "ArmL": {
+    "parent": "Body",
+    "joint": [
+     -1.248,
+     3.12,
+     0.0
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "ArmR": {
+    "parent": "Body",
+    "joint": [
+     1.248,
+     3.12,
+     0.0
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Crystals_Glow": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     2.496,
+     0.832
+    ],
+    "glow": "7EE8FF",
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_Yeti_Idle",
+   "walk": "Pet_Yeti_Walk"
+  },
+  "aura": "Snowfall",
+  "bounds": {
+   "min": [
+    -1.664,
+    0.0,
+    -1.248
+   ],
+   "max": [
+    1.664,
+    5.408,
+    1.456
+   ]
+  },
+  "tris": 3352
  }
 }
