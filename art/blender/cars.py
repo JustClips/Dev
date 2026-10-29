@@ -144,8 +144,14 @@ def build_car(name, s, spec):
 
 
 def wheels_of(layout):
-    """layout {key: (x, y, r, w)} -> {key: (pieces, hub)}"""
-    return {k: (wheel(x, y, r, w), (x, y, r)) for k, (x, y, r, w) in layout.items()}
+    """layout {any: (x, y, r, w)} -> {"FL"/"FR"/"RL"/"RR": (pieces, hub)}. The name comes
+    from the position: the car faces -Y, so the driver's LEFT is +X in Blender (which is
+    -X in Roblox, where the car faces -Z and RightVector is +X)."""
+    out = {}
+    for (x, y, r, w) in layout.values():
+        key = ("F" if y < 0 else "R") + ("L" if x > 0 else "R")
+        out[key] = (wheel(x, y, r, w), (x, y, r))
+    return out
 
 
 def headlights(xs, y, z, r=0.16):
