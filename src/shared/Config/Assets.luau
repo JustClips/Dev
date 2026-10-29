@@ -2661,6 +2661,97 @@ Assets.Models = {
 			},
 		},
 	},
+	LeafDump = {
+		bounds = {
+			max = Vector3.new(3.9, 5.966, 3.3),
+			min = Vector3.new(-4.39, 0.0, -3.35),
+		},
+		id = 77639113965628,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Leaf_Birch = {
+		bounds = {
+			max = Vector3.new(0.242, 0.036, 0.361),
+			min = Vector3.new(-0.242, -0.036, -0.551),
+		},
+		id = 96601474512216,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Maple = {
+		bounds = {
+			max = Vector3.new(0.421, 0.052, 0.421),
+			min = Vector3.new(-0.421, -0.053, -0.552),
+		},
+		id = 134717605810868,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Oak = {
+		bounds = {
+			max = Vector3.new(0.299, 0.047, 0.32),
+			min = Vector3.new(-0.299, -0.047, -0.606),
+		},
+		id = 140467676604506,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Paper = {
+		bounds = {
+			max = Vector3.new(0.429, 0.058, 0.465),
+			min = Vector3.new(-0.482, -0.078, -0.445),
+		},
+		id = 106384808489451,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Seaweed = {
+		bounds = {
+			max = Vector3.new(0.222, 0.039, 0.601),
+			min = Vector3.new(-0.201, -0.039, -0.601),
+		},
+		id = 130445140053376,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Snow = {
+		bounds = {
+			max = Vector3.new(0.458, 0.199, 0.368),
+			min = Vector3.new(-0.5, -0.187, -0.346),
+		},
+		id = 78516068863706,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
 	Mushroom_Glow = {
 		bounds = {
 			max = Vector3.new(2.0, 2.432, 0.83),
@@ -2992,6 +3083,123 @@ Assets.Models = {
 			},
 		},
 		tip = Vector3.new(-0.0, -0.81, -1.85),
+	},
+	Trash_Bottle = {
+		bounds = {
+			max = Vector3.new(0.285, 0.565, 0.6),
+			min = Vector3.new(-0.285, -0.005, -0.89),
+		},
+		id = 106236133945773,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_Bucket = {
+		bounds = {
+			max = Vector3.new(0.53, 0.975, 0.505),
+			min = Vector3.new(-0.53, -0.075, -0.812),
+		},
+		id = 78846520972834,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_Can = {
+		bounds = {
+			max = Vector3.new(0.327, 0.665, 0.61),
+			min = Vector3.new(-0.327, -0.005, -0.61),
+		},
+		id = 92881779116784,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_ChipBag = {
+		bounds = {
+			max = Vector3.new(0.6, 0.37, 0.88),
+			min = Vector3.new(-0.6, -0.006, -0.88),
+		},
+		id = 83740529075055,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_Cup = {
+		bounds = {
+			max = Vector3.new(0.35, 0.67, 0.475),
+			min = Vector3.new(-0.35, -0.03, -1.02),
+		},
+		id = 94334139515348,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_JuiceBox = {
+		bounds = {
+			max = Vector3.new(0.375, 0.63, 0.6),
+			min = Vector3.new(-0.375, 0.0, -1.003),
+		},
+		id = 87361897530132,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_PaperBall = {
+		bounds = {
+			max = Vector3.new(0.464, 0.853, 0.46),
+			min = Vector3.new(-0.422, -0.013, -0.425),
+		},
+		id = 87396935425239,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_PizzaBox = {
+		bounds = {
+			max = Vector3.new(0.75, 0.255, 0.75),
+			min = Vector3.new(-0.75, 0.0, -0.75),
+		},
+		id = 76989347266114,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_Shell = {
+		bounds = {
+			max = Vector3.new(0.688, 0.26, 0.55),
+			min = Vector3.new(-0.688, -0.02, -0.425),
+		},
+		id = 105374300628530,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
 	},
 	Tree_Bulb = {
 		bounds = {
