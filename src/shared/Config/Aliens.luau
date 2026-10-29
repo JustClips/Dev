@@ -115,6 +115,16 @@ local List: { AlienDef } = {
 		Passive = { Name = "Eagle Eye", Stat = "Luck", Value = 0.3 } },
 	{ Id = "Yeti", Name = "Yeti", Rarity = "Mythic", Zone = "Europa", Income = 2_500_000, Color = Color3.fromRGB(244, 246, 250), Size = 5,
 		Passive = { Name = "Avalanche", Stat = "Radius", Value = 0.35 } },
+
+	-- Zone Cosmic pets (Cosmic eggs hatched in that zone).
+	{ Id = "ButterflyQueen", Name = "Butterfly Queen", Rarity = "Cosmic", Zone = "Crater", Income = 240_000, Color = Color3.fromRGB(255, 122, 200), Size = 4.2,
+		Passive = { Name = "Pollinate", Stat = "HatchSpeed", Value = 0.4 } },
+	{ Id = "Kraken", Name = "Kraken", Rarity = "Cosmic", Zone = "DarkSide", Income = 900_000, Color = Color3.fromRGB(184, 48, 74), Size = 5,
+		Passive = { Name = "Many Arms", Stat = "Backpack", Value = 0.4 } },
+	{ Id = "MechaRex", Name = "Mecha Rex", Rarity = "Cosmic", Zone = "Mars", Income = 3_600_000, Color = Color3.fromRGB(255, 58, 216), Size = 5,
+		Passive = { Name = "Overdrive", Stat = "Power", Value = 0.35 } },
+	{ Id = "AuroraWhale", Name = "Aurora Whale", Rarity = "Cosmic", Zone = "Europa", Income = 15_000_000, Color = Color3.fromRGB(79, 216, 255), Size = 5.5,
+		Passive = { Name = "Northern Lights", Stat = "Cash", Value = 0.3 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new
