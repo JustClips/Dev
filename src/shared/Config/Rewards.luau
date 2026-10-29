@@ -108,9 +108,14 @@ function Rewards.currentOrNextEvent(now: number): EventDef?
 	return best
 end
 
--- Day number (UTC) used for the daily streak.
+-- Day number (UTC). Old saves recorded the daily claim this way (Daily.LastDay).
 function Rewards.day(now: number): number
 	return now // 86400
 end
+
+-- The daily reward runs on each player's own clock: the next one opens 24 hours after the
+-- last claim, and the streak resets if it isn't claimed within 48 hours.
+Rewards.DailyCooldown = 24 * 3600
+Rewards.DailyStreakWindow = 48 * 3600
 
 return Rewards

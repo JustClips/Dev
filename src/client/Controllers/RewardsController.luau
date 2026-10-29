@@ -140,8 +140,11 @@ local function renderDaily(info)
 	if info.DailyReady then
 		setButton(claim, `Claim Day {info.DailyIndex}`, GREEN)
 	else
-		local tomorrow = (Rewards.day(info.Now) + 1) * 86400
-		local left = tomorrow - (info.Now + (os.clock() - playtimeAt))
+		-- 24 hours after your last claim (server clock, ticked on locally).
+		local nextAt = if type(info.DailyNextAt) == "number" and info.DailyNextAt > 0
+			then info.DailyNextAt
+			else (Rewards.day(info.Now) + 1) * 86400
+		local left = math.max(0, nextAt - (info.Now + (os.clock() - playtimeAt)))
 		setButton(claim, `Next in {Format.countdown(left)}`, GREY)
 	end
 end

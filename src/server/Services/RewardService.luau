@@ -81,18 +81,32 @@ end
 
 -------------------------------------------------------------------------- daily
 
--- Where the streak stands today: the card to show (1-7), whether it can be claimed now,
--- and the streak count to display.
-function RewardService:DailyStatus(data): (number, boolean, number)
-	local today = Rewards.day(now())
+-- When the player last claimed a daily reward. Saves from before the 24-hour clock only
+-- kept the UTC day: count those as claimed at the end of that day.
+local function lastClaim(daily): number
+	if type(daily.LastClaim) == "number" and daily.LastClaim > 0 then
+		return daily.LastClaim
+	end
+	if daily.LastDay and daily.LastDay > 0 then
+		return (daily.LastDay + 1) * 86400 - 1
+	end
+	return 0
+end
+
+-- Where the streak stands now: the card to show (1-7), whether it can be claimed, the
+-- streak count to display, and when the next one opens (0 when it's open now).
+function RewardService:DailyStatus(data): (number, boolean, number, number)
 	local daily = data.Daily
 	local count = #Rewards.Daily
-	if daily.LastDay == today then
-		return (daily.Streak - 1) % count + 1, false, daily.Streak
-	elseif daily.LastDay == today - 1 then
-		return daily.Streak % count + 1, true, daily.Streak
+	local last = lastClaim(daily)
+	local t = now()
+	if daily.Streak <= 0 or last <= 0 or t - last >= Rewards.DailyStreakWindow then
+		return 1, true, 0, 0
 	end
-	return 1, true, 0
+	if t - last < Rewards.DailyCooldown then
+		return (daily.Streak - 1) % count + 1, false, daily.Streak, last + Rewards.DailyCooldown
+	end
+	return daily.Streak % count + 1, true, daily.Streak, 0
 end
 
 local function claimDaily(player: Player): (boolean, string?)
@@ -106,6 +120,7 @@ local function claimDaily(player: Player): (boolean, string?)
 	end
 	data.Daily.Streak = streak + 1
 	data.Daily.LastDay = Rewards.day(now())
+	data.Daily.LastClaim = now()
 	local got = grant(player, Rewards.Daily[index], "Daily" .. index)
 	S.StateService:Mark(player)
 	return true, `Day {index} reward: {got}!`
@@ -243,7 +258,7 @@ function RewardService:Snapshot(player: Player): { [string]: any }?
 	if not data or not rt then
 		return nil
 	end
-	local index, ready, streak = RewardService:DailyStatus(data)
+	local index, ready, streak, nextAt = RewardService:DailyStatus(data)
 	local event = Rewards.currentOrNextEvent(now())
 	-- A plain list of booleans: sparse number keys don't survive remotes.
 	local claimed = {}
@@ -254,6 +269,7 @@ function RewardService:Snapshot(player: Player): { [string]: any }?
 		DailyIndex = index,
 		DailyReady = ready,
 		DailyStreak = streak,
+		DailyNextAt = nextAt,
 		Playtime = rt.Playtime,
 		PlaytimeClaimed = claimed,
 		StayLeft = if rt.StayAt then rt.StayAt - rt.Playtime else nil,
@@ -340,6 +356,14 @@ function RewardService:Start()
 						end
 					end
 					tickStay(player, rt)
+				end
+				-- And when the next daily reward opens (24 hours after the last claim).
+				if session.Data then
+					local _, ready = RewardService:DailyStatus(session.Data)
+					if ready and rt.DailyWasReady == false then
+						S.StateService:Mark(player)
+					end
+					rt.DailyWasReady = ready
 				end
 			end
 		end

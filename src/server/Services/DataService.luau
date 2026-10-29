@@ -39,7 +39,7 @@ local TEMPLATE: Types.ProfileData = {
 	Boosts = {},
 	Gamepasses = {},
 	GiftedPasses = {},
-	Daily = { Streak = 0, LastDay = 0 },
+	Daily = { Streak = 0, LastDay = 0, LastClaim = 0 },
 	ReceiptsGranted = {},
 	ReceiptOrder = {},
 	LastOnline = 0,

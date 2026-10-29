@@ -234,7 +234,7 @@ export type ProfileData = {
 	Gamepasses: { [string]: boolean },
 	-- Passes a friend gifted (gift products); count as owned for good.
 	GiftedPasses: { [string]: boolean },
-	Daily: { Streak: number, LastDay: number },
+	Daily: { Streak: number, LastDay: number, LastClaim: number? },
 	ReceiptsGranted: { [string]: string },
 	ReceiptOrder: { string },
 	LastOnline: number,
@@ -273,7 +273,7 @@ export type PlayerSnapshot = {
 	Index: { [string]: boolean },
 	Boosts: { [string]: number },
 	Gamepasses: { [string]: boolean },
-	Daily: { Streak: number, LastDay: number },
+	Daily: { Streak: number, LastDay: number, LastClaim: number? },
 	-- RewardService:Snapshot (daily card, session playtime, stay offer, group, event)
 	Rewards: { [string]: any }?,
 	Flags: { [string]: any },
