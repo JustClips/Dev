@@ -698,7 +698,7 @@ def inventory():
         button("Primary", U(1, -16, 0, 44), U(0.5, 0, 1, -58), (0.5, 1), color=SUCCESS, label="Place", ts=20, Visible=False),
         button("Secondary", U(1, -16, 0, 40), U(0.5, 0, 1, -10), (0.5, 1), color=DANGER, label="Sell", ts=18, Visible=False),
     ])
-    win = frame("Window", U(0, W, 0, H), U(0.5, 44, 1, -112), (0.5, 1), bg=SEE, BackgroundTransparency=0.3, children=[
+    win = frame("Window", U(0, W, 0, H), U(0.5, 0, 1, -112), (0.5, 1), bg=SEE, BackgroundTransparency=0.3, children=[
         autoscale(), border(INK, 3),
         text("Title", "All Items", U(0, 300, 0, 32), U(0, 14, 0, 6), ts=28, display=True, stroke=2.5, xa="Left"),
         text("Count", "Pets: 0/60", U(0, 300, 0, 22), U(0, 14, 0, 38), ts=18, display=True, stroke=2, xa="Left"),

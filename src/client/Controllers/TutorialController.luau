@@ -287,8 +287,13 @@ local function update()
 		else
 			pointAt(nil)
 		end
-		-- Make room for the arrow when it points at the hotbar.
-		card.Position = UDim2.new(0.5, 0, 1, -cardLift(onHotbar))
+		-- Make room for the arrow when it points at the hotbar, and sit above the backpack
+		-- window when it's open.
+		local lift = cardLift(onHotbar)
+		if inventoryOpen then
+			lift = math.ceil((112 + 316) * Ui.scale()) + 10
+		end
+		card.Position = UDim2.new(0.5, 0, 1, -lift)
 		return
 	end
 

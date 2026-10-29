@@ -2,6 +2,7 @@
 -- Small UI helpers shared by controllers. Layouts live in src/gui (*.model.json);
 -- controllers only find elements by name, so the art can be swapped freely.
 local GuiService = game:GetService("GuiService")
+local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
@@ -179,6 +180,79 @@ local function parts(gui: ScreenGui): (GuiObject?, UIScale?, GuiObject?)
 	return window, scale, dim
 end
 
+-- Big pages (shop, index, rebirth...) get an "opening" feel: the camera zooms out a little
+-- and the world behind blurs. Side panels and the backpack don't.
+local FOCUS_SCREENS = {
+	Shop = true,
+	Index = true,
+	Rebirth = true,
+	Garage = true,
+	Upgrades = true,
+	Daily = true,
+	Playtime = true,
+	Events = true,
+	Settings = true,
+}
+local FOCUS_IN = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local FOCUS_OUT = TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local FOCUS_BLUR = 12
+local FOCUS_FOV = 8
+local focused = false
+local baseFov: number? = nil
+
+local function focusBlur(): BlurEffect
+	local blur = Lighting:FindFirstChild("WindowBlur") :: BlurEffect?
+	if not blur then
+		local made = Instance.new("BlurEffect")
+		made.Name = "WindowBlur"
+		made.Size = 0
+		made.Parent = Lighting
+		blur = made
+	end
+	return blur :: BlurEffect
+end
+
+local function updateFocus()
+	local want = false
+	for name in FOCUS_SCREENS do
+		local gui = playerGui:FindFirstChild(name) :: ScreenGui?
+		if gui and gui.Enabled and not closing[gui] then
+			want = true
+			break
+		end
+	end
+	if want == focused then
+		return
+	end
+	focused = want
+	local camera = Workspace.CurrentCamera
+	local still = Ui.reducedMotion()
+	local blur = focusBlur()
+	TweenService:Create(blur, if want then FOCUS_IN else FOCUS_OUT, { Size = if want then FOCUS_BLUR else 0 }):Play()
+	if not camera or still or camera.CameraType ~= Enum.CameraType.Custom then
+		if not want and camera and baseFov then
+			camera.FieldOfView = baseFov
+		end
+		if not want then
+			baseFov = nil
+		end
+		return
+	end
+	if want then
+		-- Keep the old base when switching straight from one page to another.
+		baseFov = baseFov or camera.FieldOfView
+		TweenService:Create(camera, FOCUS_IN, { FieldOfView = (baseFov :: number) + FOCUS_FOV }):Play()
+	elseif baseFov then
+		local tween = TweenService:Create(camera, FOCUS_OUT, { FieldOfView = baseFov })
+		tween.Completed:Connect(function()
+			if not focused then
+				baseFov = nil
+			end
+		end)
+		tween:Play()
+	end
+end
+
 local function bump(gui: ScreenGui): number
 	local token = (motionToken[gui] or 0) + 1
 	motionToken[gui] = token
@@ -204,6 +278,7 @@ function Ui.show(gui: ScreenGui)
 	closing[gui] = nil
 	gui.Enabled = true
 	settle(gui)
+	updateFocus()
 	if Ui.reducedMotion() then
 		return
 	end
@@ -229,9 +304,11 @@ function Ui.hide(gui: ScreenGui, instant: boolean?)
 		closing[gui] = nil
 		gui.Enabled = false
 		settle(gui)
+		updateFocus()
 		return
 	end
 	closing[gui] = true
+	updateFocus()
 	local _, scale, dim = parts(gui)
 	if scale then
 		TweenService:Create(scale, CLOSE, { Scale = windowScale * CLOSE_TO }):Play()
