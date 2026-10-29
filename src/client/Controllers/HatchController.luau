@@ -72,6 +72,19 @@ local playing = false
 -- so a stand-in egg keeps sitting (and wobbling) on the spot until its own show starts.
 local waiting: { [any]: Model } = {}
 local skipRequested = false
+-- Undo steps for the show that's playing, so a show that errors halfway doesn't leave the
+-- camera rig, the dimmed world or its effects behind.
+local cleanups: { () -> () } = {}
+
+local function cleanUp()
+	for i = #cleanups, 1, -1 do
+		pcall(cleanups[i])
+	end
+	table.clear(cleanups)
+end
+
+-- Windows that would hide the show (the Eggs panel's Open button opens eggs from inside one).
+local CLOSE_ON_HATCH = { "EggsPanel", "PetsPanel", "Inventory", "Index", "Shop", "Upgrades", "Garage", "Rebirth", "Daily", "Playtime", "Events", "Settings" }
 
 ------------------------------------------------------------------ small helpers
 
@@ -481,6 +494,9 @@ end
 
 local function play(info)
 	playing = true
+	for _, name in CLOSE_ON_HATCH do
+		Ui.close(name)
+	end
 	local standIn = waiting[info]
 	if standIn then
 		waiting[info] = nil
@@ -509,6 +525,9 @@ local function play(info)
 		local fx = Instance.new("Folder")
 		fx.Name = "HatchShow"
 		fx.Parent = Workspace
+		table.insert(cleanups, function()
+			fx:Destroy()
+		end)
 		local eggScale = Weights.visualScale(Weights.eggMult(eggRarity, info.EggWeight)) * 1.25
 		scene = {
 			world = true,
@@ -595,6 +614,7 @@ local function play(info)
 			table.insert(ignore, character)
 		end
 		rig = HatchFx.cameraRig(focus, math.clamp(eggHeight * 3.1, 9, 22), ignore)
+		table.insert(cleanups, (rig :: HatchFx.Rig).stop)
 		local r = rig :: HatchFx.Rig
 		r.weight(0, 0.01)
 	else
@@ -714,6 +734,7 @@ local function play(info)
 		stopSuck = HatchFx.suckIn(scene.parent, focus, eggHeight * 1.4, climbColor, 12 + power * 5)
 		if tier.darken and not quick then
 			undim = HatchFx.darken(climbColor, tier.charge)
+			table.insert(cleanups, undim :: () -> ())
 		end
 	end
 	if tier.pillar and not quick then
@@ -944,7 +965,12 @@ local function pump()
 				waiting[info]:Destroy()
 				waiting[info] = nil
 			end
-			if not ok then
+			if ok then
+				table.clear(cleanups)
+			else
+				cleanUp()
+				worldModel:ClearAllChildren()
+				stage.Visible = false
 				warn("[HatchController] " .. tostring(err))
 				gui.Enabled = false
 				card.Visible = false
