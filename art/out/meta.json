@@ -9523,5 +9523,454 @@
    ]
   },
   "tris": 2612
+ },
+ "Alien_Dragon": {
+  "name": "Alien_Dragon",
+  "kind": "alien",
+  "parts": {
+   "LegFL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     0.65,
+     -0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegFR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     0.65,
+     -0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     0.65,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     0.65,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.3,
+     -1.04
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "WingL": {
+    "parent": "Body",
+    "joint": [
+     -0.39,
+     1.3,
+     -0.39
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "WingR": {
+    "parent": "Body",
+    "joint": [
+     0.39,
+     1.3,
+     -0.39
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.04,
+     1.04
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail2": {
+    "parent": "Tail",
+    "joint": [
+     -0.0,
+     1.04,
+     1.56
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_Dragon_Idle",
+   "walk": "Pet_Dragon_Walk"
+  },
+  "aura": "Embers",
+  "bounds": {
+   "min": [
+    -1.3,
+    0.0,
+    -2.21
+   ],
+   "max": [
+    1.3,
+    2.47,
+    2.47
+   ]
+  },
+  "tris": 2944
+ },
+ "Alien_Phoenix": {
+  "name": "Alien_Phoenix",
+  "kind": "alien",
+  "parts": {
+   "LegL": {
+    "parent": "Body",
+    "joint": [
+     -0.195,
+     0.39,
+     0.065
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegR": {
+    "parent": "Body",
+    "joint": [
+     0.195,
+     0.39,
+     0.065
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.17,
+     -0.26
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Crest_Glow": {
+    "parent": "Head",
+    "joint": [
+     -0.0,
+     1.82,
+     -0.39
+    ],
+    "glow": "FFE07A",
+    "material": null,
+    "collide": false
+   },
+   "WingL": {
+    "parent": "Body",
+    "joint": [
+     -0.39,
+     1.04,
+     0.0
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "WingR": {
+    "parent": "Body",
+    "joint": [
+     0.39,
+     1.04,
+     0.0
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail_Glow": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.65,
+     0.65
+    ],
+    "glow": "FF9A2A",
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_Phoenix_Idle",
+   "walk": "Pet_Phoenix_Walk"
+  },
+  "float": true,
+  "aura": "PhoenixFlame",
+  "bounds": {
+   "min": [
+    -1.56,
+    0.0,
+    -1.04
+   ],
+   "max": [
+    1.56,
+    2.34,
+    1.56
+   ]
+  },
+  "tris": 1884
+ },
+ "Alien_Kitsune": {
+  "name": "Alien_Kitsune",
+  "kind": "alien",
+  "parts": {
+   "LegFL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     0.52,
+     -0.52
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegFR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     0.52,
+     -0.52
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBL": {
+    "parent": "Body",
+    "joint": [
+     -0.26,
+     0.52,
+     0.52
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBR": {
+    "parent": "Body",
+    "joint": [
+     0.26,
+     0.52,
+     0.52
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.04,
+     -0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarL": {
+    "parent": "Head",
+    "joint": [
+     -0.325,
+     1.69,
+     -0.975
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarR": {
+    "parent": "Head",
+    "joint": [
+     0.325,
+     1.69,
+     -0.975
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail1": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail2": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail3": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail4": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail5": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail6": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail7": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail8": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail9": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     0.91,
+     0.78
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_Kitsune_Idle",
+   "walk": "Pet_Kitsune_Walk"
+  },
+  "aura": "FoxFire",
+  "bounds": {
+   "min": [
+    -0.78,
+    0.0,
+    -1.82
+   ],
+   "max": [
+    0.78,
+    2.21,
+    1.43
+   ]
+  },
+  "tris": 2960
  }
 }

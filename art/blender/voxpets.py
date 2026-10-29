@@ -731,10 +731,134 @@ def unicorn():
     return assemble("Unicorn", parts)
 
 
+# --------------------------------------------------------------------------- dragon
+
+
+def dragon():
+    R, D, B, C, M = "D8342C", "8E1C18", "FFC36A", "F4E6C8", "FF7A3A"
+    parts = legs(R, C, 5, -7, 5)
+    body = Part("Body")
+    body.box(-3, 3, -8, 8, 5, 11, lambda i, j, k: B if (k == 5 and -6 <= j <= 5) or (j == -8 and k <= 9 and -2 <= i <= 1) else R)
+    for j in range(-6, 8, 3):                                # back spikes
+        body.set([(-1, j, 11), (0, j, 11)], C)
+        body.set([(-1, j + 1, 11), (0, j + 1, 11)], C)
+        body.set([(-1, j, 12), (0, j, 12)], C)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -8, 10))
+    head.box(-4, 4, -14, -8, 9, 15, R)
+    head.box(-3, 3, -17, -14, 9, 12, lambda i, j, k: B if k == 9 else R)       # snout
+    head.set([(-2, -17, 11), (1, -17, 11)], D)              # nostrils
+    head.set([(-3, -17, 9), (2, -17, 9), (-3, -16, 9), (2, -16, 9)], "FFFFFF")  # little fangs
+    eyes(head, -14, 12)
+    for x in (-4, 3):                                         # horns sweeping back
+        head.set([(x, -11, 15), (x, -10, 15), (x, -10, 16), (x, -9, 16), (x, -9, 17), (x, -8, 17), (x, -8, 18)], C)
+    parts.append(head)
+    wing = Part("WingL", "Body", joint=(3, -3, 10))
+    for d in range(7):
+        for j in range(-6, -6 + 9 - d):
+            bone = j == -6 or d in (0, 3, 6)
+            wing.cells[(3 + d, j, 10 + (1 if d >= 4 else 0) + (1 if d == 6 else 0))] = D if bone else M
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 8, 8))
+    tail.box(-1, 1, 8, 12, 7, 9, R)
+    tail2 = Part("Tail2", "Tail", joint=(0, 12, 8))
+    tail2.box(-1, 1, 12, 16, 6, 8, lambda i, j, k: C if k == 7 and j % 2 == 0 else R)
+    tail2.box(-2, 2, 16, 18, 6, 8, D)                        # spade tip
+    tail2.set([(-1, 18, 6), (0, 18, 6), (-1, 18, 7), (0, 18, 7)], D)
+    parts += [tail, tail2]
+    a = assemble("Dragon", parts)
+    a.extra["aura"] = "Embers"
+    return a
+
+
+# -------------------------------------------------------------------------- phoenix
+
+
+def phoenix():
+    O, G, R, Y = "FF7A1A", "FFC23A", "E8361E", "FFE07A"
+    parts = []
+    leg = Part("LegL", "Body", joint=(1.5, 0.5, 3))
+    leg.box(1, 2, 0, 1, 1, 3, G)
+    leg.box(1, 3, -1, 1, 0, 1, G)
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-3, 3, -3, 5, 3, 10, lambda i, j, k: G if (j == -3 and k <= 7) else (R if k == 3 else O))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -2, 9))
+    head.rbox(-3, 3, -6, 0, 9, 14, O, edges=(True, False, True))
+    eyes(head, -6, 11, xs=(-2, 1), w=1, h=2)
+    head.box(-1, 1, -8, -6, 10, 12, lambda i, j, k: G if k == 11 else shade(G, -0.25))    # beak
+    parts.append(head)
+    crest = Part("Crest_Glow", "Head", joint=(0, -3, 14), noise=False, glow=Y)
+    crest.set([(0, -3, 14), (0, -3, 15), (0, -2, 16), (-1, -2, 14), (-1, -1, 15), (-1, 0, 16), (0, -1, 17)], Y)
+    parts.append(crest)
+    wing = Part("WingL", "Body", joint=(3, 0, 8))
+    for d in range(9):
+        for j in range(-2, 5 - d // 2):
+            wing.cells[(3 + d, j, 8 + d // 3)] = R if (d >= 6 or j == 5 - d // 2 - 1) else (G if d == 0 else O)
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail_Glow", "Body", joint=(0, 5, 5), noise=False, glow="FF9A2A")
+    for t in range(7):                                       # flame feathers streaming back and down
+        y, z = 5 + t, 5 - t // 2
+        for x in (-1, 0):
+            tail.cells[(x, y, z)] = O
+        if t >= 3:
+            tail.cells[(-2, y, z - 1)] = O
+            tail.cells[(1, y, z - 1)] = O
+    parts.append(tail)
+    a = assemble("Phoenix", parts)
+    a.extra["float"] = True
+    a.extra["aura"] = "PhoenixFlame"
+    return a
+
+
+# -------------------------------------------------------------------------- kitsune
+
+
+def kitsune():
+    W, G, R, P = "F8F6F2", "F2C14E", "E0454E", "FFB3C6"
+    parts = legs(W, G, 4, -5, 3)
+    body = Part("Body")
+    body.box(-3, 3, -6, 6, 4, 9, lambda i, j, k: G if (k == 8 and i in (-1, 0) and j % 4 == 0) else W)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -6, 8))
+    head.box(-4, 4, -11, -5, 7, 13, W)
+    eyes(head, -11, 10, h=1, shine=False)                   # calm, narrow eyes
+    head.set([(-3, -11, 11), (-4, -11, 11), (2, -11, 11), (3, -11, 11)], R)    # red eye markings
+    head.set([(-1, -11, 12), (0, -11, 12)], R)
+    head.box(-2, 2, -14, -11, 7, 9, W)
+    head.set([(-1, -14, 8), (0, -14, 8)], "2B2220")
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2.5, -7.5, 13))
+    for k, xs in ((13, (1, 2, 3)), (14, (2, 3)), (15, (3,)), (16, (3,))):
+        for x in xs:
+            ear.cells[(x, -8, k)] = G if k >= 15 else (P if (k == 13 and x == 2) else W)
+    parts += [ear, ear.mirror("EarR")]
+    # Nine tails fanned out behind, each its own part so they can wave one after another.
+    for n in range(9):
+        ang = math.radians(-72 + n * 18)
+        t = Part(f"Tail{n + 1}", "Body", joint=(0, 6, 7))
+        for step in range(8):
+            r = step * 0.9
+            x = round(math.sin(ang) * r * 0.9)
+            z = 7 + round(math.cos(ang) * r)
+            y = 6 + round(step * 0.55)
+            col = G if step >= 6 else W
+            for dx in (-1, 0):
+                t.cells[(x + dx, y, z)] = col
+            if 2 <= step <= 5:
+                t.cells[(x + (1 if x >= 0 else -2), y, z)] = col
+        parts.append(t)
+    a = assemble("Kitsune", parts)
+    a.extra["aura"] = "FoxFire"
+    return a
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
-        "Lion": lion, "ArcticWolf": arctic_wolf, "Unicorn": unicorn}
+        "Lion": lion, "ArcticWolf": arctic_wolf, "Unicorn": unicorn,
+        "Dragon": dragon, "Phoenix": phoenix, "Kitsune": kitsune}
 
 
 # ------------------------------------------------------------------------- animation
@@ -1013,6 +1137,71 @@ def prance(w):
     return p
 
 
+def dragon_idle(w):
+    stretch = max(0.0, s(w)) ** 3                           # a big wing stretch now and then
+    return {
+        "Body": ((0, 0, 0.02 * (1 - c(2 * w))), (2 * s(2 * w), 0, 0)),
+        "Head": ((0, 0, 0), (-5 * s(2 * w) - 10 * stretch, 0, 12 * s(w + 2))),
+        "WingL": ((0, 0, 0), (0, -10 - 35 * stretch + 4 * s(4 * w), 0)),
+        "WingR": ((0, 0, 0), (0, 10 + 35 * stretch - 4 * s(4 * w), 0)),
+        "Tail": ((0, 0, 0), (-4, 0, 14 * s(w))),
+        "Tail2": ((0, 0, 0), (8 * s(2 * w), 0, 26 * s(w - 1))),
+    }
+
+
+def dragon_walk(w):
+    p = walk(30, 0.05, 14, -4, 0)(w)
+    p["WingL"] = ((0, 0, 0), (0, -14 - 10 * s(2 * w), 0))
+    p["WingR"] = ((0, 0, 0), (0, 14 + 10 * s(2 * w), 0))
+    return p
+
+
+def phoenix_idle(w):
+    flap = s(2 * w)
+    return {
+        "Body": ((0, 0, 0.08 * s(2 * w + 1)), (-4 * s(2 * w), 0, 3 * s(w))),
+        "Head": ((0, 0, 0), (4 * s(2 * w), 4 * s(w), 14 * s(w))),
+        "Crest_Glow": ((0, 0, 0), (8 * s(4 * w), 0, 0)),
+        "WingL": ((0, 0, 0), (0, -30 * flap, 0)), "WingR": ((0, 0, 0), (0, 30 * flap, 0)),
+        "Tail_Glow": ((0, 0, 0), (6 * s(2 * w - 1), 0, 8 * s(w))),
+        "LegL": ((0, 0, 0), (30, 0, 0)), "LegR": ((0, 0, 0), (30, 0, 0)),
+    }
+
+
+def phoenix_walk(w):
+    flap = s(2 * w)
+    return {
+        "Body": ((0, 0, 0.06 * s(2 * w + 1)), (-14, 0, 4 * s(w))),
+        "Head": ((0, 0, 0), (10, 0, 0)),
+        "Crest_Glow": ((0, 0, 0), (-12, 0, 0)),
+        "WingL": ((0, 0, 0), (0, -45 * flap, 0)), "WingR": ((0, 0, 0), (0, 45 * flap, 0)),
+        "Tail_Glow": ((0, 0, 0), (10 + 6 * s(2 * w), 0, 6 * s(w))),
+        "LegL": ((0, 0, 0), (50, 0, 0)), "LegR": ((0, 0, 0), (50, 0, 0)),
+    }
+
+
+def kitsune_tails(w, amp, speed=1):
+    return {f"Tail{n + 1}": ((0, 0, 0), (amp * 0.5 * s(speed * w - n * 0.6), amp * s(speed * w - n * 0.6), 0)) for n in range(9)}
+
+
+def kitsune_idle(w):
+    p = {
+        "Body": ((0, 0, 0.015 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, 0), (-4 * s(2 * w), 5 * s(w + 1), 14 * s(w))),
+        "EarL": ((0, 0, 0), (0, -12 * max(0.0, s(4 * w)) ** 8, 0)),
+        "EarR": ((0, 0, 0), (0, 12 * max(0.0, s(4 * w + 2)) ** 8, 0)),
+    }
+    p.update(kitsune_tails(w, 12, 2))
+    return p
+
+
+def kitsune_walk(w):
+    p = walk(30, 0.08, 0, 0, 6)(w)
+    p.pop("Tail"), p.pop("Tail2")
+    p.update(kitsune_tails(w, 10, 2))
+    return p
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -1029,6 +1218,9 @@ ANIMS = {
     "Lion": {"Idle": lion_idle, "Walk": walk(28, 0.04, 10, -4, 0)},
     "ArcticWolf": {"Idle": wolf_idle, "Walk": walk(36, 0.07, 12, -8, 4)},
     "Unicorn": {"Idle": unicorn_idle, "Walk": prance},
+    "Dragon": {"Idle": dragon_idle, "Walk": dragon_walk},
+    "Phoenix": {"Idle": phoenix_idle, "Walk": phoenix_walk},
+    "Kitsune": {"Idle": kitsune_idle, "Walk": kitsune_walk},
 }
 
 
