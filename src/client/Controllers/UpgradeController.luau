@@ -7,6 +7,7 @@
 -- Drag to look around, pinch / mouse wheel / +- to zoom. Hovering (or tapping) a hex shows
 -- what it does above CLOSE. Also keeps the rail button's badge (how many hexes you can buy)
 -- and bobs the floating arrow over the station.
+local ContentProvider = game:GetService("ContentProvider")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -32,7 +33,7 @@ local RED = Color3.fromRGB(255, 77, 94)
 local GOLD_TEXT = Color3.fromRGB(255, 214, 90)
 local INFO_GREEN = Color3.fromRGB(124, 245, 138)
 
--- Hex colours by state (the tile image is white with a dark outline; this tints it).
+-- Hex colours by state (the Fill hexagon's three bars).
 local TILE = {
 	Open = Color3.fromRGB(42, 49, 66),
 	Owned = Color3.fromRGB(47, 155, 255),
@@ -57,13 +58,14 @@ local tip: Frame
 local backButton: TextButton
 
 local boards: { [string]: Frame } = {}
-local nodes: { [string]: ImageButton } = {}
+local nodes: { [string]: TextButton } = {}
 local nodeSize = UDim2.fromOffset(130, 150)
 local extents: { [string]: Vector2 } = {}
 local current = "Main"
 local hovered: string? = nil
 local pan = Vector2.zero
 local railBadge: GuiObject? = nil
+local useImage = false -- the HexTile image loaded; until then hexes are drawn with frames
 
 local function hexToPixel(q: number, r: number): Vector2
 	return Vector2.new(SPACING * math.sqrt(3) * (q + r / 2), SPACING * 1.5 * r)
@@ -263,6 +265,15 @@ local function setTip(id: string?)
 	end
 end
 
+-- Hexagons are three rotated bars (gen_ui hexagon()).
+local function setHex(hex: Frame, color: Color3)
+	for _, bar in hex:GetChildren() do
+		if bar:IsA("Frame") then
+			bar.BackgroundColor3 = color
+		end
+	end
+end
+
 local function renderBoard()
 	local data = State.data
 	if not data or not gui.Enabled then
@@ -278,7 +289,13 @@ local function renderBoard()
 		local level = data.Upgrades[def.Id] or 0
 		local isLab = def.Opens ~= nil
 		node.Visible = state ~= "Hidden"
-		node.ImageColor3 = if isLab and level > 0 then TILE.Lab else TILE[state] or TILE.Mystery
+		local color = if isLab and level > 0 then TILE.Lab else TILE[state] or TILE.Mystery
+		setHex(node:FindFirstChild("Fill") :: Frame, color)
+		local tile = node:FindFirstChild("Tile") :: ImageLabel
+		tile.ImageColor3 = color
+		tile.Visible = useImage
+		;(node:FindFirstChild("Outline") :: Frame).Visible = not useImage
+		;(node:FindFirstChild("Fill") :: Frame).Visible = not useImage
 
 		local known = state == "Open" or state == "Owned" or state == "Max" or state == "Rebirth"
 		local icon = node:FindFirstChild("Icon") :: ImageLabel
@@ -309,12 +326,12 @@ local function renderBoard()
 			priceLabel.Text = Format.big(cost)
 			priceLabel.TextColor3 = if BigNum.gte(data.Cash, cost) then WHITE else RED
 		end
-		;(node:FindFirstChild("Glow") :: ImageLabel).Visible = canBuy(def, data, state)
+		;(node:FindFirstChild("Glow") :: Frame).Visible = canBuy(def, data, state)
 	end
 	setTip(hovered)
 end
 
-local function popNode(node: ImageButton)
+local function popNode(node: TextButton)
 	if Ui.reducedMotion() then
 		return
 	end
@@ -377,7 +394,7 @@ end
 
 -- Builds every board and hex once from Config/Upgrades.
 local function build()
-	local template = canvas:FindFirstChild("NodeTemplate") :: ImageButton
+	local template = canvas:FindFirstChild("NodeTemplate") :: TextButton
 	nodeSize = template.Size
 	for treeId in Upgrades.Trees do
 		local board = Instance.new("Frame")
@@ -419,13 +436,6 @@ local function build()
 				setTip(nil)
 			end
 		end)
-	end
-	-- Hexes you can afford breathe so the board shows what to buy.
-	if not Ui.reducedMotion() then
-		local pulse = TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
-		for _, node in nodes do
-			TweenService:Create(node:FindFirstChild("Glow") :: ImageLabel, pulse, { ImageTransparency = 0.5 }):Play()
-		end
 	end
 end
 
@@ -509,6 +519,19 @@ function UpgradeController:Start()
 		end
 	end)
 	task.spawn(bobHologram)
+	-- Use the image tiles only if they load (no permission or moderation = frame hexagons).
+	task.spawn(function()
+		local tile = Ui.find(canvas, "NodeTemplate.Tile") :: ImageLabel
+		if tile.Image == "" then
+			return
+		end
+		ContentProvider:PreloadAsync({ tile.Image }, function(_id, status)
+			if status == Enum.AssetFetchStatus.Success then
+				useImage = true
+				renderBoard()
+			end
+		end)
+	end)
 	task.spawn(function()
 		railBadge = Ui.find(Ui.screen("Hud"), "Rail.UpgradesButton"):FindFirstChild("Badge") :: GuiObject?
 		if State.data then

@@ -1057,12 +1057,23 @@ def upgrades():
     to buy it; Lab hexes open their own sub-tree (BACK returns). UpgradeController builds the
     boards from Config/Upgrades by cloning Board.Scaler.Canvas.NodeTemplate."""
     fit = lambda mx, mn=9: node("Fit", "UITextSizeConstraint", {"MaxTextSize": mx, "MinTextSize": mn})
-    node_t = node("NodeTemplate", "ImageButton", base(U(0, HEX_W, 0, HEX_H), anchor=(0.5, 0.5), BackgroundTransparency=1,
-                                                       Image=img("HexTile"), ScaleType="Fit", AutoButtonColor=False,
-                                                       ImageColor3="#2A3142", Visible=False, ZIndex=3), [
-        node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.55, WHITE], [1, "#B9C0CE"]]}, "Rotation": 90}),
-        node("Glow", "ImageLabel", base(U(1, 14, 1, 16), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
-                                        Image=img("HexRing"), ScaleType="Fit", ImageColor3=SUCCESS, Visible=False, ZIndex=2)),
+    def hexagon(name, radius, color, z, **extra):
+        """A pointy-top hexagon from three rotated bars (no image to load, so it always shows)."""
+        w = round(radius * 3 ** 0.5, 1)
+        bars = [frame(f"Bar{i}", U(0, w, 0, radius), U(0.5, 0, 0.5, 0), (0.5, 0.5), bg=color, Rotation=rot, ZIndex=z)
+                for i, rot in enumerate((0, 60, -60))]
+        return frame(name, U(0, 0, 0, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=z, children=bars, **extra)
+
+    node_t = node("NodeTemplate", "TextButton", base(U(0, HEX_W, 0, HEX_H), anchor=(0.5, 0.5), BackgroundTransparency=1,
+                                                      Text="", AutoButtonColor=False, Visible=False, ZIndex=3), [
+        hexagon("Glow", HEX_H / 2 + 8, SUCCESS, 1, Visible=False),
+        hexagon("Outline", HEX_H / 2, INK, 2),
+        hexagon("Fill", HEX_H / 2 - 6, "#2A3142", 3),
+        # The image tile; UpgradeController shows it (and hides the frame hexagon) once it loads.
+        node("Tile", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("HexTile"), ScaleType="Fit",
+                                        ImageColor3="#2A3142", Visible=False, ZIndex=4), [
+            node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.55, WHITE], [1, "#B9C0CE"]]}, "Rotation": 90}),
+        ]),
         text("Level", "0/10", U(0, 70, 0, 18), U(0.5, 0, 0, 14), (0.5, 0), ts=14, color="#E3E8F2", display=True, stroke=2,
              ZIndex=6),
         icon("Icon", "Upgrade", 54, U(0.5, 0, 0, 30), (0.5, 0), ZIndex=5),
