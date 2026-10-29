@@ -451,23 +451,37 @@ local function layout(s: number, compact: boolean)
 	local walletLayout = el.Wallet:FindFirstChildOfClass("UIListLayout")
 	local boosts = (el.BoostTemplate :: Instance).Parent :: Frame
 	local boostLayout = boosts:FindFirstChildOfClass("UIListLayout")
+	local railGrid = el.Rail:FindFirstChildOfClass("UIGridLayout")
+	-- Phones: pieces hug the screen edges (Ui.edges pulls them out of most of the safe
+	-- area), the Eggs/Pets/Tools column is the right edge (BasePanelsController) and the
+	-- boost chips and Auto switches sit in a second column left of it.
+	local left, right = Ui.edges(hud)
+	local column = right + math.ceil(80 * s) + 10
 	if compact then
 		-- Phones: the wallet sits in the bottom-left corner (the thumbstick still works
-		-- under it) and the smaller rail hugs the left edge just above it (Dev, 2026-10-29).
+		-- under it) and the rail hugs the left edge just above it.
 		el.Wallet.AnchorPoint = Vector2.new(0, 1)
-		el.Wallet.Position = UDim2.new(0, 6, 1, -6)
+		el.Wallet.Position = UDim2.new(0, left, 1, -6)
 		if walletLayout then
 			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
 		el.Rail.AnchorPoint = Vector2.new(0, 1)
-		el.Rail.Position = UDim2.new(0, 6, 1, -(14 + math.ceil(118 * s)))
+		el.Rail.Position = UDim2.new(0, left, 1, -(12 + math.ceil(118 * s)))
+		el.Rail.Size = UDim2.fromOffset(180, 280)
+		if railGrid then
+			railGrid.CellPadding = UDim2.fromOffset(12, 14)
+		end
 		boosts.AnchorPoint = Vector2.new(1, 0)
-		boosts.Position = UDim2.new(1, -14, 0, 8 + math.ceil(100 * s))
+		boosts.Position = UDim2.new(1, -column, 0, 8)
 		if boostLayout then
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 		end
 		el.SweepButton.Position = UDim2.new(1, -math.ceil(170 * s + 40), 1, -14)
 	else
+		el.Rail.Size = UDim2.fromOffset(180, 304)
+		if railGrid then
+			railGrid.CellPadding = UDim2.fromOffset(12, 26)
+		end
 		el.Wallet.AnchorPoint = Vector2.new(0, 1)
 		el.Wallet.Position = UDim2.new(0, 14, 1, -14)
 		if walletLayout then
@@ -483,18 +497,18 @@ local function layout(s: number, compact: boolean)
 		el.SweepButton.Position = UDim2.new(1, -196, 1, -28)
 	end
 	el.SweepButton.Visible = UserInputService.TouchEnabled
-	local right = el.Right :: Frame
-	local rightList = right:FindFirstChildOfClass("UIListLayout")
+	local rightFrame = el.Right :: Frame
+	local rightList = rightFrame:FindFirstChildOfClass("UIListLayout")
 	if compact then
-		-- Above the jump button, under the boost chips.
-		right.AnchorPoint = Vector2.new(1, 1)
-		right.Position = UDim2.new(1, -14, 1, -(26 + math.ceil(108 * s)))
+		-- Second column, above the jump button.
+		rightFrame.AnchorPoint = Vector2.new(1, 1)
+		rightFrame.Position = UDim2.new(1, -column, 1, -(26 + math.ceil(108 * s)))
 		if rightList then
 			rightList.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
 	else
-		right.AnchorPoint = Vector2.new(1, 0)
-		right.Position = UDim2.new(1, -14, 0.5, HudController.rightStackTop(s) + math.ceil((STACK_BUTTONS + STACK_GAP) * s))
+		rightFrame.AnchorPoint = Vector2.new(1, 0)
+		rightFrame.Position = UDim2.new(1, -14, 0.5, HudController.rightStackTop(s) + math.ceil((STACK_BUTTONS + STACK_GAP) * s))
 		if rightList then
 			rightList.VerticalAlignment = Enum.VerticalAlignment.Top
 		end

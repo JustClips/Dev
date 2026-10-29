@@ -7,6 +7,7 @@
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TextService = game:GetService("TextService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -45,12 +46,10 @@ local function label(parent: Instance, name: string, size: UDim2, position: UDim
 	l.BackgroundTransparency = 1
 	l.TextColor3 = color
 	l.FontFace = Font.new(FONT, weight)
-	l.TextScaled = true
+	l.TextSize = maxSize
+	l.TextWrapped = false
 	l.TextXAlignment = Enum.TextXAlignment.Left
 	l.Parent = parent
-	local fit = Instance.new("UITextSizeConstraint")
-	fit.MaxTextSize = maxSize
-	fit.Parent = l
 	local stroke = Instance.new("UIStroke")
 	stroke.Color = INK
 	stroke.Thickness = 2
@@ -139,11 +138,14 @@ local function build(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInp
 		object.Visible = prompt.ObjectText ~= ""
 		action.Text = prompt.ActionText
 		action.Position = if prompt.ObjectText ~= "" then UDim2.fromOffset(10, 22) else UDim2.fromOffset(10, 13)
-		-- The plate is only as wide as its text (Dev: it was far too long). Montserrat Heavy
-		-- runs about 0.64 of the text size per letter.
-		local textWidth = math.max(utf8.len(prompt.ActionText) or 0, 1) * 24 * 0.64
-		local objectWidth = (utf8.len(prompt.ObjectText) or 0) * 16 * 0.6
-		local plateWidth = math.clamp(math.ceil(math.max(textWidth, objectWidth)) + 24, 80, 260)
+		-- The plate is exactly as wide as its text plus a small margin (Dev: still too
+		-- long). Measured with the font's real widths (Black is a hair wider than Heavy).
+		local textWidth = TextService:GetTextSize(prompt.ActionText, 24, Enum.Font.MontserratBlack, Vector2.new(1000, 100)).X
+		local objectWidth = if prompt.ObjectText ~= ""
+			then TextService:GetTextSize(prompt.ObjectText, 16, Enum.Font.MontserratBold, Vector2.new(1000, 100)).X
+			else 0
+		local plateWidth = math.clamp(math.ceil(math.max(textWidth, objectWidth)) + 22, 60, 240)
+		plate.Size = UDim2.new(0, plateWidth, 0, 52)
 		gui.Size = UDim2.fromOffset(64 + plateWidth + 6, 64)
 	end
 	refresh()

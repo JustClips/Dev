@@ -2,10 +2,10 @@
 -- The two panels from Steal an Egg, opened from the Eggs / Pets buttons on the right (the
 -- Tools button under them opens the Tools window). Each is a small popup beside the
 -- buttons (PetsPanel / EggsPanel screens); a click outside closes it:
---   Pets ("3/4 Active"): pets on your base with Unequip, then pets in your bag with Equip,
+--   Pets ("3/4 Active"): pets on your base with Unequip (bag pets stay in the Bag),
 --     +1 Slot for cash (Economy.SlotCashPrices), +3 Slots for Robux (the pass) and Equip Best.
 --   Eggs ("Growing Eggs"): every egg in an incubator with its timer, Open when ready or
---     Skip for Robux, Open All, and Place Eggs (fills free incubators from your bag).
+--     Skip for Robux, and Open All. Eggs are planted from the bag (tap one, tap the park).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = script.Parent.Parent
@@ -155,14 +155,14 @@ local function renderPets(data)
 			end)
 		end
 	end
+	-- Only equipped pets (Dev): pets in the bag are in the Bag; Equip Best puts the best out.
 	for _, entry in placed do
 		add(entry, true)
 	end
-	for _, entry in bag do
-		add(entry, false)
-	end
 	empties.Active.Visible = count == 0
-	empties.Active.Text = "No pets yet. Bring eggs home and hatch them!"
+	empties.Active.Text = if #bag > 0
+		then "No pets equipped. Tap Equip Best to put your best pets out!"
+		else "No pets yet. Bring eggs home and hatch them!"
 end
 
 -------------------------------------------------------------------------- Eggs panel
@@ -198,13 +198,10 @@ local function hatchEntry(data, uid: string)
 end
 
 local function renderEggs(data)
-	local free = data.Incubators - #data.Hatching
 	local eggCount = 0
 	for _ in data.Eggs or {} do
 		eggCount += 1
 	end
-	local placeButton = Ui.find(panels.Growing, "PlaceEggs")
-	setButton(placeButton, if eggCount == 0 then "No eggs in bag" else `Place Eggs ({free} free)`, if eggCount > 0 and free > 0 then Color3.fromRGB(76, 141, 255) else GREY)
 	local uids = {}
 	for _, entry in data.Hatching do
 		table.insert(uids, entry.Uid)
@@ -238,9 +235,11 @@ local function renderEggs(data)
 			end)
 			table.insert(eggRows, { row = row, uid = uid })
 		end
-		empties.Growing.Visible = #sorted == 0
-		empties.Growing.Text = if eggCount > 0 then "Your incubators are empty. Tap Place Eggs!" else "No eggs growing. Sweep leaves to find eggs!"
 	end
+	empties.Growing.Visible = #data.Hatching == 0
+	empties.Growing.Text = if eggCount > 0
+		then "No eggs growing. Tap an egg in your bag, then tap your park to plant it!"
+		else "No eggs growing. Sweep leaves to find eggs!"
 	for _, item in eggRows do
 		local entry = hatchEntry(data, item.uid)
 		if entry then
@@ -261,14 +260,9 @@ local function renderBadges(data)
 		end
 	end
 	Ui.setBadge(eggsBadge, ready)
-	local bagPets = 0
-	for _, pet in data.Pets or {} do
-		if not pet.Placed then
-			bagPets += 1
-		end
-	end
-	local canPlace = math.min(bagPets, data.Slots - data.PlacedCount)
-	Ui.setBadge(petsBadge, canPlace)
+	-- Pets: the panel only lists equipped pets, so no count (a number with nothing new
+	-- inside confused Dev on the Eggs button).
+	Ui.setBadge(petsBadge, nil)
 	-- Tools: a badge when the next tool is affordable.
 	local nextTool = Tools.get(data.ToolTier + 1)
 	Ui.setBadge(toolsBadge, if data.ToolTier < Tools.MaxTier and BigNum.gte(data.Cash, nextTool.Price) then 1 else nil)
@@ -300,8 +294,9 @@ function BasePanelsController:Show(name: string?)
 	render()
 end
 
--- Phones: the two buttons sit in a row at the top right (HudController puts the boost
--- chips under them); PC: stacked on the right edge above the next-tool card.
+-- Eggs / Pets / Tools stacked on the right edge. Phones: from the top right corner, hugging
+-- the edge (Ui.edges), with HudController's boost chips in a column left of them; PC:
+-- above the next-tool card.
 -- Each button is placed by its centre instead of by a list layout, so a button growing on
 -- hover or press doesn't push the other one around.
 local function layoutButtons(_scale: number, compact: boolean)
@@ -317,16 +312,18 @@ local function layoutButtons(_scale: number, compact: boolean)
 	toolsButton.AnchorPoint = Vector2.new(0.5, 0.5)
 	local s = _scale
 	if compact then
+		local screenGui = buttons:FindFirstAncestorOfClass("ScreenGui") :: ScreenGui
+		local _, right = Ui.edges(screenGui)
 		buttons.AnchorPoint = Vector2.new(1, 0)
-		buttons.Position = UDim2.new(1, -14, 0, 8)
-		buttons.Size = UDim2.fromOffset(272, 80)
+		buttons.Position = UDim2.new(1, -right, 0, 10)
+		buttons.Size = UDim2.fromOffset(80, 280)
 		eggsButton.Position = UDim2.fromOffset(40, 40)
-		petsButton.Position = UDim2.fromOffset(136, 40)
-		toolsButton.Position = UDim2.fromOffset(232, 40)
-		-- Popups hang under the button row.
+		petsButton.Position = UDim2.fromOffset(40, 136)
+		toolsButton.Position = UDim2.fromOffset(40, 232)
+		-- Popups open to the left of the column.
 		for _, panel in panels do
 			panel.AnchorPoint = Vector2.new(1, 0)
-			Ui.setHome(panel, UDim2.new(1, -14, 0, 8 + math.ceil(92 * s)))
+			Ui.setHome(panel, UDim2.new(1, -(right + math.ceil(80 * s) + 10), 0, 4))
 		end
 	else
 		-- Top of the right-hand stack (Eggs, Pets, Tools, Auto), centred on the same line
@@ -415,9 +412,6 @@ function BasePanelsController:Start()
 	end)
 	Ui.button(Ui.find(panels.Growing, "OpenAll"), function()
 		act("OpenReady")
-	end)
-	Ui.button(Ui.find(panels.Growing, "PlaceEggs"), function()
-		act("PlaceBestEggs")
 	end)
 	State.Changed:Connect(render)
 	task.spawn(function()

@@ -142,7 +142,9 @@ def plate(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), tint=SURFACE, children=N
 
 
 MIN_TS = 16  # smallest text size anywhere (Dev: small labels and badge numbers were unreadable)
-MIN_FIT = 12  # the smallest a fitted label may shrink to
+# The smallest a fitted label may shrink to. UITextSizeConstraint counts real screen pixels
+# (UIScale doesn't change it), so a high minimum cuts words off on small phones ("Upgra").
+MIN_FIT = 7
 
 
 def readable(p, children):
@@ -152,7 +154,7 @@ def readable(p, children):
         if c and c.get("name") == "Fit":
             fit = c["properties"]
             fit["MaxTextSize"] = max(fit.get("MaxTextSize", MIN_TS), MIN_TS)
-            fit["MinTextSize"] = max(fit.get("MinTextSize", MIN_FIT), MIN_FIT)
+            fit["MinTextSize"] = min(fit.get("MinTextSize", MIN_FIT), MIN_FIT)
             p["TextSize"] = max(p["TextSize"], MIN_TS)
             return []
     if p["TextSize"] >= MIN_TS:
@@ -330,8 +332,8 @@ def rail_tile(name, label, ico, color, order):
     return button(name, U(0, 84, 0, 84), color=color, LayoutOrder=order, children=[
         # Label inside the tile (Dev: text hanging off the bottom looked out of bounds).
         icon("Icon", ico, 58, U(0.5, 0, 0, 4), (0.5, 0)),
-        text("Label", label, U(1, -10, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=17, display=True, stroke=2.5,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
+        text("Label", label, U(1, -4, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=17, display=True, stroke=2.5,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 7})]),
         badge(),
     ])
 
@@ -359,7 +361,6 @@ def zone_row(zone_id, title, order):
     ])
 
 
-RAIL_COMPACT = 0.78  # the left rail is a bit smaller on phones (Dev, 2026-10-29)
 
 
 def auto_toggle(name, label, ico, order):
@@ -376,7 +377,7 @@ def auto_toggle(name, label, ico, order):
 
 def hud():
     rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
-        autoscale(RAIL_COMPACT),
+        autoscale(),
         node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 26), "SortOrder": "LayoutOrder"}),
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 2),
@@ -750,8 +751,8 @@ SAND = "#E9D3B0"
 def side_button(name, label, ico, color, order):
     return button(name, U(0, 80, 0, 80), color=color, LayoutOrder=order, children=[
         icon("Icon", ico, 56, U(0.5, 0, 0, 4), (0.5, 0)),
-        text("Label", label, U(1, -10, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=17, display=True, stroke=2.5,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
+        text("Label", label, U(1, -4, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=17, display=True, stroke=2.5,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 7})]),
         badge(),
     ])
 
@@ -769,12 +770,13 @@ def popup_list(screen_name, title, ico, header_color, head_button, row_children,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 10})]),
         text("Sub", "", U(1, -190, 0, 22), U(0, 72, 0, 36), ts=17, color="#7CFF8C", display=True, stroke=2, xa="Left"),
     ] + row_children)
-    list_bottom = 72 if footer and len(footer) == 1 else 128
+    list_bottom = 8 if not footer else 72 if len(footer) == 1 else 128
+    title_room = 258 if head_button else 110  # the title stops before Open All / Close
     win = plate("Window", U(0, POPUP_W, 0, POPUP_H), U(1, -110, 0.5, -30), (1, 0.5), SURFACE, children=[
         autoscale(),
         plate("Header", U(1, 0, 0, 56), tint=header_color, children=[
             icon("Icon", ico, 42, U(0, 8, 0.5, 0), (0, 0.5)),
-            text("Title", title, U(1, -210, 1, -8), U(0, 58, 0.5, 0), (0, 0.5), ts=26, display=True, stroke=3, xa="Left",
+            text("Title", title, U(1, -title_room, 1, -8), U(0, 58, 0.5, 0), (0, 0.5), ts=26, display=True, stroke=3, xa="Left",
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 26, "MinTextSize": 12})]),
         ]),
         button("Close", U(0, 42, 0, 42), U(1, -4, 0, 4), (0.5, 0.5), color=DANGER, label="X", ts=24, ZIndex=6),
@@ -816,7 +818,7 @@ def base_panels():
         "EggsPanel", "Growing Eggs", "Egg", DANGER,
         button("OpenAll", head["size"], head["pos"], head["anchor"], color=PREMIUM, label="Open All", ts=18, label_color=INK, ZIndex=5),
         [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=SUCCESS, label="Open", ts=18)],
-        [button("PlaceEggs", U(1, -20, 0, 50), U(0.5, 0, 1, -10), (0.5, 1), color="#4C8DFF", label="Place Eggs", ts=22)])
+        None)
 
 
 # ---------------------------------------------------------------- Hover card (pets and eggs in parks)

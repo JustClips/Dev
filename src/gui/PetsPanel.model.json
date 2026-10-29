@@ -217,7 +217,7 @@
         "Size": [
          [
           1,
-          -210
+          -110
          ],
          [
           1,
@@ -270,7 +270,7 @@
          "className": "UITextSizeConstraint",
          "properties": {
           "MaxTextSize": 26,
-          "MinTextSize": 12
+          "MinTextSize": 7
          }
         }
        ]
@@ -757,7 +757,7 @@
            "className": "UITextSizeConstraint",
            "properties": {
             "MaxTextSize": 20,
-            "MinTextSize": 12
+            "MinTextSize": 7
            }
           }
          ]

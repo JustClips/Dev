@@ -173,7 +173,7 @@
        "className": "UITextSizeConstraint",
        "properties": {
         "MaxTextSize": 22,
-        "MinTextSize": 12
+        "MinTextSize": 7
        }
       }
      ]

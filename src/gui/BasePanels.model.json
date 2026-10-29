@@ -253,7 +253,7 @@
         "Size": [
          [
           1,
-          -10
+          -4
          ],
          [
           0,
@@ -306,7 +306,7 @@
          "className": "UITextSizeConstraint",
          "properties": {
           "MaxTextSize": 17,
-          "MinTextSize": 12
+          "MinTextSize": 7
          }
         }
        ]
@@ -621,7 +621,7 @@
         "Size": [
          [
           1,
-          -10
+          -4
          ],
          [
           0,
@@ -674,7 +674,7 @@
          "className": "UITextSizeConstraint",
          "properties": {
           "MaxTextSize": 17,
-          "MinTextSize": 12
+          "MinTextSize": 7
          }
         }
        ]
@@ -989,7 +989,7 @@
         "Size": [
          [
           1,
-          -10
+          -4
          ],
          [
           0,
@@ -1042,7 +1042,7 @@
          "className": "UITextSizeConstraint",
          "properties": {
           "MaxTextSize": 17,
-          "MinTextSize": 12
+          "MinTextSize": 7
          }
         }
        ]

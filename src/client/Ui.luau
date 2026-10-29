@@ -529,6 +529,7 @@ end
 local DESIGN_W, DESIGN_H = 1456, 820
 local WINDOW_W, WINDOW_H = 820, 520 -- gen_ui.py WIN_W / WIN_H
 local COMPACT_BELOW = 560
+local PHONE_H, PHONE_W = 540, 1100 -- phone layouts are drawn for this much room
 
 local function rescale()
 	local camera = Workspace.CurrentCamera
@@ -543,7 +544,9 @@ local function rescale()
 	local compact = view.Y < COMPACT_BELOW
 	local s = math.min(view.Y / DESIGN_H, view.X / DESIGN_W)
 	if compact then
-		s *= 1.25
+		-- Phones: sized by height so buttons stay big enough to read and tap (Dev: the
+		-- phone HUD was tiny). 390 pt tall -> 0.72.
+		s = math.min(view.Y / PHONE_H, view.X / PHONE_W)
 	end
 	s = math.clamp(s, 0.4, 1.15)
 	local fit = math.min((view.Y - inset - 16) / WINDOW_H, (view.X - 32) / WINDOW_W)
@@ -563,6 +566,23 @@ local function rescale()
 			task.spawn(fn, s, compact)
 		end
 	end
+end
+
+-- How far from the left / right screen edge HUD pieces sit, as offsets inside a ScreenGui
+-- that keeps out of the safe-area insets (negative = out into the inset). On phones the
+-- safe area leaves a wide empty band beside the camera hole; Dev wanted the HUD hugging
+-- the edges, so we only keep a small part of the inset clear.
+function Ui.edges(gui: ScreenGui): (number, number)
+	local camera = Workspace.CurrentCamera
+	if not camera or gui.AbsoluteSize.X < 2 then
+		return 14, 14
+	end
+	local inset = math.max(0, (camera.ViewportSize.X - gui.AbsoluteSize.X) / 2)
+	if inset < 1 then
+		return 14, 14
+	end
+	local offset = math.floor(math.clamp(inset - 30, 10, 24) - inset)
+	return offset, offset
 end
 
 -- Buttons carry a tinted "Studs" texture (gen_ui.py). Controllers recolour buttons
@@ -600,6 +620,20 @@ function Ui.initScaling()
 	playerGui.ChildAdded:Connect(function()
 		task.defer(rescale)
 	end)
+	-- Safe-area sizes (Ui.edges) settle a moment after the viewport changes: lay out again.
+	local function relayout()
+		task.wait(0.2)
+		for _, fn in scaleListeners do
+			task.spawn(fn, currentScale, compactLayout)
+		end
+	end
+	if camera then
+		camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+			task.spawn(relayout)
+		end)
+	end
+	task.spawn(relayout)
+	task.delay(2, relayout)
 end
 
 return Ui
