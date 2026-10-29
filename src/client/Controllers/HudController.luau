@@ -331,10 +331,24 @@ local function renderBoosts()
 	if event then
 		add("Event", "Icon_Event", `{event.LuckMult}x`, event.EndsAt, event.Name, `Live event: {event.LuckMult}x egg luck for everyone.`)
 	end
+	local okEvents, adminEvents = pcall(function()
+		return HttpService:JSONDecode(State.server("AdminEvents") or "[]")
+	end)
+	if not okEvents or type(adminEvents) ~= "table" then
+		adminEvents = {}
+	end
 	local weather = Weather.ById[State.server("Weather") or ""]
 	local weatherEnds = State.server("WeatherEndsAt") or 0
 	if weather and weatherEnds > now then
-		add("Weather", "Icon_Weather_" .. weather.Id, Weather.chipLabel(weather), weatherEnds, weather.Name, weather.Blurb)
+		-- An admin weather event shows only here (one chip), titled as an admin event.
+		local byAdmin = false
+		for _, e in adminEvents do
+			if e.Type == "Weather" and e.Value == weather.Id and (tonumber(e.EndsAt) or 0) > now then
+				byAdmin = true
+			end
+		end
+		local title = if byAdmin then `Admin event: {weather.Name}` else weather.Name
+		add("Weather", "Icon_Weather_" .. weather.Id, Weather.chipLabel(weather), weatherEnds, title, weather.Blurb)
 	end
 	-- Special moons last the whole night.
 	local moon = Weather.ById[State.server("Moon") or ""]
@@ -344,20 +358,14 @@ local function renderBoosts()
 		local nightEnds = math.floor(cycleStart + (cycles + 1) * Weather.CycleSeconds)
 		add("Moon", "Icon_Weather_" .. moon.Id, Weather.chipLabel(moon), nightEnds, moon.Name, moon.Blurb)
 	end
-	-- Admin events (AdminService), each its own chip.
-	local okEvents, adminEvents = pcall(function()
-		return HttpService:JSONDecode(State.server("AdminEvents") or "[]")
-	end)
-	if okEvents and type(adminEvents) == "table" then
-		for _, e in adminEvents do
-			local def = Admin.Events[e.Type]
-			if def and (tonumber(e.EndsAt) or 0) > now then
-				local w = if e.Type == "Weather" then Weather.ById[e.Value] else nil
-				local label = if def.Unit == "x" then `{e.Value}x` elseif def.Unit == "+" then `+{e.Value}` else ""
-				local icon = if w then "Icon_Weather_" .. w.Id else def.Icon
-				local name = if w then w.Name elseif label ~= "" then `{label} {def.Name}` else def.Name
-				add("Admin" .. tostring(e.Id), icon, if w then Weather.chipLabel(w) else label, e.EndsAt, `Admin event: {name}`, def.Blurb)
-			end
+	-- Admin events (AdminService), each its own chip. Weather ones already show as the
+	-- weather chip above, so they don't get a second one.
+	for _, e in adminEvents do
+		local def = Admin.Events[e.Type]
+		if def and e.Type ~= "Weather" and (tonumber(e.EndsAt) or 0) > now then
+			local label = if def.Unit == "x" then `{e.Value}x` elseif def.Unit == "+" then `+{e.Value}` else ""
+			local name = if label ~= "" then `{label} {def.Name}` else def.Name
+			add("Admin" .. tostring(e.Id), def.Icon, label, e.EndsAt, `Admin event: {name}`, def.Blurb)
 		end
 	end
 	local data = State.data
