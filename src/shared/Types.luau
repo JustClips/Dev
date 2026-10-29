@@ -89,6 +89,12 @@ export type ZoneDef = {
 	-- What lies on the ground: tiles pick a colour from DustPalette (leaves, litter, snow...).
 	DustMaterial: Enum.Material?,
 	DustPalette: { Color3 }?,
+	-- LeafController: each tile shows one of these ground images (a clump of leaves, litter or
+	-- snow), turned at random. TrashPercent of the tiles hold a piece of trash instead (Trash
+	-- kinds, see LeafController), which pays Economy.TrashMult times as much.
+	Ground: { string }?,
+	TrashPercent: number?,
+	Trash: { string }?,
 	Exclusions: { Exclusion },
 }
 
@@ -273,6 +279,7 @@ export type PlayerSnapshot = {
 	TutorialStep: string,
 	TutorialTarget: Vector3?,
 	AutoSweep: boolean,
+	AutoSell: boolean,
 	Settings: { Music: number?, Sfx: number? },
 	ServerTime: number,
 }

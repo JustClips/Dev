@@ -1,7 +1,7 @@
 --!strict
 -- Main HUD (stud style, see docs/UI_STYLE.md): left rail (Shop / Index / Rebirth),
 -- top teleport pills (Base / Sell / Zones), Moon Clean bar + event, boost chips,
--- wallet (cash + backpack) bottom-left, next-tool card + Auto on the right,
+-- wallet (cash + bag) bottom-left, Auto Sweep / Auto Sell switches on the right,
 -- the mobile SWEEP button, toasts and server announcements.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -37,9 +37,9 @@ local LUCK_TIERS = { 16, 8, 4, 2 }
 local GREEN = Color3.fromRGB(61, 220, 90)
 local DANGER = Color3.fromRGB(255, 77, 94)
 local LOCKED = Color3.fromRGB(255, 150, 160) -- readable on the blue zone rows
-local SAND = Color3.fromRGB(233, 201, 139)
+local LEAF = Color3.fromRGB(255, 154, 60)
 local NAVY = Color3.fromRGB(20, 26, 51)
-local MINT = Color3.fromRGB(124, 245, 200)
+local MINT = Color3.fromRGB(139, 224, 78) -- leaf green: the World Cleaned bar
 local ZONE_ORDER = { "Landing", "Crater", "DarkSide", "Mars", "Europa" }
 
 local HudController = {}
@@ -190,6 +190,18 @@ local function renderZones(data)
 	end
 end
 
+-- Auto Sweep / Auto Sell switch: shown once you own the pass, green ON tag or grey OFF.
+local function setToggle(button: GuiButton, owned: boolean, on: boolean)
+	button.Visible = owned
+	local state = button:FindFirstChild("State") :: Frame?
+	local label = state and state:FindFirstChild("Label") :: TextLabel?
+	if state and label then
+		state.BackgroundColor3 = if on then GREEN else Color3.fromRGB(181, 186, 198)
+		label.Text = if on then "ON" else "OFF"
+	end
+	button.BackgroundColor3 = if on then Color3.fromRGB(30, 120, 70) else NAVY
+end
+
 -- One line telling new players what to do next (server-confirmed tutorial steps).
 local function render(data)
 	el.Cash.Text = Format.cash(data.Cash)
@@ -200,12 +212,11 @@ local function render(data)
 	el.BackpackAmount.Text = `{Format.number(data.Backpack)} / {Format.number(data.Capacity)}`
 	el.BackpackFull.Visible = fraction >= 1
 	-- Leave room for the FULL tag on the right end of the bar.
-	el.BackpackAmount.Size = if fraction >= 1 then UDim2.new(1, -66, 1, 0) else UDim2.fromScale(1, 1)
-	el.BackpackFill.BackgroundColor3 = if fraction >= 1 then DANGER else SAND
+	el.BackpackAmount.Size = if fraction >= 1 then UDim2.new(1, -70, 1, 0) else UDim2.new(1, -12, 1, 0)
+	el.BackpackFill.BackgroundColor3 = if fraction >= 1 then DANGER else LEAF
 
-	el.AutoButton.Visible = data.Gamepasses.AutoSweep == true
-	Ui.setText(el.AutoButton, if data.AutoSweep then "Auto: ON" else "Auto: OFF")
-	el.AutoButton.BackgroundColor3 = if data.AutoSweep then Color3.fromRGB(30, 158, 120) else NAVY
+	setToggle(el.AutoButton, data.Gamepasses.AutoSweep == true, data.AutoSweep)
+	setToggle(el.AutoSellButton, data.Gamepasses.SellAnywhere == true, data.AutoSell)
 
 	if el.ZonePicker.Visible then
 		renderZones(data)
@@ -241,8 +252,8 @@ local function renderServer()
 		el.MoonIcon.Image = AssetLibrary.image("Icon_Meteor")
 	else
 		local clean = State.server("MoonClean") or 0
-		el.MoonTitle.Text = "WORLD CLEAN"
-		el.MoonTitle.TextColor3 = MINT
+		el.MoonTitle.Text = "WORLD CLEANED"
+		el.MoonTitle.TextColor3 = Color3.new(1, 1, 1)
 		el.MoonValue.Text = Format.percent(clean)
 		setFill(clean)
 		fill.BackgroundColor3 = MINT
@@ -434,7 +445,7 @@ local function layout(s: number, compact: boolean)
 	local barY = top + pillsH + math.ceil(8 * s)
 	el.MoonPanel.Position = UDim2.new(0.5, 0, 0, barY)
 	el.ZonePicker.Position = UDim2.new(0.5, 0, 0, barY)
-	el.Toasts.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(60 * s))
+	el.Toasts.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(54 * s))
 	local hotbarTop = 12 + math.ceil(88 * s)
 	el.Hint.Position = UDim2.new(0.5, 0, 1, -(hotbarTop + math.ceil(12 * s)))
 	local walletLayout = el.Wallet:FindFirstChildOfClass("UIListLayout")
@@ -447,7 +458,7 @@ local function layout(s: number, compact: boolean)
 			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 		end
 		el.Rail.AnchorPoint = Vector2.new(0, 0)
-		el.Rail.Position = UDim2.new(0, 14, 0, 6 + math.ceil(140 * s))
+		el.Rail.Position = UDim2.new(0, 14, 0, 6 + math.ceil(128 * s))
 		boosts.AnchorPoint = Vector2.new(1, 0)
 		boosts.Position = UDim2.new(1, -14, 0, 8 + math.ceil(100 * s))
 		if boostLayout then
@@ -473,10 +484,11 @@ local function layout(s: number, compact: boolean)
 	local right = el.Right :: Frame
 	local rightList = right:FindFirstChildOfClass("UIListLayout")
 	if compact then
-		right.AnchorPoint = Vector2.new(1, 0.5)
-		right.Position = UDim2.new(1, -14, 0.5, 0)
+		-- Above the jump button, under the boost chips.
+		right.AnchorPoint = Vector2.new(1, 1)
+		right.Position = UDim2.new(1, -14, 1, -(26 + math.ceil(108 * s)))
 		if rightList then
-			rightList.VerticalAlignment = Enum.VerticalAlignment.Center
+			rightList.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
 	else
 		right.AnchorPoint = Vector2.new(1, 0)
@@ -510,6 +522,7 @@ function HudController:Init(controllers)
 	el.BoostTemplate = Ui.find(hud, "Boosts.Template")
 	el.BoostTip = Ui.find(hud, "BoostTip")
 	el.AutoButton = Ui.find(hud, "Right.AutoButton")
+	el.AutoSellButton = Ui.find(hud, "Right.AutoSellButton")
 	el.SweepButton = Ui.find(hud, "SweepButton")
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
@@ -623,7 +636,23 @@ function HudController:Start()
 	Ui.button(Ui.find(hud, "Pills.BaseButton"), function()
 		teleport("Base")
 	end)
+	-- Sell: with Sell Anywhere it sells the whole bag right here, otherwise it takes you to a
+	-- leaf dump.
 	Ui.button(Ui.find(hud, "Pills.SellButton"), function()
+		local data = State.data
+		if data and data.Gamepasses.SellAnywhere then
+			if data.Backpack <= 0 then
+				HudController:Toast("Your bag is empty", "Info")
+				return
+			end
+			local ok, message = Net.func("SellNow"):InvokeServer()
+			if ok then
+				C.DumpController:SellBurst()
+			elseif message and message ~= "" then
+				HudController:Toast(message, "Bad")
+			end
+			return
+		end
 		teleport("Rocket")
 	end)
 	Ui.button(Ui.find(hud, "Pills.ZonesButton"), function()
@@ -644,6 +673,12 @@ function HudController:Start()
 		local data = State.data
 		if data then
 			Net.event("SetAutoSweep"):FireServer(not data.AutoSweep)
+		end
+	end)
+	Ui.button(el.AutoSellButton, function()
+		local data = State.data
+		if data then
+			Net.event("SetAutoSell"):FireServer(not data.AutoSell)
 		end
 	end)
 

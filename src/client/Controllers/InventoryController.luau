@@ -28,7 +28,7 @@ local Zones = require(Shared.Config.Zones)
 
 local TABS = { "Pets", "Eggs", "Items" }
 local TITLES = { All = "All Items", Pets = "Pets", Eggs = "Eggs", Items = "Items" }
-local TAB_ON = Color3.fromRGB(233, 238, 247)
+local TAB_ON = Color3.fromRGB(61, 220, 90)
 local TAB_OFF = Color3.fromRGB(11, 14, 30)
 local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(27, 31, 58)
@@ -350,15 +350,7 @@ local function render(force: boolean?)
 	for name, button in tabButtons do
 		local on = name == currentTab
 		button.BackgroundColor3 = if on then TAB_ON else TAB_OFF
-		button.BackgroundTransparency = if on then 0.05 else 0.3
-		local label = button:FindFirstChild("Label") :: TextLabel?
-		if label then
-			label.TextColor3 = if on then INK else WHITE
-			local stroke = label:FindFirstChildOfClass("UIStroke")
-			if stroke then
-				stroke.Enabled = not on
-			end
-		end
+		button.BackgroundTransparency = 0
 	end
 	titleLabel.Text = TITLES[currentTab]
 	for _, card in cards do

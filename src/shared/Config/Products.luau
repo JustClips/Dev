@@ -14,6 +14,7 @@ local Gamepasses: { GamepassDef } = {
 	{ Key = "Carry3", Id = 2057249582, Price = 129, Name = "Carry 3 Eggs", Description = "Carry up to 3 eggs per trip." },
 	{ Key = "VIP", Id = 2060219551, Price = 249, Name = "VIP", Description = "+20% cash, VIP tag, 4 h offline income." },
 	{ Key = "FasterHatch", Id = 2057507586, Price = 229, Name = "Faster Hatch", Description = "All hatch timers halved." },
+	{ Key = "SellAnywhere", Id = 2058462006, Price = 199, Name = "Sell Anywhere", Description = "Sell your whole bag from anywhere with one tap, plus Auto Sell when it fills up." },
 }
 
 local Products: { ProductDef } = {

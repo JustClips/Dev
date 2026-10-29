@@ -12,8 +12,11 @@ local World = require(script.Parent.World)
 local landingExclusions: { Types.Exclusion } = {
 	{ Center = Vector2.new(World.RocketPosition.X, World.RocketPosition.Z), Radius = World.RocketClearRadius },
 }
-for _, spot in World.DriveSellSpots do
-	table.insert(landingExclusions, { Center = Vector2.new(spot.X, spot.Z), Radius = World.DriveSellRadius + 2 })
+-- Leaf dumps: the dump itself and the spot in front of it.
+for i, dump in World.Dumps do
+	local spot = World.dumpSpot(i)
+	table.insert(landingExclusions, { Center = Vector2.new(dump.Position.X, dump.Position.Z), Radius = 6 })
+	table.insert(landingExclusions, { Center = Vector2.new(spot.X, spot.Z), Radius = World.DumpRadius + 1 })
 end
 
 local List: { ZoneDef } = {
@@ -37,6 +40,9 @@ local List: { ZoneDef } = {
 		DustColor = Color3.fromRGB(232, 140, 52), -- autumn leaves
 		DustMaterial = Enum.Material.LeafyGrass,
 		DustPalette = { Color3.fromRGB(240, 128, 40), Color3.fromRGB(226, 70, 44), Color3.fromRGB(250, 196, 54), Color3.fromRGB(170, 98, 52) },
+		Ground = { "Ground_Autumn1", "Ground_Autumn2", "Ground_Autumn3" },
+		TrashPercent = 4,
+		Trash = { "Can", "PaperBall", "JuiceBox", "Bottle" },
 		Exclusions = landingExclusions,
 	},
 	{
@@ -59,6 +65,9 @@ local List: { ZoneDef } = {
 		DustColor = Color3.fromRGB(214, 170, 50), -- park: yellow and green leaves
 		DustMaterial = Enum.Material.LeafyGrass,
 		DustPalette = { Color3.fromRGB(250, 206, 60), Color3.fromRGB(232, 150, 40), Color3.fromRGB(150, 196, 64), Color3.fromRGB(206, 92, 48) },
+		Ground = { "Ground_Park1", "Ground_Park2", "Ground_Park3" },
+		TrashPercent = 5,
+		Trash = { "Can", "Bottle", "ChipBag", "PaperBall" },
 		Exclusions = {},
 	},
 	{
@@ -81,6 +90,9 @@ local List: { ZoneDef } = {
 		DustColor = Color3.fromRGB(70, 150, 90), -- beach: seaweed and shells
 		DustMaterial = Enum.Material.Grass,
 		DustPalette = { Color3.fromRGB(56, 140, 84), Color3.fromRGB(96, 168, 70), Color3.fromRGB(40, 112, 96), Color3.fromRGB(240, 196, 180) },
+		Ground = { "Ground_Seaweed1", "Ground_Seaweed2" },
+		TrashPercent = 7,
+		Trash = { "Bottle", "Can", "Bucket", "Shell" },
 		Exclusions = {},
 	},
 	{
@@ -103,6 +115,9 @@ local List: { ZoneDef } = {
 		DustColor = Color3.fromRGB(200, 190, 170), -- city: paper and cardboard litter
 		DustMaterial = Enum.Material.Cardboard,
 		DustPalette = { Color3.fromRGB(232, 228, 214), Color3.fromRGB(196, 150, 100), Color3.fromRGB(150, 180, 214), Color3.fromRGB(230, 120, 110) },
+		Ground = { "Ground_Paper1", "Ground_Paper2", "Ground_Autumn2" },
+		TrashPercent = 10,
+		Trash = { "PizzaBox", "Can", "Cup", "PaperBall" },
 		Exclusions = {},
 	},
 	{
@@ -125,6 +140,9 @@ local List: { ZoneDef } = {
 		DustColor = Color3.fromRGB(236, 246, 255), -- snowy peaks: snow drifts
 		DustMaterial = Enum.Material.Snow,
 		DustPalette = { Color3.fromRGB(246, 250, 255), Color3.fromRGB(226, 238, 252), Color3.fromRGB(210, 228, 248) },
+		Ground = { "Ground_Snow1", "Ground_Snow2" },
+		TrashPercent = 4,
+		Trash = { "Cup", "Can", "Bottle" },
 		Exclusions = {},
 	},
 }

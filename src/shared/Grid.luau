@@ -131,6 +131,30 @@ function Grid.forEachInRadius(position: Vector3, radius: number, fn: (number) ->
 	end
 end
 
+-- A stable pseudo-random number 0..1 for a tile (same on server and every client).
+function Grid.hash(id: number, salt: number): number
+	local x = (id * 73856093 + salt * 19349663 + 1) % 4294967296
+	for _ = 1, 3 do -- xorshift32
+		x = bit32.bxor(x, bit32.lshift(x, 13))
+		x = bit32.bxor(x, bit32.rshift(x, 17))
+		x = bit32.bxor(x, bit32.lshift(x, 5))
+	end
+	return x / 4294967296
+end
+
+-- The trash kind lying on this tile, or nil for a normal tile (Zones: TrashPercent, Trash).
+function Grid.trashKind(id: number): string?
+	local zg = Grid.zoneGridOfId(id)
+	local zone = zg and zg.Zone
+	if not zone or not zone.Trash or not zone.TrashPercent then
+		return nil
+	end
+	if Grid.hash(id, 1) * 100 >= zone.TrashPercent then
+		return nil
+	end
+	return zone.Trash[math.floor(Grid.hash(id, 2) * #zone.Trash) + 1]
+end
+
 -- Pack / unpack tile id lists for remotes.
 function Grid.pack(ids: { number }): buffer
 	local b = buffer.create(#ids * 2)

@@ -19,7 +19,7 @@ local Assets = require(Shared.Config.Assets)
 local TIMEOUT = 45
 local TIPS = {
 	"Tip: bigger tools sweep wider and hold more leaves.",
-	"Tip: sell your leaves at the Recycler in the middle of the map.",
+	"Tip: dump your leaves into the green bins by the market to get cash.",
 	"Tip: carry eggs to the pet park on your base.",
 	"Tip: pets on your base earn cash even while you sweep.",
 	"Tip: buy a car at the Garage and drive it from hotbar slot 2.",

@@ -54,7 +54,7 @@ local function itemsFor(product: string): { Item }
 	if string.find(product, "^ServerLuck") then
 		return { { icon = AssetLibrary.image("Icon_Luck"), caption = "Server Luck" } }
 	end
-	local icons = { AutoSweep = "Icon_Auto", Carry3 = "Icon_Egg", Cash2x = "Icon_Cash", VIP = "Icon_Star" }
+	local icons = { SellAnywhere = "Icon_Sell", AutoSweep = "Icon_Auto", Carry3 = "Icon_Egg", Cash2x = "Icon_Cash", VIP = "Icon_Star" }
 	return { { icon = AssetLibrary.image(icons[product] or "Icon_Star"), caption = "" } }
 end
 
@@ -213,6 +213,7 @@ local SOURCE_TEXT = {
 	DustBunny = "Dust bunny!",
 	TutorialReward = "Tutorial reward",
 	SellDust = "Sold",
+	SellAnywhere = "Sold",
 	SellPet = "Sold pet",
 }
 local POP_SECONDS = 1.6

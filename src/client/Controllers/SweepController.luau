@@ -1,7 +1,8 @@
 --!strict
 -- Sweeping input and feel. Hold mouse / touch the SWEEP button / gamepad R2 while the tool is
 -- equipped; Auto Sweep (gamepass) and vehicles sweep while moving. Sends at most 10 ticks/s.
--- Cleared tiles from the server get dust puffs; sweep results get pooled "+$" numbers.
+-- The leaves themselves (wiggle, suck-in) are LeafController; sweep results get pooled "+$"
+-- numbers, a TRASH! pop and a pop sound that climbs with the combo.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -18,12 +19,10 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local Assets = require(Shared.Config.Assets)
 local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
-local Grid = require(Shared.Grid)
+local Tools = require(Shared.Config.Tools)
 local Net = require(Shared.Net)
 
 local TICK = 1 / Economy.SweepMaxPerSecond
-local PUFF_DISTANCE = 140
-local MAX_PUFFS_PER_BATCH = 80
 local NUMBER_POOL = 12
 local MOVING_SPEED = 2
 
@@ -222,24 +221,32 @@ local function floatNumber(text: string, position: Vector3, color: Color3?)
 	end)
 end
 
-local function onTilesCleared(packed: buffer)
-	local camera = Workspace.CurrentCamera
-	if not camera then
-		return
+local TRASH_NAMES = {
+	Can = "CAN",
+	Bottle = "BOTTLE",
+	PaperBall = "PAPER",
+	JuiceBox = "JUICE BOX",
+	ChipBag = "CHIP BAG",
+	Bucket = "BUCKET",
+	Shell = "SHELL",
+	PizzaBox = "PIZZA BOX",
+	Cup = "CUP",
+}
+
+-- Sweep radius of what you're using right now (car or hand tool), for the leaf wiggle.
+local function sweepRadius(): number
+	local _, _, humanoid = character()
+	local seat = humanoid and humanoid.SeatPart
+	if seat and seat:IsA("VehicleSeat") and seat.Parent then
+		local id = string.match(seat.Parent.Name, "_(%w+)$")
+		local v = id and Tools.vehicle(id)
+		return if v then v.Radius else 14
 	end
-	local origin = camera.Focus.Position
-	local puffs = 0
-	for _, id in Grid.unpack(packed) do
-		local position = Grid.tilePosition(id)
-		if position and (position - origin).Magnitude < PUFF_DISTANCE then
-			emitterPart.Position = position
-			emitter:Emit(3)
-			puffs += 1
-			if puffs >= MAX_PUFFS_PER_BATCH then
-				break
-			end
-		end
-	end
+	local char = player.Character
+	local tool = char and char:FindFirstChildOfClass("Tool")
+	local tier = tool and tool:GetAttribute("Tier")
+	local def = type(tier) == "number" and Tools.get(tier)
+	return if def then def.Radius else 5
 end
 
 local fullWarnAt = 0
@@ -250,6 +257,16 @@ local function onSweepResult(result)
 	end
 	if result.Value and result.Value > 0 then
 		floatNumber("+" .. Format.cash(result.Value), root.Position + Vector3.new(math.random() * 2 - 1, 3, math.random() * 2 - 1))
+	end
+	-- A pop per sweep that climbs in pitch with the combo.
+	if result.Tiles and result.Tiles > 0 then
+		local combo = result.Combo or 1
+		Ui.sound("Pop", 0.9 + math.min(combo - 1, 2) * 0.3)
+	end
+	if result.Trash and result.Trash > 0 then
+		local name = TRASH_NAMES[result.TrashKind or ""] or "TRASH"
+		floatNumber(`{name}! x{Economy.TrashMult}`, root.Position + Vector3.new(0, 5.5, 0), Color3.fromRGB(110, 210, 255))
+		Ui.sound("Coin", 1.1)
 	end
 	if result.Golden and result.Golden > 0 then
 		floatNumber("GOLDEN!", root.Position + Vector3.new(0, 5, 0))
@@ -265,7 +282,7 @@ local function onSweepResult(result)
 	end
 	if result.Full and os.clock() > fullWarnAt then
 		fullWarnAt = os.clock() + 6
-		C.HudController:Toast("Backpack full! Tap Sell to go to the Recycler", "Bad")
+		C.HudController:Toast("Bag full! Dump your leaves at the market", "Bad")
 	end
 end
 
@@ -305,7 +322,6 @@ function SweepController:Start()
 		touchHolding = false
 	end)
 
-	Net.event("TilesCleared").OnClientEvent:Connect(onTilesCleared)
 	Net.event("SweepResult").OnClientEvent:Connect(onSweepResult)
 	Net.event("BunnyPop").OnClientEvent:Connect(function(position: Vector3)
 		local camera = Workspace.CurrentCamera
@@ -331,6 +347,7 @@ function SweepController:Start()
 		toolActive = active and equipped
 		if active and position then
 			Net.event("SweepTick"):FireServer(position)
+			C.LeafController:Disturb(position, sweepRadius() + 1.5)
 			tickCount += 1
 			if tickCount % 3 == 0 then
 				Ui.sound("Sweep")

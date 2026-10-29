@@ -114,6 +114,58 @@
    "id": 139963628852518,
    "sha": "cca60c49f7995ae63dc8d7e12f17771a3926783dd47811069d1d2cc2e4935e4b"
   },
+  "Ground_Autumn1": {
+   "id": 82579920780302,
+   "sha": "c22ca7ff76de4de433f8117e87e52810fb4c99e7d9bd4a4fa9c87b518c140916"
+  },
+  "Ground_Autumn2": {
+   "id": 135307152856892,
+   "sha": "ddfec2cc5071518e91544c613c17bdbb0340bea40f4418c17f7e0374e88ec66f"
+  },
+  "Ground_Autumn3": {
+   "id": 139647599081054,
+   "sha": "71f8bfd1e24fd39b14c23078e8b4007ef52f5521c62a132d14566c58deba9bb9"
+  },
+  "Ground_Gold": {
+   "id": 103848909695945,
+   "sha": "c328fe819396be3d54299a92c2e7cf950637fdf7d3884432842a1c61437c7521"
+  },
+  "Ground_Paper1": {
+   "id": 115162081937636,
+   "sha": "715e68c6c474288e17d957029e2416083475fbfefb0500d199b6b38cffff258a"
+  },
+  "Ground_Paper2": {
+   "id": 134366383127402,
+   "sha": "17a72831e3c813d794c198a644b0354445c4a86aaa0114224f87fe922c56c766"
+  },
+  "Ground_Park1": {
+   "id": 103850586351947,
+   "sha": "841907b08e0b20fa433f6c1636a69eeabbf8a91300ae8802f6e3da998c0d204c"
+  },
+  "Ground_Park2": {
+   "id": 135882696805504,
+   "sha": "b9faba8e8ed25946ea98a70926300965105859859ab9c93d6d7868ff995ec40b"
+  },
+  "Ground_Park3": {
+   "id": 111664739859552,
+   "sha": "70c02c04e6cac1c1d6a842ec60198cd95cddfcbbc78d29bfd85af19d656117d8"
+  },
+  "Ground_Seaweed1": {
+   "id": 90982266032687,
+   "sha": "303fcc7fe66329c5f7d7fe470bf785dcaf764ba7fd34c573fff6d5f200fff5d9"
+  },
+  "Ground_Seaweed2": {
+   "id": 136640595526168,
+   "sha": "5714774f1e5e6e6eb934bf56972a010d51271d9f30d0724a3e358eccc087068f"
+  },
+  "Ground_Snow1": {
+   "id": 110999770426057,
+   "sha": "fb419a5e4e42fbf8bce386ad3ab8640b8e7237188a9d1c304f5da702d61a5ccb"
+  },
+  "Ground_Snow2": {
+   "id": 71269253576124,
+   "sha": "322eb4023c2be60d83d0e6e9abfaddacade51438a0152cd6a0eca165d9f097c2"
+  },
   "HexRing": {
    "id": 88932321690840,
    "sha": "509c2655ca85624c43b59238f9896c841a864499ccc36d4e9c02c103602ed3bf"

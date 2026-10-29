@@ -58,7 +58,7 @@ local STEPS: { Step } = {
 		icon = "Icon_Egg",
 	},
 	{ key = "PlacePet", text = "Put your pet in your park: open your Bag (3) and press Place.", icon = "Icon_Alien" },
-	{ key = "Sell", text = "Sell your leaves at the Recycler for cash!", icon = "Icon_Sell" },
+	{ key = "Sell", text = "Dump your leaves at the market for cash!", icon = "Icon_Sell" },
 	{ key = "Shop", text = "Open Tools and buy a better tool. It sweeps faster!", icon = "Icon_Tool" },
 	{
 		key = "Upgrade",
@@ -209,9 +209,13 @@ local function worldTarget(data): Instance?
 	elseif (key == "Hatching" or key == "Open") and base then
 		local hatching = base:FindFirstChild("Hatching")
 		return hatching and hatching:GetChildren()[1]
-	elseif key == "Sell" and moon then
-		local rocket = moon:FindFirstChild("Rocket")
-		return rocket and rocket:FindFirstChild("SellPad")
+	elseif key == "Sell" then
+		-- The nearest leaf dump.
+		local character = Players.LocalPlayer.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		local index = World.nearestDump(if root then root.Position else World.RocketPosition)
+		local structures = Workspace:FindFirstChild("Structures")
+		return structures and structures:FindFirstChild("LeafDump" .. index)
 	end
 	return nil
 end

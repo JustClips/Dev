@@ -22,13 +22,34 @@ local World = {}
 
 World.Field = { Min = Vector2.new(-56, -196), Max = Vector2.new(56, 150) }
 World.RocketPosition = Vector3.new(0, 0, 0)
-World.SellRadius = 15
-World.RocketClearRadius = 20
-World.LaunchPadRadius = 18
--- Drive-thru selling: a big round pad on each side of the market hall. Driving (or walking)
--- onto one sells your leaves, so cars don't have to squeeze up to the hall.
-World.DriveSellSpots = { Vector3.new(-36, 0, 0), Vector3.new(36, 0, 0) }
-World.DriveSellRadius = 13
+World.RocketClearRadius = 15
+World.LaunchPadRadius = 14
+-- Leaf dumps on both sides of the market hall, facing out to the field. Walk or drive up to
+-- one and your bag pours into it bit by bit (like making honey in Bee Swarm).
+World.Dumps = {
+	CFrame.lookAt(Vector3.new(-19, 0, 0), Vector3.new(-60, 0, 0)),
+	CFrame.lookAt(Vector3.new(19, 0, 0), Vector3.new(60, 0, 0)),
+}
+World.DumpFront = 6.5 -- studs from a dump's centre to the middle of its standing spot
+World.DumpRadius = 8 -- standing spot radius (cars count by their driver)
+
+-- Middle of dump i's standing spot.
+function World.dumpSpot(i: number): Vector3
+	return (World.Dumps[i] * CFrame.new(0, 0, -World.DumpFront)).Position
+end
+
+-- The dump closest to a position: index and standing spot.
+function World.nearestDump(position: Vector3): (number, Vector3)
+	local best, bestSpot, bestD = 1, World.dumpSpot(1), math.huge
+	for i in World.Dumps do
+		local spot = World.dumpSpot(i)
+		local d = (Vector3.new(spot.X, position.Y, spot.Z) - position).Magnitude
+		if d < bestD then
+			best, bestSpot, bestD = i, spot, d
+		end
+	end
+	return best, bestSpot
+end
 World.Walkway = 6 -- paved strip between the dust field and the bases
 
 -- South plaza (between the field and the hub's south wall).
@@ -111,7 +132,7 @@ World.Corridors = {
 
 -- Teleport targets for the HUD buttons (Base uses your own spawn).
 World.Teleports = {
-	Rocket = CFrame.lookAt(Vector3.new(0, 4, 24), Vector3.new(0, 4, 0)),
+	Rocket = CFrame.lookAt(Vector3.new(-29, 4, 5), Vector3.new(-19, 4, 0)), -- on the west leaf dump's spot
 	Crater = CFrame.lookAt(Vector3.new(0, -4, -240), Vector3.new(0, -4, -300)),
 	DarkSide = CFrame.lookAt(Vector3.new(0, 4, -494), Vector3.new(0, 4, -560)),
 	Mars = CFrame.lookAt(Vector3.new(0, 4, -746), Vector3.new(0, 4, -800)),

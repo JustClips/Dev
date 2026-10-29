@@ -75,6 +75,7 @@ local PASS_ICONS = {
 	Carry3 = "Icon_Egg",
 	VIP = "Icon_Star",
 	FasterHatch = "Icon_Timer",
+	SellAnywhere = "Icon_Sell",
 }
 
 local ShopController = {}

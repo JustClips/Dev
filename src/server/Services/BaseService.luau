@@ -45,6 +45,7 @@ local function onCharacter(player: Player, character: Model)
 	end
 	local humanoid = character:WaitForChild("Humanoid", 10) :: Humanoid?
 	if humanoid then
+		Avatar.noToolsWhileDriving(character, humanoid)
 		humanoid.Died:Connect(function()
 			task.wait(Players.RespawnTime)
 			if player.Parent and S.DataService:GetSession(player) then

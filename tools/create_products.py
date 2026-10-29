@@ -26,7 +26,7 @@ UNIVERSE = "10773346969"
 API = "https://apis.roblox.com"
 
 PASS_ICONS = {"Cash2x": "Cash", "AutoSweep": "Auto", "ExtraSlots": "Alien", "Carry3": "Egg",
-              "VIP": "Star", "FasterHatch": "Timer"}
+              "VIP": "Star", "FasterHatch": "Timer", "SellAnywhere": "Sell"}
 KIND_ICONS = {"StarterPack": "Gift", "ServerLuck": "Luck", "MeteorShower": "Meteor", "SkipHatch": "Timer",
               "EggPack": "Egg", "ToolSkip": "Tool", "VehicleUnlock": "Vehicle", "VehicleRental": "Vehicle",
               "CashPack": "Cash", "SkipRebirth": "Rebirth", "DoubleOffline": "Cash", "GiftPass": "Gift"}

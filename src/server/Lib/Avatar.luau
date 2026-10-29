@@ -49,6 +49,29 @@ function Avatar.setGroup(model: Instance, group: string)
 	model.DescendantAdded:Connect(apply)
 end
 
+-- Cars sweep on their own, so the hand tool goes away while driving: getting in puts it
+-- back in the backpack, and equipping it from the hotbar while seated is undone.
+function Avatar.noToolsWhileDriving(character: Model, humanoid: Humanoid)
+	local function driving(): boolean
+		local seat = humanoid.SeatPart
+		return seat ~= nil and seat:IsA("VehicleSeat")
+	end
+	humanoid:GetPropertyChangedSignal("SeatPart"):Connect(function()
+		if driving() then
+			humanoid:UnequipTools()
+		end
+	end)
+	character.ChildAdded:Connect(function(child)
+		if child:IsA("Tool") and driving() then
+			task.defer(function()
+				if child.Parent == character and driving() then
+					humanoid:UnequipTools()
+				end
+			end)
+		end
+	end)
+end
+
 local function clamp(description: HumanoidDescription)
 	for key, max in MAX_SCALE do
 		local value = (description :: any)[key] :: number

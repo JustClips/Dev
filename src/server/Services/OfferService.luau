@@ -76,6 +76,8 @@ function OfferService:OnBackpackFull(player: Player)
 	local skipKey = "ToolSkip" .. nextTier
 	if nextTier <= Tools.MaxTier and isLive(skipKey) then
 		show(player, "BackpackFull", skipKey, "Backpack full again?", `Get the {Tools.get(nextTier).Name} now: {Tools.get(nextTier).Capacity} capacity!`)
+	elseif not session.Data.Gamepasses.SellAnywhere and isLive("SellAnywhere") and state.fullCount % (Economy.Offers.BackpackFullCount * 2) == 0 then
+		show(player, "BackpackFull", "SellAnywhere", "Sell from anywhere", "One tap sells your whole bag, and Auto Sell empties it when it's full.")
 	elseif not session.Data.Gamepasses.AutoSweep then
 		show(player, "BackpackFull", "AutoSweep", "Sweep on autopilot", "Auto Sweep cleans around you while you walk.")
 	end

@@ -91,7 +91,8 @@ local function onSweep(player: Player, position: any)
 	local critMult = Upgrades.CritBaseMult + Upgrades.stat(levels, "CritMult")
 	local goldenMult = Economy.Golden.Mult * Upgrades.multiplier(levels, "Golden")
 
-	local totalDust, totalValue, goldenHits, critHits = 0, 0, 0, 0
+	local totalDust, totalValue, goldenHits, critHits, trashHits = 0, 0, 0, 0, 0
+	local trashKind: string? = nil
 	local weatherMult = S.WeatherService:GetCashMult()
 	for _, id in cleared do
 		local tileZone = S.DustService:GetZone(id)
@@ -99,6 +100,13 @@ local function onSweep(player: Player, position: any)
 		if S.DustService:TakeGolden(id) then
 			mult *= goldenMult
 			goldenHits += 1
+		end
+		-- Trash (cans, bottles...) lying among the leaves pays more.
+		local trash = Grid.trashKind(id)
+		if trash then
+			mult *= Economy.TrashMult
+			trashHits += 1
+			trashKind = trash
 		end
 		if critChance > 0 and rng:NextNumber() < critChance then
 			mult *= critMult
@@ -119,6 +127,8 @@ local function onSweep(player: Player, position: any)
 		Combo = runtime.Combo,
 		Golden = goldenHits,
 		Crit = critHits,
+		Trash = trashHits,
+		TrashKind = trashKind,
 		CritMult = critMult,
 	})
 end

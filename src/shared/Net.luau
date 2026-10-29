@@ -9,6 +9,8 @@ local RunService = game:GetService("RunService")
 local EVENTS: { [string]: number } = {
 	SweepTick = 12, -- client: position while sweeping (server enforces 10/s on top)
 	TilesCleared = 0, -- server -> all: buffer of u16 tile ids
+	TilesRestored = 0, -- server -> all: buffer of u16 tile ids that grew back
+	TilesGolden = 0, -- server -> all: buffer of u16 ids turned golden (id + 32768 = back to normal)
 	SweepResult = 0, -- server -> sweeper: dust gained, cash value, full flag
 	PlayerState = 0, -- server -> owner: full PlayerSnapshot
 	Notify = 0, -- server -> one: short toast
@@ -24,11 +26,15 @@ local EVENTS: { [string]: number } = {
 	BunnyPop = 0, -- server -> all: a dust bunny got swept at a position
 	TutorialDone = 0, -- server -> owner: tutorial finished, with the reward it gave
 	SetAutoSweep = 4, -- client: toggle auto sweep (gamepass)
+	SetAutoSell = 4, -- client: toggle auto sell (Sell Anywhere pass)
+	DumpTick = 0, -- server -> owner: (cash, bagLeft 0-1) a bit of the bag poured into a leaf dump
 	SetSetting = 6, -- client: ("Music" | "Sfx", 0-1) volume sliders, saved
 }
 
 local FUNCTIONS: { [string]: number } = {
 	GetState = 2,
+	GetDust = 2, -- () -> cleared tile ids, golden tile ids (packed u16 buffers)
+	SellNow = 2, -- () -> ok, message: sell the whole bag here (Sell Anywhere pass)
 	BuyNextTool = 4,
 	Rebirth = 2,
 	PromptPurchase = 4, -- (productKey, giftToUserId?) -> ok, message

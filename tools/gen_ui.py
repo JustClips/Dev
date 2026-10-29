@@ -333,6 +333,18 @@ def zone_row(zone_id, title, order):
     ])
 
 
+def auto_toggle(name, label, ico, order):
+    """Auto Sweep / Auto Sell switch: icon, name, and an ON/OFF tag (HudController colours it)."""
+    return button(name, U(0, 230, 0, 50), color=BG, ico=ico, ico_px=40, LayoutOrder=order, Visible=False, dark="#9AA3B8", children=[
+        text("Label", label, U(1, -114, 1, -8), U(0, 52, 0, 4), ts=20, display=True, stroke=2.5, xa="Left", TextScaled=True,
+             TextWrapped=False, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 10})]),
+        frame("State", U(0, 52, 0, 30), U(1, -8, 0.5, 0), (1, 0.5), bg=MUTED, ZIndex=3, children=[
+            border(INK, 2),
+            text("Label", "OFF", U(1, 0, 1, 0), ts=17, display=True, stroke=2, ZIndex=4),
+        ]),
+    ])
+
+
 def hud():
     rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
         autoscale(),
@@ -364,24 +376,27 @@ def hud():
                            zone_row("Europa", "Snowy Peaks", 5),
                        ]),
                    ])
-    # Moon Clean: small title, a thick bar with a moving shine, the % on the right. Turns
-    # orange for the Meteor Shower countdown and the shower itself (HudController).
-    moon = plate("MoonPanel", U(0, 380, 0, 52), U(0.5, 0, 0, 66), (0.5, 0), BG, stud=None, stroke=3, children=[
+    # World Cleaned: the star icon on the left, then one thick bar with the title and the %
+    # written inside it (big enough to read on a phone). Turns orange for the Egg Rain
+    # countdown and the rain itself (HudController).
+    moon = frame("MoonPanel", U(0, 360, 0, 46), U(0.5, 0, 0, 66), (0.5, 0), children=[
         autoscale(),
-        icon("Icon", "Star", 38, U(0, 7, 0.5, 0), (0, 0.5), ZIndex=4),
-        text("Title", "WORLD CLEAN", U(0, 200, 0, 16), U(0, 52, 0, 4), ts=13, color=ACCENT, display=True, xa="Left", stroke=1.5),
-        text("Value", "0%", U(0, 120, 0, 16), U(1, -10, 0, 4), (1, 0), ts=13, color=WHITE, display=True, xa="Right", stroke=1.5),
-        frame("Bar", U(1, -62, 0, 20), U(0, 52, 1, -8), (0, 1), bg="#0B0E1E", children=[
-            border(INK, 2),
+        frame("Bar", U(1, -24, 0, 34), U(1, 0, 0.5, 0), (1, 0.5), bg=BG, ClipsDescendants=False, children=[
+            border(INK, 3),
             frame("Fill", U(0.3, 0, 1, 0), bg=ACCENT, ClipsDescendants=True, children=[
                 node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#B8C4D8"]]}, "Rotation": 90}),
                 frame("Shine", U(0, 40, 1, 0), U(-0.2, 0, 0, 0), bg=WHITE, BackgroundTransparency=0.55, Rotation=0, ZIndex=3),
             ]),
             node("Ticks", "Frame", base(U(1, 0, 1, 0), BackgroundTransparency=1, ZIndex=4), [
-                frame(f"Tick{i}", U(0, 2, 1, 0), U(i / 4, -1, 0, 0), bg="#0B0E1E", BackgroundTransparency=0.4, ZIndex=4)
+                frame(f"Tick{i}", U(0, 2, 1, 0), U(i / 4, -1, 0, 0), bg=INK, BackgroundTransparency=0.6, ZIndex=4)
                 for i in (1, 2, 3)
             ]),
         ]),
+        icon("Icon", "Star", 46, U(0, 0, 0.5, 0), (0, 0.5), ZIndex=6),
+        text("Title", "WORLD CLEANED", U(1, -130, 0, 34), U(0, 50, 0.5, 0), (0, 0.5), ts=18, color=WHITE, display=True, xa="Left",
+             stroke=2.5, ZIndex=5),
+        text("Value", "0%", U(0, 80, 0, 34), U(1, -10, 0.5, 0), (1, 0.5), ts=20, color=WHITE, display=True, xa="Right", stroke=2.5,
+             ZIndex=5),
         # Kept for older code paths that set one line of text.
         text("Label", "", U(1, -58, 0, 16), U(0, 52, 0, 4), ts=13, display=True, Visible=False),
     ])
@@ -423,32 +438,37 @@ def hud():
                              autoscale(), padding(24, 24, 0),
                              text("Text", "", U(0, 0, 1, 0), ts=34, color=PREMIUM, display=True, stroke=3, AutomaticSize="X", TextWrapped=False),
                          ])
-    wallet = frame("Wallet", U(0, 270, 0, 130), U(0, 14, 1, -14), (0, 1), children=[
-        autoscale(), vlist(10, "Left", "Bottom"),
-        plate("CashPanel", U(0, 270, 0, 64), tint=SURFACE, LayoutOrder=1, children=[
-            icon("Icon", "Cash", 58, U(0, 4, 0.5, 0), (0, 0.5)),
-            text("Cash", "$0", U(1, -124, 0, 38), U(0, 64, 0, 4), ts=28, color=INK, display=True, xa="Left",
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 14})]),
-            text("Income", "+$0/s", U(1, -124, 0, 20), U(0, 64, 0, 38), ts=17, color="#1E9E3A", heavy=True, xa="Left"),
-            button("PlusButton", U(0, 44, 0, 44), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=34, stroke=3),
+    # Wallet: two dark strips with big outlined numbers (readable on a phone at 60% size).
+    # Cash: coin, amount, income under it, green + for the cash shop. Bag: leaf bag icon and
+    # a thick bar with "310 / 500" inside; it turns red with FULL when the bag is full.
+    wallet = frame("Wallet", U(0, 262, 0, 118), U(0, 14, 1, -14), (0, 1), children=[
+        autoscale(), vlist(8, "Left", "Bottom"),
+        plate("CashPanel", U(0, 262, 0, 62), tint=BG, stroke=3, LayoutOrder=1, children=[
+            icon("Icon", "Cash", 50, U(0, 4, 0.5, 0), (0, 0.5)),
+            text("Cash", "$0", U(1, -112, 0, 34), U(0, 58, 0, 3), ts=30, color=WHITE, display=True, xa="Left", stroke=2.5,
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 30, "MinTextSize": 14})]),
+            text("Income", "+$0/s", U(1, -112, 0, 20), U(0, 58, 0, 37), ts=18, color=ACCENT, display=True, xa="Left", stroke=2),
+            button("PlusButton", U(0, 44, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=34, stroke=3),
         ]),
-        plate("BackpackPanel", U(0, 270, 0, 56), tint=SURFACE, LayoutOrder=2, children=[
-            icon("Icon", "Dust", 50, U(0, 5, 0.5, 0), (0, 0.5)),
-            frame("Bar", U(1, -72, 0, 28), U(0, 60, 0.5, 0), (0, 0.5), bg=BG, children=[
-                corner(8),
-                frame("Fill", U(0.2, 0, 1, 0), bg="#E9C98B", children=[corner(8)]),
-                text("Amount", "0 / 50", U(1, 0, 1, 0), ts=17, heavy=True, stroke=2.5, ZIndex=3),
+        plate("BackpackPanel", U(0, 262, 0, 48), tint=BG, stroke=3, LayoutOrder=2, children=[
+            icon("Icon", "Backpack", 42, U(0, 6, 0.5, 0), (0, 0.5), ZIndex=4),
+            frame("Bar", U(1, -64, 0, 30), U(0, 54, 0.5, 0), (0, 0.5), bg="#14171D", children=[
+                border(INK, 2),
+                frame("Fill", U(0.2, 0, 1, 0), bg="#FF9A3C", children=[
+                    node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#C8CEDA"]]}, "Rotation": 90}),
+                ]),
+                text("Amount", "0 / 50", U(1, -12, 1, 0), U(0, 6, 0, 0), ts=19, display=True, stroke=2.5, xa="Left", ZIndex=3),
             ]),
             # Sits on the right end of the bar, inside the panel.
-            plate("Full", U(0, 58, 0, 22), U(1, -16, 0.5, 0), (1, 0.5), DANGER, stroke=2.5, stud=None, Visible=False, ZIndex=4, children=[
-                text("Label", "FULL", U(1, 0, 1, 0), ts=16, display=True, stroke=2, ZIndex=5),
+            frame("Full", U(0, 54, 0, 30), U(1, -10, 0.5, 0), (1, 0.5), Visible=False, ZIndex=4, children=[
+                text("Label", "FULL", U(1, 0, 1, 0), ts=18, display=True, stroke=2.5, ZIndex=5),
             ]),
         ]),
     ])
     right = frame("Right", U(0, 230, 0, 240), U(1, -14, 0.5, 0), (1, 0.5), children=[
         autoscale(), vlist(10, "Right", "Center"),
-        button("AutoButton", U(0, 230, 0, 50), color=BG, label="Auto: OFF", ts=24, ico="Auto", ico_px=40, LayoutOrder=3, Visible=False,
-               dark="#9AA3B8"),
+        auto_toggle("AutoButton", "Auto Sweep", "Auto", 3),
+        auto_toggle("AutoSellButton", "Auto Sell", "Sell", 4),
     ])
     sweep = button("SweepButton", U(0, 108, 0, 108), U(1, -196, 1, -28), (1, 1), color=SUCCESS, r=54, Visible=False, children=[
         autoscale(),
@@ -643,65 +663,69 @@ SEE = "#0B0E1E"  # see-through dark (native backpack look)
 
 
 def inv_tab(name, label, ico, order):
-    return button("Tab" + name, U(0, 76, 0, 76), color=SEE, stroke=3, BackgroundTransparency=0.3, LayoutOrder=order, children=[
-        text("Label", label, U(1, 0, 0, 22), U(0, 0, 0, 2), ts=17, display=True, stroke=2, ZIndex=4),
-        icon("Icon", ico, 50, U(0.5, 0, 1, -2), (0.5, 1)),
+    return button("Tab" + name, U(0, 116, 0, 44), color=SEE, stroke=3, LayoutOrder=order, ico=ico, ico_px=34, children=[
+        text("Label", label, U(1, -50, 1, 0), U(0, 46, 0, 0), ts=20, display=True, stroke=2, xa="Left", ZIndex=4),
     ])
 
 
 def inventory():
-    """Backpack (Steal an Egg style): a see-through grid above the hotbar, filter tabs on
-    its left, a search box, and an action card on its right when something is picked."""
-    W, H = 640, 316
-    tabs = frame("Tabs", U(0, 76, 0, 248), U(0, -10, 0, 0), (1, 0), children=[
-        vlist(10, "Center", "Top"),
+    """Backpack (Steal an Egg style), sized for phones: one solid window above the hotbar.
+    Pets / Eggs / Items tabs and a search box along the top, the grid on the left, and the
+    picked item's card in a column on the right (a hint shows there until you pick one)."""
+    W, H, SIDE = 780, 340, 230
+    left_w = W - 24 - SIDE - 10
+    tabs = frame("Tabs", U(0, 364, 0, 44), U(0, 12, 0, 10), children=[
+        hlist(8, "Left", "Center"),
         inv_tab("Pets", "Pets", "Alien", 1),
         inv_tab("Eggs", "Eggs", "Egg", 2),
         inv_tab("Items", "Items", "Potion", 3),
     ])
-    card = frame("Template", U(0, 0, 0, 0), bg="#000000", BackgroundTransparency=0.45, Visible=False, children=[
+    card = frame("Template", U(0, 0, 0, 0), bg="#3A404D", Visible=False, children=[
         border("#FFFFFF", 0, "Stroke"),
-        node("Viewport", "ViewportFrame", base(U(1, -6, 1, -20), U(0.5, 0, 0, 2), (0.5, 0), BackgroundTransparency=1,
+        node("Viewport", "ViewportFrame", base(U(1, -6, 1, -24), U(0.5, 0, 0, 2), (0.5, 0), BackgroundTransparency=1,
                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-        icon("Icon", "Potion", 66, U(0.5, 0, 0, 4), (0.5, 0), Visible=False),
-        text("Name", "", U(1, -4, 0, 30), U(0.5, 0, 1, -1), (0.5, 1), ts=13, display=True, stroke=2, ZIndex=4,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 14, "MinTextSize": 8})]),
-        frame("Placed", U(0, 20, 0, 20), U(0, 3, 0, 3), bg=SUCCESS, Visible=False, ZIndex=4, children=[
-            border(INK, 2), text("Label", "E", U(1, 0, 1, 0), ts=14, display=True, stroke=1.5, ZIndex=5),
+        icon("Icon", "Potion", 62, U(0.5, 0, 0, 4), (0.5, 0), Visible=False),
+        text("Name", "", U(1, -4, 0, 26), U(0.5, 0, 1, -1), (0.5, 1), ts=15, display=True, stroke=2, ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 10})]),
+        frame("Placed", U(0, 22, 0, 22), U(0, 3, 0, 3), bg=SUCCESS, Visible=False, ZIndex=4, children=[
+            border(INK, 2), text("Label", "E", U(1, 0, 1, 0), ts=15, display=True, stroke=1.5, ZIndex=5),
         ]),
-        text("Count", "", U(0, 66, 0, 18), U(1, -3, 0, 2), (1, 0), ts=14, display=True, stroke=2, xa="Right", Visible=False, ZIndex=4,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 8})]),
+        text("Count", "", U(0, 66, 0, 20), U(1, -3, 0, 2), (1, 0), ts=16, display=True, stroke=2, xa="Right", Visible=False, ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 9})]),
         node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=6)),
     ])
-    grid = scroller("Grid", U(1, -24, 1, -74), U(0, 12, 0, 66), [
-        node("Layout", "UIGridLayout", {"CellSize": U(0, 96, 0, 96), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
+    grid = scroller("Grid", U(0, left_w, 1, -104), U(0, 12, 0, 64), [
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 94, 0, 94), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
                                         "HorizontalAlignment": "Left"}),
         padding(2), card,
     ])
-    search = node("Search", "TextBox", base(U(0, 200, 0, 38), U(1, -12, 0, 12), (1, 0), BackgroundColor3="#000000",
-                                            BackgroundTransparency=0.45, Text="", PlaceholderText="search", PlaceholderColor3="#9AA3B8",
+    search = node("Search", "TextBox", base(U(0, left_w - 372, 0, 44), U(0, 384, 0, 10), BackgroundColor3="#14171D",
+                                            Text="", PlaceholderText="Search", PlaceholderColor3="#9AA3B8",
                                             TextColor3=WHITE, TextSize=20, FontFace=BODY_HEAVY, ClearTextOnFocus=False,
-                                            TextXAlignment="Left", ZIndex=3), [padding(10, 10, 0)])
-    detail = frame("Detail", U(0, 230, 1, 0), U(1, 10, 0, 0), bg=SEE, BackgroundTransparency=0.15, Visible=False, children=[
+                                            TextXAlignment="Left", ZIndex=3), [padding(10, 10, 0), border(INK, 2)])
+    side_hint = text("SideHint", "Tap a pet, egg or item to see what you can do with it.", U(0, SIDE - 30, 0, 80),
+                     U(1, -(12 + SIDE / 2), 0.5, 0), (0.5, 0.5), ts=17, color="#9AA3B8", heavy=True)
+    detail = frame("Detail", U(0, SIDE, 1, -20), U(1, -12, 0, 10), (1, 0), bg="#1C1F26", Visible=False, ZIndex=2, children=[
         border(INK, 3),
-        node("Viewport", "ViewportFrame", base(U(1, -16, 0, 120), U(0.5, 0, 0, 8), (0.5, 0), BackgroundTransparency=1,
-                                               Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-        icon("Icon", "Potion", 100, U(0.5, 0, 0, 16), (0.5, 0), Visible=False),
-        text("Name", "", U(1, -12, 0, 28), U(0.5, 0, 0, 128), (0.5, 0), ts=21, display=True, stroke=2.5,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 11})]),
-        text("Rarity", "", U(1, -12, 0, 20), U(0.5, 0, 0, 156), (0.5, 0), ts=17, display=True, stroke=2),
-        text("Info", "", U(1, -16, 0, 40), U(0.5, 0, 0, 178), (0.5, 0), ts=14, color="#C8D0E8", heavy=True, ya="Top"),
-        button("Primary", U(1, -16, 0, 44), U(0.5, 0, 1, -58), (0.5, 1), color=SUCCESS, label="Place", ts=20, Visible=False),
-        button("Secondary", U(1, -16, 0, 40), U(0.5, 0, 1, -10), (0.5, 1), color=DANGER, label="Sell", ts=18, Visible=False),
+        node("Viewport", "ViewportFrame", base(U(1, -16, 0, 110), U(0.5, 0, 0, 8), (0.5, 0), BackgroundTransparency=1,
+                                               Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=3)),
+        icon("Icon", "Potion", 96, U(0.5, 0, 0, 14), (0.5, 0), Visible=False, ZIndex=3),
+        text("Name", "", U(1, -12, 0, 28), U(0.5, 0, 0, 120), (0.5, 0), ts=22, display=True, stroke=2.5, ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 12})]),
+        text("Rarity", "", U(1, -12, 0, 22), U(0.5, 0, 0, 148), (0.5, 0), ts=19, display=True, stroke=2, ZIndex=3),
+        text("Info", "", U(1, -16, 0, 40), U(0.5, 0, 0, 172), (0.5, 0), ts=16, color="#C8D0E8", heavy=True, ya="Top", ZIndex=3),
+        button("Primary", U(1, -16, 0, 46), U(0.5, 0, 1, -58), (0.5, 1), color=SUCCESS, label="Place", ts=22, Visible=False, ZIndex=3),
+        button("Secondary", U(1, -16, 0, 40), U(0.5, 0, 1, -10), (0.5, 1), color=DANGER, label="Sell", ts=19, Visible=False, ZIndex=3),
     ])
-    win = frame("Window", U(0, W, 0, H), U(0.5, 0, 1, -112), (0.5, 1), bg=SEE, BackgroundTransparency=0.3, children=[
+    win = frame("Window", U(0, W, 0, H), U(0.5, 0, 1, -112), (0.5, 1), bg=BG, children=[
         autoscale(), border(INK, 3),
-        text("Title", "All Items", U(0, 300, 0, 32), U(0, 14, 0, 6), ts=28, display=True, stroke=2.5, xa="Left"),
-        text("Count", "Pets: 0/60", U(0, 300, 0, 22), U(0, 14, 0, 38), ts=18, display=True, stroke=2, xa="Left"),
-        search, grid,
-        text("Empty", "Nothing here yet. Sweep leaves to find eggs!", U(1, -24, 0, 60), U(0, 12, 0.5, 10), ts=20, color="#C8D0E8",
+        # Kept for the controller: the tab buttons show which list is open.
+        text("Title", "All Items", U(0, 10, 0, 10), Visible=False),
+        text("Count", "Pets: 0/60", U(0, left_w, 0, 26), U(0, 12, 1, -8), (0, 1), ts=18, display=True, stroke=2, xa="Left"),
+        tabs, search, grid,
+        text("Empty", "Nothing here yet. Sweep leaves to find eggs!", U(0, left_w, 0, 60), U(0, 12, 0.5, 10), ts=20, color="#C8D0E8",
              heavy=True, Visible=False),
-        tabs, detail,
+        side_hint, detail,
     ])
     write("Inventory", screen([win], order=6, enabled=False))
 

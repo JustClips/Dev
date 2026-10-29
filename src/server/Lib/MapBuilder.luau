@@ -21,7 +21,6 @@ local MONTSERRAT = "rbxasset://fonts/families/Montserrat.json"
 local INK = Color3.fromRGB(27, 31, 58)
 local WHITE = Color3.new(1, 1, 1)
 local SURFACE = Color3.fromRGB(233, 238, 247)
-local MINT = Color3.fromRGB(124, 245, 200)
 local GOLD = Color3.fromRGB(255, 200, 60)
 
 -- Terrain ------------------------------------------------------------------------
@@ -392,33 +391,69 @@ local function launchPad()
 	local center = World.RocketPosition
 	-- Rotate cylinders so their axis is vertical.
 	local up = CFrame.Angles(0, 0, math.rad(90))
-	-- A round cobblestone plaza with a wooden rim; the sell ring is painted green on it.
+	-- A round cobblestone plaza with a wooden rim under the market hall.
 	block(model, "Pad", Vector3.new(1, r * 2, r * 2), CFrame.new(center) * up, Color3.fromRGB(200, 192, 178), M.Cobblestone)
 	block(model, "Rim", Vector3.new(0.8, r * 2 + 2, r * 2 + 2), CFrame.new(center + Vector3.new(0, -0.15, 0)) * up, WOOD_DARK, M.Wood)
-	glow(model, "SellRing", Vector3.new(0.14, World.SellRadius * 2 + 1.2, World.SellRadius * 2 + 1.2), CFrame.new(center + Vector3.new(0, 0.52, 0)) * up, Color3.fromRGB(92, 200, 92))
-	block(model, "SellFloor", Vector3.new(0.16, World.SellRadius * 2 - 0.4, World.SellRadius * 2 - 0.4), CFrame.new(center + Vector3.new(0, 0.53, 0)) * up, WOOD, M.WoodPlanks)
-	-- One sign per side; players arrive from the field ends and from the bases.
-	local d = World.RocketClearRadius - 2.5
-	for _, yaw in { 0, 90, 180, 270 } do
-		local cf = CFrame.new(center) * CFrame.Angles(0, math.rad(yaw), 0) * CFrame.new(0, 0, d)
-		signOnPosts(model, "SellSign", CFrame.lookAt(cf.Position, cf.Position + (cf.Position - center) * Vector3.new(1, 0, 1)), 13, 3.6, MINT, "SELL LEAVES", "Stand on the ring")
-	end
 end
 
--- Drive-thru sell pads: a flat ring on the ground beside the hall (nothing to bump into),
--- painted text in the middle and a sign at the outer edge facing the hall.
-local function driveThruPads()
-	local model = make("Model", { Name = "DriveThru" }, structures)
+-- Leaf dumps beside the market hall: a green shredder bin with a yellow hopper on top, two
+-- rollers inside (spun by DumpController while someone dumps), a leaf pile that rises, a
+-- coin slot at the front and a round standing spot in front of it. Front = -Z (the field).
+local DUMP_GREEN = Color3.fromRGB(74, 164, 82)
+local DUMP_DARK = Color3.fromRGB(44, 112, 56)
+local DUMP_YELLOW = Color3.fromRGB(255, 200, 60)
+local STEEL = Color3.fromRGB(150, 156, 168)
+
+local function leafDump(index: number, cf: CFrame)
+	local model = make("Model", { Name = "LeafDump" .. index }, structures)
+	local deco = { CanCollide = false, CanQuery = false, CanTouch = false }
 	local up = CFrame.Angles(0, 0, math.rad(90))
-	local r = World.DriveSellRadius
-	for _, spot in World.DriveSellSpots do
-		local flat = { CanCollide = false, CanQuery = false, CanTouch = false }
-		glow(model, "SellRing", Vector3.new(0.14, r * 2 + 1.2, r * 2 + 1.2), CFrame.new(spot + Vector3.new(0, 0.08, 0)) * up, Color3.fromRGB(92, 200, 92))
-		block(model, "DriveFloor", Vector3.new(0.16, r * 2 - 0.4, r * 2 - 0.4), CFrame.new(spot + Vector3.new(0, 0.1, 0)) * up, Color3.fromRGB(84, 88, 96), M.Asphalt, flat)
-		local facing = CFrame.lookAt(spot, Vector3.new(World.RocketPosition.X, 0, World.RocketPosition.Z))
-		floorText(model, facing * CFrame.new(0, 0.2, 0) * CFrame.Angles(0, math.rad(90), 0), r * 1.5, 5, "DRIVE-THRU SELL", WHITE)
-		local edge = spot + (spot - World.RocketPosition).Unit * (r + 3)
-		signOnPosts(model, "DriveSellSign", CFrame.lookAt(edge, Vector3.new(spot.X, 0, spot.Z)), 13, 3.6, MINT, "DRIVE-THRU SELL", "Drive onto the ring")
+	-- Bin.
+	block(model, "Plinth", Vector3.new(9, 0.6, 8), cf * CFrame.new(0, 0.3, 0), Color3.fromRGB(120, 124, 132), M.Concrete)
+	block(model, "Body", Vector3.new(8, 4, 7), cf * CFrame.new(0, 2.6, 0), DUMP_GREEN)
+	for _, y in { 1.3, 4.1 } do
+		block(model, "Band", Vector3.new(8.2, 0.35, 7.2), cf * CFrame.new(0, y, 0), DUMP_DARK, nil, deco)
+	end
+	-- Hopper rim (open on top) with the pit inside.
+	local rimY = 5.4
+	block(model, "RimFront", Vector3.new(9, 1.6, 0.5), cf * CFrame.new(0, rimY, -3.75), DUMP_YELLOW)
+	block(model, "RimBack", Vector3.new(9, 1.6, 0.5), cf * CFrame.new(0, rimY, 3.75), DUMP_YELLOW)
+	block(model, "RimLeft", Vector3.new(0.5, 1.6, 7), cf * CFrame.new(-4.25, rimY, 0), DUMP_YELLOW)
+	block(model, "RimRight", Vector3.new(0.5, 1.6, 7), cf * CFrame.new(4.25, rimY, 0), DUMP_YELLOW)
+	block(model, "Pit", Vector3.new(8, 0.2, 7), cf * CFrame.new(0, 4.7, 0), Color3.fromRGB(58, 40, 30), nil, deco)
+	for i, z in { -1.3, 1.3 } do
+		local roller = block(model, "Roller" .. i, Vector3.new(7.6, 1.2, 1.2), cf * CFrame.new(0, 5.0, z), STEEL, M.DiamondPlate, deco)
+		roller.Shape = Enum.PartType.Cylinder
+	end
+	-- The leaf pile (DumpController raises it while leaves pour in).
+	local pile = block(model, "Pile", Vector3.new(7.4, 0.1, 6.4), cf * CFrame.new(0, 4.85, 0), WHITE, nil, {
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+	})
+	make("Decal", { Name = "Leaves", Face = Enum.NormalId.Top, Texture = AssetLibrary.image("Ground_Autumn1") }, pile)
+	-- Where the leaves fly in, and where coins come out (front, toward the player).
+	make("Attachment", { Name = "Mouth", CFrame = CFrame.new(0, 3.2, 0) }, model:FindFirstChild("Body"))
+	local slot = block(model, "CoinSlot", Vector3.new(3, 0.6, 0.2), cf * CFrame.new(0, 3, -3.55), Color3.fromRGB(30, 34, 40), nil, deco)
+	make("Attachment", { Name = "CoinOut", CFrame = CFrame.new(0, 0, -0.3) }, slot)
+	-- Sign above the back of the hopper, facing the field.
+	for _, x in { -3.8, 3.8 } do
+		block(model, "SignPost", Vector3.new(0.6, 9.6, 0.6), cf * CFrame.new(x, 4.8, 4.3), WOOD_DARK, M.Wood)
+	end
+	sign(model, "DumpSign", cf * CFrame.new(0, 8.6, 4.3), 9, 2.4, DUMP_YELLOW, "DUMP LEAVES", "Stand on the circle")
+	-- Standing spot: a ring with a lighter floor, flush with the ground (cars drive over it).
+	local spot = World.dumpSpot(index)
+	local r = World.DumpRadius
+	glow(model, "SpotRing", Vector3.new(0.14, r * 2 + 1, r * 2 + 1), CFrame.new(spot + Vector3.new(0, 0.08, 0)) * up, DUMP_YELLOW)
+	block(model, "Spot", Vector3.new(0.16, r * 2 - 0.4, r * 2 - 0.4), CFrame.new(spot + Vector3.new(0, 0.1, 0)) * up, Color3.fromRGB(236, 226, 196), M.Concrete, deco)
+	floorText(model, CFrame.lookAt(spot, Vector3.new(cf.Position.X, spot.Y, cf.Position.Z)) * CFrame.new(0, 0.2, 0) * CFrame.Angles(0, math.rad(90), 0), r * 1.3, 3.2, "DUMP", DUMP_DARK)
+	model.PrimaryPart = model:FindFirstChild("Body") :: BasePart
+end
+
+local function leafDumps()
+	for i, cf in World.Dumps do
+		leafDump(i, cf)
 	end
 end
 
@@ -688,7 +723,7 @@ function MapBuilder.buildStructures()
 	structures.Name = "Structures"
 	structures.Parent = Workspace
 	launchPad()
-	driveThruPads()
+	leafDumps()
 	fieldEdges()
 	corridorRamps()
 	garage()

@@ -1,6 +1,10 @@
 --!strict
--- Backpack (dust carried) and selling at the Rocket. The backpack stores dust units plus
--- their base cash value, so dust from rich zones keeps its zone multiplier until sold.
+-- Backpack (leaves carried) and selling. The backpack stores units plus their base cash
+-- value, so leaves from rich zones keep their zone multiplier until sold. Selling:
+--   * Leaf dumps beside the market hall (World.Dumps): stand or drive on the circle and the
+--     bag pours in bit by bit, cash ticking up (like making honey in Bee Swarm).
+--   * Sell Anywhere pass: the HUD Sell button sells the whole bag on the spot, and Auto Sell
+--     does it whenever the bag fills up.
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -115,59 +119,139 @@ function BackpackService:AddDust(player: Player, zone, power: number, mult: numb
 	return units, value
 end
 
-local function sell(player: Player)
-	local session = S.DataService:GetSession(player)
-	if not session then
-		return
-	end
+-- Pays for part of the bag (units of it). Returns the cash paid.
+local function cashOut(player: Player, session, units: number): number
 	local data = session.Data
+	units = math.min(units, data.Backpack)
+	if units <= 0 then
+		return 0
+	end
+	local value = if units >= data.Backpack then data.BackpackValue else data.BackpackValue * units / data.Backpack
+	local cash = value * S.BoostService:GetCashMultiplier(player)
+	data.TotalDust = BigNum.add(data.TotalDust, units)
+	data.Backpack -= units
+	data.BackpackValue = math.max(0, data.BackpackValue - value)
 	if data.Backpack <= 0 then
-		return
+		data.Backpack = 0
+		data.BackpackValue = 0
+	end
+	session.Runtime.WasFull = false
+	recordEarning(session, cash)
+	return cash
+end
+
+-- Sells the whole bag at once (Sell Anywhere). Returns the cash paid.
+local function sellAll(player: Player): number
+	local session = S.DataService:GetSession(player)
+	if not session or session.Data.Backpack <= 0 then
+		return 0
 	end
 	local now = os.clock()
 	if (lastSell[player] or 0) + Economy.SellCooldown > now then
-		return
+		return 0
 	end
 	lastSell[player] = now
-
-	local cash = data.BackpackValue * S.BoostService:GetCashMultiplier(player)
-	data.TotalDust = BigNum.add(data.TotalDust, data.Backpack)
-	data.Backpack = 0
-	data.BackpackValue = 0
-	data.Stats.Sells += 1
-	session.Runtime.WasFull = false
-	BackpackService:GiveCash(player, cash, "SellDust")
-	recordEarning(session, cash)
+	local cash = cashOut(player, session, session.Data.Backpack)
+	session.Data.Stats.Sells += 1
+	BackpackService:GiveCash(player, cash, "SellAnywhere")
 	S.AnalyticsService:Funnel(player, "FirstSell")
+	return cash
+end
+
+-- Leaf dumps -------------------------------------------------------------------------
+
+local CHECK_EVERY = 0.2
+local SPOT_HEIGHT = 14
+
+-- Which dump's circle the player (or the car they drive) is on, if any.
+local function dumpAt(player: Player): number?
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not root then
+		return nil
+	end
+	for i in World.Dumps do
+		local d = root.Position - World.dumpSpot(i)
+		if Vector2.new(d.X, d.Z).Magnitude <= World.DumpRadius + 1 and math.abs(d.Y) <= SPOT_HEIGHT then
+			return i
+		end
+	end
+	return nil
+end
+
+type Dump = { spot: number, rate: number, total: number }
+
+local function stopDump(player: Player, session)
+	local dump: Dump? = session.Runtime.Dump
+	if not dump then
+		return
+	end
+	session.Runtime.Dump = nil
+	player:SetAttribute("Dumping", nil)
+	if dump.total > 0 then
+		session.Data.Stats.Sells += 1
+		S.AnalyticsService:Source(player, BigNum.toNumber(dump.total), Enum.AnalyticsEconomyTransactionType.Gameplay, "SellDust")
+		S.AnalyticsService:Funnel(player, "FirstSell")
+		Net.fire("CashGained", player, { Amount = BigNum.from(dump.total), Source = "SellDust" })
+	end
+end
+
+-- One step of pouring the bag into dump i: a full bag takes Economy.DumpSeconds, a small
+-- one Economy.DumpMinSeconds.
+local function dumpStep(player: Player, session, spot: number, dt: number)
+	local data = session.Data
+	local dump: Dump? = session.Runtime.Dump
+	if dump and dump.spot ~= spot then
+		stopDump(player, session)
+		dump = nil
+	end
+	if data.Backpack <= 0 then
+		stopDump(player, session)
+		return
+	end
+	if not dump then
+		local capacity = S.ToolService:GetCapacity(player)
+		local rate = math.max(1, math.min(capacity / Economy.DumpSeconds, data.Backpack / Economy.DumpMinSeconds))
+		dump = { spot = spot, rate = rate, total = 0 }
+		session.Runtime.Dump = dump
+		player:SetAttribute("Dumping", spot)
+	end
+	local d = dump :: Dump
+	local units = math.ceil(d.rate * dt)
+	local cash = cashOut(player, session, units)
+	data.Cash = BigNum.add(data.Cash, cash)
+	d.total += cash
+	S.StateService:Mark(player)
+	local capacity = math.max(1, S.ToolService:GetCapacity(player))
+	Net.fire("DumpTick", player, cash, data.Backpack / capacity)
+	if data.Backpack <= 0 then
+		stopDump(player, session)
+	end
 end
 
 function BackpackService:Init(services)
 	S = services
-end
-
--- Selling is a distance check around the market hall (and the drive-thru pads) instead of Touched: Touched on a
--- non-colliding pad was unreliable in playtests, and this also works from vehicles.
-local CHECK_EVERY = 0.2
-local SELL_HEIGHT = 14
-
-local function inSellZone(player: Player): boolean
-	local character = player.Character
-	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-	if not root then
-		return false
-	end
-	local offset = root.Position - World.RocketPosition
-	if Vector2.new(offset.X, offset.Z).Magnitude <= World.SellRadius and math.abs(offset.Y) <= SELL_HEIGHT then
-		return true
-	end
-	-- Drive-thru pads beside the hall (the car's driver is checked, so any car fits).
-	for _, spot in World.DriveSellSpots do
-		local d = root.Position - spot
-		if Vector2.new(d.X, d.Z).Magnitude <= World.DriveSellRadius and math.abs(d.Y) <= SELL_HEIGHT then
-			return true
+	Net.onInvoke("SellNow", function(player: Player)
+		local data = S.DataService:GetData(player)
+		if not data then
+			return false, "Not loaded yet"
 		end
-	end
-	return false
+		if not data.Gamepasses.SellAnywhere then
+			return false, "NoPass"
+		end
+		if data.Backpack <= 0 then
+			return false, "Your bag is empty"
+		end
+		local cash = sellAll(player)
+		return cash > 0, if cash > 0 then "Sold" else "Slow down"
+	end)
+	Net.onEvent("SetAutoSell", function(player, enabled)
+		local data = S.DataService:GetData(player)
+		if data and type(enabled) == "boolean" then
+			data.Settings.AutoSell = enabled
+			S.StateService:Mark(player)
+		end
+	end)
 end
 
 function BackpackService:Start()
@@ -177,13 +261,27 @@ function BackpackService:Start()
 		if acc < CHECK_EVERY then
 			return
 		end
+		local step = acc
 		acc = 0
 		for _, player in Players:GetPlayers() do
-			if inSellZone(player) then
-				local ok, err = pcall(sell, player)
-				if not ok then
-					warn("[BackpackService] sell failed: " .. tostring(err))
+			local session = S.DataService:GetSession(player)
+			if not session then
+				continue
+			end
+			local ok, err = pcall(function()
+				local spot = dumpAt(player)
+				if spot then
+					dumpStep(player, session, spot, step)
+				else
+					stopDump(player, session)
+					local data = session.Data
+					if data.Gamepasses.SellAnywhere and data.Settings.AutoSell ~= false and BackpackService:IsFull(player) then
+						sellAll(player)
+					end
 				end
+			end)
+			if not ok then
+				warn("[BackpackService] selling failed: " .. tostring(err))
 			end
 		end
 	end)

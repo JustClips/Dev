@@ -71,8 +71,9 @@ local function targetFor(data): Vector3?
 	local step = State.tutorialStep(data)
 	local hasBase = data.BaseIndex and data.BaseIndex ~= 0
 	local pad = if hasBase then basePad(data.BaseIndex) else nil
-	local rocketModel = moon:FindFirstChild("Rocket")
-	local rocket = rocketModel and rocketModel:FindFirstChild("SellPad") :: BasePart?
+	-- The nearest leaf dump's standing spot.
+	local me = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local _, dumpSpot = World.nearestDump(if me then me.Position else World.RocketPosition)
 	if step == "Sweep" then
 		-- The nearest spot a little way into the leaf field.
 		local character = player.Character
@@ -104,8 +105,8 @@ local function targetFor(data): Vector3?
 		return eggSpot(data, false)
 	elseif step == "Open" then
 		return eggSpot(data, true)
-	elseif step == "Sell" and rocket then
-		return if data.Backpack > 0 then rocket.Position else nil
+	elseif step == "Sell" then
+		return if data.Backpack > 0 then dumpSpot else nil
 	end
 	if step ~= "Done" then
 		return nil
@@ -114,8 +115,8 @@ local function targetFor(data): Vector3?
 	if #data.CarriedEggs > 0 and pad then
 		return pad.Position
 	end
-	if data.Backpack >= data.Capacity and rocket then
-		return rocket.Position
+	if data.Backpack >= data.Capacity and not data.Gamepasses.SellAnywhere then
+		return dumpSpot
 	end
 	return nil
 end

@@ -40,6 +40,9 @@ local Economy = {
 	SweepDistanceSlack = 6,
 	SweepForwardOffset = 2.5,
 	SellCooldown = 1,
+	-- Leaf dumps: a full bag pours in over DumpSeconds, a small one over DumpMinSeconds.
+	DumpSeconds = 4,
+	DumpMinSeconds = 1.2,
 
 	-- Eggs (GAME_PLAN §4, §5.3)
 	TutorialEggTile = 12, -- guaranteed first egg on this tile cleared (must be <= 25)
@@ -76,6 +79,7 @@ local Economy = {
 	-- (much more cash) and dust bunnies that run away and drop rewards when swept.
 	Combo = { Step = 0.04, Max = 3, Timeout = 1.6 },
 	Golden = { PerZone = 4, Mult = 15, CheckSeconds = 6 },
+	TrashMult = 5, -- a trash tile (can, bottle...) pays this many times a leaf tile
 	Bunnies = {
 		PerZone = 3,
 		CashSeconds = 25, -- reward = this many seconds of your earnings
