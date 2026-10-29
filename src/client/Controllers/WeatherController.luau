@@ -1267,7 +1267,8 @@ local function disco(scene: Scene)
 			for k, beam in l.beams do
 				local sweep = t * (0.9 + k * 0.2) + l.corner + k
 				local target = Vector3.new(math.sin(sweep) * rx, 0.2, math.cos(sweep * 0.8) * rz)
-				(beam.Attachment1 :: Attachment).Position = target
+				local endAtt = beam.Attachment1 :: Attachment
+				endAtt.Position = target
 				beam.Color = ColorSequence.new(color)
 				beam.Width0 = 0.4 + pulse * 0.4
 				beam.Width1 = beam.Width0
