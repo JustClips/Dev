@@ -438,13 +438,12 @@ local function leafDump(index: number, cf: CFrame)
 		roller.Shape = Enum.PartType.Cylinder
 	end
 	-- The leaf pile (DumpController raises it while leaves pour in).
-	local pile = block(model, "Pile", Vector3.new(7.4, 0.1, 6.4), cf * CFrame.new(0, 4.85, 0), WHITE, nil, {
+	block(model, "Pile", Vector3.new(7.4, 0.1, 6.4), cf * CFrame.new(0, 4.85, 0), WHITE, nil, {
 		Transparency = 1,
 		CanCollide = false,
 		CanQuery = false,
 		CanTouch = false,
 	})
-	make("Decal", { Name = "Leaves", Face = Enum.NormalId.Top, Texture = AssetLibrary.image("Ground_Autumn1") }, pile)
 	-- Where the leaves fly in, and where coins come out (front, toward the player).
 	make("Attachment", { Name = "Mouth", CFrame = CFrame.new(0, 3.2, 0) }, model:FindFirstChild("Body"))
 	local slot = block(model, "CoinSlot", Vector3.new(3, 0.6, 0.2), cf * CFrame.new(0, 3, -3.55), Color3.fromRGB(30, 34, 40), nil, deco)

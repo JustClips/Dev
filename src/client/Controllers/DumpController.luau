@@ -28,22 +28,22 @@ local POUR_EVERY = 0.05 -- seconds between leaves per dumping player
 local FLIGHT = 0.55
 local MAX_LEAVES = 90
 local PILE_MAX = 1.6 -- studs the pile rises while someone dumps
-local LEAF_IMAGES = { "Vfx_LeafMaple", "Vfx_LeafOval", "Vfx_LeafGreen", "Vfx_LeafMaple" }
+local HEAP_LEAVES = 22 -- leaf meshes in the pile inside the hopper
 
-type Leaf = { part: BasePart, from: Vector3, to: () -> Vector3, start: number, spin: Vector3, time: number, rise: number, mesh: boolean }
+type Leaf = { part: BasePart, from: Vector3, to: () -> Vector3, start: number, spin: Vector3, time: number, rise: number }
 type DumpVisual = {
 	model: Model,
 	rollers: { { part: BasePart, base: CFrame } },
 	pile: BasePart?,
 	pileBase: CFrame?,
 	pileLevel: number,
+	heap: { { offset: CFrame, part: BasePart? } },
 	coins: ParticleEmitter?,
 	mouth: Attachment?,
 	busyUntil: number,
 }
 
 local folder: Folder
-local pool: { BasePart } = {}
 local leaves: { Leaf } = {}
 local dumps: { [number]: DumpVisual } = {}
 local nextPour: { [Player]: number } = {}
@@ -57,48 +57,18 @@ local function image(name: string): string
 	return Assets.Images[name] or ""
 end
 
-local function takeLeaf(): BasePart
-	local p = table.remove(pool)
-	if p then
-		return p
-	end
-	local part = Instance.new("Part")
-	part.Name = "PouringLeaf"
-	part.Size = Vector3.new(1.3, 0.05, 1.3)
-	part.Transparency = 1
-	part.Anchored = true
-	part.CanCollide = false
-	part.CanQuery = false
-	part.CanTouch = false
-	part.CastShadow = false
-	for _, face in { Enum.NormalId.Top, Enum.NormalId.Bottom } do
-		local decal = Instance.new("Decal")
-		decal.Face = face
-		decal.Parent = part
-	end
-	return part
-end
-
 local function launch(from: Vector3, to: () -> Vector3, time: number, rise: number, look: LeafMeshes.Look?)
 	if #leaves >= MAX_LEAVES then
 		return
 	end
-	-- 3D leaves (LeafMeshes) once loaded, in the colours of what's in the bag; flat leaf
-	-- images until then.
-	local mesh = if LeafMeshes.ready() then LeafMeshes.random(look or LeafMeshes.lookFor(nil), 1 + math.random() * 0.6) else nil
-	local part: BasePart
-	if mesh then
-		part = mesh
-	else
-		part = takeLeaf()
-		local texture = image(LEAF_IMAGES[math.random(1, #LEAF_IMAGES)])
-		for _, d in part:GetChildren() do
-			if d:IsA("Decal") then
-				d.Texture = texture
-			end
-		end
-		local size = 0.9 + math.random() * 0.7
-		part.Size = Vector3.new(size, 0.05, size)
+	-- Real leaf meshes (LeafMeshes) in the colours of what's in the bag; nothing until
+	-- they've loaded.
+	if not LeafMeshes.ready() then
+		return
+	end
+	local part = LeafMeshes.random(look or LeafMeshes.lookFor(nil), 1 + math.random() * 0.6)
+	if not part then
+		return
 	end
 	part.CFrame = CFrame.new(from)
 	part.Parent = folder
@@ -110,7 +80,6 @@ local function launch(from: Vector3, to: () -> Vector3, time: number, rise: numb
 		spin = Vector3.new(math.random() * 8 - 4, math.random() * 10 - 5, math.random() * 8 - 4),
 		time = time,
 		rise = rise,
-		mesh = mesh ~= nil,
 	})
 end
 
@@ -120,12 +89,7 @@ local function stepLeaves(now: number)
 		local t = (now - l.start) / l.time
 		if t >= 1 then
 			table.remove(leaves, i)
-			if l.mesh then
-				LeafMeshes.give(l.part)
-			else
-				l.part.Parent = nil
-				table.insert(pool, l.part)
-			end
+			LeafMeshes.give(l.part)
 			continue
 		end
 		local to = l.to()
@@ -145,7 +109,7 @@ local function visual(i: number): DumpVisual?
 	if not model or not model:IsA("Model") then
 		return nil
 	end
-	local v: DumpVisual = { model = model, rollers = {}, pileLevel = 0, busyUntil = 0 }
+	local v: DumpVisual = { model = model, rollers = {}, pileLevel = 0, busyUntil = 0, heap = {} }
 	for _, name in { "Roller1", "Roller2" } do
 		local r = model:FindFirstChild(name)
 		if r and r:IsA("BasePart") then
@@ -156,6 +120,20 @@ local function visual(i: number): DumpVisual?
 	if pile and pile:IsA("BasePart") then
 		v.pile = pile
 		v.pileBase = pile.CFrame
+		-- The heap is made of real leaf meshes (the old flat leaf picture goes).
+		for _, d in pile:GetChildren() do
+			if d:IsA("Decal") then
+				d:Destroy()
+			end
+		end
+		local rng = Random.new(i)
+		for k = 1, HEAP_LEAVES do
+			local h = k / HEAP_LEAVES
+			local spread = 1 - 0.5 * h -- wide at the bottom, rounded on top
+			local offset = CFrame.new(rng:NextNumber(-3.2, 3.2) * spread, h * 0.9, rng:NextNumber(-2.7, 2.7) * spread)
+				* CFrame.Angles(rng:NextNumber(-0.7, 0.7), rng:NextNumber(0, math.pi * 2), rng:NextNumber(-0.7, 0.7))
+			table.insert(v.heap, { offset = offset })
+		end
 	end
 	local body = model:FindFirstChild("Body")
 	local mouth = body and body:FindFirstChild("Mouth")
@@ -217,6 +195,31 @@ local function source(player: Player): Vector3?
 	return root.Position - root.CFrame.LookVector * 0.8 + Vector3.new(0, 1, 0)
 end
 
+-- The leaf heap inside the hopper: grows with the pile level, empty when nobody dumps.
+local function updateHeap(v: DumpVisual)
+	local pile = v.pile :: BasePart
+	local want = if LeafMeshes.ready() then math.floor(v.pileLevel * HEAP_LEAVES + 0.5) else 0
+	local look: LeafMeshes.Look? = nil
+	for k, slot in v.heap do
+		if k <= want then
+			if not slot.part then
+				look = look or LeafMeshes.lookFor(nil)
+				local part = LeafMeshes.random(look :: LeafMeshes.Look, 1.3 + (k % 3) * 0.2)
+				if part then
+					part.Parent = folder
+					slot.part = part
+				end
+			end
+			if slot.part then
+				slot.part.CFrame = pile.CFrame * slot.offset
+			end
+		elseif slot.part then
+			LeafMeshes.give(slot.part)
+			slot.part = nil
+		end
+	end
+end
+
 local function stepDumps(now: number, dt: number)
 	local camera = Workspace.CurrentCamera
 	local eye = if camera then camera.CFrame.Position else Vector3.zero
@@ -244,6 +247,7 @@ local function stepDumps(now: number, dt: number)
 		v.pileLevel += (target - v.pileLevel) * math.min(1, dt * (if busy then 1.2 else 0.8))
 		if v.pile and v.pileBase then
 			v.pile.CFrame = v.pileBase * CFrame.new(0, v.pileLevel * PILE_MAX, 0)
+			updateHeap(v)
 		end
 		if busy then
 			for k, r in v.rollers do
@@ -348,7 +352,6 @@ function DumpController:Throw(player: Player, part: BasePart)
 		spin = Vector3.new(math.random() * 8 - 4, math.random() * 10 - 5, math.random() * 8 - 4),
 		time = FLIGHT + math.random() * 0.15,
 		rise = rise,
-		mesh = true,
 	})
 end
 
