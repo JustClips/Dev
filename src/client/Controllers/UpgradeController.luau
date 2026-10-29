@@ -1,15 +1,18 @@
 --!strict
 -- Upgrade Tree (Upgrade Station on the south plaza, or the rail button), Slime RNG style:
 -- full screen over the dimmed world, a honeycomb of hexagons with icon, name and price
--- inside. Tap a hex to buy a level. Hexes next to what you own show as "?" until you get
+-- inside. Hover a hex (PC) or tap it (phones) for a tooltip; tap / click it again to buy. Hexes next to what you own show as "?" until you get
 -- next to them; rebirth-gated ones show a lock. Lab hexes (Egg Lab, Lucky Lab, Pet Lab)
 -- cost cash once, then tapping them flies into that lab's own honeycomb; BACK returns.
--- Drag to look around, pinch / mouse wheel / +- to zoom. Hovering (or tapping) a hex shows
--- what it does above CLOSE. Also keeps the rail button's badge (how many hexes you can buy)
+-- Drag to look around, pinch / mouse wheel / +- to zoom. Every other UI hides while the
+-- tree is open. Also keeps the rail button's badge (how many hexes you can buy)
 -- and bobs the floating arrow over the station.
 local ContentProvider = game:GetService("ContentProvider")
 local ProximityPromptService = game:GetService("ProximityPromptService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
@@ -30,6 +33,7 @@ type UpgradeDef = Types.UpgradeDef
 
 local WHITE = Color3.new(1, 1, 1)
 local RED = Color3.fromRGB(255, 77, 94)
+local GREEN = Color3.fromRGB(61, 220, 90)
 local GOLD_TEXT = Color3.fromRGB(255, 214, 90)
 local INFO_GREEN = Color3.fromRGB(124, 245, 138)
 
@@ -49,7 +53,6 @@ local DRAG_THRESHOLD = 10 -- screen pixels before a press becomes a drag
 
 local UpgradeController = {}
 
-local C: any
 local gui: ScreenGui
 local canvas: Frame
 local zoom: UIScale
@@ -62,7 +65,10 @@ local nodes: { [string]: TextButton } = {}
 local nodeSize = UDim2.fromOffset(130, 150)
 local extents: { [string]: Vector2 } = {}
 local current = "Main"
-local hovered: string? = nil
+local hovered: string? = nil -- mouse is over this hex
+local selected: string? = nil -- tapped once: tooltip stays, the next tap buys
+local flashText: string? = nil -- a short message in the tooltip (e.g. "Need $50 more")
+local flashUntil = 0
 local pan = Vector2.zero
 local railBadge: GuiObject? = nil
 local useImage = false -- the HexTile image loaded; until then hexes are drawn with frames
@@ -228,41 +234,90 @@ end
 
 -- ---------------------------------------------------------------- drawing
 
+-- What the tooltip says for a hex (nil = nothing to show).
 local function setTip(id: string?)
 	local data = State.data
+	if not data or not id then
+		tip.Visible = false
+		return
+	end
 	local nameLabel = tip:FindFirstChild("Name") :: TextLabel
 	local info = tip:FindFirstChild("Info") :: TextLabel
 	local desc = tip:FindFirstChild("Desc") :: TextLabel
-	info.TextColor3 = INFO_GREEN
-	if not data or not id then
-		nameLabel.Text = Upgrades.Trees[current].Name
-		info.Text = "Tap a hexagon to buy it"
-		desc.Text = if current == "Main" then "Labs open their own upgrade trees" else "BACK returns to the main tree"
-		return
-	end
+	local hint = tip:FindFirstChild("Hint") :: TextLabel
 	local def = Upgrades.ById[id]
 	local state = computeStates(data)[id]
 	local level = data.Upgrades[id] or 0
+	local touch = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+	local again = if touch then "Tap again to buy" else "Click again to buy"
+	tip.Visible = true
+	info.TextColor3 = INFO_GREEN
+	hint.TextColor3 = GOLD_TEXT
+	hint.Text = ""
 	if state == "Mystery" then
 		nameLabel.Text = "???"
 		info.Text = "Buy the upgrade next to it to find out"
 		desc.Text = ""
+	else
+		nameLabel.Text = def.Name
+		desc.Text = def.Description
+		if def.Opens then
+			info.Text = if level > 0 then "Tap to go inside" else `Unlock for {Format.cash(price(def, data))}`
+		elseif state == "Rebirth" then
+			info.TextColor3 = RED
+			info.Text = `Rebirth {def.RequiredRebirths} time{if def.RequiredRebirths == 1 then "" else "s"} to open this`
+		elseif state == "Max" then
+			info.TextColor3 = GOLD_TEXT
+			info.Text = `MAX  {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
+		else
+			local stat = Upgrades.Stats[def.Stat]
+			info.Text = `Lv {level}/{def.MaxLevel}  ·  {Upgrades.describe(def, level)} > {Upgrades.describe(def, level + 1)} {stat.Name}`
+		end
+		if (state == "Open" or state == "Owned") and not (def.Opens and level > 0) then
+			local cost = price(def, data)
+			if not BigNum.gte(data.Cash, cost) then
+				hint.TextColor3 = RED
+				hint.Text = `Need {Format.cash(BigNum.sub(cost, data.Cash))} more`
+			elseif selected == id then
+				hint.Text = again
+			else
+				hint.Text = if touch then "Tap to select" else "Double-click to buy"
+			end
+		end
+	end
+	if flashText and os.clock() < flashUntil and selected == id then
+		hint.TextColor3 = RED
+		hint.Text = flashText
+	end
+end
+
+-- The tooltip follows its hex (the board can move and zoom under it).
+local function placeTip()
+	local id = selected or hovered
+	local node = id and nodes[id]
+	if not tip.Visible or not node or not node.Visible then
 		return
 	end
-	nameLabel.Text = def.Name
-	desc.Text = def.Description
-	if def.Opens then
-		info.Text = if level > 0 then "Tap to go inside" else `Unlock for {Format.cash(price(def, data))}`
-	elseif state == "Rebirth" then
-		info.TextColor3 = RED
-		info.Text = `Rebirth {def.RequiredRebirths} time{if def.RequiredRebirths == 1 then "" else "s"} to open this`
-	elseif state == "Max" then
-		info.TextColor3 = GOLD_TEXT
-		info.Text = `MAX  {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
+	local origin = gui.AbsolutePosition
+	local at = node.AbsolutePosition - origin
+	local size = node.AbsoluteSize
+	local half = tip.AbsoluteSize.X / 2
+	local screen = gui.AbsoluteSize
+	local x = math.clamp(at.X + size.X / 2, half + 6, screen.X - half - 6)
+	local y = at.Y + size.Y * 0.08
+	if y - tip.AbsoluteSize.Y < 6 then
+		-- No room above: show it under the hex.
+		tip.AnchorPoint = Vector2.new(0.5, 0)
+		y = at.Y + size.Y * 0.92
 	else
-		local stat = Upgrades.Stats[def.Stat]
-		info.Text = `Level {level}/{def.MaxLevel}  ·  {Upgrades.describe(def, level)} > {Upgrades.describe(def, level + 1)} {stat.Name}`
+		tip.AnchorPoint = Vector2.new(0.5, 1)
 	end
+	tip.Position = UDim2.fromOffset(x, y)
+end
+
+local function refreshTip()
+	setTip(selected or hovered)
+	placeTip()
 end
 
 -- Hexagons are three rotated bars (gen_ui hexagon()).
@@ -326,9 +381,12 @@ local function renderBoard()
 			priceLabel.Text = Format.big(cost)
 			priceLabel.TextColor3 = if BigNum.gte(data.Cash, cost) then WHITE else RED
 		end
-		;(node:FindFirstChild("Glow") :: Frame).Visible = canBuy(def, data, state)
+		local glow = node:FindFirstChild("Glow") :: Frame
+		local isSelected = selected == def.Id and state ~= "Hidden"
+		glow.Visible = isSelected or canBuy(def, data, state)
+		setHex(glow, if isSelected then WHITE else GREEN)
 	end
-	setTip(hovered)
+	refreshTip()
 end
 
 local function popNode(node: TextButton)
@@ -349,6 +407,7 @@ local function showBoard(treeId: string, flyIn: boolean?)
 	backButton.Visible = treeId ~= "Main"
 	title.Text = if treeId == "Main" then "Upgrades!" else `{Upgrades.Trees[treeId].Name}!`
 	hovered = nil
+	selected = nil
 	local target = fitZoom()
 	zoom.Scale = target
 	pan = Vector2.zero
@@ -361,12 +420,17 @@ local function showBoard(treeId: string, flyIn: boolean?)
 	end
 end
 
+local function flash(text: string)
+	flashText = text
+	flashUntil = os.clock() + 2.5
+end
+
+-- First tap selects a hex (tooltip), the next tap on it buys. Owned labs open at once.
 local function onNodeTapped(def: UpgradeDef)
 	local data = State.data
 	if not data then
 		return
 	end
-	hovered = def.Id
 	local state = computeStates(data)[def.Id]
 	local level = data.Upgrades[def.Id] or 0
 	if def.Opens and level > 0 then
@@ -374,22 +438,27 @@ local function onNodeTapped(def: UpgradeDef)
 		showBoard(def.Opens, true)
 		return
 	end
+	if selected ~= def.Id then
+		selected = def.Id
+		flashText = nil
+		Ui.sound("Click")
+		renderBoard()
+		return
+	end
 	if state == "Mystery" or state == "Rebirth" or state == "Max" then
 		Ui.sound("Error")
-		setTip(def.Id)
 		return
 	end
 	local ok, message = Net.func("BuyUpgrade"):InvokeServer(def.Id, 1)
 	if ok then
 		Ui.sound("Coin")
 		popNode(nodes[def.Id])
+		flashText = nil
 	else
 		Ui.sound("Error")
-		if message and message ~= "" then
-			C.HudController:Toast(message, "Bad")
-		end
+		flash(if message and message ~= "" then message else "Can't buy that")
 	end
-	setTip(def.Id)
+	renderBoard()
 end
 
 -- Builds every board and hex once from Config/Upgrades.
@@ -428,12 +497,12 @@ local function build()
 		end)
 		node.MouseEnter:Connect(function()
 			hovered = def.Id
-			setTip(def.Id)
+			refreshTip()
 		end)
 		node.MouseLeave:Connect(function()
 			if hovered == def.Id then
 				hovered = nil
-				setTip(nil)
+				refreshTip()
 			end
 		end)
 	end
@@ -451,6 +520,51 @@ end
 function UpgradeController:Open()
 	Ui.open("Upgrades")
 	showBoard("Main")
+end
+
+function UpgradeController:IsOpen(): boolean
+	return Ui.isOpen(gui)
+end
+
+-- The hex button for a node (for tutorial spotlights). Nil until built.
+function UpgradeController:GetNode(id: string): TextButton?
+	return nodes[id]
+end
+
+-- Every other screen (HUD, panels) and the Roblox chat / player list hide while the tree
+-- is open, and come back exactly as they were.
+local hiddenGuis: { ScreenGui } = {}
+local hiddenCore: { Enum.CoreGuiType } = {}
+local function hideOtherUi(hide: boolean)
+	if hide then
+		if #hiddenGuis > 0 then
+			return
+		end
+		for _, other in Players.LocalPlayer:WaitForChild("PlayerGui"):GetChildren() do
+			if other:IsA("ScreenGui") and other ~= gui and other.Enabled then
+				other.Enabled = false
+				table.insert(hiddenGuis, other)
+			end
+		end
+		for _, kind in { Enum.CoreGuiType.Chat, Enum.CoreGuiType.PlayerList, Enum.CoreGuiType.EmotesMenu } do
+			local ok, on = pcall(StarterGui.GetCoreGuiEnabled, StarterGui, kind)
+			if ok and on then
+				pcall(StarterGui.SetCoreGuiEnabled, StarterGui, kind, false)
+				table.insert(hiddenCore, kind)
+			end
+		end
+	else
+		for _, other in hiddenGuis do
+			if other.Parent then
+				other.Enabled = true
+			end
+		end
+		for _, kind in hiddenCore do
+			pcall(StarterGui.SetCoreGuiEnabled, StarterGui, kind, true)
+		end
+		table.clear(hiddenGuis)
+		table.clear(hiddenCore)
+	end
 end
 
 local function updateBadge(data)
@@ -480,13 +594,12 @@ local function bobHologram()
 	TweenService:Create(billboard, info, { StudsOffset = Vector3.new(0, 0.8, 0) }):Play()
 end
 
-function UpgradeController:Init(controllers)
-	C = controllers
+function UpgradeController:Init(_controllers)
 	gui = Ui.screen("Upgrades")
 	canvas = Ui.find(gui, "Board.Scaler.Canvas")
 	zoom = Ui.find(canvas, "Zoom")
 	title = Ui.find(gui, "Top.Title")
-	tip = Ui.find(gui, "Bottom.Tip")
+	tip = Ui.find(gui, "Tooltip")
 	backButton = Ui.find(gui, "Bottom.Back")
 end
 
@@ -496,6 +609,26 @@ function UpgradeController:Start()
 
 	Ui.button(Ui.find(gui, "Bottom.Close"), function()
 		Ui.close("Upgrades")
+	end)
+	Ui.button(Ui.find(gui, "Board.Backdrop"), function()
+		if dragged and os.clock() - draggedAt < 0.25 then
+			return
+		end
+		selected = nil
+		hovered = nil
+		renderBoard()
+	end)
+	gui:GetPropertyChangedSignal("Enabled"):Connect(function()
+		hideOtherUi(gui.Enabled)
+		if not gui.Enabled then
+			selected = nil
+			hovered = nil
+		end
+	end)
+	RunService.RenderStepped:Connect(function()
+		if gui.Enabled and tip.Visible then
+			placeTip()
+		end
 	end)
 	Ui.button(backButton, function()
 		local lab = Upgrades.Trees[current].Portal

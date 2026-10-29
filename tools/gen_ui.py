@@ -1088,7 +1088,24 @@ def upgrades():
         icon("Lock", "Lock", 52, U(0.5, 0, 0.5, -10), (0.5, 0.5), ZIndex=6, Visible=False),
         text("Question", "?", U(1, 0, 1, 0), ts=72, display=True, stroke=4, ZIndex=6, Visible=False),
     ])
+    # Tapping the empty board closes the tooltip.
+    backdrop = node("Backdrop", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", AutoButtonColor=False,
+                                                    ZIndex=0))
+    # Tooltip over a hex: hover on PC, first tap on phones (a second tap buys).
+    tooltip = frame("Tooltip", U(0, 330, 0, 108), anchor=(0.5, 1), bg="#0B0E1E", BackgroundTransparency=0.12, Visible=False,
+                    ZIndex=20, children=[
+                        autoscale(),
+                        border(INK, 3),
+                        text("Name", "", U(1, -16, 0, 26), U(0.5, 0, 0, 6), (0.5, 0), ts=22, display=True, stroke=2.5, ZIndex=21),
+                        text("Info", "", U(1, -16, 0, 22), U(0.5, 0, 0, 32), (0.5, 0), ts=16, color="#7CF58A", display=True,
+                             stroke=2, ZIndex=21, TextScaled=True, children=[fit(16)]),
+                        text("Desc", "", U(1, -16, 0, 20), U(0.5, 0, 0, 55), (0.5, 0), ts=14, color="#C8D0E8", heavy=True,
+                             ZIndex=21),
+                        text("Hint", "", U(1, -16, 0, 22), U(0.5, 0, 0, 79), (0.5, 0), ts=16, color="#FFD65A", display=True,
+                             stroke=2, ZIndex=21),
+                    ])
     board = frame("Board", U(1, 0, 1, 0), children=[
+        backdrop,
         frame("Scaler", U(0, 0, 0, 0), U(0.5, 0, 0.5, -10), (0.5, 0.5), children=[
             autoscale(),
             frame("Canvas", U(0, 0, 0, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), children=[
@@ -1103,14 +1120,6 @@ def upgrades():
     ])
     bottom = frame("Bottom", U(0, 900, 0, 196), U(0.5, 0, 1, -8), (0.5, 1), children=[
         autoscale(),
-        frame("Tip", U(0, 640, 0, 82), U(0.5, 0, 0, 0), (0.5, 0), bg="#0B0E1E", BackgroundTransparency=0.25, ZIndex=4,
-              children=[
-                  border(INK, 3),
-                  text("Name", "", U(1, -20, 0, 28), U(0.5, 0, 0, 6), (0.5, 0), ts=24, display=True, stroke=2.5, ZIndex=5),
-                  text("Info", "", U(1, -20, 0, 22), U(0.5, 0, 0, 34), (0.5, 0), ts=17, color="#7CF58A", display=True,
-                       stroke=2, ZIndex=5),
-                  text("Desc", "", U(1, -20, 0, 20), U(0.5, 0, 0, 56), (0.5, 0), ts=15, color="#C8D0E8", heavy=True, ZIndex=5),
-              ]),
         button("Close", U(0, 250, 0, 88), U(0.5, 0, 1, 0), (0.5, 1), color=DANGER, label="CLOSE", ts=46, ZIndex=5),
         button("Back", U(0, 170, 0, 72), U(0.5, -140, 1, -8), (1, 1), color=HEADER, label="BACK", ts=32, ZIndex=5,
                Visible=False),
@@ -1122,7 +1131,7 @@ def upgrades():
     for k in ("Text", "AutoButtonColor"):
         d["properties"].pop(k, None)
     d["properties"]["BackgroundTransparency"] = 0.45
-    write("Upgrades", screen([d, board, top, bottom], order=10, enabled=False))
+    write("Upgrades", screen([d, board, top, bottom, tooltip], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Loading
