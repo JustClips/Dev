@@ -35,6 +35,15 @@ Sounds.Sfx = {
 	Sparkle = { Id = id(9116395085), Volume = 0.45 }, -- Magic Glows Chiming Hits 5
 	Reveal = { Id = id(9040193100), Volume = 0.5 }, -- Have a Little Fun (sting a)
 	RareReveal = { Id = id(1836860398), Volume = 0.55 }, -- Winning Spirit (sting)
+	HatchLift = { Id = id(15674975792), Volume = 0.45 }, -- Roblox_UI_Whoosh_03 (egg floats up)
+	HatchTier = { Id = id(9126073318), Volume = 0.4 }, -- Synth Sparkle Bell Ding 2 (rarity climb, pitch rises)
+	HatchChip = { Id = id(9117458008), Volume = 0.45 }, -- Plastic Crack 2 (bricks pop off a wobble)
+	HatchRise = { Id = id(9125805781), Volume = 0.5 }, -- Rising Whoosh Hissing Build Up 2
+	HatchSuck = { Id = id(9126102694), Volume = 0.55 }, -- Time Warp Searing Build Up Large Suck Rumble (Legendary+)
+	HatchBricks = { Id = id(9117447650), Volume = 0.6 }, -- Plastic Break 1 (the egg bursts into bricks)
+	HatchBoom = { Id = id(9120769331), Volume = 0.55 }, -- Wind Whoosh Sonic Boom Low End Impact 1 (Rare+)
+	HatchShimmer = { Id = id(9120297092), Volume = 0.45 }, -- Twiddly Power Ons Glittery Metallic 1 (Epic+ reveal)
+	HatchGong = { Id = id(9125585534), Volume = 0.4 }, -- Gong Chinese Style Single Hit (Mythic+)
 	-- Live events
 	Meteor = { Id = id(9118614718), Volume = 0.6 }, -- Rock Impact 1
 	RockBreak = { Id = id(9118587698), Volume = 0.55 }, -- Rock Drop Breaks 3

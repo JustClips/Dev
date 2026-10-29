@@ -2652,13 +2652,49 @@
    "id": 120325796292947,
    "sha": "a96e059fdc85f5616c7abeaf1af13aa7293b6d5bfe82fa7d619844b916d171a8"
   },
+  "VfxBrick1x1": {
+   "id": 138222122678804,
+   "sha": "87453968225b97bb618c9e139c3acf2bf23efaa05b6fb29d051e87aed726ec44"
+  },
+  "VfxBrick2x1": {
+   "id": 100297009542480,
+   "sha": "36f1b14ff9b1b6e5c02f67f3e1b87e811ae485a59c21762831522602deffddd2"
+  },
   "VfxDrop": {
    "id": 121835284606705,
    "sha": "898d7fd597d46471189d5e1e4384b22b6ecfa31b31722ff52ddccdb5226e7076"
   },
+  "VfxHatchCrown": {
+   "id": 119173658207258,
+   "sha": "14c7394b48655a8b3b3347411a1ccd33fc62db4100f90455c5067452db1726d0"
+  },
+  "VfxHatchPillar": {
+   "id": 120099509795708,
+   "sha": "b9e4d0e803041ba339b39dcd8feaf953c1d4a8096716e2e7c4b2bf84d905059c"
+  },
+  "VfxHatchRing": {
+   "id": 108587725338064,
+   "sha": "76f4ff15ef1a18d1b2182104454f09a30d4c649b451a143a3f85a079bf40555c"
+  },
+  "VfxHatchSpikes": {
+   "id": 134343136247136,
+   "sha": "dce646bc9343f583498502491fd1c7427640b6af669634fe31a03c18a16d430e"
+  },
+  "VfxHatchStar": {
+   "id": 80845491159512,
+   "sha": "8acc580ce59aa64131db4c7f21d09ba53cc7871722b2db02d4d99e7cb49c5da4"
+  },
+  "VfxHatchSwirl": {
+   "id": 110268354213613,
+   "sha": "deafa512a13b1947db18273a8354fa1b7b74702ba09785e75687fda6a1e7632e"
+  },
   "VfxRipple": {
    "id": 102018190575419,
    "sha": "957eb7d5089a5f0c091c6a58128d5d7cdcea19bbb82094f2e1cd6c957a25fa23"
+  },
+  "VfxShellChunk": {
+   "id": 137082684895029,
+   "sha": "cc7d6a1be05186b88bf30c1875348c3a55cd5e393d983050bf8fc515a4ff01b1"
   },
   "VfxSplashCrown": {
    "id": 136614210914854,

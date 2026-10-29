@@ -4962,6 +4962,32 @@ Assets.Models = {
 		},
 		seat = Vector3.new(0.0, 1.75, 0.3),
 	},
+	VfxBrick1x1 = {
+		bounds = {
+			max = Vector3.new(0.48, 0.385, 0.48),
+			min = Vector3.new(-0.48, -0.385, -0.48),
+		},
+		id = 138222122678804,
+		kind = "vfx",
+		parts = {
+			VfxBrick1x1 = {
+				collide = false,
+			},
+		},
+	},
+	VfxBrick2x1 = {
+		bounds = {
+			max = Vector3.new(0.98, 0.385, 0.48),
+			min = Vector3.new(-0.98, -0.385, -0.48),
+		},
+		id = 100297009542480,
+		kind = "vfx",
+		parts = {
+			VfxBrick2x1 = {
+				collide = false,
+			},
+		},
+	},
 	VfxDrop = {
 		bounds = {
 			max = Vector3.new(0.0, 0.0, 0.0),
@@ -4975,6 +5001,84 @@ Assets.Models = {
 			},
 		},
 	},
+	VfxHatchCrown = {
+		bounds = {
+			max = Vector3.new(1.107, 1.024, 1.04),
+			min = Vector3.new(-1.107, 0.0, -1.04),
+		},
+		id = 119173658207258,
+		kind = "vfx",
+		parts = {
+			VfxHatchCrown = {
+				collide = false,
+			},
+		},
+	},
+	VfxHatchPillar = {
+		bounds = {
+			max = Vector3.new(1.0, 1.0, 1.0),
+			min = Vector3.new(-1.0, 0.0, -1.0),
+		},
+		id = 120099509795708,
+		kind = "vfx",
+		parts = {
+			VfxHatchPillar = {
+				collide = false,
+			},
+		},
+	},
+	VfxHatchRing = {
+		bounds = {
+			max = Vector3.new(1.0, 0.09, 1.0),
+			min = Vector3.new(-1.0, 0.0, -1.0),
+		},
+		id = 108587725338064,
+		kind = "vfx",
+		parts = {
+			VfxHatchRing = {
+				collide = false,
+			},
+		},
+	},
+	VfxHatchSpikes = {
+		bounds = {
+			max = Vector3.new(0.91, 0.773, 0.816),
+			min = Vector3.new(-0.828, -0.496, -0.836),
+		},
+		id = 134343136247136,
+		kind = "vfx",
+		parts = {
+			VfxHatchSpikes = {
+				collide = false,
+			},
+		},
+	},
+	VfxHatchStar = {
+		bounds = {
+			max = Vector3.new(1.0, 1.0, 1.0),
+			min = Vector3.new(-1.0, -1.0, -1.0),
+		},
+		id = 80845491159512,
+		kind = "vfx",
+		parts = {
+			VfxHatchStar = {
+				collide = false,
+			},
+		},
+	},
+	VfxHatchSwirl = {
+		bounds = {
+			max = Vector3.new(0.923, 2.02, 0.979),
+			min = Vector3.new(-1.035, -0.02, -0.866),
+		},
+		id = 110268354213613,
+		kind = "vfx",
+		parts = {
+			VfxHatchSwirl = {
+				collide = false,
+			},
+		},
+	},
 	VfxRipple = {
 		bounds = {
 			max = Vector3.new(0.0, 0.0, 0.0),
@@ -4984,6 +5088,19 @@ Assets.Models = {
 		kind = "vfx",
 		parts = {
 			VfxRipple = {
+				collide = false,
+			},
+		},
+	},
+	VfxShellChunk = {
+		bounds = {
+			max = Vector3.new(1.533, 0.32, 1.533),
+			min = Vector3.new(-1.533, -1.012, -1.533),
+		},
+		id = 137082684895029,
+		kind = "vfx",
+		parts = {
+			VfxShellChunk = {
 				collide = false,
 			},
 		},
