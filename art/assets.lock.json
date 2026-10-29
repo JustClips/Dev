@@ -1,8 +1,28 @@
 {
  "anims": {
   "Egg_CosmicIdle": {
-   "id": 116261640744771,
-   "sha": "ad81889bfbbe8665f26e67cf605f3f8f2c82650dfd8f56d6e69f1ff66cecc575"
+   "id": 126142615123261,
+   "sha": "ff804d74ebbba697fdb0916f506da36f8d956ac8ad4d0a90baa25d640743e989"
+  },
+  "Egg_EpicIdle": {
+   "id": 81694835784309,
+   "sha": "6a12e4635fe0b0701108185fb4decc2f0618959641ae36853a46d796195129ea"
+  },
+  "Egg_LegendaryIdle": {
+   "id": 106554547026556,
+   "sha": "8ba92ec582ded7aaf57c87ee6edee554b919e8aa2a5c265e198ff4ebfad85724"
+  },
+  "Egg_MythicIdle": {
+   "id": 101861978498535,
+   "sha": "58f3ab110ef8e4df24445e8ad7d7392c583162b48069335a5b4f42be8eb63498"
+  },
+  "Egg_RareIdle": {
+   "id": 75646233175758,
+   "sha": "a0e26cd2bbdc889596e0e1ab76a747dfadf5dd459dc0c078536f5c904b5a9370"
+  },
+  "Egg_UncommonIdle": {
+   "id": 77677946832650,
+   "sha": "9edcbaa0872fbde377f35c41a07006b44299f676357c958657ce01dec22fc381"
   },
   "Pet_Happy": {
    "id": 104759341584430,
@@ -761,32 +781,32 @@
    "sha": "aa649a461b4c4cb9b27df930a1fa5e8ef0d213e326943c618d3cb5115a5fe8c4"
   },
   "Egg_Common": {
-   "id": 130386544112081,
-   "sha": "ca1e307feb7ba439676ed8645d0910fd5694d5a99e795cf3792a17cbfb5dac5a"
+   "id": 106875191261029,
+   "sha": "e0024527bfef47c94e68c9ef6d7ae58fa1a001f115bacc7355948add31ef4351"
   },
   "Egg_Cosmic": {
-   "id": 115108585012609,
-   "sha": "9bdf77579043a314a3851cf5f350252d604b3a24677d394dc25c3c6abf9cc326"
+   "id": 78923662402991,
+   "sha": "fa26f74995fad98df80783988d99ce62b174624b97301b36d5bc4220c7138f86"
   },
   "Egg_Epic": {
-   "id": 122271978892336,
-   "sha": "590ab0fb6227683cdbd3287334be090c4ef21e39da265878eba1ce2c9e978771"
+   "id": 70596230482238,
+   "sha": "4373b7354c0cba1099d37ed90a866ffbe29cea27890ad9a56b4bc62eb1c11155"
   },
   "Egg_Legendary": {
-   "id": 88907477529336,
-   "sha": "ce09ef077e6f8a1f5a7386d7c02ac24ffb855f4cb34984927232c932412244c2"
+   "id": 136078012700727,
+   "sha": "d24615fa881467496de876f9a7be900b23fe337028a319ca5e75559c9b7eedbd"
   },
   "Egg_Mythic": {
-   "id": 136581919723290,
-   "sha": "d47258f610f49760a8d1cbb90886afa30e3267fffd86b2cd885d539ac7512346"
+   "id": 75263823103928,
+   "sha": "7f8b7f89b04e9bb14388e8c1500f953c49bc701d8392b2b97dc35d748dfde354"
   },
   "Egg_Rare": {
-   "id": 76528707678910,
-   "sha": "5be8b406b389d398b24834d99cfaed6e22e128929750492c2fbb25e1896fcf38"
+   "id": 74512937357364,
+   "sha": "6f85d3d11018f0fa05bc18cb1baacb7980dfbbdc89cda8176c2b1124389a4fe0"
   },
   "Egg_Uncommon": {
-   "id": 79356633766910,
-   "sha": "c5f561eeea02ea19127382fad5fc13804d0a0412d1f18124dca87fb90b973dd4"
+   "id": 133502637134183,
+   "sha": "f4ae4292dd718a2900ca0a9b332fdaf5957c27d2228b61acc3bd29a2aca57b9c"
   },
   "Fence": {
    "id": 120811791047499,
