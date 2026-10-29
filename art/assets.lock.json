@@ -1,5 +1,9 @@
 {
  "anims": {
+  "Egg_CosmicIdle": {
+   "id": 116261640744771,
+   "sha": "ad81889bfbbe8665f26e67cf605f3f8f2c82650dfd8f56d6e69f1ff66cecc575"
+  },
   "Pet_Happy": {
    "id": 104759341584430,
    "sha": "a40b382a682d5bbe2a05a20293135b58a33f9b5b32f5201c252f27f3cb3f9e0c"
@@ -709,8 +713,8 @@
    "sha": "ca1e307feb7ba439676ed8645d0910fd5694d5a99e795cf3792a17cbfb5dac5a"
   },
   "Egg_Cosmic": {
-   "id": 111615975034729,
-   "sha": "e3eca2d45e6764727ce08ff119332b447f8e436d225c80a8d54f3dac93272de7"
+   "id": 115108585012609,
+   "sha": "9bdf77579043a314a3851cf5f350252d604b3a24677d394dc25c3c6abf9cc326"
   },
   "Egg_Epic": {
    "id": 122271978892336,

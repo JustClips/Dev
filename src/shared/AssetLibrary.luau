@@ -103,7 +103,7 @@ function AssetLibrary.prepare(name: string, raw: Instance): Model
 		end
 	end
 	raw:Destroy()
-	if meta and meta.kind == "alien" then
+	if meta and (meta.kind == "alien" or (meta :: any).rig) then
 		rig(model, meta, parts)
 	else
 		local primary = parts.Body or parts.Handle
@@ -315,11 +315,84 @@ function AssetLibrary.egg(rarity: string): Model
 	local model = AssetLibrary.get("Egg_" .. rarity)
 	if model then
 		model.Name = rarity .. "Egg"
+		AssetLibrary.eggExtras(model, rarity)
 		return model
 	end
 	local placeholder = EggModel.build(rarity)
 	placeholder:SetAttribute("Placeholder", true)
 	return placeholder
+end
+
+-- Glow and sparkles per rarity, added to the egg's Body (they scale with Model:ScaleTo).
+local EGG_FX: { [string]: { light: Color3, sparkle: { Color3 }, rate: number } } = {
+	Cosmic = {
+		light = Color3.fromRGB(120, 240, 255),
+		sparkle = { Color3.fromRGB(255, 255, 255), Color3.fromRGB(110, 245, 225), Color3.fromRGB(255, 150, 235) },
+		rate = 7,
+	},
+}
+
+-- Rigged eggs (wings, halo, rings) play their Blender idle loop while they're in the
+-- world, and get their glow and sparkles. Carried eggs are welded to the head, so they
+-- stay still.
+function AssetLibrary.eggExtras(model: Model, rarity: string)
+	local meta = Assets.Models["Egg_" .. rarity]
+	local body = model:FindFirstChild("Body") :: BasePart?
+	local root = model:FindFirstChild("RootPart") :: BasePart?
+	if body and root and model.PrimaryPart == root then
+		-- Labels and prompts sit on the PrimaryPart, so keep it the egg's Body (the rig's
+		-- root is at the very bottom), with the pivot still at the bottom centre.
+		body.PivotOffset = body.CFrame:Inverse() * root.CFrame
+		model.PrimaryPart = body
+	end
+	local fx = EGG_FX[rarity]
+	if fx and body then
+		local light = Instance.new("PointLight")
+		light.Color = fx.light
+		light.Brightness = 1.2
+		light.Range = 9
+		light.Shadows = false
+		light.Parent = body
+		local keys = {}
+		for i, c in fx.sparkle do
+			table.insert(keys, ColorSequenceKeypoint.new((i - 1) / math.max(1, #fx.sparkle - 1), c))
+		end
+		local sparkles = Instance.new("ParticleEmitter")
+		sparkles.Name = "EggSparkles"
+		sparkles.Texture = Assets.Images.Vfx_Sparkle or Assets.Images.Sparkle or ""
+		sparkles.Color = ColorSequence.new(keys)
+		sparkles.LightEmission = 1
+		sparkles.Rate = fx.rate
+		sparkles.Lifetime = NumberRange.new(0.8, 1.6)
+		sparkles.Speed = NumberRange.new(0.3, 1.2)
+		sparkles.SpreadAngle = Vector2.new(180, 180)
+		sparkles.Rotation = NumberRange.new(0, 360)
+		sparkles.RotSpeed = NumberRange.new(-90, 90)
+		sparkles.Size = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0),
+			NumberSequenceKeypoint.new(0.35, 0.55),
+			NumberSequenceKeypoint.new(1, 0),
+		})
+		sparkles.Parent = body
+	end
+	local animName = meta and (meta :: any).anim
+	if typeof(animName) ~= "string" or not model:FindFirstChildOfClass("AnimationController") then
+		return
+	end
+	local playing = false
+	local function try()
+		if playing or not model:IsDescendantOf(workspace) or model:FindFirstAncestor("CarriedEggs") then
+			return
+		end
+		local track = AssetLibrary.loadTrack(model, animName)
+		if track then
+			playing = true
+			track.Looped = true
+			track:Play(0)
+		end
+	end
+	model.AncestryChanged:Connect(try)
+	task.defer(try)
 end
 
 -- Animations -------------------------------------------------------------------

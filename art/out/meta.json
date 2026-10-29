@@ -4531,16 +4531,17 @@
   "tris": 3920
  },
  "Egg_Cosmic": {
+  "anim": "Egg_CosmicIdle",
   "bounds": {
    "max": [
-    1.32,
-    3.168,
-    1.32
+    2.852,
+    3.798,
+    2.196
    ],
    "min": [
-    -1.32,
-    0.0,
-    -1.32
+    -2.852,
+    -0.004,
+    -2.196
    ]
   },
   "kind": "egg",
@@ -4552,9 +4553,79 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Gem": {
+    "collide": false,
+    "glow": "A8FFF6",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Halo": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.0,
+     3.624,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "RingA": {
+    "collide": false,
+    "glow": "4FF0D0",
+    "joint": [
+     -0.0,
+     1.56,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "RingB": {
+    "collide": false,
+    "glow": "FF8AE6",
+    "joint": [
+     -0.0,
+     1.56,
+     0.0
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "RingBase": {
+    "collide": false,
+    "glow": "4FF0D0",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "WingL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -1.356,
+     1.872,
+     0.144
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "WingR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     1.356,
+     1.872,
+     0.144
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
-  "tris": 3856
+  "rig": true,
+  "tris": 14232
  },
  "Egg_Epic": {
   "bounds": {

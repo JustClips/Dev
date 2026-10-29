@@ -2273,17 +2273,56 @@ Assets.Models = {
 		},
 	},
 	Egg_Cosmic = {
+		anim = "Egg_CosmicIdle",
 		bounds = {
-			max = Vector3.new(1.32, 3.168, 1.32),
-			min = Vector3.new(-1.32, 0.0, -1.32),
+			max = Vector3.new(2.852, 3.798, 2.196),
+			min = Vector3.new(-2.852, -0.004, -2.196),
 		},
-		id = 111615975034729,
+		id = 115108585012609,
 		kind = "egg",
 		parts = {
 			Body = {
 				collide = false,
 			},
+			Gem = {
+				collide = false,
+				glow = "A8FFF6",
+				parent = "Body",
+			},
+			Halo = {
+				collide = false,
+				joint = Vector3.new(-0.0, 3.624, 0.0),
+				parent = "Body",
+			},
+			RingA = {
+				collide = false,
+				glow = "4FF0D0",
+				joint = Vector3.new(-0.0, 1.56, 0.0),
+				parent = "Body",
+			},
+			RingB = {
+				collide = false,
+				glow = "FF8AE6",
+				joint = Vector3.new(-0.0, 1.56, 0.0),
+				parent = "Body",
+			},
+			RingBase = {
+				collide = false,
+				glow = "4FF0D0",
+				parent = "Body",
+			},
+			WingL = {
+				collide = false,
+				joint = Vector3.new(-1.356, 1.872, 0.144),
+				parent = "Body",
+			},
+			WingR = {
+				collide = false,
+				joint = Vector3.new(1.356, 1.872, 0.144),
+				parent = "Body",
+			},
 		},
+		rig = true,
 	},
 	Egg_Epic = {
 		bounds = {
@@ -3265,6 +3304,7 @@ Assets.Models = {
 }
 
 Assets.Animations = {
+	Egg_CosmicIdle = 116261640744771,
 	Pet_Happy = 104759341584430,
 	Pet_Idle = 90304779560671,
 	Pet_Walk = 140251033269648,

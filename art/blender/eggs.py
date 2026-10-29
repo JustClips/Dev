@@ -526,12 +526,282 @@ def brick_egg(name, size, colour_of):
     body, atlas = brick_shell(a, size, colour_of)
     a.shell_rgb = atlas
     a.swatch("FFFFFF")  # palette strip needs one colour
-    a.part("Body", [body])
-    return a
+    return a, body
+
+
+# ----------------------------------------------------------------- celestial extras
+# Gold cage, feathered wings, a halo and glowing rings for the Cosmic egg. Pieces are
+# light: bars are 6-sided swept tubes, feathers are flat crystal diamonds.
+
+GOLD, GOLD_DARK = "FFC83A", "E09A1C"
+
+
+def _mesh_obj(name, bm, col, smooth=True):
+    mesh = bpy.data.meshes.new(name)
+    bm.to_mesh(mesh)
+    bm.free()
+    o = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(o)
+    return lib._finish(o, col, smooth)
+
+
+def _pal(objs):
+    """Point palette-painted pieces at the palette strip (the shell atlas fills the rest)."""
+    for o in objs:
+        remap_palette_uvs(o)
+    return objs
+
+
+def bar(col, pts, r, sides=6, smooth=True, closed=False):
+    """A tube swept along pts (list of Vectors), capped at both ends."""
+    pts = [Vector(p) for p in pts]
+    bm = bmesh.new()
+    rings = []
+    a = None
+    n = len(pts)
+    for i, p in enumerate(pts):
+        if closed:
+            d = (pts[(i + 1) % n] - pts[(i - 1) % n]).normalized()
+        else:
+            d = (pts[min(i + 1, n - 1)] - pts[max(i - 1, 0)]).normalized()
+        # carry the side axis along the path so the tube doesn't twist
+        a = d.orthogonal().normalized() if a is None else (a - d * a.dot(d)).normalized()
+        b = d.cross(a).normalized()
+        rings.append([bm.verts.new(p + (a * math.cos(k * 2 * math.pi / sides) + b * math.sin(k * 2 * math.pi / sides)) * r)
+                      for k in range(sides)])
+    if closed:
+        rings.append(rings[0])
+    for r0, r1 in zip(rings, rings[1:]):
+        for k in range(sides):
+            bm.faces.new((r0[k], r0[(k + 1) % sides], r1[(k + 1) % sides], r1[k]))
+    if not closed:
+        bm.faces.new(list(reversed(rings[0])))
+        bm.faces.new(rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return _mesh_obj("bar", bm, col, smooth)
+
+
+def ring(col, centre, R_, r, tilt=(0, 0, 0), seg=48, sides=6):
+    """Closed torus-like ring as a swept tube."""
+    from mathutils import Euler
+    rot = Euler([math.radians(t) for t in tilt]).to_matrix()
+    pts = [Vector(centre) + rot @ Vector((math.cos(k * 2 * math.pi / seg) * R_, math.sin(k * 2 * math.pi / seg) * R_, 0))
+           for k in range(seg)]
+    return bar(col, pts, r, sides, closed=True)
+
+
+def diamond(col, centre, along, side, L, W, T, smooth=False):
+    """A flat crystal diamond (bipyramid): length L along `along`, width W along `side`,
+    thickness T. Starts at centre and points along `along`."""
+    along, side = Vector(along).normalized(), Vector(side).normalized()
+    nrm = along.cross(side).normalized()
+    c = Vector(centre)
+    bm = bmesh.new()
+    tip0 = bm.verts.new(c)
+    tip1 = bm.verts.new(c + along * L)
+    mid = c + along * L * 0.4
+    sv = [bm.verts.new(mid + side * W / 2), bm.verts.new(mid + nrm * T / 2),
+          bm.verts.new(mid - side * W / 2), bm.verts.new(mid - nrm * T / 2)]
+    for k in range(4):
+        bm.faces.new((tip0, sv[k], sv[(k + 1) % 4]))
+        bm.faces.new((tip1, sv[(k + 1) % 4], sv[k]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return _mesh_obj("diamond", bm, col, smooth)
+
+
+def cage_pt(t, ang, off=0.1):
+    p = on_shell(t, ang)
+    r = math.hypot(p.x, p.y)
+    k = (r + off) / max(r, 1e-6)
+    return Vector((p.x * k, p.y * k, p.z))
+
+
+def cage_path(t0, a0, t1, a1, n=10, off=0.1):
+    return [cage_pt(t0 + (t1 - t0) * i / n, a0 + (a1 - a0) * i / n, off) for i in range(n + 1)]
+
+
+def wing(side):
+    """One feathered wing on the +X (side=1) or -X (side=-1) of the egg. Returns
+    (pieces, shoulder point)."""
+    s = side
+    shoulder = Vector((s * (R + 0.08), 0.12, H * 0.6))
+    pieces = []
+    sweep = math.radians(18)      # tips go back a little
+
+    def direction(elev):
+        e = math.radians(elev)
+        return Vector((s * math.cos(e) * math.cos(sweep), math.cos(e) * math.sin(sweep), math.sin(e)))
+    rows = [  # (elevations, lengths, width, colour, y offset)
+        ([12, 24, 36, 48, 60, 72, 84], [1.25, 1.5, 1.7, 1.8, 1.7, 1.45, 1.1], 0.26, "EAFBF6", 0.04),
+        ([18, 30, 42, 54, 66, 78], [0.95, 1.1, 1.2, 1.2, 1.05, 0.8], 0.24, "C8F3E8", 0.0),
+        ([22, 38, 54, 70], [0.6, 0.7, 0.7, 0.55], 0.22, "9FE6D6", -0.04),
+    ]
+    for elevs, lens, wdt, col, dy in rows:
+        for e, L in zip(elevs, lens):
+            d = direction(e)
+            sv = d.cross(Vector((0, 1, 0))).normalized()
+            start = shoulder + Vector((0, dy, 0)) - d * 0.08
+            pieces.append(diamond(col, start, d, sv, L, wdt, 0.05))
+    # gold arm along the top edge with a spike, and a gold ball on the shoulder
+    arm_d = direction(40)
+    pieces.append(diamond(GOLD, shoulder - arm_d * 0.1 + Vector((0, -0.07, 0)), arm_d,
+                          arm_d.cross(Vector((0, 1, 0))).normalized(), 1.0, 0.3, 0.12))
+    pieces.append(sphere(GOLD, loc=tuple(shoulder + Vector((0, -0.04, 0))), scale=0.14, seg=12, rings=8))
+    return pieces, shoulder
+
+
+def celestial(a, body):
+    """Adds cage, gem, wings, halo and rings to a Cosmic brick egg. Returns the joints
+    (pre-scale, Blender space) of the animated parts."""
+    gold_pieces, glow_gem = [], []
+    meridians = [-60, -120, 0, 180, 60, 120]
+    for m in meridians:
+        gold_pieces.append(bar(GOLD, cage_path(0.07, m, 0.93, m, n=16), 0.04))
+    gold_pieces.append(ring(GOLD, (0, 0, H * 0.93), radius_at(0.93) + 0.1, 0.045))
+    gold_pieces.append(ring(GOLD, (0, 0, H * 0.07), radius_at(0.07) + 0.1, 0.045))
+    # a diamond in every sector between two meridians
+    for a0 in range(0, 360, 60):
+        mid = a0 + 30
+        top, bot = (0.82, mid), (0.18, mid)
+        left, right = (0.5, a0), (0.5, a0 + 60)
+        for p0, p1 in ((bot, left), (left, top), (top, right), (right, bot)):
+            gold_pieces.append(bar(GOLD, cage_path(p0[0], p0[1], p1[0], p1[1], n=8), 0.032))
+        for t, ang in (top, bot, left, right):
+            gold_pieces.append(sphere(GOLD_DARK, loc=tuple(cage_pt(t, ang, 0.1)), scale=0.065, seg=10, rings=6))
+    # the front gem: a glowing crystal in the front diamond (front = -Y = angle -90)
+    c = cage_pt(0.5, -90, 0.06)
+    n = Vector((0, -1, 0))
+    glow_gem.append(diamond("9FF7FF", c - Vector((0, 0, 0.45)), (0, 0, 1), (1, 0, 0), 0.9, 0.5, 0.24))
+    a.part("Body", [body] + _pal(gold_pieces))
+    a.part("Gem", _pal(glow_gem), parent="Body", glow="A8FFF6")
+
+    joints = {}
+    for side, name in ((1, "WingL"), (-1, "WingR")):   # Blender +X is Roblox's left
+        pieces, shoulder = wing(side)
+        a.part(name, _pal(pieces), parent="Body", joint=tuple(shoulder * SCALE))
+        joints[name] = shoulder
+    halo_c = Vector((0, 0, H + 0.42))
+    a.part("Halo", _pal([ring(GOLD, halo_c, 0.42, 0.06, tilt=(12, 0, 0), sides=8)]), parent="Body", joint=tuple(halo_c * SCALE))
+    joints["Halo"] = halo_c
+    centre = Vector((0, 0, H * 0.5))
+    a.part("RingA", _pal([ring("4FF0D0", centre, 1.8, 0.03, tilt=(0, 18, 0))]), parent="Body", glow="4FF0D0",
+           joint=tuple(centre * SCALE))
+    a.part("RingB", _pal([ring("FF8AE6", centre + Vector((0, 0, 0.15)), 1.55, 0.025, tilt=(10, -16, 0))]), parent="Body",
+           glow="FF8AE6", joint=tuple(centre * SCALE))
+    joints["RingA"] = joints["RingB"] = centre
+    a.part("RingBase", _pal([ring("4FF0D0", (0, 0, 0.04), 1.55, 0.045)]), parent="Body", glow="4FF0D0")
+    a.extra["rig"] = True
+    a.extra["anim"] = "Egg_CosmicIdle"
+    return joints
+
+
+# ----------------------------------------------------------------- idle animation
+# Keyframed in Blender on empties at each joint (so it can be opened and tweaked in
+# Blender), then sampled into a Roblox KeyframeSequence.
+
+ANIM_LEN = 5.0       # seconds, loops
+FPS = 24
+
+
+def keyframe_idle(joints):
+    """Creates empties at the joints with a looping idle action: slow wing flaps, the halo
+    bobbing and turning, the rings circling. Returns {part: empty}."""
+    scn = bpy.context.scene
+    scn.render.fps = FPS
+    scn.frame_start, scn.frame_end = 0, int(ANIM_LEN * FPS)
+    empties = {}
+    for name, j in joints.items():
+        e = bpy.data.objects.new(f"Joint_{name}", None)
+        e.location = j
+        e.rotation_mode = "XYZ"
+        bpy.context.collection.objects.link(e)
+        empties[name] = e
+    end = int(ANIM_LEN * FPS)
+    flaps = 2                                        # two slow flaps per loop
+    for name, side in (("WingL", 1), ("WingR", -1)):
+        e = empties[name]
+        steps = flaps * 4
+        for i in range(steps + 1):
+            f = round(end * i / steps)
+            w = 2 * math.pi * flaps * i / steps
+            # up-down swing about the front-back axis, plus a little forward sweep
+            e.rotation_euler = (0, math.radians(-side * 16 * math.sin(w)), math.radians(side * 6 * math.sin(w + 1.2)))
+            e.keyframe_insert("rotation_euler", frame=f)
+    h = empties["Halo"]
+    for i in range(5):
+        f = round(end * i / 4)
+        h.location = joints["Halo"] + Vector((0, 0, 0.09 * math.sin(2 * math.pi * i / 4)))
+        h.keyframe_insert("location", frame=f)
+    for name, turns in (("Halo", 1), ("RingA", 1), ("RingB", -1)):
+        e = empties[name]
+        for i in range(5):
+            e.rotation_euler = (0, 0, turns * 2 * math.pi * i / 4)
+            e.keyframe_insert("rotation_euler", frame=round(end * i / 4), index=2)
+    for e in empties.values():
+        ad = e.animation_data
+        if not ad or not ad.action:
+            continue
+        for fc in _fcurves(ad.action):
+            for kp in fc.keyframe_points:
+                # spins turn at an even speed, everything else eases
+                kp.interpolation = "LINEAR" if (fc.data_path == "rotation_euler" and fc.array_index == 2 and e.name != "Joint_WingL" and e.name != "Joint_WingR") else "BEZIER"
+    return empties
+
+
+def _fcurves(action):
+    if hasattr(action, "fcurves") and len(getattr(action, "fcurves", [])):
+        return list(action.fcurves)
+    out = []
+    for layer in getattr(action, "layers", []):
+        for strip in layer.strips:
+            for bag in strip.channelbags:
+                out += list(bag.fcurves)
+    return out
+
+
+P = None
+
+
+def _to_roblox_matrix(m3):
+    """Rotation in Blender axes -> Roblox axes (x, y, z) = (-x, z, y)."""
+    from mathutils import Matrix
+    global P
+    if P is None:
+        P = Matrix(((-1, 0, 0), (0, 0, 1), (0, 1, 0)))
+    r = P @ m3 @ P.inverted()
+    return [[r[i][j] for j in range(3)] for i in range(3)]
+
+
+def sample_idle(empties, name="Egg_CosmicIdle"):
+    """Samples the empties' motion into a KeyframeSequence (.rbxmx text)."""
+    import sys, os
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "anim"))
+    from build_anims import sequence
+    scn = bpy.context.scene
+    scn.frame_set(0)
+    rest = {k: e.matrix_world.copy() for k, e in empties.items()}
+    tree = {"RootPart": {"Body": {k: {} for k in empties}}}
+    frames = []
+    step = 2   # every 2 frames (12 keyframes a second)
+    for f in range(0, int(ANIM_LEN * FPS) + 1, step):
+        scn.frame_set(f)
+        poses = {}
+        for k, e in empties.items():
+            d = e.matrix_world @ rest[k].inverted()           # world-space change
+            j = rest[k].to_translation()
+            # change about the joint: rotate, then the joint's own move
+            rot = d.to_3x3()
+            move = d.to_translation() + rot @ j - j
+            move = Vector((-move.x, move.z, move.y)) * SCALE
+            poses[k] = ((move.x, move.y, move.z), _to_roblox_matrix(rot))
+        frames.append((f / FPS, poses))
+    scn.frame_set(0)
+    return sequence(name, frames, True, 0, tree)
 
 
 def cosmic():
-    """Blue brick mosaic with patches of light blue and sprinkles of pink, lilac and white."""
+    """Blue brick mosaic with patches of light blue and sprinkles of pink, lilac and white,
+    inside a gold cage with feathered wings, a halo and glowing rings."""
     import mathutils.noise as N
     rnd = random.Random("cosmic-bricks")
     blues = ["2F5FD8", "3B72EA", "4A84F2"]
@@ -550,10 +820,12 @@ def cosmic():
             return "8FB8FF"            # light blue patches
         if nv < -0.35:
             return "2448B8"            # deep blue patches
-        b = blues[min(2, int(rnd.random() * 2 + t * 1.4))]
-        return b
+        return blues[min(2, int(rnd.random() * 2 + t * 1.4))]
 
-    return brick_egg("Cosmic", 0.11, colour_of)
+    a, body = brick_egg("Cosmic", 0.11, colour_of)
+    joints = celestial(a, body)
+    a.idle_joints = joints   # the build makes the keyframed empties after the GLB export
+    return a
 
 
 EGGS = {
