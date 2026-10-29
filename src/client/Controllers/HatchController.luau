@@ -64,6 +64,9 @@ local confetti: Frame
 local confettiTemplate: ImageLabel
 local queue = {}
 local playing = false
+-- Eggs opened while another show plays: the server takes them out of the park right away,
+-- so a stand-in egg keeps sitting (and wobbling) on the spot until its own show starts.
+local waiting: { [any]: Model } = {}
 local skipRequested = false
 
 ------------------------------------------------------------------ small helpers
@@ -432,6 +435,11 @@ end
 
 local function play(info)
 	playing = true
+	local standIn = waiting[info]
+	if standIn then
+		waiting[info] = nil
+		standIn:Destroy()
+	end
 	skipRequested = false
 	local rarity = rarityOf(info.Rarity)
 	local eggRarity = info.EggRarity or info.Rarity
@@ -691,6 +699,10 @@ local function pump()
 	if info then
 		task.spawn(function()
 			local ok, err = pcall(play, info)
+			if waiting[info] then
+				waiting[info]:Destroy()
+				waiting[info] = nil
+			end
 			if not ok then
 				warn("[HatchController] " .. tostring(err))
 				gui.Enabled = false
@@ -901,6 +913,43 @@ end
 
 function HatchController:Start()
 	Net.event("HatchCompleted").OnClientEvent:Connect(function(info)
+		if playing or #queue > 0 then
+			-- Keep this egg visible where it sat until its turn comes.
+			local spot = eggSpot(info)
+			if spot then
+				local eggRarity = info.EggRarity or info.Rarity
+				local egg = AssetLibrary.egg(eggRarity)
+				egg.Name = "WaitingEgg"
+				for _, d in egg:GetDescendants() do
+					if d:IsA("BasePart") then
+						d.Anchored = true
+						d.CanCollide = false
+						d.CanQuery = false
+						d.CanTouch = false
+					end
+				end
+				egg:ScaleTo(Weights.visualScale(Weights.eggMult(eggRarity, info.EggWeight)) * 1.25)
+				egg:PivotTo(spot)
+				egg.Parent = Workspace
+				waiting[info] = egg
+				-- An impatient little wobble while it waits.
+				task.spawn(function()
+					while waiting[info] == egg and egg.Parent do
+						local start = os.clock()
+						while os.clock() - start < 0.35 and egg.Parent do
+							local t = (os.clock() - start) / 0.35
+							local angle = math.sin(t * math.pi * 4) * math.rad(7) * (1 - t)
+							egg:PivotTo(spot * CFrame.Angles(angle * 0.4, 0, angle))
+							RunService.RenderStepped:Wait()
+						end
+						if egg.Parent then
+							egg:PivotTo(spot)
+						end
+						task.wait(0.8 + math.random() * 0.6)
+					end
+				end)
+			end
+		end
 		table.insert(queue, info)
 		pump()
 	end)
