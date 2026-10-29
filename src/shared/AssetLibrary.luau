@@ -150,6 +150,13 @@ function AssetLibrary.get(name: string): Model?
 	return nil
 end
 
+-- Whether a model finished loading (so AssetLibrary.get returns the real one).
+function AssetLibrary.has(name: string): boolean
+	local f = folder()
+	local source = f and f:FindFirstChild(name)
+	return source ~= nil and source:IsA("Model")
+end
+
 function AssetLibrary.meta(name: string)
 	return Assets.Models[name]
 end
@@ -179,93 +186,110 @@ local WEATHER_LOOKS: { [string]: WeatherLook } = {
 	Disco = { rainbow = true, texture = "Vfx_Note", fx = Color3.fromRGB(255, 255, 255), size = 0.5, rate = 4, speed = 2, accel = Vector3.new(0, 2, 0), glow = 0.4 },
 }
 
--- Mutation looks. Golden and Rainbow repaint the pet; Moon-Dusted keeps colours and sparkles.
+-- Mutation looks. The pet or egg keeps its own texture; a mutation adds a see-through coat
+-- (a slightly bigger copy of every mesh in one colour and material, welded on) and
+-- particles. Dev disliked mutations repainting the whole pet in one material (2026-10-29).
+type Coat = {
+	color: Color3?,
+	rainbow: boolean?, -- colour-cycling (PetController cycles RainbowOffset parts)
+	material: Enum.Material,
+	transparency: number,
+	reflectance: number?,
+}
+local COATS: { [string]: Coat } = {
+	Golden = { color = GOLD, material = Enum.Material.SmoothPlastic, transparency = 0.55, reflectance = 0.35 },
+	Rainbow = { rainbow = true, material = Enum.Material.Neon, transparency = 0.78 },
+	Wet = { color = Color3.fromRGB(90, 150, 255), material = Enum.Material.Glass, transparency = 0.6 },
+	Shocked = { color = Color3.fromRGB(255, 235, 90), material = Enum.Material.ForceField, transparency = 0 },
+	Frozen = { color = Color3.fromRGB(185, 230, 255), material = Enum.Material.Ice, transparency = 0.4 },
+	Windswept = { color = Color3.fromRGB(255, 175, 90), material = Enum.Material.SmoothPlastic, transparency = 0.72 },
+	Bloodlit = { color = Color3.fromRGB(200, 25, 35), material = Enum.Material.Neon, transparency = 0.72 },
+	Starlit = { color = Color3.fromRGB(110, 140, 255), material = Enum.Material.ForceField, transparency = 0 },
+	Starstruck = { color = Color3.fromRGB(255, 220, 110), material = Enum.Material.ForceField, transparency = 0 },
+	Disco = { rainbow = true, material = Enum.Material.Neon, transparency = 0.7 },
+}
+local COAT_GROW = 1.06 -- coat size vs the mesh it covers
+local COAT_PAD = 0.05 -- plus this many studs, so thin parts get a visible coat too
+
+local function addCoat(model: Model, coat: Coat)
+	local meshes = {}
+	for _, d in model:GetDescendants() do
+		if d:IsA("MeshPart") and not d:GetAttribute("Glow") and not d:GetAttribute("Coat") and d.Transparency < 1 then
+			table.insert(meshes, d)
+		end
+	end
+	for i, part in meshes do
+		local shell = part:Clone()
+		for _, child in shell:GetChildren() do
+			child:Destroy()
+		end
+		shell.Name = "MutationCoat"
+		shell:SetAttribute("Coat", true)
+		shell.TextureID = ""
+		shell.Size = part.Size * COAT_GROW + Vector3.one * COAT_PAD
+		shell.CFrame = part.CFrame
+		shell.Material = coat.material
+		shell.Transparency = coat.transparency
+		shell.Reflectance = coat.reflectance or 0
+		shell.CastShadow = false
+		shell.CanCollide = false
+		shell.CanQuery = false
+		shell.CanTouch = false
+		shell.Massless = true
+		shell.Anchored = part.Anchored
+		if coat.rainbow then
+			shell.Color = Color3.fromHSV((i * 0.17) % 1, 0.7, 1)
+			shell:SetAttribute("RainbowOffset", i * 0.17)
+		elseif coat.color then
+			shell.Color = coat.color
+		end
+		if not part.Anchored then
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = part
+			weld.Part1 = shell
+			weld.Parent = shell
+		end
+		shell.Parent = part.Parent
+	end
+	if coat.rainbow then
+		model:AddTag("RainbowPet")
+	end
+end
+
+local function sparkles(body: BasePart, look: WeatherLook?, color: Color3)
+	local fx = Instance.new("ParticleEmitter")
+	fx.Name = "MutationSparkles"
+	fx.Texture = if look then Assets.Images[look.texture] or "rbxasset://textures/particles/sparkles_main.dds" else "rbxasset://textures/particles/sparkles_main.dds"
+	fx.Color = ColorSequence.new(if look then look.fx else color)
+	fx.Size = NumberSequence.new(if look then look.size or 0.35 else 0.35, 0)
+	fx.Rate = if look then look.rate or 6 else 6
+	fx.Lifetime = NumberRange.new(0.8, 1.4)
+	local speed = if look then look.speed or 1 else 1
+	fx.Speed = NumberRange.new(speed * 0.5, speed * 1.6)
+	fx.SpreadAngle = Vector2.new(180, 180)
+	fx.Acceleration = if look then look.accel or Vector3.zero else Vector3.zero
+	fx.Rotation = NumberRange.new(0, 360)
+	fx.RotSpeed = NumberRange.new(-90, 90)
+	fx.LightEmission = if look then look.glow or 0.6 else 1
+	fx.Parent = body
+end
+
 function AssetLibrary.applyMutation(model: Model, mutation: string?)
-	if not mutation then
+	if not mutation or model:GetAttribute("CoatFor") == mutation then
 		return
 	end
 	model:SetAttribute("Mutation", mutation)
+	model:SetAttribute("CoatFor", mutation)
 	-- Pets sparkle from their Body; eggs (no Body) from their main part.
 	local body = (model:FindFirstChild("Body") or model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")) :: BasePart?
-	if mutation == "Golden" or mutation == "Rainbow" then
-		local i = 0
-		for _, d in model:GetDescendants() do
-			if d:IsA("MeshPart") and not d:GetAttribute("Glow") then
-				i += 1
-				d.TextureID = ""
-				if mutation == "Golden" then
-					d.Color = GOLD
-					d.Material = Enum.Material.Foil
-				else
-					d.Color = Color3.fromHSV((i * 0.13) % 1, 0.7, 1)
-					d:SetAttribute("RainbowOffset", i * 0.13)
-				end
-			end
-		end
-		if mutation == "Rainbow" then
-			model:AddTag("RainbowPet")
-		end
+	local coat = COATS[mutation]
+	if coat then
+		addCoat(model, coat)
 	end
-	-- Weather mutations (Config/Weather): a recolour and/or a particle effect.
 	local look = WEATHER_LOOKS[mutation]
-	if look then
-		if look.color then
-			for _, d in model:GetDescendants() do
-				if d:IsA("MeshPart") and not d:GetAttribute("Glow") then
-					if look.repaint then
-						d.TextureID = ""
-						d.Color = look.color
-					else
-						d.Color = d.Color:Lerp(look.color, 0.45)
-					end
-					if look.material then
-						d.Material = look.material
-					end
-				end
-			end
-		end
-		if look.rainbow then
-			local i = 0
-			for _, d in model:GetDescendants() do
-				if d:IsA("MeshPart") and not d:GetAttribute("Glow") then
-					i += 1
-					d.TextureID = ""
-					d.Material = Enum.Material.Neon
-					d:SetAttribute("RainbowOffset", i * 0.21)
-				end
-			end
-			model:AddTag("RainbowPet")
-		end
-		if body then
-			local fx = Instance.new("ParticleEmitter")
-			fx.Name = "MutationSparkles"
-			fx.Texture = Assets.Images[look.texture] or "rbxasset://textures/particles/sparkles_main.dds"
-			fx.Color = ColorSequence.new(look.fx)
-			fx.Size = NumberSequence.new(look.size or 0.35, 0)
-			fx.Rate = look.rate or 6
-			fx.Lifetime = NumberRange.new(0.8, 1.4)
-			fx.Speed = NumberRange.new(look.speed or 1, (look.speed or 1) * 1.6)
-			fx.SpreadAngle = Vector2.new(180, 180)
-			fx.Acceleration = look.accel or Vector3.zero
-			fx.Rotation = NumberRange.new(0, 360)
-			fx.RotSpeed = NumberRange.new(-90, 90)
-			fx.LightEmission = look.glow or 0.6
-			fx.Parent = body
-		end
-		return
-	end
-	if body and (mutation == "MoonDusted" or mutation == "Golden") then
-		local sparkles = Instance.new("ParticleEmitter")
-		sparkles.Name = "MutationSparkles"
-		sparkles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-		sparkles.Color = ColorSequence.new(if mutation == "Golden" then GOLD else Color3.fromRGB(220, 235, 255))
-		sparkles.Size = NumberSequence.new(0.35, 0)
-		sparkles.Rate = 6
-		sparkles.Lifetime = NumberRange.new(0.8, 1.4)
-		sparkles.Speed = NumberRange.new(0.5, 1.5)
-		sparkles.SpreadAngle = Vector2.new(180, 180)
-		sparkles.LightEmission = 1
-		sparkles.Parent = body
+	if body and (look or mutation == "MoonDusted" or mutation == "Golden" or mutation == "Rainbow") then
+		local color = if mutation == "Golden" then GOLD elseif mutation == "Rainbow" then Color3.fromRGB(255, 160, 240) else Color3.fromRGB(220, 235, 255)
+		sparkles(body, look, color)
 	end
 end
 
@@ -293,7 +317,9 @@ function AssetLibrary.egg(rarity: string): Model
 		model.Name = rarity .. "Egg"
 		return model
 	end
-	return EggModel.build(rarity)
+	local placeholder = EggModel.build(rarity)
+	placeholder:SetAttribute("Placeholder", true)
+	return placeholder
 end
 
 -- Animations -------------------------------------------------------------------

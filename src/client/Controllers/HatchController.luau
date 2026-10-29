@@ -3,7 +3,7 @@
 --
 -- Growing (every park, every player): an egg starts small and grows until it's ready
 -- (Eggs.growScale). It wobbles now and then, more often and harder as it gets close, and a
--- bar under its timer fills up. A ready egg bounces and glows in a beam of its colour.
+-- bar under its timer fills up. A ready egg keeps wobbling hard (no beam: Dev found it annoying).
 --
 -- Opening, when you're near the egg (your camera stays yours): the egg wobbles harder and
 -- harder, swells up and turns white, then bursts (flash, rays, sparkles, shockwave) and the
@@ -708,35 +708,10 @@ type Growing = {
 	base: CFrame,
 	nextWobble: number,
 	wobbleAt: number,
-	beam: BasePart?,
 	label: BillboardGui?,
 	fill: Frame?,
 }
 local growing: { [Model]: Growing } = {}
-
-local function readyBeam(egg: Model, color: Color3): BasePart
-	local _, size = egg:GetBoundingBox()
-	local beam = Instance.new("Part")
-	beam.Name = "ReadyBeam"
-	beam.Shape = Enum.PartType.Cylinder
-	beam.Size = Vector3.new(16, size.X * 0.9, size.X * 0.9)
-	beam.CFrame = egg:GetPivot() * CFrame.new(0, 8, 0) * CFrame.Angles(0, 0, math.rad(90))
-	beam.Color = color
-	beam.Material = Enum.Material.Neon
-	beam.Transparency = 0.82
-	beam.CastShadow = false
-	beam.Anchored = true
-	beam.CanCollide = false
-	beam.CanQuery = false
-	beam.CanTouch = false
-	local light = Instance.new("PointLight")
-	light.Color = color
-	light.Brightness = 2
-	light.Range = 12
-	light.Parent = beam
-	beam.Parent = Workspace
-	return beam
-end
 
 local function track(egg: Instance)
 	if not egg:IsA("Model") or growing[egg] then
@@ -754,9 +729,6 @@ local function track(egg: Instance)
 	end
 	growing[egg] = entry
 	egg.Destroying:Once(function()
-		if entry.beam then
-			entry.beam:Destroy()
-		end
 		growing[egg] = nil
 	end)
 end
@@ -796,7 +768,7 @@ local function updateGrowing()
 		-- Wobble now and then: more often and harder as it gets close.
 		if clock >= g.nextWobble then
 			g.wobbleAt = clock
-			local gap = if ready then 1.6 else 6 - 4.5 * progress
+			local gap = if ready then 0.9 else 6 - 4.5 * progress
 			g.nextWobble = clock + gap * (0.7 + math.random() * 0.6)
 		end
 		local w = clock - g.wobbleAt
@@ -805,16 +777,6 @@ local function updateGrowing()
 			local amp = math.rad(if ready then 14 else 3 + 9 * progress)
 			local angle = math.sin(w / 0.5 * math.pi * 4) * amp * (1 - w / 0.5)
 			offset = CFrame.Angles(angle * 0.4, 0, angle)
-		end
-		if ready then
-			local hop = math.abs(math.sin(clock * 3.2)) * 0.35 * grow
-			offset = CFrame.new(0, hop, 0) * offset
-			if not g.beam then
-				g.beam = readyBeam(egg, rarityOf(egg:GetAttribute("Rarity") :: string).Color)
-			end
-		elseif g.beam then
-			g.beam:Destroy()
-			g.beam = nil
 		end
 		egg:PivotTo(g.base * offset)
 	end

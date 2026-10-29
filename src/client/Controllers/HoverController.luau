@@ -1,6 +1,7 @@
 --!strict
 -- Hover text for pets and eggs in any pet park: point the mouse at one (or tap it on a
--- phone). Minimal, no panel: name, cash per second (pets) or time left (eggs), and weight.
+-- phone). Minimal, no panel: name, cash per second (pets) or time left (eggs), weight, and
+-- effects (mutation and its cash bonus, Huge, weather speeding up eggs).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -17,6 +18,7 @@ local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Weights = require(Shared.Config.Weights)
+local Weather = require(Shared.Config.Weather)
 
 local TAP_SECONDS = 3
 
@@ -53,6 +55,21 @@ local function targetAt(point: Vector2): Model?
 	return nil
 end
 
+-- The effects line: the mutation and what it does, in its colour.
+local function showEffects(lines: { string }, color: Color3?)
+	extraLabel.Visible = #lines > 0
+	extraLabel.Text = table.concat(lines, " · ")
+	extraLabel.TextColor3 = color or Color3.fromRGB(200, 208, 232)
+end
+
+local function mutationLine(mutation: string?): (string?, Color3?)
+	local def = mutation and Eggs.MutationByName[mutation]
+	if not def then
+		return nil, nil
+	end
+	return `{def.Label} x{def.IncomeMult} cash`, def.Color
+end
+
 local function showPet(model: Model)
 	local alienId = model:GetAttribute("AlienId") :: string
 	local def = Aliens.ById[alienId]
@@ -70,7 +87,16 @@ local function showPet(model: Model)
 	weightLabel.TextColor3 = class.Color
 	incomeLabel.Text = `+{Format.cash(model:GetAttribute("Income") or 0)}/s`
 	incomeLabel.TextColor3 = Color3.fromRGB(124, 255, 140)
-	extraLabel.Visible = false
+	local lines = {}
+	local text, color = mutationLine(model:GetAttribute("Mutation"))
+	if text then
+		table.insert(lines, text)
+	end
+	if huge then
+		table.insert(lines, "HUGE")
+		color = color or Color3.fromRGB(255, 200, 60)
+	end
+	showEffects(lines, color)
 	return true
 end
 
@@ -90,7 +116,18 @@ local function showEgg(model: Model)
 	local left = (model:GetAttribute("EndsAt") or 0) - State.now()
 	incomeLabel.Text = if left > 0 then `Ready in {Format.time(left)}` else "Ready to open!"
 	incomeLabel.TextColor3 = if left > 0 then Color3.new(1, 1, 1) else Color3.fromRGB(124, 255, 140)
-	extraLabel.Visible = false
+	local lines = {}
+	local text, color = mutationLine(model:GetAttribute("Mutation"))
+	if text then
+		table.insert(lines, text)
+	end
+	-- Weather speeding up growing eggs right now.
+	local weather = Weather.ById[State.server("Weather") or ""]
+	if left > 0 and weather and weather.GrowMult and weather.GrowMult > 1 then
+		table.insert(lines, `{weather.GrowMult}x growth ({weather.Name})`)
+		color = color or weather.Color
+	end
+	showEffects(lines, color)
 	return true
 end
 

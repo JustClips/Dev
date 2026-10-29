@@ -87,6 +87,7 @@ end
 local function makeGhost(egg)
 	clearGhost()
 	local model = AssetLibrary.egg(egg.Rarity)
+	model:SetAttribute("Rarity", egg.Rarity)
 	local scale = Weights.visualScale(Weights.eggMult(egg.Rarity, egg.Weight))
 	model:ScaleTo(scale * 1.25)
 	for _, d in model:GetDescendants() do
@@ -131,6 +132,14 @@ local function update()
 	local data = State.data
 	if not camera or not cf or not data or not ghost or not ring then
 		return
+	end
+	-- Held before the egg models finished loading: swap the stand-in for the real egg.
+	if ghost:GetAttribute("Placeholder") and holding then
+		local egg = data.Eggs and data.Eggs[holding]
+		local rarity = ghost:GetAttribute("Rarity")
+		if egg and AssetLibrary.meta("Egg_" .. tostring(rarity)) and AssetLibrary.has("Egg_" .. tostring(rarity)) then
+			makeGhost(egg)
+		end
 	end
 	local character = Players.LocalPlayer.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
