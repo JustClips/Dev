@@ -1057,7 +1057,7 @@
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "",
-          "ZIndex": 1
+          "ZIndex": 0
          }
         },
         {
@@ -1092,7 +1092,7 @@
           "BackgroundColor3": "#3DDC5A",
           "Text": "",
           "AutoButtonColor": false,
-          "ZIndex": 1
+          "ZIndex": 3
          },
          "children": [
           {

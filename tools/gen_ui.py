@@ -803,8 +803,9 @@ def popup_list(screen_name, title, ico, header_color, head_button, row_children,
         text("Name", "", U(1, -190, 0, 26), U(0, 72, 0, 8), ts=20, display=True, stroke=2.5, xa="Left",
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 10})]),
         text("Sub", "", U(1, -190, 0, 22), U(0, 72, 0, 36), ts=17, color="#7CFF8C", display=True, stroke=2, xa="Left"),
-        # The whole row is a button (the Pets panel opens the pet's info); Action sits above it.
-        node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=1)),
+        # The whole row is a button (the Pets panel opens the pet's info). It must stay under
+        # Action (lower ZIndex): at the same ZIndex it can take Action's clicks.
+        node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=0)),
     ] + row_children)
     list_bottom = 8 if not footer else 72 if len(footer) == 1 else 128
     title_room = 258 if head_button else 110  # the title stops before Open All / Close
@@ -842,7 +843,7 @@ def base_panels():
     head = dict(size=U(0, 132, 0, 40), pos=U(1, -50, 0, 28), anchor=(1, 0.5))
     popup_list(
         "PetsPanel", "0/4 Active", "Alien", "#FF9A3C", None,
-        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=DANGER, label="Unequip", ts=18)],
+        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=DANGER, label="Unequip", ts=18, ZIndex=3)],
         [
             # Two ways to more slots: one for cash, three for Robux (the pass).
             button("BuySlot", U(0.5, -14, 0, 46), U(0, 10, 1, -66), (0, 1), color=SUCCESS, label="+1 Slot", ts=18),
@@ -853,7 +854,7 @@ def base_panels():
     popup_list(
         "EggsPanel", "Growing Eggs", "Egg", DANGER,
         button("OpenAll", head["size"], head["pos"], head["anchor"], color=PREMIUM, label="Open All", ts=18, label_color=INK, ZIndex=5),
-        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=SUCCESS, label="Open", ts=18)],
+        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=SUCCESS, label="Open", ts=18, ZIndex=3)],
         None)
 
 
