@@ -12,6 +12,7 @@ local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 local Tools = require(Shared.Config.Tools)
+local Zones = require(Shared.Config.Zones)
 
 local ShopService = {}
 
@@ -128,8 +129,16 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 		S.HatchService:Skip(recipient, product.Rarity, target)
 	end,
 	EggPack = function(product, _buyer, recipient)
+		-- Hatches from the best zone you've opened (same pets free players can find there).
+		local data = S.DataService:GetData(recipient)
+		local zone = "Landing"
+		for _, z in Zones.List do
+			if data and data.ZonesUnlocked[z.Id] then
+				zone = z.Id
+			end
+		end
 		for _ = 1, product.Count or 1 do
-			S.InventoryService:AddEgg(recipient, product.Rarity, "Landing", true)
+			S.InventoryService:AddEgg(recipient, product.Rarity, zone, true)
 		end
 		notify(recipient, `{product.Name} added to your bag!`)
 	end,
@@ -323,6 +332,15 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		local car = Tools.vehicle(product.Vehicle or "")
 		if car and targetData.Rebirths < car.RequiredRebirths then
 			return false, `Rebirth {car.RequiredRebirths} needed for the {car.Name}`
+		elseif targetData.ToolTier < Economy.CarRobuxMinTier then
+			-- Cars skip the whole tool ladder, so Robux cars wait until you've climbed a bit.
+			return false, `Get the {Tools.get(Economy.CarRobuxMinTier).Name} first`
+		end
+	elseif product.Kind == "SkipRebirth" then
+		-- Skip Rebirth finishes a rebirth you've worked toward instead of skipping one outright.
+		local need = Economy.rebirthCost(targetData.Rebirths) * Economy.SkipRebirthMinShare
+		if BigNum.lt(targetData.Cash, need) then
+			return false, `Save up {Format.cash(need)} first ({math.floor(Economy.SkipRebirthMinShare * 100)}% of the rebirth)`
 		end
 	elseif product.Kind == "GiftPass" and targetData.Gamepasses[product.Pass or ""] then
 		return false, `{recipient.DisplayName} already owns this`

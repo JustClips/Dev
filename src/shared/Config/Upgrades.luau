@@ -118,15 +118,15 @@ local Main = {
 	n("Cash",       1,  1, "LeafValue",  "Cash",      "Money Magnet",   "More cash from everything",        10, 0.05, 50_000,  2.5),
 	n("LeafValue2", 0,  2, "LeafValue",  "DustValue", "Fancy Leaves",   "Every leaf sells for more",        10, 0.15, 60_000,  2.4),
 	n("Power2",    -2,  0, "Speed",      "Power",     "Strong Arms",    "Even more leaves from every pile", 10, 0.20, 20_000,  2.3),
-	n("Speed2",    -2,  1, "Speed",      "Speed",     "Rocket Shoes",   "Walk even faster",                  5, 2,    3_000_000, 2.5, 1),
-	n("Backpack3",  3,  0, "Backpack2",  "Backpack",  "Leaf Truck",     "Carry way more leaves",            10, 0.25, 3_000_000, 2.3, 1),
-	n("Radius2",    3, -1, "Radius",     "Radius",    "Mega Sweep",     "Sweep a bigger area at once",       5, 0.05, 3_000_000, 2.6, 1),
-	n("Radius3",    3, -2, "Radius2",    "Radius",    "Tornado",        "Sweep a huge area at once",         5, 0.06, 400_000_000, 2.8, 3),
-	n("Cash2",      1,  2, "Cash",       "Cash",      "Rich Sweeper",   "More cash from everything",        10, 0.05, 5_000_000, 2.5, 1),
-	n("Cash3",      1,  3, "Cash2",      "Cash",      "Golden Broom",   "More cash from everything",        10, 0.05, 500_000_000, 2.5, 3),
-	n("LeafValue3", 0,  3, "LeafValue2", "DustValue", "Diamond Leaves", "Every leaf sells for way more",    10, 0.20, 150_000_000, 2.4, 2),
-	n("Power3",    -3,  0, "Power2",     "Power",     "Mighty Sweep",   "Much more leaves from every pile",         10, 0.20, 2_000_000, 2.3, 1),
-	n("Power4",    -4,  0, "Power3",     "Power",     "Titan Sweep",    "Huge leaf hauls from every pile",       10, 0.25, 100_000_000, 2.3, 2),
+	n("Speed2",    -2,  1, "Speed",      "Speed",     "Rocket Shoes",   "Walk even faster",                  5, 2,    3_000_000_000, 2.5, 1),
+	n("Backpack3",  3,  0, "Backpack2",  "Backpack",  "Leaf Truck",     "Carry way more leaves",            10, 0.25, 3_000_000_000, 2.3, 1),
+	n("Radius2",    3, -1, "Radius",     "Radius",    "Mega Sweep",     "Sweep a bigger area at once",       5, 0.05, 3_000_000_000, 2.6, 1),
+	n("Radius3",    3, -2, "Radius2",    "Radius",    "Tornado",        "Sweep a huge area at once",         5, 0.06, 200_000_000_000, 2.8, 3),
+	n("Cash2",      1,  2, "Cash",       "Cash",      "Rich Sweeper",   "More cash from everything",        10, 0.05, 5_000_000_000, 2.5, 1),
+	n("Cash3",      1,  3, "Cash2",      "Cash",      "Golden Broom",   "More cash from everything",        10, 0.05, 250_000_000_000, 2.5, 3),
+	n("LeafValue3", 0,  3, "LeafValue2", "DustValue", "Diamond Leaves", "Every leaf sells for way more",    10, 0.20, 45_000_000_000, 2.4, 2),
+	n("Power3",    -3,  0, "Power2",     "Power",     "Mighty Sweep",   "Much more leaves from every pile",         10, 0.20, 2_000_000_000, 2.3, 1),
+	n("Power4",    -4,  0, "Power3",     "Power",     "Titan Sweep",    "Huge leaf hauls from every pile",       10, 0.25, 30_000_000_000, 2.3, 2),
 }
 
 -- stylua: ignore
@@ -135,12 +135,12 @@ local Eggs = inTree("Eggs", {
 	n("HatchSpeed",  1,  0, "Luck",       "HatchSpeed", "Quick Hatch",      "Eggs grow faster",               5, 0.10, 30_000,    2.7),
 	n("Bunny",       0, -1, "Luck",       "Bunny",      "Bunny Hunter",     "Dust bunnies drop more cash",    5, 0.25, 20_000,    2.5),
 	n("Incubator",  -1,  1, "Luck",       "Incubators", "Bigger Nest",      "Grow one more egg at once",      1, 1,    150_000,   1),
-	n("Luck2",       1, -1, "Luck",       "Luck",       "Lucky Charm",      "Find more and rarer eggs",      10, 0.05, 2_500_000, 2.4, 1),
-	n("HatchSpeed2", 2,  0, "HatchSpeed", "HatchSpeed", "Hatch Hurry",      "Eggs grow faster",               5, 0.10, 5_000_000, 2.7, 1),
-	n("Bunny2",     -1, -1, "Bunny",      "Bunny",      "Bunny Boss",       "Dust bunnies drop more cash",    5, 0.50, 2_000_000, 2.5, 1),
-	n("Incubator2", -2,  2, "Incubator",  "Incubators", "Egg Nursery",      "Grow one more egg at once",      1, 1,    25_000_000, 1,  1),
-	n("Luck3",       2, -2, "Luck2",      "Luck",       "Four-Leaf Clover", "Find more and rarer eggs",       5, 0.10, 20_000_000, 2.8, 2),
-	n("Luck4",       3, -3, "Luck3",      "Luck",       "Rainbow Luck",     "Find more and rarer eggs",       5, 0.10, 500_000_000, 3.0, 3),
+	n("Luck2",       1, -1, "Luck",       "Luck",       "Lucky Charm",      "Find more and rarer eggs",      10, 0.05, 2_500_000_000, 2.4, 1),
+	n("HatchSpeed2", 2,  0, "HatchSpeed", "HatchSpeed", "Hatch Hurry",      "Eggs grow faster",               5, 0.10, 5_000_000_000, 2.7, 1),
+	n("Bunny2",     -1, -1, "Bunny",      "Bunny",      "Bunny Boss",       "Dust bunnies drop more cash",    5, 0.50, 2_000_000_000, 2.5, 1),
+	n("Incubator2", -2,  2, "Incubator",  "Incubators", "Egg Nursery",      "Grow one more egg at once",      1, 1,    25_000_000_000, 1,  1),
+	n("Luck3",       2, -2, "Luck2",      "Luck",       "Four-Leaf Clover", "Find more and rarer eggs",       5, 0.10, 6_000_000_000, 2.8, 2),
+	n("Luck4",       3, -3, "Luck3",      "Luck",       "Rainbow Luck",     "Find more and rarer eggs",       5, 0.10, 250_000_000_000, 3.0, 3),
 })
 
 -- stylua: ignore
@@ -149,14 +149,14 @@ local Lucky = inTree("Lucky", {
 	n("ComboTime",   1, -1, "Combo",     "ComboTime", "Steady Hands", "Your combo lasts longer between sweeps", 5, 0.3,  35_000,    2.6),
 	n("Golden",      1,  0, "Combo",     "Golden",    "Golden Touch", "Golden piles pay even more",             5, 0.20, 40_000,    2.8),
 	n("Crit",       -1,  1, "Combo",     "Crit",      "Lucky Sweep",  "Chance a leaf pays 5x",                  5, 0.01, 50_000,    2.8),
-	n("Combo2",      0, -1, "Combo",     "ComboMax",  "Combo King",   "Your sweep combo goes higher",           4, 0.25, 3_000_000, 3.0, 1),
-	n("ComboTime2",  2, -2, "ComboTime", "ComboTime", "Zen Focus",    "Your combo lasts longer between sweeps", 5, 0.3,  3_500_000, 2.6, 1),
-	n("Golden2",     2,  0, "Golden",    "Golden",    "Gold Rush",    "Golden piles pay even more",             5, 0.25, 4_000_000, 2.7, 1),
-	n("CritMult",   -1,  0, "Crit",      "CritMult",  "Jackpot",      "Lucky sweeps pay more",                  5, 1,    5_000_000, 2.7, 1),
-	n("Crit2",      -2,  2, "Crit",      "Crit",      "Lucky Streak", "Chance a leaf pays 5x",                  5, 0.01, 4_000_000, 2.8, 1),
-	n("Golden3",     3,  0, "Golden2",   "Golden",    "Midas",        "Golden piles pay way more",              5, 0.50, 150_000_000, 2.8, 2),
-	n("Combo3",      0, -2, "Combo2",    "ComboMax",  "Combo God",    "Your sweep combo goes way higher",       2, 0.5,  600_000_000, 4.0, 3),
-	n("CritMult2",  -2,  0, "CritMult",  "CritMult",  "Mega Jackpot", "Lucky sweeps pay way more",              3, 2,    300_000_000, 3.0, 3),
+	n("Combo2",      0, -1, "Combo",     "ComboMax",  "Combo King",   "Your sweep combo goes higher",           4, 0.25, 3_000_000_000, 3.0, 1),
+	n("ComboTime2",  2, -2, "ComboTime", "ComboTime", "Zen Focus",    "Your combo lasts longer between sweeps", 5, 0.3,  3_500_000_000, 2.6, 1),
+	n("Golden2",     2,  0, "Golden",    "Golden",    "Gold Rush",    "Golden piles pay even more",             5, 0.25, 4_000_000_000, 2.7, 1),
+	n("CritMult",   -1,  0, "Crit",      "CritMult",  "Jackpot",      "Lucky sweeps pay more",                  5, 1,    5_000_000_000, 2.7, 1),
+	n("Crit2",      -2,  2, "Crit",      "Crit",      "Lucky Streak", "Chance a leaf pays 5x",                  5, 0.01, 4_000_000_000, 2.8, 1),
+	n("Golden3",     3,  0, "Golden2",   "Golden",    "Midas",        "Golden piles pay way more",              5, 0.50, 45_000_000_000, 2.8, 2),
+	n("Combo3",      0, -2, "Combo2",    "ComboMax",  "Combo God",    "Your sweep combo goes way higher",       2, 0.5,  300_000_000_000, 4.0, 3),
+	n("CritMult2",  -2,  0, "CritMult",  "CritMult",  "Mega Jackpot", "Lucky sweeps pay way more",              3, 2,    150_000_000_000, 3.0, 3),
 })
 
 -- stylua: ignore
@@ -164,9 +164,9 @@ local Pets = inTree("Pets", {
 	n("PetIncome",   0,  0, nil,          "PetIncome", "Happy Pets",   "Pets in your park earn more",     10, 0.10, 1_500,     2.3),
 	n("PetIncome2",  1,  0, "PetIncome",  "PetIncome", "Pet Treats",   "Pets in your park earn more",     10, 0.15, 60_000,    2.4),
 	n("Offline",    -1,  1, "PetIncome",  "Offline",   "Night Shift",  "Earn more while you're away",      5, 0.20, 25_000,    2.5),
-	n("PetIncome3",  2,  0, "PetIncome2", "PetIncome", "Pet Party",    "Pets in your park earn more",     10, 0.20, 4_000_000, 2.4, 1),
-	n("Offline2",   -2,  2, "Offline",    "Offline",   "Sleep Pay",    "Earn more while you're away",      5, 0.25, 3_000_000, 2.5, 1),
-	n("PetIncome4",  3,  0, "PetIncome3", "PetIncome", "Pet Paradise", "Pets in your park earn way more", 10, 0.25, 200_000_000, 2.4, 2),
+	n("PetIncome3",  2,  0, "PetIncome2", "PetIncome", "Pet Party",    "Pets in your park earn more",     10, 0.20, 4_000_000_000, 2.4, 1),
+	n("Offline2",   -2,  2, "Offline",    "Offline",   "Sleep Pay",    "Earn more while you're away",      5, 0.25, 3_000_000_000, 2.5, 1),
+	n("PetIncome4",  3,  0, "PetIncome3", "PetIncome", "Pet Paradise", "Pets in your park earn way more", 10, 0.25, 60_000_000_000, 2.4, 2),
 })
 
 local List: { UpgradeDef } = {}

@@ -12,7 +12,7 @@ local Rarities: { RarityDef } = {
 	{ Name = "Epic", Order = 4, Weight = 2.5, HatchSeconds = 120, Color = Color3.fromRGB(170, 90, 255) },
 	{ Name = "Legendary", Order = 5, Weight = 0.6, HatchSeconds = 300, Color = Color3.fromRGB(255, 200, 40) },
 	{ Name = "Mythic", Order = 6, Weight = 0.12, HatchSeconds = 900, Color = Color3.fromRGB(255, 60, 70) },
-	{ Name = "Cosmic", Order = 7, Weight = 0, HatchSeconds = 1800, Color = Color3.fromRGB(255, 120, 230) },
+	{ Name = "Cosmic", Order = 7, Weight = 0.02, HatchSeconds = 1800, Color = Color3.fromRGB(255, 120, 230) },
 }
 
 local Mutations: { MutationDef } = {

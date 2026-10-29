@@ -1,10 +1,25 @@
 --!strict
 -- Economy and tuning numbers. Everything balance-related lives here or in the other configs.
 local Economy = {
-	-- Rebirth (GAME_PLAN §5.7)
-	-- Tuned with tools/balance/sim.py: first rebirth ~2 h, rebirth 5 ~18 h, rebirth 7 ~40 h.
-	RebirthBaseCost = 150_000_000,
-	RebirthCostGrowth = 7,
+	-- Rebirth (GAME_PLAN §5.7). Price of rebirth 1, 2, 3...; past the end of the list each
+	-- rebirth costs RebirthCostGrowth x the one before. Use Economy.rebirthCost(rebirths).
+	-- Fitted with tools/balance/fit.py (targets there; check with tools/balance/sim.py).
+	RebirthCosts = {
+		12_000_000_000,
+		270_000_000_000,
+		1_800_000_000_000,
+		69_000_000_000_000,
+		1_300_000_000_000_000,
+		8_700_000_000_000_000,
+		16_000_000_000_000_000,
+		24_000_000_000_000_000,
+		37_000_000_000_000_000,
+		54_000_000_000_000_000,
+	},
+	-- Robux shortcuts that speed you up without skipping the game:
+	SkipRebirthMinShare = 0.3, -- Skip Rebirth needs 30% of the rebirth cost saved up
+	CarRobuxMinTier = 4, -- Robux cars (unlock or rent) need the Leaf Blower first
+	RebirthCostGrowth = 1.6,
 	RebirthCashBonus = 0.5, -- +50% cash per rebirth
 	RebirthsPerExtraSlot = 2,
 
@@ -45,7 +60,7 @@ local Economy = {
 	DumpMinSeconds = 1.2,
 
 	-- Eggs (GAME_PLAN §4, §5.3)
-	TutorialEggTile = 12, -- guaranteed first egg on this tile cleared (must be <= 25)
+	TutorialEggTile = 5, -- guaranteed first egg on this tile cleared (must be <= 25)
 	EggOwnerSeconds = 15,
 	EggDespawnSeconds = 120,
 	CarryLimit = 1,
@@ -100,5 +115,15 @@ local Economy = {
 	SessionStaleSeconds = 30 * 60,
 	FullMessageCooldown = 4,
 }
+
+-- Cash needed for the next rebirth when you have `rebirths` already.
+function Economy.rebirthCost(rebirths: number): number
+	local list = Economy.RebirthCosts
+	local n = #list
+	if rebirths < n then
+		return list[rebirths + 1]
+	end
+	return list[n] * Economy.RebirthCostGrowth ^ (rebirths - n + 1)
+end
 
 return Economy

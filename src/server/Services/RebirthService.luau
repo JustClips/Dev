@@ -14,7 +14,7 @@ local RebirthService = {}
 local S: any
 
 function RebirthService:GetCost(data): BigNum.BigNum
-	return BigNum.mul(Economy.RebirthBaseCost, BigNum.new(Economy.RebirthCostGrowth ^ data.Rebirths))
+	return BigNum.new(Economy.rebirthCost(data.Rebirths))
 end
 
 -- Performs the rebirth. paid = false for the Skip Rebirth product.

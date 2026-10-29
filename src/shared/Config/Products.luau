@@ -61,11 +61,12 @@ local Products: { ProductDef } = {
 	{ Key = "RentRocketSweeper", Id = 3723367601, Price = 499, Name = "Mega Sweeper (this run)", Kind = "VehicleRental", Category = "Vehicles", Giftable = true, Vehicle = "RocketSweeper" },
 
 	-- Cash packs scale with the player: max(Seconds of income, FloorFactor x next tool price).
-	{ Key = "Cash1", Id = 3723359007, Price = 24, Name = "Pile of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 600, FloorFactor = 0.5 },
-	{ Key = "Cash2", Id = 3723359023, Price = 59, Name = "Bag of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 1800, FloorFactor = 1.5 },
-	{ Key = "Cash3", Id = 3723359034, Price = 149, Name = "Crate of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 5400, FloorFactor = 4 },
-	{ Key = "Cash4", Id = 3723359049, Price = 399, Name = "Vault of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 14400, FloorFactor = 10 },
-	{ Key = "Cash5", Id = 3723359058, Price = 999, Name = "Mountain of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 43200, FloorFactor = 25 },
+	-- Floors are kept small so a pack speeds you up instead of skipping several tools at once.
+	{ Key = "Cash1", Id = 3723359007, Price = 24, Name = "Pile of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 600, FloorFactor = 0.25 },
+	{ Key = "Cash2", Id = 3723359023, Price = 59, Name = "Bag of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 1800, FloorFactor = 0.5 },
+	{ Key = "Cash3", Id = 3723359034, Price = 149, Name = "Crate of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 5400, FloorFactor = 1 },
+	{ Key = "Cash4", Id = 3723359049, Price = 399, Name = "Vault of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 14400, FloorFactor = 2 },
+	{ Key = "Cash5", Id = 3723359058, Price = 999, Name = "Mountain of Cash", Kind = "CashPack", Category = "Cash", Giftable = true, Seconds = 43200, FloorFactor = 4 },
 
 	-- Skip Rebirth gets pricier the further you are (Rebirth = the rebirth it takes you to).
 	-- Past the last one, the last price is used again. See Products.skipRebirthFor.

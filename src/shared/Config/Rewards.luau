@@ -1,7 +1,8 @@
 --!strict
 -- Free rewards that bring players back and keep them playing:
 --   Daily: a 7-day streak (miss a day and it starts over). Day 7 is the big one.
---   Playtime: gifts after 5, 10, 15... minutes in one session.
+--   Playtime: gifts after 2, 5, 10, 20, 35 and 60 minutes in one session (front-loaded so new
+--     players get something right away).
 --   Stay: when a player opens the Roblox menu (about to leave), offer a potion for 5 more minutes.
 --   Group: join the group for potions + cash. Hidden while Group.Id is 0.
 --   Events: sign up on the board in the plaza. Everyone gets the event's luck while it runs,
@@ -42,11 +43,11 @@ Rewards.Daily = {
 
 -- Minutes of play in one session -> gift. Claimed ones reset when the player rejoins.
 Rewards.Playtime = {
-	{ Minutes = 5, Reward = { Kind = "Cash", Seconds = 120, Floor = 0.2 } },
-	{ Minutes = 10, Reward = { Kind = "Item", Item = "SpeedPotion", Amount = 1 } },
-	{ Minutes = 15, Reward = { Kind = "Cash", Seconds = 300, Floor = 0.3 } },
-	{ Minutes = 25, Reward = { Kind = "Item", Item = "LuckPotion", Amount = 1 } },
-	{ Minutes = 40, Reward = { Kind = "Egg", Rarity = "Rare" } },
+	{ Minutes = 2, Reward = { Kind = "Cash", Seconds = 120, Floor = 0.2 } },
+	{ Minutes = 5, Reward = { Kind = "Item", Item = "SpeedPotion", Amount = 1 } },
+	{ Minutes = 10, Reward = { Kind = "Cash", Seconds = 300, Floor = 0.3 } },
+	{ Minutes = 20, Reward = { Kind = "Item", Item = "LuckPotion", Amount = 1 } },
+	{ Minutes = 35, Reward = { Kind = "Egg", Rarity = "Rare" } },
 	{ Minutes = 60, Reward = { Kind = "Item", Item = "HatchPotion", Amount = 2 } },
 } :: { { Minutes: number, Reward: Reward } }
 
