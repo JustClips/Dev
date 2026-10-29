@@ -3,7 +3,9 @@
   python3 art/blender/fx.py art/out/ui
 
 Writes Rays (sunburst behind a hatch), Glow (soft round light), Sparkle (4-point star for
-confetti and particles), Ring (shockwave), and the settings glyphs Gear, Music, Speaker.
+confetti and particles), Ring (shockwave), the settings glyphs Gear, Music, Speaker, and the
+tool particle images FxBubble, FxLeaf, FxStreak, FxDrop.
+Only some: python3 art/blender/fx.py art/out/ui FxBubble FxLeaf
 """
 import math
 import os
@@ -171,13 +173,83 @@ def arrow_down(size=128):
     save(im.resize((size, size), Image.LANCZOS), "ArrowDown")
 
 
-rays()
-glow()
-sparkle()
-ring()
-gear()
-music()
-speaker()
-chevron()
-arrow_down()
+def fx_bubble(size=128):
+    """Soap bubble: thin bright rim, faint fill, a highlight up-left."""
+    big = size * 4
+    alpha = Image.new("L", (big, big), 0)
+    d = ImageDraw.Draw(alpha)
+    w = big * 0.06
+    d.ellipse([w, w, big - w, big - w], fill=46)
+    d.ellipse([w, w, big - w, big - w], outline=255, width=int(w))
+    d.ellipse([big * 0.24, big * 0.2, big * 0.42, big * 0.36], fill=235)
+    alpha = alpha.filter(ImageFilter.GaussianBlur(big * 0.006)).resize((size, size), Image.LANCZOS)
+    im = Image.new("RGBA", (size, size), WHITE + (0,))
+    im.putalpha(alpha)
+    save(im, "FxBubble")
+
+
+def fx_leaf(size=128):
+    """A leaf with a stem and a darker middle vein (tint it green, orange or brown)."""
+    big = size * 4
+    c = big / 2
+    pts = []
+    for i in range(0, 181, 6):
+        t = math.radians(i)
+        x = c + math.sin(t) * big * 0.26 * (1 - 0.25 * math.cos(t))
+        y = big * 0.1 + (1 - math.cos(t)) / 2 * big * 0.7
+        pts.append((x, y))
+    pts += [(2 * c - x, y) for x, y in reversed(pts)]
+    alpha = Image.new("L", (big, big), 0)
+    d = ImageDraw.Draw(alpha)
+    d.polygon(pts, fill=255)
+    d.line([(c, big * 0.78), (c, big * 0.95)], fill=255, width=int(big * 0.03))
+    im = Image.new("RGBA", (big, big), WHITE + (0,))
+    im.putalpha(alpha)
+    vein = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    vd = ImageDraw.Draw(vein)
+    vd.line([(c, big * 0.14), (c, big * 0.8)], fill=(170, 170, 170, 255), width=int(big * 0.022))
+    for k in range(1, 4):
+        y = big * (0.25 + k * 0.13)
+        for sgn in (-1, 1):
+            vd.line([(c, y), (c + sgn * big * 0.15, y - big * 0.1)], fill=(190, 190, 190, 255), width=int(big * 0.015))
+    vein.putalpha(ImageChops.multiply(vein.getchannel("A"), alpha))
+    im = Image.alpha_composite(im, vein)
+    save(im.resize((size, size), Image.LANCZOS), "FxLeaf")
+
+
+def fx_streak(w=64, h=256):
+    """A soft air streak along V, brightest in the middle, fading at both ends."""
+    alpha = Image.new("L", (w, h), 0)
+    px = alpha.load()
+    for y in range(h):
+        along = math.sin(math.pi * y / (h - 1)) ** 1.5
+        for x in range(w):
+            across = max(0.0, 1 - abs(x - (w - 1) / 2) / (w * 0.3)) ** 2
+            px[x, y] = int(255 * along * across)
+    im = Image.new("RGBA", (w, h), WHITE + (0,))
+    im.putalpha(alpha)
+    save(im, "FxStreak")
+
+
+def fx_drop(size=128):
+    """A water drop with a highlight."""
+    big = size * 4
+    c = big / 2
+    alpha = Image.new("L", (big, big), 0)
+    d = ImageDraw.Draw(alpha)
+    r = big * 0.3
+    d.ellipse([c - r, big * 0.88 - 2 * r, c + r, big * 0.88], fill=225)
+    d.polygon([(c, big * 0.08), (c + r * 0.93, big * 0.88 - r * 1.35), (c - r * 0.93, big * 0.88 - r * 1.35)], fill=225)
+    d.ellipse([c - r * 0.55, big * 0.5, c - r * 0.15, big * 0.62], fill=255)
+    alpha = alpha.resize((size, size), Image.LANCZOS)
+    im = Image.new("RGBA", (size, size), WHITE + (0,))
+    im.putalpha(alpha)
+    save(im, "FxDrop")
+
+
+ALL = {"Rays": rays, "Glow": glow, "Sparkle": sparkle, "Ring": ring, "Gear": gear, "Music": music,
+       "Speaker": speaker, "Chevron": chevron, "ArrowDown": arrow_down, "FxBubble": fx_bubble,
+       "FxLeaf": fx_leaf, "FxStreak": fx_streak, "FxDrop": fx_drop}
+for name in (sys.argv[2:] or ALL):
+    ALL[name]()
 print("wrote", OUT)

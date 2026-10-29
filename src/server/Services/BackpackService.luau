@@ -8,7 +8,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
-local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local World = require(Shared.Config.World)
 
@@ -18,7 +17,8 @@ local S: any
 local lastSell: { [Player]: number } = {}
 
 -- Adds cash (number or BigNum) and logs it as an economy source.
-local QUIET_SOURCES = { SellDust = true, SellPet = true, OfflineIncome = true, TutorialReward = true }
+-- Sources that show their own feedback (the cash pop for these comes from elsewhere or not at all).
+local QUIET_SOURCES = { SellPet = true, OfflineIncome = true, TutorialReward = true }
 
 function BackpackService:GiveCash(player: Player, amount: any, sku: string, transactionType: Enum.AnalyticsEconomyTransactionType?)
 	local data = S.DataService:GetData(player)
@@ -138,7 +138,6 @@ local function sell(player: Player)
 	BackpackService:GiveCash(player, cash, "SellDust")
 	recordEarning(session, cash)
 	S.AnalyticsService:Funnel(player, "FirstSell")
-	Net.fire("Notify", player, `Sold leaves for {Format.cash(cash)}!`, "Sell")
 end
 
 function BackpackService:Init(services)

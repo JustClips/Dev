@@ -5351,20 +5351,25 @@
  "Tool_Broom": {
   "bounds": {
    "max": [
-    0.75,
-    0.262,
-    2.45
+    0.865,
+    0.272,
+    2.73
    ],
    "min": [
-    -0.75,
-    -0.262,
-    -2.7
+    -0.865,
+    -0.272,
+    -2.827
    ]
   },
   "grip": [
    0,
    0,
-   1.4
+   0.4
+  ],
+  "grip2": [
+   0,
+   0,
+   1.6
   ],
   "kind": "tool",
   "name": "Tool_Broom",
@@ -5377,25 +5382,35 @@
     "parent": null
    }
   },
-  "tris": 1098
+  "tip": [
+   0,
+   0,
+   -2.65
+  ],
+  "tris": 1326
  },
  "Tool_LeafBlower": {
   "bounds": {
    "max": [
-    0.36,
-    0.55,
-    1.2
+    0.39,
+    0.71,
+    1.14
    ],
    "min": [
-    -0.47,
-    -0.55,
-    -1.85
+    -0.46,
+    -1.133,
+    -2.19
    ]
   },
   "grip": [
    0,
-   0.45,
-   0.7
+   0.62,
+   0.62
+  ],
+  "grip2": [
+   -0.0,
+   -0.475,
+   -0.9
   ],
   "kind": "tool",
   "name": "Tool_LeafBlower",
@@ -5408,25 +5423,35 @@
     "parent": null
    }
   },
-  "tris": 1128
+  "tip": [
+   -0.0,
+   -0.897,
+   -2.134
+  ],
+  "tris": 1528
  },
  "Tool_Mop": {
   "bounds": {
    "max": [
-    0.713,
-    0.697,
-    2.23
+    0.735,
+    0.67,
+    2.58
    ],
    "min": [
-    -0.713,
-    -0.697,
-    -2.84
+    -0.67,
+    -0.82,
+    -2.72
    ]
   },
   "grip": [
    0,
    0,
-   1.4
+   0.4
+  ],
+  "grip2": [
+   0,
+   0,
+   1.6
   ],
   "kind": "tool",
   "name": "Tool_Mop",
@@ -5439,25 +5464,35 @@
     "parent": null
    }
   },
-  "tris": 5672
+  "tip": [
+   0,
+   0,
+   -2.55
+  ],
+  "tris": 8824
  },
  "Tool_ShopVac": {
   "bounds": {
    "max": [
     0.5,
-    0.44,
-    1.475
+    0.57,
+    1.52
    ],
    "min": [
-    -0.517,
-    -0.74,
-    -1.975
+    -0.5,
+    -1.15,
+    -2.255
    ]
   },
   "grip": [
    0,
-   0.35,
+   0.48,
    0.9
+  ],
+  "grip2": [
+   -0.066,
+   -0.637,
+   -1.175
   ],
   "kind": "tool",
   "name": "Tool_ShopVac",
@@ -5470,7 +5505,12 @@
     "parent": null
    }
   },
-  "tris": 2596
+  "tip": [
+   -0.0,
+   -1.12,
+   -2.1
+  ],
+  "tris": 2388
  },
  "Tool_Toothbrush": {
   "bounds": {
@@ -5508,25 +5548,35 @@
     "parent": null
    }
   },
+  "tip": [
+   0,
+   -0.3,
+   -1.25
+  ],
   "tris": 4980
  },
  "Tool_TurboVacuum": {
   "bounds": {
    "max": [
     0.51,
-    0.51,
-    1.62
+    0.65,
+    1.72
    ],
    "min": [
     -0.51,
-    -0.63,
-    -1.935
+    -1.213,
+    -1.999
    ]
   },
   "grip": [
    0,
-   0.42,
-   0.75
+   0.56,
+   0.8
+  ],
+  "grip2": [
+   -0.0,
+   -0.397,
+   -0.725
   ],
   "kind": "tool",
   "name": "Tool_TurboVacuum",
@@ -5546,7 +5596,12 @@
     "parent": "Handle"
    }
   },
-  "tris": 1768
+  "tip": [
+   -0.0,
+   -0.81,
+   -1.85
+  ],
+  "tris": 2696
  },
  "Tree_Bulb": {
   "bounds": {
@@ -5629,21 +5684,21 @@
  "Vehicle_DustTruck": {
   "bounds": {
    "max": [
-    4.61,
-    6.777,
-    6.514
+    2.7,
+    5.67,
+    5.231
    ],
    "min": [
-    -4.61,
+    -2.7,
     -0.027,
-    -8.302
+    -6.305
    ]
   },
   "kind": "vehicle",
   "name": "Vehicle_DustTruck",
   "parts": {
    "Body": {
-    "collide": false,
+    "collide": true,
     "glow": null,
     "joint": null,
     "material": null,
@@ -5658,7 +5713,7 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "FFF5C8",
+    "glow": "FFB43C",
     "joint": null,
     "material": null,
     "parent": "Body"
@@ -5667,9 +5722,9 @@
     "collide": false,
     "glow": null,
     "joint": [
-     0,
-     1.0125,
-     -7.29
+     -0.0,
+     0.54,
+     -5.7375
     ],
     "material": null,
     "parent": "Body"
@@ -5680,33 +5735,77 @@
     "joint": null,
     "material": null,
     "parent": "Body"
+   },
+   "Wheel_FL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -2.16,
+     1.0125,
+     -3.24
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_FR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     2.16,
+     1.0125,
+     -3.24
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -2.16,
+     1.0125,
+     2.7
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     2.16,
+     1.0125,
+     2.7
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
-   0,
-   3.78,
-   1.35
+   0.0,
+   2.7,
+   -3.375
   ],
-  "tris": 11404
+  "tris": 7900
  },
  "Vehicle_HoverSweeper": {
   "bounds": {
    "max": [
-    5.25,
-    5.987,
-    7.238
+    3.072,
+    6.6,
+    4.05
    ],
    "min": [
-    -5.25,
-    0.0,
-    -9.225
+    -3.072,
+    -0.075,
+    -5.247
    ]
   },
   "kind": "vehicle",
   "name": "Vehicle_HoverSweeper",
   "parts": {
    "Body": {
-    "collide": false,
+    "collide": true,
     "glow": null,
     "joint": null,
     "material": null,
@@ -5721,7 +5820,7 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "FFF5C8",
+    "glow": "FFB43C",
     "joint": null,
     "material": null,
     "parent": "Body"
@@ -5730,9 +5829,9 @@
     "collide": false,
     "glow": null,
     "joint": [
-     0,
-     1.125,
-     -8.1
+     -0.0,
+     0.63,
+     0.15
     ],
     "material": null,
     "parent": "Body"
@@ -5743,33 +5842,77 @@
     "joint": null,
     "material": null,
     "parent": "Body"
+   },
+   "Wheel_FL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -2.025,
+     0.825,
+     -2.4
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_FR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     2.025,
+     0.825,
+     -2.4
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -2.025,
+     0.825,
+     2.7
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     2.025,
+     0.825,
+     2.7
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
-   0,
-   4.2,
-   1.5
+   0.0,
+   2.7,
+   -2.25
   ],
-  "tris": 6656
+  "tris": 8596
  },
  "Vehicle_MoonBuggy": {
   "bounds": {
    "max": [
-    3.92,
-    6.21,
-    5.549
+    1.926,
+    4.013,
+    3.134
    ],
    "min": [
-    -3.92,
-    -0.023,
-    -7.073
+    -1.926,
+    -0.012,
+    -3.921
    ]
   },
   "kind": "vehicle",
   "name": "Vehicle_MoonBuggy",
   "parts": {
    "Body": {
-    "collide": false,
+    "collide": true,
     "glow": null,
     "joint": null,
     "material": null,
@@ -5793,9 +5936,9 @@
     "collide": false,
     "glow": null,
     "joint": [
-     0,
-     0.8625,
-     -6.21
+     -0.0,
+     0.4025,
+     -3.5075
     ],
     "material": null,
     "parent": "Body"
@@ -5806,33 +5949,77 @@
     "joint": null,
     "material": null,
     "parent": "Body"
+   },
+   "Wheel_FL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -1.5525,
+     0.575,
+     -2.0125
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_FR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     1.5525,
+     0.575,
+     -2.0125
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -1.5525,
+     0.575,
+     2.0125
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     1.5525,
+     0.575,
+     2.0125
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
-   0,
-   3.22,
-   1.15
+   0.0,
+   2.012,
+   0.46
   ],
-  "tris": 12852
+  "tris": 9012
  },
  "Vehicle_MoonCrawler": {
   "bounds": {
    "max": [
-    6.28,
-    11.34,
-    8.685
+    2.97,
+    4.86,
+    3.852
    ],
    "min": [
-    -6.28,
-    -0.036,
-    -11.07
+    -2.97,
+    -0.054,
+    -5.454
    ]
   },
   "kind": "vehicle",
   "name": "Vehicle_MoonCrawler",
   "parts": {
    "Body": {
-    "collide": false,
+    "collide": true,
     "glow": null,
     "joint": null,
     "material": null,
@@ -5856,9 +6043,9 @@
     "collide": false,
     "glow": null,
     "joint": [
-     0,
-     1.35,
-     -9.72
+     -0.0,
+     0.54,
+     -4.86
     ],
     "material": null,
     "parent": "Body"
@@ -5869,33 +6056,77 @@
     "joint": null,
     "material": null,
     "parent": "Body"
+   },
+   "Wheel_FL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -1.89,
+     0.756,
+     -3.06
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_FR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     1.89,
+     0.756,
+     -3.06
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -2.25,
+     1.35,
+     2.34
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     2.25,
+     1.35,
+     2.34
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
-   0,
-   5.04,
-   1.8
+   0.0,
+   3.69,
+   2.34
   ],
-  "tris": 12052
+  "tris": 8168
  },
  "Vehicle_RocketSweeper": {
   "bounds": {
    "max": [
-    10.956,
-    9.13,
-    14.08
+    5.385,
+    9.9,
+    7.26
    ],
    "min": [
-    -10.956,
-    -0.044,
-    -13.53
+    -5.385,
+    -0.11,
+    -10.472
    ]
   },
   "kind": "vehicle",
   "name": "Vehicle_RocketSweeper",
   "parts": {
    "Body": {
-    "collide": false,
+    "collide": true,
     "glow": null,
     "joint": null,
     "material": null,
@@ -5910,7 +6141,7 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "FFF5C8",
+    "glow": "FFB43C",
     "joint": null,
     "material": null,
     "parent": "Body"
@@ -5919,9 +6150,9 @@
     "collide": false,
     "glow": null,
     "joint": [
-     0,
-     1.65,
-     -11.88
+     -0.0,
+     1.056,
+     -9.35
     ],
     "material": null,
     "parent": "Body"
@@ -5932,33 +6163,77 @@
     "joint": null,
     "material": null,
     "parent": "Body"
+   },
+   "Wheel_FL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -3.85,
+     1.54,
+     -4.84
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_FR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     3.85,
+     1.54,
+     -4.84
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -3.85,
+     1.54,
+     4.84
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     3.85,
+     1.54,
+     4.84
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
-   0,
-   6.16,
-   2.2
+   0.0,
+   4.4,
+   -4.62
   ],
-  "tris": 11230
+  "tris": 8628
  },
  "Vehicle_SolarRover": {
   "bounds": {
    "max": [
-    12.2,
-    11.6,
-    9.65
+    3.68,
+    5.76,
+    5.6
    ],
    "min": [
-    -12.2,
-    -0.04,
-    -12.3
+    -3.68,
+    -0.06,
+    -7.364
    ]
   },
   "kind": "vehicle",
   "name": "Vehicle_SolarRover",
   "parts": {
    "Body": {
-    "collide": false,
+    "collide": true,
     "glow": null,
     "joint": null,
     "material": null,
@@ -5973,7 +6248,7 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "FFF5C8",
+    "glow": "FFB43C",
     "joint": null,
     "material": null,
     "parent": "Body"
@@ -5982,9 +6257,9 @@
     "collide": false,
     "glow": null,
     "joint": [
-     0,
-     1.5,
-     -10.8
+     -0.0,
+     0.6,
+     -5.9
     ],
     "material": null,
     "parent": "Body"
@@ -5995,33 +6270,77 @@
     "joint": null,
     "material": null,
     "parent": "Body"
+   },
+   "Wheel_FL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -2.8,
+     1.2,
+     -3.4
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_FR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     2.8,
+     1.2,
+     -3.4
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -2.8,
+     1.2,
+     3.2
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     2.8,
+     1.2,
+     3.2
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
-   0,
-   5.6,
-   2.0
+   0.0,
+   3.8,
+   -0.8
   ],
-  "tris": 13364
+  "tris": 8108
  },
  "Vehicle_SweeperCart": {
   "bounds": {
    "max": [
-    3.402,
-    5.425,
-    4.825
+    1.925,
+    4.09,
+    3.1
    ],
    "min": [
-    -3.402,
-    -0.02,
-    -6.15
+    -1.925,
+    -0.03,
+    -4.13
    ]
   },
   "kind": "vehicle",
   "name": "Vehicle_SweeperCart",
   "parts": {
    "Body": {
-    "collide": false,
+    "collide": true,
     "glow": null,
     "joint": null,
     "material": null,
@@ -6036,7 +6355,7 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "FFF5C8",
+    "glow": "FFB43C",
     "joint": null,
     "material": null,
     "parent": "Body"
@@ -6045,9 +6364,9 @@
     "collide": false,
     "glow": null,
     "joint": [
-     0,
-     0.75,
-     -5.4
+     -0.0,
+     0.45,
+     -3.65
     ],
     "material": null,
     "parent": "Body"
@@ -6058,14 +6377,58 @@
     "joint": null,
     "material": null,
     "parent": "Body"
+   },
+   "Wheel_FL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -1.55,
+     0.65,
+     -1.9
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_FR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     1.55,
+     0.65,
+     -1.9
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RL": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -1.55,
+     0.65,
+     1.9
+    ],
+    "material": null,
+    "parent": "Body"
+   },
+   "Wheel_RR": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     1.55,
+     0.65,
+     1.9
+    ],
+    "material": null,
+    "parent": "Body"
    }
   },
   "seat": [
-   0,
-   2.8,
-   1.0
+   0.0,
+   1.75,
+   0.3
   ],
-  "tris": 11392
+  "tris": 9376
  },
  "ZoneGate": {
   "bounds": {

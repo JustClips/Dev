@@ -1,7 +1,7 @@
 --!strict
 -- Shows the server's contextual offers and the "welcome back" offline income screen.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local Client = script.Parent.Parent
 local Ui = require(Client.Ui)
@@ -21,8 +21,6 @@ local C: any
 local offerGui: ScreenGui
 local welcomeGui: ScreenGui
 local gainedGui: ScreenGui
-local gainedQueue: { { Amount: any, Source: string? } } = {}
-local gainedToken = 0
 local current: { Key: string, Product: string }? = nil
 local showToken = 0
 local specials: { [string]: any } = {}
@@ -47,7 +45,7 @@ local function screenBusy(): boolean
 	if C.HatchController:IsBusy() or Ui.anyWindowOpen() or Ui.isOpen(welcomeGui) then
 		return true
 	end
-	for _, name in { "TutorialDone", "Hatch", "Gained" } do
+	for _, name in { "TutorialDone", "Hatch" } do
 		local gui = Ui.screen(name)
 		if gui.Enabled then
 			return true
@@ -102,14 +100,18 @@ local function showOffer(offer)
 	end)
 end
 
--- "You got!" popup: one at a time, closes by itself after a few seconds.
+-- Cash pops: a big green "+$4.2K" that bounces in, floats up and fades, with a small line
+-- saying where it came from. Several at once fan out a little so they don't cover each other.
 local SOURCE_TEXT = {
-	OfflineIncome = "Offline cash collected",
-	DoubleOffline = "Offline cash doubled",
-	DustBunny = "Caught a dust bunny",
+	OfflineIncome = "Offline cash",
+	DoubleOffline = "Offline cash x2",
+	DustBunny = "Dust bunny!",
 	TutorialReward = "Tutorial reward",
+	SellDust = "Sold",
+	SellPet = "Sold pet",
 }
-local GAINED_SECONDS = 4
+local POP_SECONDS = 1.6
+local livePops = 0
 
 local function sourceText(source: string?): string
 	if not source then
@@ -119,39 +121,52 @@ local function sourceText(source: string?): string
 	if product then
 		return product.Name
 	end
-	return SOURCE_TEXT[source] or "Reward"
-end
-
-local showNextGained: () -> ()
-
-local function hideGained()
-	if Ui.isOpen(gainedGui) then
-		Ui.hide(gainedGui)
-	end
-	task.delay(0.25, showNextGained)
-end
-
-function showNextGained()
-	if Ui.isOpen(gainedGui) or #gainedQueue == 0 then
-		return
-	end
-	local info = table.remove(gainedQueue, 1) :: any
-	Ui.find(gainedGui, "Window.Amount").Text = "+" .. Format.cash(info.Amount)
-	Ui.find(gainedGui, "Window.Source").Text = sourceText(info.Source)
-	Ui.show(gainedGui)
-	Ui.sound("Sell")
-	gainedToken += 1
-	local token = gainedToken
-	task.delay(GAINED_SECONDS, function()
-		if token == gainedToken and Ui.isOpen(gainedGui) then
-			hideGained()
-		end
-	end)
+	return SOURCE_TEXT[source] or ""
 end
 
 function OfferController:ShowGained(amount: any, source: string?)
-	table.insert(gainedQueue, { Amount = amount, Source = source })
-	showNextGained()
+	local template = Ui.find(gainedGui, "Template") :: Frame
+	local pop = template:Clone()
+	pop.Name = "Pop"
+	local slot = livePops
+	livePops += 1
+	local x = if slot == 0 then 0 else (if slot % 2 == 1 then 1 else -1) * (40 + 30 * math.floor((slot - 1) / 2))
+	local y = 0.36 + math.min(slot, 4) * 0.04
+	pop.Position = UDim2.new(0.5, x, y, 0)
+	pop.Rotation = math.random(-6, 6)
+	local amountLabel = pop:FindFirstChild("Amount") :: TextLabel
+	local sourceLabel = pop:FindFirstChild("Source") :: TextLabel
+	amountLabel.Text = "+" .. Format.cash(amount)
+	sourceLabel.Text = sourceText(source)
+	local scale = pop:FindFirstChild("Pop") :: UIScale
+	local auto = pop:FindFirstChild("AutoScale") :: UIScale
+	auto.Scale = Ui.scale()
+	scale.Scale = 0.2
+	pop.Visible = true
+	pop.Parent = gainedGui
+	Ui.sound("Sell")
+	TweenService:Create(scale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1.25 }):Play()
+	task.delay(0.22, function()
+		TweenService:Create(scale, TweenInfo.new(0.18, Enum.EasingStyle.Quad), { Scale = 1 }):Play()
+	end)
+	TweenService:Create(pop, TweenInfo.new(POP_SECONDS, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = pop.Position - UDim2.fromOffset(0, 90),
+		Rotation = 0,
+	}):Play()
+	task.delay(POP_SECONDS - 0.45, function()
+		local fade = TweenInfo.new(0.45)
+		TweenService:Create(amountLabel, fade, { TextTransparency = 1 }):Play()
+		TweenService:Create(sourceLabel, fade, { TextTransparency = 1 }):Play()
+		for _, stroke in pop:GetDescendants() do
+			if stroke:IsA("UIStroke") then
+				TweenService:Create(stroke, fade, { Transparency = 1 }):Play()
+			end
+		end
+	end)
+	task.delay(POP_SECONDS, function()
+		pop:Destroy()
+		livePops -= 1
+	end)
 end
 
 local function showWelcome(info)
@@ -220,17 +235,8 @@ function OfferController:Start()
 			welcomeAmount = nil
 		end
 	end)
-	Ui.button(Ui.find(gainedGui, "Window.Ok"), hideGained)
-	Ui.button(Ui.find(gainedGui, "Window.Close"), hideGained)
 	Net.event("CashGained").OnClientEvent:Connect(function(info)
 		OfferController:ShowGained(info.Amount, info.Source)
-	end)
-	-- the rays behind the cash spin slowly
-	local rays = Ui.find(gainedGui, "Window.Rays") :: ImageLabel
-	RunService.RenderStepped:Connect(function(dt)
-		if gainedGui.Enabled then
-			rays.Rotation = (rays.Rotation + dt * 40) % 360
-		end
 	end)
 	Ui.button(Ui.find(welcomeGui, "Dim"), function()
 		Ui.hide(welcomeGui)

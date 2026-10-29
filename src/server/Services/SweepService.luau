@@ -2,6 +2,7 @@
 -- Validates sweep ticks from clients and applies them. The client only says "I'm sweeping
 -- at P"; the server checks rate, distance and zone, then uses the server's tool stats.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
@@ -55,6 +56,8 @@ local function onSweep(player: Player, position: any)
 		warnOnce(player, "too far from character")
 		return
 	end
+	-- Every client shows this player's tool effects while ticks keep coming (ToolFxController).
+	(character :: Model):SetAttribute("SweepAt", Workspace:GetServerTimeNow())
 	local zone = Grid.zoneAt(position)
 	if not zone or not S.ZoneService:IsUnlocked(player, zone.Id) then
 		return

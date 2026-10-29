@@ -2689,59 +2689,67 @@ Assets.Models = {
 	},
 	Tool_Broom = {
 		bounds = {
-			max = Vector3.new(0.75, 0.262, 2.45),
-			min = Vector3.new(-0.75, -0.262, -2.7),
+			max = Vector3.new(0.865, 0.272, 2.73),
+			min = Vector3.new(-0.865, -0.272, -2.827),
 		},
-		grip = Vector3.new(0.0, 0.0, 1.4),
-		id = 138761171747360,
+		grip = Vector3.new(0.0, 0.0, 0.4),
+		grip2 = Vector3.new(0.0, 0.0, 1.6),
+		id = 115435271632713,
 		kind = "tool",
 		parts = {
 			Handle = {
 				collide = false,
 			},
 		},
+		tip = Vector3.new(0.0, 0.0, -2.65),
 	},
 	Tool_LeafBlower = {
 		bounds = {
-			max = Vector3.new(0.36, 0.55, 1.2),
-			min = Vector3.new(-0.47, -0.55, -1.85),
+			max = Vector3.new(0.39, 0.71, 1.14),
+			min = Vector3.new(-0.46, -1.133, -2.19),
 		},
-		grip = Vector3.new(0.0, 0.45, 0.7),
-		id = 76416586177558,
+		grip = Vector3.new(0.0, 0.62, 0.62),
+		grip2 = Vector3.new(-0.0, -0.475, -0.9),
+		id = 76606737119686,
 		kind = "tool",
 		parts = {
 			Handle = {
 				collide = false,
 			},
 		},
+		tip = Vector3.new(-0.0, -0.897, -2.134),
 	},
 	Tool_Mop = {
 		bounds = {
-			max = Vector3.new(0.713, 0.697, 2.23),
-			min = Vector3.new(-0.713, -0.697, -2.84),
+			max = Vector3.new(0.735, 0.67, 2.58),
+			min = Vector3.new(-0.67, -0.82, -2.72),
 		},
-		grip = Vector3.new(0.0, 0.0, 1.4),
-		id = 98673596344298,
+		grip = Vector3.new(0.0, 0.0, 0.4),
+		grip2 = Vector3.new(0.0, 0.0, 1.6),
+		id = 113873007252118,
 		kind = "tool",
 		parts = {
 			Handle = {
 				collide = false,
 			},
 		},
+		tip = Vector3.new(0.0, 0.0, -2.55),
 	},
 	Tool_ShopVac = {
 		bounds = {
-			max = Vector3.new(0.5, 0.44, 1.475),
-			min = Vector3.new(-0.517, -0.74, -1.975),
+			max = Vector3.new(0.5, 0.57, 1.52),
+			min = Vector3.new(-0.5, -1.15, -2.255),
 		},
-		grip = Vector3.new(0.0, 0.35, 0.9),
-		id = 110619947805798,
+		grip = Vector3.new(0.0, 0.48, 0.9),
+		grip2 = Vector3.new(-0.066, -0.637, -1.175),
+		id = 75032185910647,
 		kind = "tool",
 		parts = {
 			Handle = {
 				collide = false,
 			},
 		},
+		tip = Vector3.new(-0.0, -1.12, -2.1),
 	},
 	Tool_Toothbrush = {
 		bounds = {
@@ -2749,7 +2757,7 @@ Assets.Models = {
 			min = Vector3.new(-0.2, -0.52, -1.73),
 		},
 		grip = Vector3.new(0.0, 0.0, 0.85),
-		id = 123435170850356,
+		id = 106138393457522,
 		kind = "tool",
 		parts = {
 			Bristles = {
@@ -2760,14 +2768,16 @@ Assets.Models = {
 				collide = false,
 			},
 		},
+		tip = Vector3.new(0.0, -0.3, -1.25),
 	},
 	Tool_TurboVacuum = {
 		bounds = {
-			max = Vector3.new(0.51, 0.51, 1.62),
-			min = Vector3.new(-0.51, -0.63, -1.935),
+			max = Vector3.new(0.51, 0.65, 1.72),
+			min = Vector3.new(-0.51, -1.213, -1.999),
 		},
-		grip = Vector3.new(0.0, 0.42, 0.75),
-		id = 85953007514111,
+		grip = Vector3.new(0.0, 0.56, 0.8),
+		grip2 = Vector3.new(-0.0, -0.397, -0.725),
+		id = 104795889853784,
 		kind = "tool",
 		parts = {
 			Handle = {
@@ -2779,6 +2789,7 @@ Assets.Models = {
 				parent = "Handle",
 			},
 		},
+		tip = Vector3.new(-0.0, -0.81, -1.85),
 	},
 	Tree_Bulb = {
 		bounds = {
@@ -2821,14 +2832,14 @@ Assets.Models = {
 	},
 	Vehicle_DustTruck = {
 		bounds = {
-			max = Vector3.new(4.61, 6.777, 6.514),
-			min = Vector3.new(-4.61, -0.027, -8.302),
+			max = Vector3.new(2.7, 5.67, 5.231),
+			min = Vector3.new(-2.7, -0.027, -6.305),
 		},
-		id = 128629547909411,
+		id = 73169112087461,
 		kind = "vehicle",
 		parts = {
 			Body = {
-				collide = false,
+				collide = true,
 			},
 			Body_Arms = {
 				collide = false,
@@ -2836,12 +2847,12 @@ Assets.Models = {
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "FFF5C8",
+				glow = "FFB43C",
 				parent = "Body",
 			},
 			Brush = {
 				collide = false,
-				joint = Vector3.new(0.0, 1.0125, -7.29),
+				joint = Vector3.new(-0.0, 0.54, -5.7375),
 				parent = "Body",
 			},
 			Tail_Glow = {
@@ -2849,19 +2860,39 @@ Assets.Models = {
 				glow = "FF3A4A",
 				parent = "Body",
 			},
+			Wheel_FL = {
+				collide = false,
+				joint = Vector3.new(-2.16, 1.0125, -3.24),
+				parent = "Body",
+			},
+			Wheel_FR = {
+				collide = false,
+				joint = Vector3.new(2.16, 1.0125, -3.24),
+				parent = "Body",
+			},
+			Wheel_RL = {
+				collide = false,
+				joint = Vector3.new(-2.16, 1.0125, 2.7),
+				parent = "Body",
+			},
+			Wheel_RR = {
+				collide = false,
+				joint = Vector3.new(2.16, 1.0125, 2.7),
+				parent = "Body",
+			},
 		},
-		seat = Vector3.new(0.0, 3.78, 1.35),
+		seat = Vector3.new(0.0, 2.7, -3.375),
 	},
 	Vehicle_HoverSweeper = {
 		bounds = {
-			max = Vector3.new(5.25, 5.987, 7.238),
-			min = Vector3.new(-5.25, 0.0, -9.225),
+			max = Vector3.new(3.072, 6.6, 4.05),
+			min = Vector3.new(-3.072, -0.075, -5.247),
 		},
-		id = 129174920528472,
+		id = 89425502771557,
 		kind = "vehicle",
 		parts = {
 			Body = {
-				collide = false,
+				collide = true,
 			},
 			Body_Arms = {
 				collide = false,
@@ -2869,12 +2900,12 @@ Assets.Models = {
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "FFF5C8",
+				glow = "FFB43C",
 				parent = "Body",
 			},
 			Brush = {
 				collide = false,
-				joint = Vector3.new(0.0, 1.125, -8.1),
+				joint = Vector3.new(-0.0, 0.63, 0.15),
 				parent = "Body",
 			},
 			Tail_Glow = {
@@ -2882,19 +2913,39 @@ Assets.Models = {
 				glow = "FF3A4A",
 				parent = "Body",
 			},
+			Wheel_FL = {
+				collide = false,
+				joint = Vector3.new(-2.025, 0.825, -2.4),
+				parent = "Body",
+			},
+			Wheel_FR = {
+				collide = false,
+				joint = Vector3.new(2.025, 0.825, -2.4),
+				parent = "Body",
+			},
+			Wheel_RL = {
+				collide = false,
+				joint = Vector3.new(-2.025, 0.825, 2.7),
+				parent = "Body",
+			},
+			Wheel_RR = {
+				collide = false,
+				joint = Vector3.new(2.025, 0.825, 2.7),
+				parent = "Body",
+			},
 		},
-		seat = Vector3.new(0.0, 4.2, 1.5),
+		seat = Vector3.new(0.0, 2.7, -2.25),
 	},
 	Vehicle_MoonBuggy = {
 		bounds = {
-			max = Vector3.new(3.92, 6.21, 5.549),
-			min = Vector3.new(-3.92, -0.023, -7.073),
+			max = Vector3.new(1.926, 4.013, 3.134),
+			min = Vector3.new(-1.926, -0.012, -3.921),
 		},
-		id = 81540515583447,
+		id = 132709698819455,
 		kind = "vehicle",
 		parts = {
 			Body = {
-				collide = false,
+				collide = true,
 			},
 			Body_Arms = {
 				collide = false,
@@ -2907,7 +2958,7 @@ Assets.Models = {
 			},
 			Brush = {
 				collide = false,
-				joint = Vector3.new(0.0, 0.8625, -6.21),
+				joint = Vector3.new(-0.0, 0.4025, -3.5075),
 				parent = "Body",
 			},
 			Tail_Glow = {
@@ -2915,19 +2966,39 @@ Assets.Models = {
 				glow = "FF3A4A",
 				parent = "Body",
 			},
+			Wheel_FL = {
+				collide = false,
+				joint = Vector3.new(-1.5525, 0.575, -2.0125),
+				parent = "Body",
+			},
+			Wheel_FR = {
+				collide = false,
+				joint = Vector3.new(1.5525, 0.575, -2.0125),
+				parent = "Body",
+			},
+			Wheel_RL = {
+				collide = false,
+				joint = Vector3.new(-1.5525, 0.575, 2.0125),
+				parent = "Body",
+			},
+			Wheel_RR = {
+				collide = false,
+				joint = Vector3.new(1.5525, 0.575, 2.0125),
+				parent = "Body",
+			},
 		},
-		seat = Vector3.new(0.0, 3.22, 1.15),
+		seat = Vector3.new(0.0, 2.012, 0.46),
 	},
 	Vehicle_MoonCrawler = {
 		bounds = {
-			max = Vector3.new(6.28, 11.34, 8.685),
-			min = Vector3.new(-6.28, -0.036, -11.07),
+			max = Vector3.new(2.97, 4.86, 3.852),
+			min = Vector3.new(-2.97, -0.054, -5.454),
 		},
-		id = 83747894972189,
+		id = 133316755590517,
 		kind = "vehicle",
 		parts = {
 			Body = {
-				collide = false,
+				collide = true,
 			},
 			Body_Arms = {
 				collide = false,
@@ -2940,7 +3011,7 @@ Assets.Models = {
 			},
 			Brush = {
 				collide = false,
-				joint = Vector3.new(0.0, 1.35, -9.72),
+				joint = Vector3.new(-0.0, 0.54, -4.86),
 				parent = "Body",
 			},
 			Tail_Glow = {
@@ -2948,19 +3019,39 @@ Assets.Models = {
 				glow = "FF3A4A",
 				parent = "Body",
 			},
+			Wheel_FL = {
+				collide = false,
+				joint = Vector3.new(-1.89, 0.756, -3.06),
+				parent = "Body",
+			},
+			Wheel_FR = {
+				collide = false,
+				joint = Vector3.new(1.89, 0.756, -3.06),
+				parent = "Body",
+			},
+			Wheel_RL = {
+				collide = false,
+				joint = Vector3.new(-2.25, 1.35, 2.34),
+				parent = "Body",
+			},
+			Wheel_RR = {
+				collide = false,
+				joint = Vector3.new(2.25, 1.35, 2.34),
+				parent = "Body",
+			},
 		},
-		seat = Vector3.new(0.0, 5.04, 1.8),
+		seat = Vector3.new(0.0, 3.69, 2.34),
 	},
 	Vehicle_RocketSweeper = {
 		bounds = {
-			max = Vector3.new(10.956, 9.13, 14.08),
-			min = Vector3.new(-10.956, -0.044, -13.53),
+			max = Vector3.new(5.385, 9.9, 7.26),
+			min = Vector3.new(-5.385, -0.11, -10.472),
 		},
-		id = 77522696877242,
+		id = 109406959658678,
 		kind = "vehicle",
 		parts = {
 			Body = {
-				collide = false,
+				collide = true,
 			},
 			Body_Arms = {
 				collide = false,
@@ -2968,12 +3059,12 @@ Assets.Models = {
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "FFF5C8",
+				glow = "FFB43C",
 				parent = "Body",
 			},
 			Brush = {
 				collide = false,
-				joint = Vector3.new(0.0, 1.65, -11.88),
+				joint = Vector3.new(-0.0, 1.056, -9.35),
 				parent = "Body",
 			},
 			Tail_Glow = {
@@ -2981,19 +3072,39 @@ Assets.Models = {
 				glow = "FF3A4A",
 				parent = "Body",
 			},
+			Wheel_FL = {
+				collide = false,
+				joint = Vector3.new(-3.85, 1.54, -4.84),
+				parent = "Body",
+			},
+			Wheel_FR = {
+				collide = false,
+				joint = Vector3.new(3.85, 1.54, -4.84),
+				parent = "Body",
+			},
+			Wheel_RL = {
+				collide = false,
+				joint = Vector3.new(-3.85, 1.54, 4.84),
+				parent = "Body",
+			},
+			Wheel_RR = {
+				collide = false,
+				joint = Vector3.new(3.85, 1.54, 4.84),
+				parent = "Body",
+			},
 		},
-		seat = Vector3.new(0.0, 6.16, 2.2),
+		seat = Vector3.new(0.0, 4.4, -4.62),
 	},
 	Vehicle_SolarRover = {
 		bounds = {
-			max = Vector3.new(12.2, 11.6, 9.65),
-			min = Vector3.new(-12.2, -0.04, -12.3),
+			max = Vector3.new(3.68, 5.76, 5.6),
+			min = Vector3.new(-3.68, -0.06, -7.364),
 		},
-		id = 100093124659569,
+		id = 100561544055356,
 		kind = "vehicle",
 		parts = {
 			Body = {
-				collide = false,
+				collide = true,
 			},
 			Body_Arms = {
 				collide = false,
@@ -3001,12 +3112,12 @@ Assets.Models = {
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "FFF5C8",
+				glow = "FFB43C",
 				parent = "Body",
 			},
 			Brush = {
 				collide = false,
-				joint = Vector3.new(0.0, 1.5, -10.8),
+				joint = Vector3.new(-0.0, 0.6, -5.9),
 				parent = "Body",
 			},
 			Tail_Glow = {
@@ -3014,19 +3125,39 @@ Assets.Models = {
 				glow = "FF3A4A",
 				parent = "Body",
 			},
+			Wheel_FL = {
+				collide = false,
+				joint = Vector3.new(-2.8, 1.2, -3.4),
+				parent = "Body",
+			},
+			Wheel_FR = {
+				collide = false,
+				joint = Vector3.new(2.8, 1.2, -3.4),
+				parent = "Body",
+			},
+			Wheel_RL = {
+				collide = false,
+				joint = Vector3.new(-2.8, 1.2, 3.2),
+				parent = "Body",
+			},
+			Wheel_RR = {
+				collide = false,
+				joint = Vector3.new(2.8, 1.2, 3.2),
+				parent = "Body",
+			},
 		},
-		seat = Vector3.new(0.0, 5.6, 2.0),
+		seat = Vector3.new(0.0, 3.8, -0.8),
 	},
 	Vehicle_SweeperCart = {
 		bounds = {
-			max = Vector3.new(3.402, 5.425, 4.825),
-			min = Vector3.new(-3.402, -0.02, -6.15),
+			max = Vector3.new(1.925, 4.09, 3.1),
+			min = Vector3.new(-1.925, -0.03, -4.13),
 		},
-		id = 103724576316063,
+		id = 90827218525425,
 		kind = "vehicle",
 		parts = {
 			Body = {
-				collide = false,
+				collide = true,
 			},
 			Body_Arms = {
 				collide = false,
@@ -3034,12 +3165,12 @@ Assets.Models = {
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "FFF5C8",
+				glow = "FFB43C",
 				parent = "Body",
 			},
 			Brush = {
 				collide = false,
-				joint = Vector3.new(0.0, 0.75, -5.4),
+				joint = Vector3.new(-0.0, 0.45, -3.65),
 				parent = "Body",
 			},
 			Tail_Glow = {
@@ -3047,8 +3178,28 @@ Assets.Models = {
 				glow = "FF3A4A",
 				parent = "Body",
 			},
+			Wheel_FL = {
+				collide = false,
+				joint = Vector3.new(-1.55, 0.65, -1.9),
+				parent = "Body",
+			},
+			Wheel_FR = {
+				collide = false,
+				joint = Vector3.new(1.55, 0.65, -1.9),
+				parent = "Body",
+			},
+			Wheel_RL = {
+				collide = false,
+				joint = Vector3.new(-1.55, 0.65, 1.9),
+				parent = "Body",
+			},
+			Wheel_RR = {
+				collide = false,
+				joint = Vector3.new(1.55, 0.65, 1.9),
+				parent = "Body",
+			},
 		},
-		seat = Vector3.new(0.0, 2.8, 1.0),
+		seat = Vector3.new(0.0, 1.75, 0.3),
 	},
 	ZoneGate = {
 		bounds = {
@@ -3072,6 +3223,18 @@ Assets.Animations = {
 	Pet_Walk = 140251033269648,
 	Player_Hold = 129888683850993,
 	Player_Sweep = 98110507730768,
+	Tool_Broom_Hold = 130648850082063,
+	Tool_Broom_Use = 94716587382943,
+	Tool_LeafBlower_Hold = 73423630980959,
+	Tool_LeafBlower_Use = 95948399948099,
+	Tool_Mop_Hold = 88754308408607,
+	Tool_Mop_Use = 131493756773944,
+	Tool_ShopVac_Hold = 75972902418278,
+	Tool_ShopVac_Use = 108781314751499,
+	Tool_Toothbrush_Hold = 88741629412820,
+	Tool_Toothbrush_Use = 133133024120378,
+	Tool_TurboVacuum_Hold = 138403122465309,
+	Tool_TurboVacuum_Use = 87111358481355,
 }
 
 -- Used instead of Assets.Animations when the primary account's models failed to load
@@ -3086,6 +3249,10 @@ Assets.Images = {
 	BannerLuck = "rbxassetid://81303789977135",
 	BannerStarter = "rbxassetid://115565610992968",
 	Chevron = "rbxassetid://114720155624899",
+	FxBubble = "rbxassetid://96742845739725",
+	FxDrop = "rbxassetid://77803196346204",
+	FxLeaf = "rbxassetid://99661789362706",
+	FxStreak = "rbxassetid://127063755191412",
 	Gear = "rbxassetid://135539952732801",
 	Glow = "rbxassetid://139963628852518",
 	Icon_Alien = "rbxassetid://128070901662934",

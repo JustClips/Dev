@@ -19,6 +19,54 @@
   "Player_Sweep": {
    "id": 98110507730768,
    "sha": "ceb09c708afeabd535760b43ae2b6cbf4098f61134073a1550c063e00e959648"
+  },
+  "Tool_Broom_Hold": {
+   "id": 130648850082063,
+   "sha": "277f8e948b60f62ea96abdb59da9eec2aa949f433a080842b3a961e987a0a898"
+  },
+  "Tool_Broom_Use": {
+   "id": 94716587382943,
+   "sha": "38df4318041ca3872e141ef94be9d2c816abe98ef8d92d3470e78da10bcbb2af"
+  },
+  "Tool_LeafBlower_Hold": {
+   "id": 73423630980959,
+   "sha": "47c1f39bbb62d4353f20bb44374e4a60e86bc099ab9236b3696429d51959973c"
+  },
+  "Tool_LeafBlower_Use": {
+   "id": 95948399948099,
+   "sha": "37c67bb3d150ed362b50b818b69427846cbb42227c6fd1641e8bc040c4121a2e"
+  },
+  "Tool_Mop_Hold": {
+   "id": 88754308408607,
+   "sha": "f1af29ac9e579746935022fa6390396ebc266d4e237884deb5be3375fa18f60e"
+  },
+  "Tool_Mop_Use": {
+   "id": 131493756773944,
+   "sha": "ae138d97966fe136abe3d1b8b7d9ce71e974f23d47c70f5a6c73870cff63b330"
+  },
+  "Tool_ShopVac_Hold": {
+   "id": 75972902418278,
+   "sha": "4bf9e4bfbfadd673a88f2f812281d24f31967739f4fa4d6f80c957e9dd7f8424"
+  },
+  "Tool_ShopVac_Use": {
+   "id": 108781314751499,
+   "sha": "689f739ed659b80873977e632927da4d19e68c338487885f112c40b6374c9925"
+  },
+  "Tool_Toothbrush_Hold": {
+   "id": 88741629412820,
+   "sha": "3664dac3cf950a7ca81eac22ad0a67e1d48c44f60f7927c9fcc8e65e965a7a2d"
+  },
+  "Tool_Toothbrush_Use": {
+   "id": 133133024120378,
+   "sha": "8bff4a82fd0badbc1c12ddc6ed7b3b22c6edb32f2e2aa06ddbb6d6178924b82e"
+  },
+  "Tool_TurboVacuum_Hold": {
+   "id": 138403122465309,
+   "sha": "1befaa09884025384f8216d10fd276e1a509a36c22b4db8bf200c76be978d4eb"
+  },
+  "Tool_TurboVacuum_Use": {
+   "id": 87111358481355,
+   "sha": "15401d39396a810c114154c7ec67a5c61b172610afe2b3da48b49b44478cc763"
   }
  },
  "images": {
@@ -37,6 +85,22 @@
   "Chevron": {
    "id": 114720155624899,
    "sha": "7ea119751b8a03cfdd9b40d16c8c4527978450dfcbfc877db8d6757585c525df"
+  },
+  "FxBubble": {
+   "id": 96742845739725,
+   "sha": "da3e5da45844a3f7eb7ec220943f77081cf74a31a029768c4e1283ecd13b6e9f"
+  },
+  "FxDrop": {
+   "id": 77803196346204,
+   "sha": "09823147bd9d16853d9bf2b37431ef8092c68af1bf75d68133875e34b6be2b59"
+  },
+  "FxLeaf": {
+   "id": 99661789362706,
+   "sha": "20cfcf0f5e945bc86cf6a18123b9ab603a28d6da027c027dbff3b6a9bfaffe22"
+  },
+  "FxStreak": {
+   "id": 127063755191412,
+   "sha": "01a0453ebbde2f8554792ba5283ce10d56ba33e0e09572bb89cf871e50d3403f"
   },
   "Gear": {
    "id": 135539952732801,
@@ -589,28 +653,28 @@
    "sha": "5c2290563c2d61d28ff4bf63c9f6f1d8f78550a0e1da0113549482939e7ee210"
   },
   "Tool_Broom": {
-   "id": 138761171747360,
-   "sha": "8016ac810fafdf0f1a25db7c000e8bada9ee2055b09dadf3e2971fff89ba63c4"
+   "id": 115435271632713,
+   "sha": "a9fa37219106cb8aa4ba038e912cb53304e13e2f0b26fc490024fcfc476ab9df"
   },
   "Tool_LeafBlower": {
-   "id": 76416586177558,
-   "sha": "76c080cc8dcaac96a091bf299177f497f6cb7c41c7ecd7c7c1827f9800d6d6c4"
+   "id": 76606737119686,
+   "sha": "5edf11d0843e2b9f78b6377d2a74de235abea6e26fa730f6254af803c523713e"
   },
   "Tool_Mop": {
-   "id": 98673596344298,
-   "sha": "560cfa8d51b1f1e1a7a703665b024b125362add9e758d0fec45bed575b452eda"
+   "id": 113873007252118,
+   "sha": "9553ad4077547f7cfa85eb8d1305a0e8a8453d777b83541c06bfa695f17aacba"
   },
   "Tool_ShopVac": {
-   "id": 110619947805798,
-   "sha": "01237d33dd4d3d5533d761fe9e09622f5f6be963609d148d4771c2660464d7c8"
+   "id": 75032185910647,
+   "sha": "40e6d71724729be6699729893900cdd1d5512fb2b6c857dcd78650e2e18af71b"
   },
   "Tool_Toothbrush": {
-   "id": 123435170850356,
-   "sha": "a46eb5fe3d0a1778fefda9918ce66c72349957b672e21e3054b1219059715c19"
+   "id": 106138393457522,
+   "sha": "959d4201fb84c45a13317b912b263452444b036320a4a7403809590c5dbfd147"
   },
   "Tool_TurboVacuum": {
-   "id": 85953007514111,
-   "sha": "427e58ee5609260b93744e8d9c02df0c543fc825692f15a9703fa48cf3d1b06d"
+   "id": 104795889853784,
+   "sha": "9e42bc5a4053528b9fb57c6f464a2140cb2f086553d32ab7a7915a935d768d5a"
   },
   "Tree_Bulb": {
    "id": 138798623622064,
@@ -625,32 +689,32 @@
    "sha": "e8551773dbfcee639e07ae1195aa7bd7a6dc815d9d2d389f393054b74e2e53f4"
   },
   "Vehicle_DustTruck": {
-   "id": 128629547909411,
-   "sha": "5292384f96381748938da6a55c4af73c19240267b2e47a1bc1297ad2a28b3988"
+   "id": 73169112087461,
+   "sha": "99e1fec7cbaefb5a35ce5583c9f2f189b15158bd1ddedfd33731667215829833"
   },
   "Vehicle_HoverSweeper": {
-   "id": 129174920528472,
-   "sha": "930ede5ab951d542cf8d08231af3262f15ae0683ba15a5d2b1004bab1299a186"
+   "id": 89425502771557,
+   "sha": "6c74972ac7d9dd4f9405a1d08ff04f4ac9772c6d3433cfddbf6d2f8f83bb4ab3"
   },
   "Vehicle_MoonBuggy": {
-   "id": 81540515583447,
-   "sha": "9039c534ac25ea6f12d99e511b9265216bdaeba9e03072e40f515f679f2cdf21"
+   "id": 132709698819455,
+   "sha": "32796fe8a29d8668dae9810dc9db89a3992ff5262e04e8b35779bed6d57f4d06"
   },
   "Vehicle_MoonCrawler": {
-   "id": 83747894972189,
-   "sha": "81a946da793ddc8ad0335993fc3892937ed4e88dec4781f7b2234a388826d502"
+   "id": 133316755590517,
+   "sha": "0d1e4d1775a9d0e34286dcd6ae999f7dd9d6cdc4acc02d35c900a82457e38f89"
   },
   "Vehicle_RocketSweeper": {
-   "id": 77522696877242,
-   "sha": "b8861d11674ae6b78f3b5663cc1a8a20d9cf5f283820a463b29880c1d74f5157"
+   "id": 109406959658678,
+   "sha": "bdd17b3093694fe3d3b638841ca7d7cdf53de42b99938ad2870ac3f361b67447"
   },
   "Vehicle_SolarRover": {
-   "id": 100093124659569,
-   "sha": "06f05e15d7426af2bf31b541adc3edd40fdc961d774cc5ffd52d9d442ef974e6"
+   "id": 100561544055356,
+   "sha": "f2f97671ce85332f1c7bfeb617eb51823fc48fedc03d0f6ca9560b9cc8dc4f85"
   },
   "Vehicle_SweeperCart": {
-   "id": 103724576316063,
-   "sha": "deabb89fb201cc44e9f2688c64116fe97558b89c224f5a3801b375aeaa0aa7de"
+   "id": 90827218525425,
+   "sha": "eba29bf2a206c5848923089a3155dbad237ca38e50975819c33702d7dc8245f6"
   },
   "ZoneGate": {
    "id": 120653370862097,

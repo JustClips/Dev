@@ -15,6 +15,7 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local Assets = require(Shared.Config.Assets)
 local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
 local Grid = require(Shared.Grid)
@@ -75,9 +76,26 @@ local function setTrack(t: AnimationTrack?, on: boolean, fadeIn: number, fadeOut
 	end
 end
 
--- Tool in hand: the two-handed hold pose. Sweeping: the broom swings across the ground.
+-- Tool in hand: each tool has its own hold and use animation (Tool_<Id>_Hold / _Use, see
+-- art/anim/tool_anims.py); tools without them fall back to the broom pair.
+local currentPair: { hold: string, use: string }? = nil
+local toolActive = false
+
+local function animPair(char: Model?): { hold: string, use: string }?
+	local tool = char and char:FindFirstChildOfClass("Tool")
+	local id = tool and tool:GetAttribute("ToolId")
+	if type(id) ~= "string" then
+		return nil
+	end
+	local hold, use = `Tool_{id}_Hold`, `Tool_{id}_Use`
+	if Assets.Animations[hold] and Assets.Animations[use] then
+		return { hold = hold, use = use }
+	end
+	return { hold = "Player_Hold", use = "Player_Sweep" }
+end
+
 local function setToolAnimation(equipped: boolean, sweeping: boolean)
-	local _, _, humanoid = character()
+	local char, _, humanoid = character()
 	if humanoid ~= trackHumanoid then
 		for _, t in tracks do
 			t:Stop(0)
@@ -88,8 +106,21 @@ local function setToolAnimation(equipped: boolean, sweeping: boolean)
 	if not humanoid or not (equipped or next(tracks)) then
 		return
 	end
-	setTrack(track(humanoid, "Player_Hold"), equipped, 0.2, 0.2)
-	setTrack(track(humanoid, "Player_Sweep"), equipped and sweeping, 0.15, 0.3)
+	local pair = if equipped then animPair(char) else currentPair
+	if currentPair and pair and (pair.hold ~= currentPair.hold) then
+		-- Switched tools: put the old tool's animations away.
+		for name, t in tracks do
+			if name == currentPair.hold or name == currentPair.use then
+				t:Stop(0.15)
+			end
+		end
+	end
+	currentPair = pair
+	if not pair then
+		return
+	end
+	setTrack(track(humanoid, pair.hold), equipped, 0.2, 0.2)
+	setTrack(track(humanoid, pair.use), equipped and sweeping, 0.15, 0.25)
 end
 
 local function shouldSweep(): (boolean, Vector3?)
@@ -265,6 +296,11 @@ local function onMeteor(position: Vector3)
 	end)
 end
 
+-- True while you're using your hand tool (for its effects, ToolFxController).
+function SweepController:IsToolActive(): boolean
+	return toolActive
+end
+
 function SweepController:Init(controllers)
 	C = controllers
 	makeEmitter()
@@ -320,6 +356,7 @@ function SweepController:Start()
 		local onFoot = humanoid ~= nil and humanoid.SeatPart == nil
 		local equipped = onFoot and char ~= nil and toolEquipped(char :: Model)
 		setToolAnimation(equipped, active and equipped)
+		toolActive = active and equipped
 		if active and position then
 			Net.event("SweepTick"):FireServer(position)
 			tickCount += 1

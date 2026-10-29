@@ -913,16 +913,17 @@ def offer():
     ], header=PILL_BASE)
     write("WelcomeBack", screen([dim(), welcome], order=12, enabled=False))
 
-    # "You got" popup after buying cash, claiming rewards or collecting offline cash.
-    gained = window(420, 330, "You got!", "Cash", popup=True, children=[
-        node("Rays", "ImageLabel", base(U(0, 200, 0, 200), U(0.5, 0, 0, 120), (0.5, 0.5), BackgroundTransparency=1,
-                                        Image=img("Rays"), ImageColor3=ACCENT, ImageTransparency=0.35, ZIndex=1)),
-        icon("Big", "Cash", 104, U(0.5, 0, 0, 120), (0.5, 0.5), ZIndex=2),
-        text("Amount", "+$0", U(1, -40, 0, 50), U(0.5, 0, 0, 178), (0.5, 0), ts=44, color="#1E9E3A", display=True, ZIndex=3),
-        text("Source", "", U(1, -40, 0, 24), U(0.5, 0, 0, 228), (0.5, 0), ts=17, color=SUB, ZIndex=3),
-        button("Ok", U(0, 200, 0, 56), U(0.5, 0, 1, -14), (0.5, 1), color=SUCCESS, label="Nice!", ts=28),
-    ], header=SUCCESS)
-    write("Gained", screen([dim(), gained], order=13, enabled=False))
+    # Floating "+$4.2K" cash pops (OfferController clones Template for each gain): big green
+    # text with a dark outline and a small line under it saying where the cash came from.
+    pop = frame("Template", U(0, 420, 0, 96), U(0.5, 0, 0.36, 0), (0.5, 0.5), Visible=False, children=[
+        autoscale(),
+        node("Pop", "UIScale", {"Scale": 1}),
+        text("Amount", "+$0", U(1, 0, 0, 70), U(0.5, 0, 0, 0), (0.5, 0), ts=64, color="#5CFF6E", display=True,
+             children=[node("TextStroke", "UIStroke", {"Color": "#0E4A17", "Thickness": 4, "ApplyStrokeMode": "Contextual",
+                                                       "LineJoinMode": "Miter"})]),
+        text("Source", "", U(1, 0, 0, 26), U(0.5, 0, 0, 68), (0.5, 0), ts=22, heavy=True, stroke=2.5),
+    ])
+    write("Gained", screen([pop], order=13, enabled=True))
 
 
 # ---------------------------------------------------------------- Hatch
