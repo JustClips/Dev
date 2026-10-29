@@ -84,7 +84,7 @@ local function label(parent: Instance, text: string, color: Color3, height: numb
 	local text1 = Instance.new("TextLabel")
 	text1.Size = UDim2.new(1, 0, 1, -10)
 	text1.BackgroundTransparency = 1
-	text1.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Black)
+	text1.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
 	text1.TextSize = 24
 	text1.TextColor3 = Color3.new(1, 1, 1)
 	text1.Text = text
