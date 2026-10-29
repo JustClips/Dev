@@ -11522,5 +11522,279 @@
    ]
   },
   "tris": 2520
+ },
+ "EggMut_Frozen": {
+  "name": "EggMut_Frozen",
+  "kind": "eggmut",
+  "parts": {
+   "Snow": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Ice": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -1.681,
+    -0.059,
+    -1.851
+   ],
+   "max": [
+    1.662,
+    3.3,
+    1.669
+   ]
+  },
+  "tris": 3156
+ },
+ "EggMut_Wet": {
+  "name": "EggMut_Wet",
+  "kind": "eggmut",
+  "parts": {
+   "Water": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -2.244,
+    -0.132,
+    -2.376
+   ],
+   "max": [
+    2.244,
+    2.772,
+    1.848
+   ]
+  },
+  "tris": 3904
+ },
+ "EggMut_Shocked": {
+  "name": "EggMut_Shocked",
+  "kind": "eggmut",
+  "parts": {
+   "Bolts": {
+    "parent": null,
+    "joint": null,
+    "glow": "FFF06A",
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -2.717,
+    1.56,
+    -2.096
+   ],
+   "max": [
+    1.913,
+    4.084,
+    1.771
+   ]
+  },
+  "tris": 1196
+ },
+ "EggMut_Windswept": {
+  "name": "EggMut_Windswept",
+  "kind": "eggmut",
+  "parts": {
+   "Leaves": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -2.112,
+    0.701,
+    -1.943
+   ],
+   "max": [
+    2.052,
+    2.432,
+    2.058
+   ]
+  },
+  "tris": 840
+ },
+ "EggMut_Bloodlit": {
+  "name": "EggMut_Bloodlit",
+  "kind": "eggmut",
+  "parts": {
+   "Moon": {
+    "parent": null,
+    "joint": null,
+    "glow": "FF3B30",
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -0.528,
+    3.36,
+    -0.132
+   ],
+   "max": [
+    0.66,
+    4.68,
+    0.132
+   ]
+  },
+  "tris": 296
+ },
+ "EggMut_Starlit": {
+  "name": "EggMut_Starlit",
+  "kind": "eggmut",
+  "parts": {
+   "Stars": {
+    "parent": null,
+    "joint": null,
+    "glow": "CFDCFF",
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -2.223,
+    1.184,
+    -2.332
+   ],
+   "max": [
+    2.146,
+    4.044,
+    2.348
+   ]
+  },
+  "tris": 820
+ },
+ "EggMut_Starstruck": {
+  "name": "EggMut_Starstruck",
+  "kind": "eggmut",
+  "parts": {
+   "Star": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Sparks": {
+    "parent": null,
+    "joint": null,
+    "glow": "FFE68A",
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -2.097,
+    2.469,
+    -1.994
+   ],
+   "max": [
+    1.774,
+    4.117,
+    2.035
+   ]
+  },
+  "tris": 940
+ },
+ "EggMut_Golden": {
+  "name": "EggMut_Golden",
+  "kind": "eggmut",
+  "parts": {
+   "Gold": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -2.112,
+    0.0,
+    -1.98
+   ],
+   "max": [
+    1.848,
+    0.528,
+    2.112
+   ]
+  },
+  "tris": 1148
+ },
+ "EggMut_Rainbow": {
+  "name": "EggMut_Rainbow",
+  "kind": "eggmut",
+  "parts": {
+   "Arc": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -3.564,
+    0.0,
+    0.693
+   ],
+   "max": [
+    3.564,
+    3.564,
+    0.957
+   ]
+  },
+  "tris": 2896
+ },
+ "EggMut_Disco": {
+  "name": "EggMut_Disco",
+  "kind": "eggmut",
+  "parts": {
+   "Ball": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "bounds": {
+   "min": [
+    -0.66,
+    3.492,
+    -0.528
+   ],
+   "max": [
+    0.528,
+    5.34,
+    0.66
+   ]
+  },
+  "tris": 976
  }
 }
