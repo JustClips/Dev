@@ -913,6 +913,17 @@ def offer():
     ], header=PILL_BASE)
     write("WelcomeBack", screen([dim(), welcome], order=12, enabled=False))
 
+    # "You got" popup after buying cash, claiming rewards or collecting offline cash.
+    gained = window(420, 330, "You got!", "Cash", popup=True, children=[
+        node("Rays", "ImageLabel", base(U(0, 200, 0, 200), U(0.5, 0, 0, 120), (0.5, 0.5), BackgroundTransparency=1,
+                                        Image=img("Rays"), ImageColor3=ACCENT, ImageTransparency=0.35, ZIndex=1)),
+        icon("Big", "Cash", 104, U(0.5, 0, 0, 120), (0.5, 0.5), ZIndex=2),
+        text("Amount", "+$0", U(1, -40, 0, 50), U(0.5, 0, 0, 178), (0.5, 0), ts=44, color="#1E9E3A", display=True, ZIndex=3),
+        text("Source", "", U(1, -40, 0, 24), U(0.5, 0, 0, 228), (0.5, 0), ts=17, color=SUB, ZIndex=3),
+        button("Ok", U(0, 200, 0, 56), U(0.5, 0, 1, -14), (0.5, 1), color=SUCCESS, label="Nice!", ts=28),
+    ], header=SUCCESS)
+    write("Gained", screen([dim(), gained], order=13, enabled=False))
+
 
 # ---------------------------------------------------------------- Hatch
 def hatch():

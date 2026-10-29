@@ -1,6 +1,7 @@
 --!strict
 -- Shows the server's contextual offers and the "welcome back" offline income screen.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Client = script.Parent.Parent
 local Ui = require(Client.Ui)
@@ -19,6 +20,9 @@ local OfferController = {}
 local C: any
 local offerGui: ScreenGui
 local welcomeGui: ScreenGui
+local gainedGui: ScreenGui
+local gainedQueue: { { Amount: any, Source: string? } } = {}
+local gainedToken = 0
 local current: { Key: string, Product: string }? = nil
 local showToken = 0
 local specials: { [string]: any } = {}
@@ -43,7 +47,7 @@ local function screenBusy(): boolean
 	if C.HatchController:IsBusy() or Ui.anyWindowOpen() or Ui.isOpen(welcomeGui) then
 		return true
 	end
-	for _, name in { "TutorialDone", "Hatch" } do
+	for _, name in { "TutorialDone", "Hatch", "Gained" } do
 		local gui = Ui.screen(name)
 		if gui.Enabled then
 			return true
@@ -53,6 +57,7 @@ local function screenBusy(): boolean
 end
 
 local pendingOffer: any = nil
+local welcomeAmount: any = nil
 
 local function showOffer(offer)
 	specials[offer.Key] = {
@@ -97,7 +102,60 @@ local function showOffer(offer)
 	end)
 end
 
+-- "You got!" popup: one at a time, closes by itself after a few seconds.
+local SOURCE_TEXT = {
+	OfflineIncome = "Offline cash collected",
+	DoubleOffline = "Offline cash doubled",
+	DustBunny = "Caught a dust bunny",
+	TutorialReward = "Tutorial reward",
+}
+local GAINED_SECONDS = 4
+
+local function sourceText(source: string?): string
+	if not source then
+		return ""
+	end
+	local product = Products.ProductByKey[source]
+	if product then
+		return product.Name
+	end
+	return SOURCE_TEXT[source] or "Reward"
+end
+
+local showNextGained: () -> ()
+
+local function hideGained()
+	if Ui.isOpen(gainedGui) then
+		Ui.hide(gainedGui)
+	end
+	task.delay(0.25, showNextGained)
+end
+
+function showNextGained()
+	if Ui.isOpen(gainedGui) or #gainedQueue == 0 then
+		return
+	end
+	local info = table.remove(gainedQueue, 1) :: any
+	Ui.find(gainedGui, "Window.Amount").Text = "+" .. Format.cash(info.Amount)
+	Ui.find(gainedGui, "Window.Source").Text = sourceText(info.Source)
+	Ui.show(gainedGui)
+	Ui.sound("Sell")
+	gainedToken += 1
+	local token = gainedToken
+	task.delay(GAINED_SECONDS, function()
+		if token == gainedToken and Ui.isOpen(gainedGui) then
+			hideGained()
+		end
+	end)
+end
+
+function OfferController:ShowGained(amount: any, source: string?)
+	table.insert(gainedQueue, { Amount = amount, Source = source })
+	showNextGained()
+end
+
 local function showWelcome(info)
+	welcomeAmount = info.Amount
 	Ui.find(welcomeGui, "Window.Amount").Text = "+" .. Format.cash(info.Amount)
 	Ui.find(welcomeGui, "Window.Text").Text = `Your pets worked for {Format.duration(info.Seconds)} while you were away.`
 	local double = Products.ProductByKey.DoubleOffline
@@ -133,6 +191,7 @@ function OfferController:Init(controllers)
 	C = controllers
 	offerGui = Ui.screen("Offer")
 	welcomeGui = Ui.screen("WelcomeBack")
+	gainedGui = Ui.screen("Gained")
 end
 
 function OfferController:Start()
@@ -156,6 +215,22 @@ function OfferController:Start()
 	end)
 	Ui.button(Ui.find(welcomeGui, "Window.Collect"), function()
 		Ui.hide(welcomeGui)
+		if welcomeAmount then
+			OfferController:ShowGained(welcomeAmount, "OfflineIncome")
+			welcomeAmount = nil
+		end
+	end)
+	Ui.button(Ui.find(gainedGui, "Window.Ok"), hideGained)
+	Ui.button(Ui.find(gainedGui, "Window.Close"), hideGained)
+	Net.event("CashGained").OnClientEvent:Connect(function(info)
+		OfferController:ShowGained(info.Amount, info.Source)
+	end)
+	-- the rays behind the cash spin slowly
+	local rays = Ui.find(gainedGui, "Window.Rays") :: ImageLabel
+	RunService.RenderStepped:Connect(function(dt)
+		if gainedGui.Enabled then
+			rays.Rotation = (rays.Rotation + dt * 40) % 360
+		end
 	end)
 	Ui.button(Ui.find(welcomeGui, "Dim"), function()
 		Ui.hide(welcomeGui)

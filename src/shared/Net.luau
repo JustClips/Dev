@@ -15,6 +15,7 @@ local EVENTS: { [string]: number } = {
 	Announce = 0, -- server -> all: server-wide message
 	HatchCompleted = 0, -- server -> owner: cutscene payload
 	WelcomeBack = 0, -- server -> owner: offline income payload
+	CashGained = 0, -- server -> owner: { Amount, Source } for the "you got" popup
 	ShowOffer = 0, -- server -> owner: contextual offer
 	OfferResponse = 4, -- client: offer clicked / dismissed
 	MeteorImpact = 0, -- server -> all: meteor visual at a position

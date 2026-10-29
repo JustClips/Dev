@@ -263,7 +263,7 @@ local function sections(data): { Section }
 		{ Key = "Passes", Title = "Gamepasses", Icon = "Icon_Star", Color = Color3.fromRGB(155, 107, 255), Note = "Yours forever", Items = passItems(data) },
 		{ Key = "Tools", Title = "Tools", Icon = "Icon_Tool", Color = Color3.fromRGB(76, 141, 255), Note = "Buy with cash or skip ahead", Items = toolItems(data) },
 		{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Color = Color3.fromRGB(255, 95, 162), Note = "", Items = eggItems(data) },
-		{ Key = "Cash", Title = "Cash", Icon = "Icon_Cash", Color = Color3.fromRGB(47, 191, 85), Note = "Grows with your progress", Items = cashItems(data) },
+		{ Key = "Cash", Title = "Cash", Icon = "Icon_Cash", Color = Color3.fromRGB(47, 191, 85), Note = "", Items = cashItems(data) },
 	}
 end
 

@@ -18,6 +18,8 @@ local S: any
 local lastSell: { [Player]: number } = {}
 
 -- Adds cash (number or BigNum) and logs it as an economy source.
+local QUIET_SOURCES = { SellDust = true, SellPet = true, OfflineIncome = true, TutorialReward = true }
+
 function BackpackService:GiveCash(player: Player, amount: any, sku: string, transactionType: Enum.AnalyticsEconomyTransactionType?)
 	local data = S.DataService:GetData(player)
 	if not data then
@@ -26,6 +28,10 @@ function BackpackService:GiveCash(player: Player, amount: any, sku: string, tran
 	data.Cash = BigNum.add(data.Cash, amount)
 	S.AnalyticsService:Source(player, BigNum.toNumber(amount), transactionType or Enum.AnalyticsEconomyTransactionType.Gameplay, sku)
 	S.StateService:Mark(player)
+	-- Big one-off gains get the "you got" popup; selling and offline income have their own.
+	if not QUIET_SOURCES[sku] then
+		Net.fire("CashGained", player, { Amount = BigNum.from(amount), Source = sku })
+	end
 end
 
 -- Cash earned per second from selling dust over the last few minutes (cash packs scale
