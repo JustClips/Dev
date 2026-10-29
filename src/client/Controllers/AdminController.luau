@@ -715,7 +715,7 @@ local function build()
 
 	local header = make("Frame", { Size = UDim2.new(1, 0, 0, 42), BackgroundColor3 = RED, BorderSizePixel = 0 }, window)
 	stroke(header, 2)
-	local title = text(header, "ADMIN PANEL", UDim2.new(1, -60, 1, 0), 20, WHITE, Enum.FontWeight.Black)
+	local title = text(header, "ADMIN PANEL", UDim2.new(1, -60, 1, 0), 20, WHITE, Enum.FontWeight.Heavy)
 	title.Position = UDim2.fromOffset(12, 0)
 	local close = button(header, "X", Color3.fromRGB(150, 30, 30), UDim2.fromOffset(34, 34), function()
 		setOpen(false)

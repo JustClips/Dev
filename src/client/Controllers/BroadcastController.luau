@@ -81,7 +81,7 @@ local function showNext()
 			child:Destroy()
 		end
 	end
-	label(announceCard, "ANNOUNCEMENT", 15, GOLD, Enum.FontWeight.Black, 1)
+	label(announceCard, "ANNOUNCEMENT", 15, GOLD, Enum.FontWeight.Heavy, 1)
 	label(announceCard, info.Text, 24, WHITE, Enum.FontWeight.Heavy, 2)
 	label(announceCard, `from {info.From}`, 13, SUB, Enum.FontWeight.Bold, 3)
 	announceCard.Visible = true
@@ -260,7 +260,7 @@ function BroadcastController:Start()
 		PaddingLeft = UDim.new(0, 10),
 		PaddingRight = UDim.new(0, 10),
 	}, pollCard)
-	label(pollCard, "POLL", 13, GOLD, Enum.FontWeight.Black, 1)
+	label(pollCard, "POLL", 13, GOLD, Enum.FontWeight.Heavy, 1)
 	questionLabel = label(pollCard, "", 18, WHITE, Enum.FontWeight.Heavy, 2)
 	timerLabel = label(pollCard, "", 12, SUB, Enum.FontWeight.Bold, 50)
 
