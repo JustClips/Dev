@@ -139,6 +139,12 @@ local function build(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInp
 		object.Visible = prompt.ObjectText ~= ""
 		action.Text = prompt.ActionText
 		action.Position = if prompt.ObjectText ~= "" then UDim2.fromOffset(10, 22) else UDim2.fromOffset(10, 13)
+		-- The plate is only as wide as its text (Dev: it was far too long). Montserrat Heavy
+		-- runs about 0.64 of the text size per letter.
+		local textWidth = math.max(utf8.len(prompt.ActionText) or 0, 1) * 24 * 0.64
+		local objectWidth = (utf8.len(prompt.ObjectText) or 0) * 16 * 0.6
+		local plateWidth = math.clamp(math.ceil(math.max(textWidth, objectWidth)) + 24, 80, 260)
+		gui.Size = UDim2.fromOffset(64 + plateWidth + 6, 64)
 	end
 	refresh()
 
