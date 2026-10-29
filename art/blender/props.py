@@ -11,6 +11,7 @@ from mathutils import Euler, Matrix, Vector
 from lib import (Asset, use, sphere, ico, box, cyl, cone, torus, capsule, tube, join,
                  deform, noise_deform)
 from aliens import shade, eye
+import eggs
 
 DARK = "1B1530"
 WHITE = "FFFFFF"
@@ -972,7 +973,7 @@ def signpost():
 
 
 ALL = {}
-for k, fn in EGGS.items():
+for k, fn in eggs.EGGS.items():  # round eggs live in eggs.py (props.EGGS is the old blocky set)
     ALL[f"Egg_{k}"] = fn
 for k, (fn, grip) in TOOLS.items():
     ALL[f"Tool_{k}"] = (lambda k=k, fn=fn, grip=grip: hand_tool(k, fn, grip))

@@ -210,9 +210,15 @@ function AssetLibrary.alien(alienId: string, mutation: string?): Model
 	return model
 end
 
--- An egg model with its pivot at the bottom. Anchored, no collisions. Eggs are built from
--- parts with Roblox stud surfaces (EggModel), not uploaded meshes, for the exact stud look.
+-- An egg model with its pivot at the bottom. Anchored, no collisions. The round Blender
+-- eggs (art/blender/eggs.py) are used once loaded; EggModel's part-built egg is only a
+-- stand-in until then.
 function AssetLibrary.egg(rarity: string): Model
+	local model = AssetLibrary.get("Egg_" .. rarity)
+	if model then
+		model.Name = rarity .. "Egg"
+		return model
+	end
 	return EggModel.build(rarity)
 end
 

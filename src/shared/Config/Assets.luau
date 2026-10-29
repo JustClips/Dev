@@ -2261,10 +2261,10 @@ Assets.Models = {
 	},
 	Egg_Common = {
 		bounds = {
-			max = Vector3.new(0.95, 2.4, 0.95),
-			min = Vector3.new(-0.95, 0.0, -1.02),
+			max = Vector3.new(1.26, 3.12, 1.26),
+			min = Vector3.new(-1.26, 0.0, -1.26),
 		},
-		id = 77201293955950,
+		id = 130386544112081,
 		kind = "egg",
 		parts = {
 			Body = {
@@ -2274,10 +2274,10 @@ Assets.Models = {
 	},
 	Egg_Cosmic = {
 		bounds = {
-			max = Vector3.new(1.47, 2.4, 1.381),
-			min = Vector3.new(-1.47, 0.0, -1.381),
+			max = Vector3.new(1.26, 3.84, 1.26),
+			min = Vector3.new(-1.26, 0.0, -1.26),
 		},
-		id = 124873211018720,
+		id = 102246222999174,
 		kind = "egg",
 		parts = {
 			Body = {
@@ -2285,17 +2285,17 @@ Assets.Models = {
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "78FFF0",
+				glow = "FFF2A0",
 				parent = "Body",
 			},
 		},
 	},
 	Egg_Epic = {
 		bounds = {
-			max = Vector3.new(1.026, 2.4, 0.998),
-			min = Vector3.new(-0.998, 0.0, -0.998),
+			max = Vector3.new(1.26, 3.744, 1.26),
+			min = Vector3.new(-1.26, 0.0, -1.26),
 		},
-		id = 117066897044247,
+		id = 122271978892336,
 		kind = "egg",
 		parts = {
 			Body = {
@@ -2303,17 +2303,17 @@ Assets.Models = {
 			},
 			Body_Glow = {
 				collide = false,
-				glow = "F0B4FF",
+				glow = "F3BFFF",
 				parent = "Body",
 			},
 		},
 	},
 	Egg_Legendary = {
 		bounds = {
-			max = Vector3.new(1.049, 2.4, 1.049),
-			min = Vector3.new(-1.046, 0.0, -0.998),
+			max = Vector3.new(1.26, 3.496, 1.26),
+			min = Vector3.new(-1.26, 0.0, -1.26),
 		},
-		id = 111935492569857,
+		id = 88907477529336,
 		kind = "egg",
 		parts = {
 			Body = {
@@ -2328,28 +2328,23 @@ Assets.Models = {
 	},
 	Egg_Mythic = {
 		bounds = {
-			max = Vector3.new(0.992, 2.4, 0.988),
-			min = Vector3.new(-0.999, 0.0, -0.988),
+			max = Vector3.new(1.26, 3.377, 1.26),
+			min = Vector3.new(-1.26, 0.0, -1.26),
 		},
-		id = 122766918647297,
+		id = 136581919723290,
 		kind = "egg",
 		parts = {
 			Body = {
 				collide = false,
 			},
-			Body_Glow = {
-				collide = false,
-				glow = "FF7A3C",
-				parent = "Body",
-			},
 		},
 	},
 	Egg_Rare = {
 		bounds = {
-			max = Vector3.new(0.998, 2.4, 1.069),
-			min = Vector3.new(-0.998, 0.0, -1.065),
+			max = Vector3.new(1.26, 3.12, 1.26),
+			min = Vector3.new(-1.26, 0.0, -1.26),
 		},
-		id = 91081142335482,
+		id = 76528707678910,
 		kind = "egg",
 		parts = {
 			Body = {
@@ -2359,10 +2354,10 @@ Assets.Models = {
 	},
 	Egg_Uncommon = {
 		bounds = {
-			max = Vector3.new(0.998, 2.4, 0.998),
-			min = Vector3.new(-1.068, 0.0, -0.998),
+			max = Vector3.new(1.26, 3.625, 1.26),
+			min = Vector3.new(-1.26, 0.0, -1.26),
 		},
-		id = 96171924888884,
+		id = 79356633766910,
 		kind = "egg",
 		parts = {
 			Body = {

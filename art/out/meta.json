@@ -4507,14 +4507,14 @@
  "Egg_Common": {
   "bounds": {
    "max": [
-    0.95,
-    2.4,
-    0.95
+    1.26,
+    3.12,
+    1.26
    ],
    "min": [
-    -0.95,
+    -1.26,
     0.0,
-    -1.02
+    -1.26
    ]
   },
   "kind": "egg",
@@ -4528,19 +4528,19 @@
     "parent": null
    }
   },
-  "tris": 1920
+  "tris": 3920
  },
  "Egg_Cosmic": {
   "bounds": {
    "max": [
-    1.47,
-    2.4,
-    1.381
+    1.26,
+    3.84,
+    1.26
    ],
    "min": [
-    -1.47,
+    -1.26,
     0.0,
-    -1.381
+    -1.26
    ]
   },
   "kind": "egg",
@@ -4555,25 +4555,25 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "78FFF0",
+    "glow": "FFF2A0",
     "joint": null,
     "material": null,
     "parent": "Body"
    }
   },
-  "tris": 4516
+  "tris": 3960
  },
  "Egg_Epic": {
   "bounds": {
    "max": [
-    1.026,
-    2.4,
-    0.998
+    1.26,
+    3.744,
+    1.26
    ],
    "min": [
-    -0.998,
+    -1.26,
     0.0,
-    -0.998
+    -1.26
    ]
   },
   "kind": "egg",
@@ -4588,25 +4588,25 @@
    },
    "Body_Glow": {
     "collide": false,
-    "glow": "F0B4FF",
+    "glow": "F3BFFF",
     "joint": null,
     "material": null,
     "parent": "Body"
    }
   },
-  "tris": 1392
+  "tris": 3970
  },
  "Egg_Legendary": {
   "bounds": {
    "max": [
-    1.049,
-    2.4,
-    1.049
+    1.26,
+    3.496,
+    1.26
    ],
    "min": [
-    -1.046,
+    -1.26,
     0.0,
-    -0.998
+    -1.26
    ]
   },
   "kind": "egg",
@@ -4627,19 +4627,19 @@
     "parent": "Body"
    }
   },
-  "tris": 5832
+  "tris": 4694
  },
  "Egg_Mythic": {
   "bounds": {
    "max": [
-    0.992,
-    2.4,
-    0.988
+    1.26,
+    3.377,
+    1.26
    ],
    "min": [
-    -0.999,
+    -1.26,
     0.0,
-    -0.988
+    -1.26
    ]
   },
   "kind": "egg",
@@ -4651,28 +4651,21 @@
     "joint": null,
     "material": null,
     "parent": null
-   },
-   "Body_Glow": {
-    "collide": false,
-    "glow": "FF7A3C",
-    "joint": null,
-    "material": null,
-    "parent": "Body"
    }
   },
-  "tris": 3960
+  "tris": 5120
  },
  "Egg_Rare": {
   "bounds": {
    "max": [
-    0.998,
-    2.4,
-    1.069
+    1.26,
+    3.12,
+    1.26
    ],
    "min": [
-    -0.998,
+    -1.26,
     0.0,
-    -1.065
+    -1.26
    ]
   },
   "kind": "egg",
@@ -4686,19 +4679,19 @@
     "parent": null
    }
   },
-  "tris": 2592
+  "tris": 3920
  },
  "Egg_Uncommon": {
   "bounds": {
    "max": [
-    0.998,
-    2.4,
-    0.998
+    1.26,
+    3.625,
+    1.26
    ],
    "min": [
-    -1.068,
+    -1.26,
     0.0,
-    -0.998
+    -1.26
    ]
   },
   "kind": "egg",
@@ -4712,7 +4705,7 @@
     "parent": null
    }
   },
-  "tris": 2592
+  "tris": 4404
  },
  "Fence": {
   "bounds": {
