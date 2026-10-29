@@ -276,7 +276,12 @@ function DataService:SaveNow(player: Player): boolean
 	finalize(session)
 	local ok = session.Profile:SaveAsync()
 	if session.Profile.Lost then
-		sessions[player] = nil
+		-- Someone else took the save: clean up here (base, pets...) without saving, so
+		-- nothing is left on the map, then kick.
+		if sessions[player] == session then
+			DataService.ProfileReleasing:Fire(player, session)
+			sessions[player] = nil
+		end
 		kick(player, "Your save was opened on another server.")
 	end
 	return ok

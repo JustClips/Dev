@@ -87,6 +87,17 @@ function BaseService:Init(services)
 			S.WorldService:SetOwnerName(index, nil)
 		end
 	end)
+	-- Safety net: whatever happened to the save, a player who left never keeps a base.
+	Players.PlayerRemoving:Connect(function(player: Player)
+		task.defer(function()
+			for index, owner in owners do
+				if owner == player then
+					owners[index] = nil
+					S.WorldService:SetOwnerName(index, nil)
+				end
+			end
+		end)
+	end)
 end
 
 return BaseService

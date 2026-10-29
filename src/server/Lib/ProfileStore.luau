@@ -80,15 +80,16 @@ function ProfileStore:LoadAsync(key: string, isActive: () -> boolean): (Profile?
 				local stale = now - (record.Meta.LastUpdate or 0) >= self._stale
 				-- Same JobId but not one of our live sessions: a dead Studio run. Safe to take.
 				local deadLocal = session.JobId == game.JobId and not activeTokens[session.Token]
-				-- Studio test runs always take the save: a stopped run often can't release
-				-- its lock, and waiting on it left the loading screen stuck on "Loading
-				-- your save" (Dev, 2026-10-29).
-				if not stale and not deadLocal and not RunService:IsStudio() then
+				-- A Studio test run takes over a lock left by an earlier Studio run (a stopped
+				-- run often can't release it, and waiting left the loading screen stuck), but
+				-- never one held by a live server: that kicked a player out of the real game.
+				local oldStudioRun = RunService:IsStudio() and session.Studio == true
+				if not stale and not deadLocal and not oldStudioRun then
 					locked = true
 					return nil -- cancel the write
 				end
 			end
-			record.Meta.Session = { JobId = game.JobId, Token = token, Time = now }
+			record.Meta.Session = { JobId = game.JobId, Token = token, Time = now, Studio = RunService:IsStudio() }
 			record.Meta.LastUpdate = now
 			record.Meta.LoadCount = (record.Meta.LoadCount or 0) + 1
 			loaded = record
