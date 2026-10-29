@@ -875,25 +875,31 @@ local function scatter(rng: Random, zone, names: { string }, count: number)
 	end
 end
 
-local CLIFFS = { "Cliff_1", "Cliff_2", "Cliff_3" }
+local CLIFFS = { "Cliff_1", "Cliff_2", "Cliff_3", "Cliff_4" }
 local BOULDERS = { "Boulder_1", "Boulder_2", "Boulder_3", "Boulder_1", "Boulder_3" }
 
 -- A row of cliff pieces from a to b (x, z), stepped front facing inward. Pieces overlap a
 -- little (their turf tops run past the ends), so the wall has no gaps. scale > 1 makes a
 -- taller back row.
 local function cliffRow(rng: Random, a: Vector2, b: Vector2, inward: Vector2, scale: number)
+	-- Cliff_* pieces are 24 long with the same profile at both ends, so they join edge to
+	-- edge into one wall: space them exactly one piece apart (scaled to fit the row), all
+	-- the same size and facing, so the joins line up.
 	local dir = (b - a).Unit
 	local length = (b - a).Magnitude
-	local step = 21.5 * scale
-	local count = math.max(1, math.ceil(length / step))
+	local count = math.max(1, math.round(length / (24 * scale)))
+	local s = length / (count * 24)
 	local face = Vector3.new(inward.X, 0, inward.Y)
-	for k = 0, count do
-		local p = a + dir * (length * k / count)
+	local last = ""
+	for k = 0, count - 1 do
+		local p = a + dir * (length * (k + 0.5) / count)
 		local name = CLIFFS[rng:NextInteger(1, #CLIFFS)]
+		if name == last then
+			name = CLIFFS[(table.find(CLIFFS, name) :: number) % #CLIFFS + 1]
+		end
+		last = name
 		local pos = Vector3.new(p.X, 0, p.Y)
-		-- a touch of wobble so the line doesn't look ruled
-		local cf = CFrame.lookAt(pos, pos + face) * CFrame.Angles(0, math.rad(rng:NextNumber(-4, 4)), 0)
-		place(name, cf, scale * rng:NextNumber(0.95, 1.08))
+		place(name, CFrame.lookAt(pos, pos + face), s)
 	end
 end
 
