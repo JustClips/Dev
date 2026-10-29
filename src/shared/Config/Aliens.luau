@@ -15,13 +15,26 @@ type AlienDef = Types.AlienDef
 -- back to the Common pool (Aliens.pool). Saves holding removed pets are converted
 -- to these on load (DataService).
 local List: { AlienDef } = {
-	{ Id = "Cat", Name = "Cat", Rarity = "Common", Income = 1, Color = Color3.fromRGB(242, 138, 46), Size = 1.8 },
-	{ Id = "Dog", Name = "Dog", Rarity = "Common", Income = 1.5, Color = Color3.fromRGB(217, 140, 69), Size = 2 },
-	{ Id = "Bunny", Name = "Bunny", Rarity = "Common", Income = 2, Color = Color3.fromRGB(244, 241, 236), Size = 2.2 },
+	{ Id = "Cat", Name = "Cat", Rarity = "Common", Income = 1, Color = Color3.fromRGB(242, 138, 46), Size = 1.8,
+		Passive = { Name = "Lucky Paws", Stat = "Crit", Value = 0.02 } },
+	{ Id = "Dog", Name = "Dog", Rarity = "Common", Income = 1.5, Color = Color3.fromRGB(217, 140, 69), Size = 2,
+		Passive = { Name = "Good Boy", Stat = "PetIncome", Value = 0.03 } },
+	{ Id = "Bunny", Name = "Bunny", Rarity = "Common", Income = 2, Color = Color3.fromRGB(244, 241, 236), Size = 2.2,
+		Passive = { Name = "Quick Hop", Stat = "HatchSpeed", Value = 0.05 } },
 
-	{ Id = "Squirrel", Name = "Squirrel", Rarity = "Uncommon", Income = 6, Color = Color3.fromRGB(185, 88, 42), Size = 2 },
-	{ Id = "Raccoon", Name = "Raccoon", Rarity = "Uncommon", Income = 8, Color = Color3.fromRGB(143, 140, 137), Size = 2.1 },
-	{ Id = "Duck", Name = "Duck", Rarity = "Uncommon", Income = 10, Color = Color3.fromRGB(255, 212, 59), Size = 2 },
+	{ Id = "Squirrel", Name = "Squirrel", Rarity = "Uncommon", Income = 6, Color = Color3.fromRGB(185, 88, 42), Size = 2,
+		Passive = { Name = "Hoarder", Stat = "Backpack", Value = 0.1 } },
+	{ Id = "Raccoon", Name = "Raccoon", Rarity = "Uncommon", Income = 8, Color = Color3.fromRGB(143, 140, 137), Size = 2.1,
+		Passive = { Name = "Trash Bandit", Stat = "DustValue", Value = 0.1 } },
+	{ Id = "Duck", Name = "Duck", Rarity = "Uncommon", Income = 10, Color = Color3.fromRGB(255, 212, 59), Size = 2,
+		Passive = { Name = "Splash Combo", Stat = "ComboTime", Value = 0.5 } },
+
+	{ Id = "Fox", Name = "Fox", Rarity = "Rare", Income = 30, Color = Color3.fromRGB(232, 116, 42), Size = 2.2,
+		Passive = { Name = "Sly Luck", Stat = "Luck", Value = 0.08 } },
+	{ Id = "Turtle", Name = "Turtle", Rarity = "Rare", Income = 40, Color = Color3.fromRGB(124, 196, 106), Size = 1.6,
+		Passive = { Name = "Slow and Steady", Stat = "Offline", Value = 0.25 } },
+	{ Id = "Penguin", Name = "Penguin", Rarity = "Rare", Income = 50, Color = Color3.fromRGB(38, 40, 46), Size = 2.4,
+		Passive = { Name = "Ice Slide", Stat = "Golden", Value = 0.15 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new

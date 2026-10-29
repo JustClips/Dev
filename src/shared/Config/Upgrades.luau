@@ -177,6 +177,8 @@ for _, group in { Main, Eggs, Lucky, Pets } do
 end
 
 local Upgrades = {
+	-- Extra stat bonuses for a player's levels table (pet passives). Set by the server.
+	extra = nil :: ((levels: { [string]: number }) -> { [string]: number }?)?,
 	List = List,
 	ById = {} :: { [string]: UpgradeDef },
 	Stats = Stats,
@@ -264,6 +266,14 @@ function Upgrades.stat(levels: { [string]: number }?, stat: string): number
 		local level = levels[def.Id]
 		if level and level > 0 then
 			total += def.PerLevel * math.min(level, def.MaxLevel)
+		end
+	end
+	-- Pet passives (shared/PetPassives) add to the same stats; the server sets this hook.
+	local extra = Upgrades.extra
+	if extra then
+		local bonus = extra(levels)
+		if bonus and bonus[stat] then
+			total += bonus[stat]
 		end
 	end
 	return total

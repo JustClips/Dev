@@ -864,6 +864,69 @@ Assets.Models = {
 			},
 		},
 	},
+	Alien_Fox = {
+		anims = {
+			idle = "Pet_Fox_Idle",
+			walk = "Pet_Fox_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.52, 2.08, 1.69),
+			min = Vector3.new(-0.52, 0.0, -1.82),
+		},
+		id = 102442621955053,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.325, 1.69, -0.975),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.325, 1.69, -0.975),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.04, -0.78),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.52, 0.52),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.52, 0.52),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.52, -0.52),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.52, -0.52),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.91, 0.78),
+				parent = "Body",
+			},
+			Tail2 = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.91, 1.17),
+				parent = "Tail",
+			},
+		},
+		voxel = true,
+	},
 	Alien_FrostEclipseDragon = {
 		bounds = {
 			max = Vector3.new(2.057, 2.836, 2.425),
@@ -1816,6 +1879,54 @@ Assets.Models = {
 			},
 		},
 	},
+	Alien_Penguin = {
+		anims = {
+			idle = "Pet_Penguin_Idle",
+			walk = "Pet_Penguin_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.65, 2.21, 0.65),
+			min = Vector3.new(-0.65, 0.0, -0.65),
+		},
+		id = 98067690150618,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.56, 0.0),
+				parent = "Body",
+			},
+			LegL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.13, -0.13),
+				parent = "Body",
+			},
+			LegR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.13, -0.13),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.26, 0.52),
+				parent = "Body",
+			},
+			WingL = {
+				collide = false,
+				joint = Vector3.new(-0.52, 1.3, 0.065),
+				parent = "Body",
+			},
+			WingR = {
+				collide = false,
+				joint = Vector3.new(0.52, 1.3, 0.065),
+				parent = "Body",
+			},
+		},
+		voxel = true,
+	},
 	Alien_QuasarPup = {
 		bounds = {
 			max = Vector3.new(0.722, 1.95, 1.26),
@@ -2411,6 +2522,54 @@ Assets.Models = {
 				parent = "Body",
 			},
 		},
+	},
+	Alien_Turtle = {
+		anims = {
+			idle = "Pet_Turtle_Idle",
+			walk = "Pet_Turtle_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.65, 1.04, 1.04),
+			min = Vector3.new(-0.65, 0.0, -1.3),
+		},
+		id = 139176147876194,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.52, -0.78),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.52, 0.26, 0.52),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.52, 0.26, 0.52),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.52, 0.26, -0.52),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.52, 0.26, -0.52),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 0.39, 0.78),
+				parent = "Body",
+			},
+		},
+		voxel = true,
 	},
 	Alien_VoidKing = {
 		bounds = {
@@ -4206,12 +4365,18 @@ Assets.Animations = {
 	Pet_Dog_Walk = 135950191965326,
 	Pet_Duck_Idle = 91610326371606,
 	Pet_Duck_Walk = 80574806898586,
+	Pet_Fox_Idle = 109128476923830,
+	Pet_Fox_Walk = 135677116430810,
 	Pet_Happy = 104759341584430,
 	Pet_Idle = 90304779560671,
+	Pet_Penguin_Idle = 74015464086714,
+	Pet_Penguin_Walk = 105554717136142,
 	Pet_Raccoon_Idle = 122273785089414,
 	Pet_Raccoon_Walk = 92497386642774,
 	Pet_Squirrel_Idle = 115743019468626,
 	Pet_Squirrel_Walk = 92620001039536,
+	Pet_Turtle_Idle = 130490758402224,
+	Pet_Turtle_Walk = 90089893841715,
 	Pet_Walk = 140251033269648,
 	Player_Hold = 129888683850993,
 	Player_Sweep = 98110507730768,

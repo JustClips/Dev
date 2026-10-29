@@ -409,7 +409,107 @@ def duck():
     return assemble("Duck", parts)
 
 
-PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck}
+# ----------------------------------------------------------------------------- fox
+
+
+def fox():
+    O, W, D = "E8742A", "F7F1E8", "2B2220"
+    parts = legs(O, D, 4, -5, 3)
+    for p in parts:
+        for c in list(p.cells):
+            if c[2] <= 1:
+                p.cells[c] = D                              # black socks
+    body = Part("Body")
+    body.box(-3, 3, -6, 6, 4, 9, lambda i, j, k: W if (k == 4 and -5 <= j <= 3) or (j == -6 and k <= 7 and -2 <= i <= 1) else O)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -6, 8))
+    head.box(-4, 4, -11, -5, 7, 13, lambda i, j, k: W if j == -11 and k <= 8 and i in (-4, -3, 2, 3) else O)
+    eyes(head, -11, 9)
+    head.box(-2, 2, -14, -11, 7, 9, lambda i, j, k: O if k == 8 and abs(i + 0.5) < 1 else W)   # snout
+    head.set([(-1, -14, 8), (0, -14, 8)], D)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2.5, -7.5, 13))
+    for k, xs in ((13, (1, 2, 3)), (14, (2, 3)), (15, (3,))):
+        for x in xs:
+            ear.cells[(x, -8, k)] = D if k == 15 else (W if (k == 13 and x == 2) else O)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 6, 7))
+    tail.box(-1, 1, 6, 9, 6, 9, O)
+    tail2 = Part("Tail2", "Tail", joint=(0, 9, 7))
+    tail2.rbox(-2, 2, 8, 13, 5, 10, lambda i, j, k: W if j >= 11 else O, edges=(True, False, True))
+    parts += [tail, tail2]
+    return assemble("Fox", parts)
+
+
+# -------------------------------------------------------------------------- turtle
+
+
+def turtle():
+    G, S, P, R, Y = "7CC46A", "4F7F33", "8DB45A", "C9B06A", "E9D89A"   # skin, shell, plate, rim, belly
+    parts = []
+    for name, x0, y0 in (("LegFL", 3, -5), ("LegFR", -5, -5), ("LegBL", 3, 3), ("LegBR", -5, 3)):
+        p = Part(name, "Body", joint=(x0 + 1, y0 + 1, 2))
+        p.box(x0, x0 + 2, y0, y0 + 2, 0, 2, G)
+        parts.append(p)
+
+    def shell(i, j, k):
+        if k == 2:
+            return Y
+        if k == 3:
+            return R
+        if (i % 3 == 0) or (j % 3 == 0):
+            return S
+        return P
+    body = Part("Body")
+    body.rbox(-5, 5, -6, 6, 2, 7, shell)
+    body.rbox(-3, 3, -4, 4, 7, 8, lambda i, j, k: S if (i % 3 == 0 or j % 3 == 0) else P, edges=(False, False, True))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -6, 4))
+    head.rbox(-3, 3, -10, -5, 3, 8, G, edges=(True, False, False))
+    eyes(head, -10, 5, xs=(-2, 1), w=1, h=2)
+    head.set([(-1, -10, 4), (0, -10, 4)], shade(G, -0.35))     # smile
+    parts.append(head)
+    tail = Part("Tail", "Body", joint=(0, 6, 3))
+    tail.box(-1, 1, 6, 8, 3, 4, G)
+    parts.append(tail)
+    return assemble("Turtle", parts)
+
+
+# ------------------------------------------------------------------------- penguin
+
+
+def penguin():
+    B, W, Y, O = "26282E", "F4F4F0", "FFC93C", "FF8A1F"
+    parts = []
+    foot = Part("LegL", "Body", joint=(2, -1, 1))
+    foot.box(1, 3, -3, 0, 0, 1, O)
+    parts += [foot, foot.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-4, 4, -3, 4, 1, 12, lambda i, j, k: W if (j == -3 and -3 <= i <= 2 and 2 <= k <= 9) else B)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, 0, 12))
+
+    def hcol(i, j, k):
+        if j == -3 and -2 <= i <= 1 and 12 <= k <= 14:
+            return W
+        if j == -3 and i in (-3, 2) and k == 12:
+            return Y                                        # yellow cheeks
+        return B
+    head.rbox(-3, 3, -3, 3, 12, 17, hcol)
+    eyes(head, -3, 14, xs=(-2, 1), w=1, h=2)
+    head.box(-1, 1, -5, -3, 13, 14, O)                     # beak
+    parts.append(head)
+    wing = Part("WingL", "Body", joint=(4, 0.5, 10))
+    wing.box(4, 5, -1, 2, 4, 10, B)
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 4, 2))
+    tail.box(-1, 1, 4, 5, 1, 3, B)
+    parts.append(tail)
+    return assemble("Penguin", parts)
+
+
+PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
+        "Fox": fox, "Turtle": turtle, "Penguin": penguin}
 
 
 # ------------------------------------------------------------------------- animation
@@ -534,6 +634,58 @@ def waddle(w):
     }
 
 
+def fox_idle(w):
+    sit = 1 - c(w)                                         # settles down a little, then back
+    return {
+        "Body": ((0, 0, -0.03 * sit), (-4 * sit, 0, 0)),
+        "Head": ((0, 0, 0), (4 * sit - 3 * s(2 * w), 6 * s(w + 1), 14 * s(w))),
+        "LegBL": ((0, 0, 0), (-12 * sit, 0, 0)), "LegBR": ((0, 0, 0), (-12 * sit, 0, 0)),
+        "EarL": ((0, 0, 0), (0, -14 * max(0.0, s(4 * w)) ** 8, 0)),
+        "EarR": ((0, 0, 0), (0, 10 * max(0.0, s(4 * w + 2)) ** 8, 0)),
+        "Tail": ((0, 0, 0), (-6, 0, 14 * s(w))),
+        "Tail2": ((0, 0, 0), (8 * s(2 * w), 0, 30 * s(w - 0.9))),
+    }
+
+
+def turtle_idle(w):
+    peek = (1 - c(w)) / 2                                  # head slides in and out of the shell
+    return {
+        "Body": ((0, 0, 0.006 * s(2 * w)), (0, 0, 0)),
+        "Head": ((0, 0.26 * peek, -0.03 * peek), (-6 * s(2 * w) * (1 - peek), 0, 10 * s(3 * w) * (1 - peek))),
+        "LegFL": ((0, 0, 0), (0, 0, 8 * s(4 * w))), "LegFR": ((0, 0, 0), (0, 0, -8 * s(4 * w))),
+        "Tail": ((0, 0, 0), (0, 0, 20 * s(6 * w))),
+    }
+
+
+def crawl(w):
+    leg = 22 * s(w)
+    return {
+        "Body": ((0, 0, 0.02 * abs(s(w))), (0, 3 * s(w), 2 * s(w))),
+        "Head": ((0, 0, 0), (-4 * s(2 * w), 0, -6 * s(w))),
+        "LegFL": ((0, 0, 0), (leg, 0, 0)), "LegBR": ((0, 0, 0), (leg, 0, 0)),
+        "LegFR": ((0, 0, 0), (-leg, 0, 0)), "LegBL": ((0, 0, 0), (-leg, 0, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 15 * s(w))),
+    }
+
+
+def penguin_idle(w):
+    flap = 40 * max(0.0, s(5 * w)) * (s(w) > 0.5)
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 4 * s(w), 0)),
+        "Head": ((0, 0, 0), (-6 * s(2 * w), 8 * s(w + 1), 16 * s(w))),
+        "WingL": ((0, 0, 0), (0, -10 - flap, 0)), "WingR": ((0, 0, 0), (0, 10 + flap, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 12 * s(4 * w))),
+    }
+
+
+def penguin_walk(w):
+    p = waddle(w)
+    p["Body"] = ((0, 0, 0.04 * abs(s(w))), (0, 14 * s(w), 8 * s(w)))
+    p["WingL"] = ((0, 0, 0), (0, -25 - 15 * abs(s(w)), 0))
+    p["WingR"] = ((0, 0, 0), (0, 25 + 15 * abs(s(w)), 0))
+    return p
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -541,6 +693,9 @@ ANIMS = {
     "Squirrel": {"Idle": squirrel_idle, "Walk": walk(36, 0.1, 10, -10, 0)},
     "Raccoon": {"Idle": raccoon_idle, "Walk": walk(28, 0.04, 16, 4, 6)},
     "Duck": {"Idle": duck_idle, "Walk": waddle},
+    "Fox": {"Idle": fox_idle, "Walk": walk(32, 0.05, 18, 0, 6)},
+    "Turtle": {"Idle": turtle_idle, "Walk": crawl},
+    "Penguin": {"Idle": penguin_idle, "Walk": penguin_walk},
 }
 
 
@@ -664,7 +819,7 @@ def main(keys):
     for k in keys or PETS:
         _, m, _ = build(k)
         allm[m["name"]] = m
-    json.dump(allm, open(meta_path, "w"), indent=1, sort_keys=True)
+    json.dump(allm, open(meta_path, "w"), indent=1)
 
 
 if __name__ == "__main__":

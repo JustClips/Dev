@@ -13,6 +13,7 @@ local Ui = require(Client.Ui)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
+local PetPassives = require(Shared.PetPassives)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Zones = require(Shared.Config.Zones)
@@ -107,8 +108,9 @@ local function renderDetail(data)
 	rarityLabel.TextColor3 = rarity.Color
 	incomeLabel.Text = if known then `{Format.cash(def.Income)}/s` else ""
 	local zone = Zones.ById[def.Zone or "Landing"]
+	local passive = PetPassives.describe(def.Id)
 	hint.Text = if known
-		then "Hatched! Golden and Rainbow ones earn even more."
+		then (if passive then `{passive} (pet passive, works while placed)` else "Hatched! Golden and Rainbow ones earn even more.")
 		else `Hatch a {def.Rarity} egg from {zone and zone.Name or "the Backyard"} to find it.`
 end
 

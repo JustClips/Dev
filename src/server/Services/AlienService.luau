@@ -12,6 +12,7 @@ local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
+local PetPassives = require(Shared.PetPassives)
 local Upgrades = require(Shared.Config.Upgrades)
 local Weights = require(Shared.Config.Weights)
 local World = require(Shared.Config.World)
@@ -256,6 +257,9 @@ end
 
 function AlienService:Init(services)
 	S = services
+	PetPassives.install(function()
+		return S.DataService:GetSessions()
+	end)
 	S.DataService.ProfileLoaded:Connect(function(player, session)
 		-- Wait for BaseService to assign the base first (same frame, earlier handler).
 		task.defer(function()

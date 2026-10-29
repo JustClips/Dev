@@ -107,6 +107,15 @@ export type AlienDef = {
 	Size: number,
 	Zone: string?, -- the zone whose eggs hatch it (nil = Landing)
 	Base: string?, -- zone variants: the Landing alien whose model they remix
+	Passive: PetPassive?, -- bonus while placed (shared/PetPassives)
+}
+
+-- A pet's passive: adds Value to an upgrade-tree stat (Config/Upgrades.Stats) while the
+-- pet is placed. Each kind counts once; a Huge copy counts double.
+export type PetPassive = {
+	Name: string,
+	Stat: string,
+	Value: number,
 }
 
 export type RarityDef = {

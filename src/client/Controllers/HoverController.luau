@@ -15,6 +15,7 @@ local Ui = require(Client.Ui)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AlienModel = require(Shared.AlienModel)
 local Aliens = require(Shared.Config.Aliens)
+local PetPassives = require(Shared.PetPassives)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Weights = require(Shared.Config.Weights)
@@ -95,6 +96,11 @@ local function showPet(model: Model)
 	if huge then
 		table.insert(lines, "HUGE")
 		color = color or Color3.fromRGB(255, 200, 60)
+	end
+	local passive = PetPassives.describe(alienId, huge)
+	if passive then
+		table.insert(lines, passive)
+		color = color or Color3.fromRGB(150, 220, 255)
 	end
 	showEffects(lines, color)
 	return true
