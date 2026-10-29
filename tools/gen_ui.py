@@ -941,8 +941,8 @@ def hatch():
                                                Ambient="#AEB8D8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=1)),
     ])
     # What hatched: plain outlined text centred above the hotbar (HatchController sets the
-    # exact height), Place / Keep under it when there's a free slot.
-    card = frame("Card", U(0, 560, 0, 150), U(0.5, 0, 1, -120), (0.5, 1), Visible=False, ZIndex=4, children=[
+    # exact height). The pet goes to your park or bag by itself.
+    card = frame("Card", U(0, 560, 0, 118), U(0.5, 0, 1, -120), (0.5, 1), Visible=False, ZIndex=4, children=[
         autoscale(),
         text("Rarity", "LEGENDARY", U(1, 0, 0, 22), U(0.5, 0, 0, 0), (0.5, 0), ts=20, display=True, stroke=2.5, ZIndex=5),
         text("Name", "", U(1, 0, 0, 46), U(0.5, 0, 0, 20), (0.5, 0), ts=40, display=True, stroke=3.5, ZIndex=5, TextScaled=True,
@@ -950,32 +950,15 @@ def hatch():
         text("Info", "", U(1, 0, 0, 26), U(0.5, 0, 0, 66), (0.5, 0), ts=21, heavy=True, stroke=2.5, ZIndex=5, RichText=True),
         text("New", "NEW!", U(0, 90, 0, 30), U(1, -20, 0, 10), (1, 0), ts=26, color=PREMIUM, display=True, stroke=3,
              Rotation=8, Visible=False, ZIndex=6),
-        frame("Choice", U(0, 420, 0, 48), U(0.5, 0, 1, 0), (0.5, 1), Visible=False, ZIndex=5, children=[
-            hlist(12),
-            button("Place", U(0, 210, 0, 48), color=SUCCESS, label="Place on base", ts=20, LayoutOrder=1, ZIndex=5),
-            button("Keep", U(0, 180, 0, 48), color=HEADER, label="Keep in bag", ts=20, LayoutOrder=2, ZIndex=5),
-        ]),
         text("Hint", "Click to skip", U(1, 0, 0, 20), U(0.5, 0, 0, 96), (0.5, 0), ts=16, heavy=True, stroke=2, ZIndex=5,
              TextTransparency=0.15),
-    ])
-    # The roll: a strip of pets that races past the marker and slows down onto the one you got.
-    reel = frame("Reel", U(0, 620, 0, 140), U(0.5, 0, 0.62, 0), (0.5, 0.5), bg=BG, BackgroundTransparency=0.35, Visible=False,
-                 ClipsDescendants=True, ZIndex=6, children=[
-        autoscale(), border(INK, 3),
-        frame("Strip", U(0, 0, 1, 0), ZIndex=6),
-        frame("Marker", U(0, 4, 1, 0), U(0.5, 0, 0, 0), (0.5, 0), bg=PREMIUM, ZIndex=9),
-        frame("Slot", U(0, 116, 0, 124), U(0, 0, 0.5, 0), (0, 0.5), bg="#1B1F3A", Visible=False, ZIndex=7, children=[
-            border(MUTED, 3),
-            node("Viewport", "ViewportFrame", base(U(1, -8, 1, -8), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
-                                                   Ambient="#AEB8D8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=8)),
-        ]),
     ])
     confetti = frame("Confetti", U(1, 0, 1, 0), ZIndex=8, children=[
         node("Template", "ImageLabel", base(U(0, 26, 0, 26), anchor=(0.5, 0.5), BackgroundTransparency=1, Image=img("Sparkle"),
                                             Visible=False, ZIndex=8)),
     ])
     flash = frame("Flash", U(1, 0, 1, 0), bg=WHITE, BackgroundTransparency=1, ZIndex=10)
-    tree = screen([stage, card, reel, confetti, flash], order=20, enabled=False, inset=True)
+    tree = screen([stage, card, confetti, flash], order=20, enabled=False, inset=True)
     tree["properties"]["ScreenInsets"] = "None"
     write("Hatch", tree)
 

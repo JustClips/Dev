@@ -22,7 +22,6 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
-local ModelView = require(Client.ModelView)
 local State = require(Client.State)
 local Ui = require(Client.Ui)
 
@@ -60,14 +59,9 @@ local rarityLabel: TextLabel
 local nameLabel: TextLabel
 local infoLabel: TextLabel
 local newBadge: GuiObject
-local reel: Frame
-local reelStrip: Frame
-local reelSlot: Frame
 local hintLabel: TextLabel
-local choice: Frame
 local confetti: Frame
 local confettiTemplate: ImageLabel
-local chosen: string? = nil
 local queue = {}
 local playing = false
 local skipRequested = false
@@ -224,7 +218,6 @@ local function showCard(info)
 	local hex = class.Color:ToHex()
 	infoLabel.Text = `<font color="#{hex}">{Weights.format(weight)} ({class.Name})</font>   +{Format.cash(income)}/s`
 	newBadge.Visible = info.IsNew == true
-	choice.Visible = false
 	hintLabel.Text = if UserInputService.TouchEnabled then "Tap to skip" else "Click to skip"
 	hintLabel.Visible = true
 	card.Visible = true
@@ -239,129 +232,19 @@ local function hideCard()
 	card.Visible = false
 end
 
--- Place on base / Keep in bag (only offered with a free slot). Returns the choice.
-local function askPlace(info): string
-	if not (info.FreeSlot and info.Uid) then
-		C.HudController:Toast("Added to your bag (press 3 or B).", "Info")
-		return "Keep"
-	end
-	hintLabel.Visible = false
-	chosen = nil
-	choice.Visible = true
-	local deadline = os.clock() + 8
-	while chosen == nil and os.clock() < deadline do
-		task.wait()
-	end
-	choice.Visible = false
-	if chosen == "Place" then
+-- Into the park when there's a free slot, otherwise into the bag. No question asked.
+local function autoPlace(info): string
+	if info.FreeSlot and info.Uid then
 		local ok, message = Net.func("Inventory"):InvokeServer("PlacePet", info.Uid)
-		if not ok and message then
+		if ok then
+			return "Place"
+		end
+		if message then
 			C.HudController:Toast(message, "Bad")
 		end
-		return "Place"
 	end
-	C.HudController:Toast("Saved in your bag (press 3 or B).", "Info")
+	C.HudController:Toast("Added to your bag (press 3 or B).", "Info")
 	return "Keep"
-end
-
------------------------------------------------------------------- the roll
-
--- Case-opening roll: a strip of pets races past the marker and slows down onto the one you
--- got. Mostly pets of the same rarity, with a few teasers from the rarities around it.
-local REEL_STEP = 124 -- slot width + gap (unscaled pixels inside the reel)
-local REEL_ITEMS = 28
-local REEL_WIN = 24
-
-local function reelPick(rarity: string): string?
-	local order = Eggs.order(rarity)
-	local r = math.random()
-	local target = rarity
-	if r < 0.2 then
-		target = (Eggs.Rarities[order + 1] or Eggs.Rarities[order]).Name
-	elseif r < 0.35 then
-		target = (Eggs.Rarities[order - 1] or Eggs.Rarities[order]).Name
-	end
-	local bucket = Aliens.ByRarity[target] or Aliens.ByRarity[rarity]
-	if not bucket or #bucket == 0 then
-		return nil
-	end
-	return bucket[math.random(1, #bucket)].Id
-end
-
-local function spinReel(info, duration: number)
-	for _, child in reelStrip:GetChildren() do
-		child:Destroy()
-	end
-	local slots: { Frame } = {}
-	for i = 1, REEL_ITEMS do
-		local id = if i == REEL_WIN then info.AlienId else reelPick(info.Rarity) or info.AlienId
-		local def = Aliens.ById[id]
-		local slot = reelSlot:Clone()
-		slot.Name = "Slot" .. i
-		slot.Visible = true
-		slot.Position = UDim2.new(0, (i - 1) * REEL_STEP, 0.5, 0)
-		local stroke = slot:FindFirstChildOfClass("UIStroke")
-		if stroke and def then
-			stroke.Color = rarityOf(def.Rarity).Color
-		end
-		slot.Parent = reelStrip
-		local view = slot:FindFirstChildOfClass("ViewportFrame")
-		if view then
-			local mutation = if i == REEL_WIN then info.Mutation else nil
-			ModelView.show(view, AssetLibrary.alien(id, mutation), "Alien_" .. id)
-		end
-		slots[i] = slot
-	end
-	local half = reel.Size.X.Offset / 2
-	local slotHalf = reelSlot.Size.X.Offset / 2
-	local function offsetFor(index: number, jitter: number): number
-		return half - ((index - 1) * REEL_STEP + slotHalf + jitter)
-	end
-	reelStrip.Position = UDim2.new(0, offsetFor(3, 0), 0, 0)
-	reel.Visible = true
-	local reelScale = reel:FindFirstChildOfClass("UIScale") :: UIScale
-	reelScale.Scale = Ui.scale() * 0.7
-	TweenService:Create(reelScale, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = Ui.scale() }):Play()
-	local finalX = offsetFor(REEL_WIN, math.random(-36, 36))
-	local tween = TweenService:Create(reelStrip, TweenInfo.new(duration, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-		{ Position = UDim2.new(0, finalX, 0, 0) })
-	tween:Play()
-	-- A tick each time a new pet passes the marker.
-	local lastIndex = -1
-	local ticker = RunService.RenderStepped:Connect(function()
-		local index = math.floor((half - reelStrip.Position.X.Offset) / REEL_STEP)
-		if index ~= lastIndex then
-			lastIndex = index
-			Ui.sound("Click", 0.9 + math.min(index, REEL_WIN) / REEL_WIN * 0.5)
-		end
-	end)
-	local start = os.clock()
-	while tween.PlaybackState == Enum.PlaybackState.Playing do
-		if skipRequested and os.clock() - start > 0.15 then
-			tween:Cancel()
-			reelStrip.Position = UDim2.new(0, finalX, 0, 0)
-			break
-		end
-		task.wait()
-	end
-	ticker:Disconnect()
-	-- The winner pops.
-	local win = slots[REEL_WIN]
-	local winStroke = win:FindFirstChildOfClass("UIStroke")
-	if winStroke then
-		winStroke.Thickness = 6
-	end
-	Ui.sound("Sparkle")
-	TweenService:Create(reelScale, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true),
-		{ Scale = Ui.scale() * 1.08 }):Play()
-	task.wait(0.35)
-	local out = TweenService:Create(reelScale, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 0.01 })
-	out:Play()
-	out.Completed:Wait()
-	reel.Visible = false
-	for _, child in reelStrip:GetChildren() do
-		child:Destroy()
-	end
 end
 
 ------------------------------------------------------------------ the show
@@ -471,6 +354,80 @@ local function sparkleBurst(scene: Scene, at: Vector3, color: Color3, count: num
 	task.delay(1.6, function()
 		anchor:Destroy()
 	end)
+end
+
+-- Case-opening roll in 3D: pets of the egg's rarity (plus a few teasers from the rarities
+-- around it) pop in and out where the egg opened, each a bit longer than the last, with a
+-- tick. A click jumps to the end. The real pet comes right after.
+local function rollPick(rarity: string): string?
+	local order = Eggs.order(rarity)
+	local r = math.random()
+	local target = rarity
+	if r < 0.2 and Eggs.Rarities[order + 1] then
+		target = Eggs.Rarities[order + 1].Name
+	elseif r < 0.35 and Eggs.Rarities[order - 1] then
+		target = Eggs.Rarities[order - 1].Name
+	end
+	local bucket = Aliens.ByRarity[target] or Aliens.ByRarity[rarity]
+	if not bucket or #bucket == 0 then
+		return nil
+	end
+	return bucket[math.random(1, #bucket)].Id
+end
+
+local function rollPets(scene: Scene, info, face: CFrame, petScale: number, count: number)
+	local light = Instance.new("Part")
+	light.Anchored = true
+	light.CanCollide = false
+	light.CanQuery = false
+	light.Transparency = 1
+	light.Size = Vector3.new(0.2, 0.2, 0.2)
+	light.CFrame = face * CFrame.new(0, 2, 0)
+	light.Parent = scene.parent
+	local glowLight = Instance.new("PointLight")
+	glowLight.Brightness = 4
+	glowLight.Range = 12
+	glowLight.Parent = light
+	local last: string? = nil
+	for k = 1, count do
+		if skipRequested then
+			break
+		end
+		local id = rollPick(info.Rarity) or info.AlienId
+		if id == last then
+			id = rollPick(info.Rarity) or id
+		end
+		last = id
+		local def = Aliens.ById[id]
+		local color = rarityOf(if def then def.Rarity else info.Rarity).Color
+		glowLight.Color = color
+		local pet = AssetLibrary.alien(id)
+		for _, d in pet:GetDescendants() do
+			if d:IsA("BasePart") then
+				d.CanCollide = false
+				d.CanQuery = false
+				d.CanTouch = false
+			end
+		end
+		local h = Instance.new("Highlight")
+		h.FillTransparency = 1
+		h.OutlineColor = color
+		h.DepthMode = Enum.HighlightDepthMode.Occluded
+		h.Parent = pet
+		local turn = CFrame.Angles(0, math.rad(math.random(-25, 25)), 0)
+		pet:PivotTo(face * turn)
+		pet.Parent = scene.parent
+		Ui.sound("Click", 0.85 + k / count * 0.6)
+		-- Each pet stays a little longer than the one before (fast flicker, then slow).
+		local hold = 0.06 + 0.3 * (k / count) ^ 2.2
+		local pop = math.min(0.08, hold * 0.5)
+		animate(pop, function(t)
+			pet:ScaleTo(math.max(0.05, petScale * (0.6 + 0.4 * backOut(t))))
+		end, true)
+		waitOrSkip(hold - pop)
+		pet:Destroy()
+	end
+	light:Destroy()
 end
 
 local function play(info)
@@ -594,24 +551,9 @@ local function play(info)
 		waitOrSkip((0.22 - i * 0.03) * tempo)
 	end
 
-	-- 3. The roll spins while the egg charges: swells up, shakes, turns white and glows.
-	local reelTime = if quick or Ui.reducedMotion() then 0 elseif big then 2.3 else 1.7
-	local reelDone = true
-	if reelTime > 0 then
-		reelDone = false
-		reel.Position = UDim2.fromScale(0.5, if scene.world then 0.3 else 0.8)
-		skipRequested = false
-		task.spawn(function()
-			local ok, err = pcall(spinReel, info, reelTime)
-			if not ok then
-				warn("[HatchController] roll: " .. tostring(err))
-				reel.Visible = false
-			end
-			reelDone = true
-		end)
-	end
+	-- 3. Charge: swells up, shakes, turns white and glows.
 	Ui.sound("Charge")
-	animate(math.max(0.6 * tempo, reelTime), function(t)
+	animate(0.6 * tempo, function(t)
 		local shake = math.rad(5) * t
 		egg:ScaleTo(scene.eggScale * (1 + 0.38 * t * t))
 		egg:PivotTo(scene.origin * CFrame.Angles(math.random(-100, 100) / 100 * shake, 0, math.random(-100, 100) / 100 * shake))
@@ -623,10 +565,7 @@ local function play(info)
 		if not scene.world then
 			glow.ImageTransparency = 1 - t * 0.7
 		end
-	end, reelTime == 0)
-	while not reelDone do
-		task.wait()
-	end
+	end, true)
 
 	-- 4. Burst!
 	Ui.sound("Crack")
@@ -644,6 +583,20 @@ local function play(info)
 	burstConfetti(screenPoint, rarity.Color, if big then 30 else 18)
 	egg:Destroy()
 
+	local petScale = Weights.visualScale(Weights.incomeMult(info.Rarity, info.Weight)) * (if info.Huge then Aliens.HugeScale else 1)
+	local face: CFrame
+	if scene.world then
+		local look = Vector3.new(camera.CFrame.Position.X, scene.origin.Position.Y, camera.CFrame.Position.Z)
+		face = CFrame.lookAt(scene.origin.Position, look)
+	else
+		face = CFrame.new() -- the window camera looks at the pet's front
+	end
+
+	-- 4b. The roll: pets flick through where the egg was, slowing down, then the real one.
+	if not quick and not Ui.reducedMotion() then
+		rollPets(scene, info, face, petScale, if big then 18 else 13)
+	end
+
 	-- 5. The pet pops out, faces you and dances.
 	local model = AssetLibrary.alien(info.AlienId, info.Mutation)
 	for _, d in model:GetDescendants() do
@@ -652,14 +605,6 @@ local function play(info)
 			d.CanQuery = false
 			d.CanTouch = false
 		end
-	end
-	local petScale = Weights.visualScale(Weights.incomeMult(info.Rarity, info.Weight)) * (if info.Huge then Aliens.HugeScale else 1)
-	local face: CFrame
-	if scene.world then
-		local look = Vector3.new(camera.CFrame.Position.X, scene.origin.Position.Y, camera.CFrame.Position.Z)
-		face = CFrame.lookAt(scene.origin.Position, look)
-	else
-		face = CFrame.new() -- the window camera looks at the pet's front
 	end
 	model:PivotTo(face)
 	model.Parent = scene.parent
@@ -703,7 +648,7 @@ local function play(info)
 	skipRequested = false
 	showCard(info)
 	waitOrSkip(REVEAL_SECONDS * tempo)
-	local placed = askPlace(info)
+	local placed = autoPlace(info)
 
 	-- 6. Wrap up: the pet hops off (to the park or your bag).
 	TweenService:Create(raysImage, TweenInfo.new(0.3), { ImageTransparency = 1 }):Play()
@@ -983,10 +928,6 @@ function HatchController:Init(controllers)
 	infoLabel = Ui.find(card, "Info")
 	newBadge = Ui.find(card, "New")
 	hintLabel = Ui.find(card, "Hint")
-	choice = Ui.find(card, "Choice")
-	reel = Ui.find(gui, "Reel")
-	reelStrip = Ui.find(reel, "Strip")
-	reelSlot = Ui.find(reel, "Slot")
 	confetti = Ui.find(gui, "Confetti")
 	confettiTemplate = Ui.find(confetti, "Template")
 	local camera = Instance.new("Camera")
@@ -1008,12 +949,6 @@ function HatchController:Start()
 	-- The "Hatched ..." text sits just above the hotbar.
 	Ui.onScale(function(sc: number)
 		card.Position = UDim2.new(0.5, 0, 1, -(14 + math.ceil(100 * sc)))
-	end)
-	Ui.button(Ui.find(choice, "Place"), function()
-		chosen = "Place"
-	end)
-	Ui.button(Ui.find(choice, "Keep"), function()
-		chosen = "Keep"
 	end)
 	for _, egg in CollectionService:GetTagged("HatchingEgg") do
 		track(egg)
