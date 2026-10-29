@@ -268,7 +268,7 @@
       "BackgroundTransparency": 1,
       "Text": "",
       "TextColor3": "#C8D0E8",
-      "TextSize": 15,
+      "TextSize": 16,
       "TextXAlignment": "Left",
       "TextYAlignment": "Center",
       "TextWrapped": false,
@@ -278,7 +278,8 @@
        "weight": "Heavy",
        "style": "Normal"
       },
-      "LayoutOrder": 4
+      "LayoutOrder": 4,
+      "TextScaled": true
      },
      "children": [
       {
@@ -289,6 +290,14 @@
         "Thickness": 2,
         "ApplyStrokeMode": "Contextual",
         "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Fit",
+       "className": "UITextSizeConstraint",
+       "properties": {
+        "MaxTextSize": 16,
+        "MinTextSize": 12
        }
       }
      ]

@@ -141,6 +141,29 @@ def plate(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), tint=SURFACE, children=N
     return frame(name, size, pos, anchor, bg=tint, children=kids + (children or []), **extra)
 
 
+MIN_TS = 16  # smallest text size anywhere (Dev: small labels and badge numbers were unreadable)
+MIN_FIT = 12  # the smallest a fitted label may shrink to
+
+
+def readable(p, children):
+    """Keeps a label readable: never below MIN_TS. A label that had to grow shrinks back to
+    fit its box (TextScaled + Fit) instead of spilling out. Returns extra children."""
+    for c in children or []:
+        if c and c.get("name") == "Fit":
+            fit = c["properties"]
+            fit["MaxTextSize"] = max(fit.get("MaxTextSize", MIN_TS), MIN_TS)
+            fit["MinTextSize"] = max(fit.get("MinTextSize", MIN_FIT), MIN_FIT)
+            p["TextSize"] = max(p["TextSize"], MIN_TS)
+            return []
+    if p["TextSize"] >= MIN_TS:
+        return []
+    p["TextSize"] = MIN_TS
+    if p.get("AutomaticSize") or p.get("TextScaled"):
+        return []
+    p["TextScaled"] = True
+    return [node("Fit", "UITextSizeConstraint", {"MaxTextSize": MIN_TS, "MinTextSize": MIN_FIT})]
+
+
 def text(name, value, size, pos=U(0, 0, 0, 0), anchor=(0, 0), ts=20, color=WHITE, display=False, heavy=False,
          stroke=None, xa="Center", ya="Center", children=None, **extra):
     p = base(size, pos, anchor, BackgroundTransparency=1, Text=value, TextColor3=color, TextSize=ts,
@@ -153,6 +176,7 @@ def text(name, value, size, pos=U(0, 0, 0, 0), anchor=(0, 0), ts=20, color=WHITE
     kids = []
     if stroke:
         kids.append(text_stroke(stroke))
+    kids += readable(p, children)
     return node(name, "TextLabel", p, kids + (children or []))
 
 
@@ -191,15 +215,13 @@ def button(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), color=SUCCESS, label=No
 BADGE_RED = "#FF2E4D"
 
 
-def badge(z=6, px=24):
-    """Count badge: a round red bubble (Dev asked for a circle) with a white ring, a glossy
-    top and a white number. The one exception to the no-rounded-corners rule. Controllers
-    set it with Ui.setBadge, which widens it into a pill for 2-3 digits and pops it."""
-    return frame("Badge", U(0, px, 0, px), U(1, 4, 0, -8), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, children=[
-        node("Round", "UICorner", {"CornerRadius": [1, 0]}),
-        node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2.5, "ApplyStrokeMode": "Border"}),
-        node("Gloss", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.5, WHITE], [1, "#B8B8B8"]]}, "Rotation": 90}),
-        text("Label", "1", U(1, 0, 1, 0), ts=px - 9, display=True, stroke=2, ZIndex=z + 1),
+def badge(z=6, px=30):
+    """Count badge: a red square with a white outline and a big white number (Dev wanted the
+    square back, with a number you can read). Controllers set it with Ui.setBadge, which
+    widens it for 2-3 digits and pops it when the count goes up."""
+    return frame("Badge", U(0, px, 0, px), U(1, 6, 0, -10), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, children=[
+        node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2.5, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
+        text("Label", "1", U(1, 0, 1, 0), ts=px - 6, display=True, stroke=2, ZIndex=z + 1),
     ])
 
 
@@ -322,7 +344,7 @@ def hot_slot(name, key, ico, label, order):
     """Roblox-backpack style slot: dark see-through square, number top-left, big icon."""
     return button(name, U(0, 84, 0, 84), color="#0B0E1E", stroke=3, BackgroundTransparency=0.35, LayoutOrder=order, children=[
         icon("Icon", ico, 70, U(0.5, 0, 0.5, -6), (0.5, 0.5)),
-        text("Name", label, U(1, -6, 0, 18), U(0.5, 0, 1, -3), (0.5, 1), ts=13, color=WHITE, display=True, stroke=2, ZIndex=4),
+        text("Name", label, U(1, -6, 0, 20), U(0.5, 0, 1, -2), (0.5, 1), ts=16, color=WHITE, display=True, stroke=2, ZIndex=4),
         frame("Key", U(0, 22, 0, 22), U(0, 3, 0, 2), ZIndex=4, children=[
             text("Label", key, U(1, 0, 1, 0), ts=16, display=True, stroke=2, xa="Left", ya="Top", ZIndex=5),
         ]),

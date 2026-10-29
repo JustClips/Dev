@@ -252,18 +252,15 @@ end
 -------------------------------------------------------------------------- shared
 
 local function renderBadges(data)
-	local ready, waiting = 0, 0
+	-- Eggs: only eggs ready to open, which are what the panel shows (counting eggs still in
+	-- the bag put a number on the button with nothing to see inside).
+	local ready = 0
 	for _, entry in data.Hatching do
 		if entry.EndsAt <= State.now() then
 			ready += 1
 		end
 	end
-	if #data.Hatching < data.Incubators then
-		for _ in data.Eggs or {} do
-			waiting += 1
-		end
-	end
-	Ui.setBadge(eggsBadge, if ready > 0 then ready else waiting)
+	Ui.setBadge(eggsBadge, ready)
 	local bagPets = 0
 	for _, pet in data.Pets or {} do
 		if not pet.Placed then

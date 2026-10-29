@@ -1306,7 +1306,7 @@
           "BackgroundTransparency": 1,
           "Text": "",
           "TextColor3": "#5B6070",
-          "TextSize": 15,
+          "TextSize": 16,
           "TextXAlignment": "Left",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -1315,8 +1315,19 @@
            "family": "rbxasset://fonts/families/Montserrat.json",
            "weight": "Bold",
            "style": "Normal"
+          },
+          "TextScaled": true
+         },
+         "children": [
+          {
+           "name": "Fit",
+           "className": "UITextSizeConstraint",
+           "properties": {
+            "MaxTextSize": 16,
+            "MinTextSize": 12
+           }
           }
-         }
+         ]
         },
         {
          "name": "Price",
@@ -1350,7 +1361,7 @@
           "BackgroundTransparency": 1,
           "Text": "",
           "TextColor3": "#1E9E3A",
-          "TextSize": 15,
+          "TextSize": 16,
           "TextXAlignment": "Left",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -1359,8 +1370,19 @@
            "family": "rbxasset://fonts/families/Montserrat.json",
            "weight": "ExtraBold",
            "style": "Normal"
+          },
+          "TextScaled": true
+         },
+         "children": [
+          {
+           "name": "Fit",
+           "className": "UITextSizeConstraint",
+           "properties": {
+            "MaxTextSize": 16,
+            "MinTextSize": 12
+           }
           }
-         }
+         ]
         },
         {
          "name": "Main",
@@ -1827,7 +1849,7 @@
       "BackgroundTransparency": 1,
       "Text": "",
       "TextColor3": "#5B6070",
-      "TextSize": 15,
+      "TextSize": 16,
       "TextXAlignment": "Left",
       "TextYAlignment": "Center",
       "TextWrapped": true,
@@ -1836,8 +1858,19 @@
        "family": "rbxasset://fonts/families/Montserrat.json",
        "weight": "ExtraBold",
        "style": "Normal"
+      },
+      "TextScaled": true
+     },
+     "children": [
+      {
+       "name": "Fit",
+       "className": "UITextSizeConstraint",
+       "properties": {
+        "MaxTextSize": 16,
+        "MinTextSize": 12
+       }
       }
-     }
+     ]
     },
     {
      "name": "GoGarage",

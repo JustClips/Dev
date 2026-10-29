@@ -306,7 +306,7 @@
          "className": "UITextSizeConstraint",
          "properties": {
           "MaxTextSize": 17,
-          "MinTextSize": 9
+          "MinTextSize": 12
          }
         }
        ]
@@ -318,21 +318,21 @@
         "Size": [
          [
           0,
-          24
+          30
          ],
          [
           0,
-          24
+          30
          ]
         ],
         "Position": [
          [
           1,
-          4
+          6
          ],
          [
           0,
-          -8
+          -10
          ]
         ],
         "AnchorPoint": [
@@ -347,45 +347,13 @@
        },
        "children": [
         {
-         "name": "Round",
-         "className": "UICorner",
-         "properties": {
-          "CornerRadius": [
-           1,
-           0
-          ]
-         }
-        },
-        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border"
-         }
-        },
-        {
-         "name": "Gloss",
-         "className": "UIGradient",
-         "properties": {
-          "Color": {
-           "keypoints": [
-            [
-             0,
-             "#FFFFFF"
-            ],
-            [
-             0.5,
-             "#FFFFFF"
-            ],
-            [
-             1,
-             "#B8B8B8"
-            ]
-           ]
-          },
-          "Rotation": 90
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Miter"
          }
         },
         {
@@ -420,7 +388,7 @@
           "BackgroundTransparency": 1,
           "Text": "1",
           "TextColor3": "#FFFFFF",
-          "TextSize": 15,
+          "TextSize": 24,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -706,7 +674,7 @@
          "className": "UITextSizeConstraint",
          "properties": {
           "MaxTextSize": 17,
-          "MinTextSize": 9
+          "MinTextSize": 12
          }
         }
        ]
@@ -718,21 +686,21 @@
         "Size": [
          [
           0,
-          24
+          30
          ],
          [
           0,
-          24
+          30
          ]
         ],
         "Position": [
          [
           1,
-          4
+          6
          ],
          [
           0,
-          -8
+          -10
          ]
         ],
         "AnchorPoint": [
@@ -747,45 +715,13 @@
        },
        "children": [
         {
-         "name": "Round",
-         "className": "UICorner",
-         "properties": {
-          "CornerRadius": [
-           1,
-           0
-          ]
-         }
-        },
-        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border"
-         }
-        },
-        {
-         "name": "Gloss",
-         "className": "UIGradient",
-         "properties": {
-          "Color": {
-           "keypoints": [
-            [
-             0,
-             "#FFFFFF"
-            ],
-            [
-             0.5,
-             "#FFFFFF"
-            ],
-            [
-             1,
-             "#B8B8B8"
-            ]
-           ]
-          },
-          "Rotation": 90
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Miter"
          }
         },
         {
@@ -820,7 +756,7 @@
           "BackgroundTransparency": 1,
           "Text": "1",
           "TextColor3": "#FFFFFF",
-          "TextSize": 15,
+          "TextSize": 24,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -1106,7 +1042,7 @@
          "className": "UITextSizeConstraint",
          "properties": {
           "MaxTextSize": 17,
-          "MinTextSize": 9
+          "MinTextSize": 12
          }
         }
        ]
@@ -1118,21 +1054,21 @@
         "Size": [
          [
           0,
-          24
+          30
          ],
          [
           0,
-          24
+          30
          ]
         ],
         "Position": [
          [
           1,
-          4
+          6
          ],
          [
           0,
-          -8
+          -10
          ]
         ],
         "AnchorPoint": [
@@ -1147,45 +1083,13 @@
        },
        "children": [
         {
-         "name": "Round",
-         "className": "UICorner",
-         "properties": {
-          "CornerRadius": [
-           1,
-           0
-          ]
-         }
-        },
-        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border"
-         }
-        },
-        {
-         "name": "Gloss",
-         "className": "UIGradient",
-         "properties": {
-          "Color": {
-           "keypoints": [
-            [
-             0,
-             "#FFFFFF"
-            ],
-            [
-             0.5,
-             "#FFFFFF"
-            ],
-            [
-             1,
-             "#B8B8B8"
-            ]
-           ]
-          },
-          "Rotation": 90
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Miter"
          }
         },
         {
@@ -1220,7 +1124,7 @@
           "BackgroundTransparency": 1,
           "Text": "1",
           "TextColor3": "#FFFFFF",
-          "TextSize": 15,
+          "TextSize": 24,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,

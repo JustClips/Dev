@@ -908,7 +908,7 @@
            "className": "UITextSizeConstraint",
            "properties": {
             "MaxTextSize": 18,
-            "MinTextSize": 11
+            "MinTextSize": 12
            }
           }
          ]
@@ -1408,7 +1408,7 @@
             "BackgroundTransparency": 1,
             "Text": "LIMITED OFFER",
             "TextColor3": "#FFFFFF",
-            "TextSize": 15,
+            "TextSize": 16,
             "TextXAlignment": "Center",
             "TextYAlignment": "Center",
             "TextWrapped": true,
@@ -1417,7 +1417,8 @@
              "family": "rbxasset://fonts/families/Montserrat.json",
              "weight": "Heavy",
              "style": "Normal"
-            }
+            },
+            "TextScaled": true
            },
            "children": [
             {
@@ -1428,6 +1429,14 @@
               "Thickness": 2,
               "ApplyStrokeMode": "Contextual",
               "LineJoinMode": "Round"
+             }
+            },
+            {
+             "name": "Fit",
+             "className": "UITextSizeConstraint",
+             "properties": {
+              "MaxTextSize": 16,
+              "MinTextSize": 12
              }
             }
            ]
@@ -1587,7 +1596,7 @@
           "BackgroundTransparency": 1,
           "Text": "",
           "TextColor3": "#FFFFFF",
-          "TextSize": 15,
+          "TextSize": 16,
           "TextXAlignment": "Left",
           "TextYAlignment": "Top",
           "TextWrapped": true,
@@ -1614,8 +1623,8 @@
            "name": "Fit",
            "className": "UITextSizeConstraint",
            "properties": {
-            "MaxTextSize": 15,
-            "MinTextSize": 10
+            "MaxTextSize": 16,
+            "MinTextSize": 12
            }
           }
          ]
@@ -2048,7 +2057,7 @@
             "BackgroundTransparency": 1,
             "Text": "",
             "TextColor3": "#FFC83C",
-            "TextSize": 15,
+            "TextSize": 16,
             "TextXAlignment": "Right",
             "TextYAlignment": "Center",
             "TextWrapped": true,
@@ -2057,7 +2066,8 @@
              "family": "rbxasset://fonts/families/Montserrat.json",
              "weight": "Heavy",
              "style": "Normal"
-            }
+            },
+            "TextScaled": true
            },
            "children": [
             {
@@ -2068,6 +2078,14 @@
               "Thickness": 2.5,
               "ApplyStrokeMode": "Contextual",
               "LineJoinMode": "Round"
+             }
+            },
+            {
+             "name": "Fit",
+             "className": "UITextSizeConstraint",
+             "properties": {
+              "MaxTextSize": 16,
+              "MinTextSize": 12
              }
             }
            ]
@@ -2370,7 +2388,7 @@
           "BackgroundTransparency": 1,
           "Text": "BEST",
           "TextColor3": "#FFFFFF",
-          "TextSize": 15,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -2379,7 +2397,8 @@
            "family": "rbxasset://fonts/families/Montserrat.json",
            "weight": "Heavy",
            "style": "Normal"
-          }
+          },
+          "TextScaled": true
          },
          "children": [
           {
@@ -2390,6 +2409,14 @@
             "Thickness": 2,
             "ApplyStrokeMode": "Contextual",
             "LineJoinMode": "Round"
+           }
+          },
+          {
+           "name": "Fit",
+           "className": "UITextSizeConstraint",
+           "properties": {
+            "MaxTextSize": 16,
+            "MinTextSize": 12
            }
           }
          ]
@@ -2483,7 +2510,7 @@
         "BackgroundTransparency": 1,
         "Text": "",
         "TextColor3": "#5B6070",
-        "TextSize": 14,
+        "TextSize": 16,
         "TextXAlignment": "Center",
         "TextYAlignment": "Top",
         "TextWrapped": true,
@@ -2500,8 +2527,8 @@
          "name": "Fit",
          "className": "UITextSizeConstraint",
          "properties": {
-          "MaxTextSize": 14,
-          "MinTextSize": 9
+          "MaxTextSize": 16,
+          "MinTextSize": 12
          }
         }
        ]

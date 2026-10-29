@@ -1539,7 +1539,7 @@
       "BackgroundTransparency": 1,
       "Text": "",
       "TextColor3": "#5B6070",
-      "TextSize": 21.0,
+      "TextSize": 22.4,
       "TextXAlignment": "Center",
       "TextYAlignment": "Center",
       "TextWrapped": true,
@@ -1548,8 +1548,19 @@
        "family": "rbxasset://fonts/families/Montserrat.json",
        "weight": "ExtraBold",
        "style": "Normal"
+      },
+      "TextScaled": true
+     },
+     "children": [
+      {
+       "name": "Fit",
+       "className": "UITextSizeConstraint",
+       "properties": {
+        "MaxTextSize": 22.4,
+        "MinTextSize": 16.8
+       }
       }
-     }
+     ]
     }
    ]
   }

@@ -853,7 +853,7 @@
           "BackgroundTransparency": 1,
           "Text": "",
           "TextColor3": "#17191E",
-          "TextSize": 15,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -871,7 +871,7 @@
            "className": "UITextSizeConstraint",
            "properties": {
             "MaxTextSize": 16,
-            "MinTextSize": 8
+            "MinTextSize": 12
            }
           }
          ]
@@ -1245,7 +1245,7 @@
           "BackgroundTransparency": 1,
           "Text": "",
           "TextColor3": "#17191E",
-          "TextSize": 15,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -1263,7 +1263,7 @@
            "className": "UITextSizeConstraint",
            "properties": {
             "MaxTextSize": 16,
-            "MinTextSize": 8
+            "MinTextSize": 12
            }
           }
          ]
@@ -1637,7 +1637,7 @@
           "BackgroundTransparency": 1,
           "Text": "",
           "TextColor3": "#17191E",
-          "TextSize": 15,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -1655,7 +1655,7 @@
            "className": "UITextSizeConstraint",
            "properties": {
             "MaxTextSize": 16,
-            "MinTextSize": 8
+            "MinTextSize": 12
            }
           }
          ]

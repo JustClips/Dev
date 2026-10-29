@@ -1506,7 +1506,7 @@
              "className": "UITextSizeConstraint",
              "properties": {
               "MaxTextSize": 19,
-              "MinTextSize": 9
+              "MinTextSize": 12
              }
             }
            ]
@@ -1960,7 +1960,7 @@
           "BackgroundTransparency": 1,
           "Text": "",
           "TextColor3": "#E0E4F0",
-          "TextSize": 14,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Bottom",
           "TextWrapped": true,
@@ -1969,8 +1969,19 @@
            "family": "rbxasset://fonts/families/Montserrat.json",
            "weight": "ExtraBold",
            "style": "Normal"
+          },
+          "TextScaled": true
+         },
+         "children": [
+          {
+           "name": "Fit",
+           "className": "UITextSizeConstraint",
+           "properties": {
+            "MaxTextSize": 16,
+            "MinTextSize": 12
+           }
           }
-         }
+         ]
         }
        ]
       }

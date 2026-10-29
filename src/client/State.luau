@@ -39,31 +39,48 @@ function State.server(name: string): any
 end
 
 local refetching = false
+local invHave: number? = nil -- InvVersion of the bag tables we hold
 
-local function apply(snapshot: Types.PlayerSnapshot)
+local apply: (Types.PlayerSnapshot) -> ()
+
+-- Ask the server for everything once (the bag tables went missing or out of date).
+local function refetch()
+	if refetching then
+		return
+	end
+	refetching = true
+	task.spawn(function()
+		local ok, full = pcall(function()
+			return Net.func("GetState"):InvokeServer()
+		end)
+		refetching = false
+		if ok and full then
+			apply(full)
+		end
+	end)
+end
+
+apply = function(snapshot: Types.PlayerSnapshot)
 	-- Inventory tables come only when they changed: keep the last copy otherwise.
 	local previous = State.data
-	if snapshot.Pets == nil then
-		if previous and previous.Pets then
-			snapshot.Pets = previous.Pets
-			snapshot.Eggs = previous.Eggs
-			snapshot.Items = previous.Items
-		else
-			snapshot.Pets, snapshot.Eggs, snapshot.Items = {}, {}, {}
-			if not refetching then
-				-- Missed the full copy somehow: ask for everything once.
-				refetching = true
-				task.spawn(function()
-					local ok, full = pcall(function()
-						return Net.func("GetState"):InvokeServer()
-					end)
-					refetching = false
-					if ok and full then
-						apply(full)
-					end
-				end)
-			end
+	local version = (snapshot :: any).InvVersion or 0
+	if snapshot.Pets ~= nil then
+		if invHave and version < invHave then
+			return -- a full copy that arrived after newer news
 		end
+		invHave = version
+	elseif previous and previous.Pets then
+		snapshot.Pets = previous.Pets
+		snapshot.Eggs = previous.Eggs
+		snapshot.Items = previous.Items
+		if version ~= invHave then
+			-- The bag changed but the new tables never reached us: fetch them so counts
+			-- (like the Eggs badge) never show things that aren't there.
+			refetch()
+		end
+	else
+		snapshot.Pets, snapshot.Eggs, snapshot.Items = {}, {}, {}
+		refetch()
 	end
 	State.serverOffset = snapshot.ServerTime - os.time()
 	State.data = snapshot

@@ -411,11 +411,10 @@ local function isModal(scale: UIScale): boolean
 	return parent ~= nil and (parent.Name == "Window" or parent:GetAttribute("Modal") == true)
 end
 
--- Count badges (red square, white outline, white number). Ui.setBadge shows the count
+-- Count badges (red square, white outline, big white number). Ui.setBadge shows the count
 -- (nil/0 hides it, a string such as "!" shows as is), widens the badge for 2-3 digits and
 -- pops it when the count goes up. Every few seconds visible badges give a little wiggle
 -- so they catch the eye.
-local BADGE_PX = 24
 local badgeCounts: { [GuiObject]: string } = setmetatable({}, { __mode = "k" }) :: any
 local wiggleStarted = false
 
@@ -491,7 +490,8 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	if label then
 		label.Text = shown
 	end
-	badge.Size = UDim2.fromOffset(BADGE_PX + math.max(0, #shown - 1) * 8, BADGE_PX)
+	local px = badge.Size.Y.Offset
+	badge.Size = UDim2.fromOffset(px + math.max(0, #shown - 1) * math.floor(px * 0.4), px)
 	local before = badgeCounts[badge]
 	badgeCounts[badge] = shown
 	badge.Visible = true

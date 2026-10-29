@@ -739,7 +739,7 @@
             "BackgroundTransparency": 1,
             "Text": "0/10",
             "TextColor3": "#E3E8F2",
-            "TextSize": 14,
+            "TextSize": 16,
             "TextXAlignment": "Center",
             "TextYAlignment": "Center",
             "TextWrapped": true,
@@ -748,7 +748,8 @@
              "family": "rbxasset://fonts/families/Montserrat.json",
              "weight": "Heavy",
              "style": "Normal"
-            }
+            },
+            "TextScaled": true
            },
            "children": [
             {
@@ -759,6 +760,14 @@
               "Thickness": 2,
               "ApplyStrokeMode": "Contextual",
               "LineJoinMode": "Round"
+             }
+            },
+            {
+             "name": "Fit",
+             "className": "UITextSizeConstraint",
+             "properties": {
+              "MaxTextSize": 16,
+              "MinTextSize": 12
              }
             }
            ]
@@ -858,7 +867,7 @@
              "className": "UITextSizeConstraint",
              "properties": {
               "MaxTextSize": 19,
-              "MinTextSize": 9
+              "MinTextSize": 12
              }
             }
            ]
@@ -2351,7 +2360,7 @@
        "className": "UITextSizeConstraint",
        "properties": {
         "MaxTextSize": 16,
-        "MinTextSize": 9
+        "MinTextSize": 12
        }
       }
      ]
@@ -2388,7 +2397,7 @@
       "BackgroundTransparency": 1,
       "Text": "",
       "TextColor3": "#C8D0E8",
-      "TextSize": 14,
+      "TextSize": 16,
       "TextXAlignment": "Center",
       "TextYAlignment": "Center",
       "TextWrapped": true,
@@ -2397,8 +2406,19 @@
        "family": "rbxasset://fonts/families/Montserrat.json",
        "weight": "ExtraBold",
        "style": "Normal"
+      },
+      "TextScaled": true
+     },
+     "children": [
+      {
+       "name": "Fit",
+       "className": "UITextSizeConstraint",
+       "properties": {
+        "MaxTextSize": 16,
+        "MinTextSize": 12
+       }
       }
-     }
+     ]
     },
     {
      "name": "Hint",
