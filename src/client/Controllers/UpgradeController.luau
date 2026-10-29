@@ -7,6 +7,7 @@
 -- Drag to look around, pinch / mouse wheel / +- to zoom. Hovering (or tapping) a hex shows
 -- what it does above CLOSE. Also keeps the rail button's badge (how many hexes you can buy)
 -- and bobs the floating arrow over the station.
+local ContentProvider = game:GetService("ContentProvider")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -64,6 +65,7 @@ local current = "Main"
 local hovered: string? = nil
 local pan = Vector2.zero
 local railBadge: GuiObject? = nil
+local useImage = false -- the HexTile image loaded; until then hexes are drawn with frames
 
 local function hexToPixel(q: number, r: number): Vector2
 	return Vector2.new(SPACING * math.sqrt(3) * (q + r / 2), SPACING * 1.5 * r)
@@ -287,7 +289,13 @@ local function renderBoard()
 		local level = data.Upgrades[def.Id] or 0
 		local isLab = def.Opens ~= nil
 		node.Visible = state ~= "Hidden"
-		setHex(node:FindFirstChild("Fill") :: Frame, if isLab and level > 0 then TILE.Lab else TILE[state] or TILE.Mystery)
+		local color = if isLab and level > 0 then TILE.Lab else TILE[state] or TILE.Mystery
+		setHex(node:FindFirstChild("Fill") :: Frame, color)
+		local tile = node:FindFirstChild("Tile") :: ImageLabel
+		tile.ImageColor3 = color
+		tile.Visible = useImage
+		;(node:FindFirstChild("Outline") :: Frame).Visible = not useImage
+		;(node:FindFirstChild("Fill") :: Frame).Visible = not useImage
 
 		local known = state == "Open" or state == "Owned" or state == "Max" or state == "Rebirth"
 		local icon = node:FindFirstChild("Icon") :: ImageLabel
@@ -511,6 +519,19 @@ function UpgradeController:Start()
 		end
 	end)
 	task.spawn(bobHologram)
+	-- Use the image tiles only if they load (no permission or moderation = frame hexagons).
+	task.spawn(function()
+		local tile = Ui.find(canvas, "NodeTemplate.Tile") :: ImageLabel
+		if tile.Image == "" then
+			return
+		end
+		ContentProvider:PreloadAsync({ tile.Image }, function(_id, status)
+			if status == Enum.AssetFetchStatus.Success then
+				useImage = true
+				renderBoard()
+			end
+		end)
+	end)
 	task.spawn(function()
 		railBadge = Ui.find(Ui.screen("Hud"), "Rail.UpgradesButton"):FindFirstChild("Badge") :: GuiObject?
 		if State.data then

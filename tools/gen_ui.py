@@ -1052,6 +1052,11 @@ def upgrades():
         hexagon("Glow", HEX_H / 2 + 8, SUCCESS, 1, Visible=False),
         hexagon("Outline", HEX_H / 2, INK, 2),
         hexagon("Fill", HEX_H / 2 - 6, "#2A3142", 3),
+        # The image tile; UpgradeController shows it (and hides the frame hexagon) once it loads.
+        node("Tile", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("HexTile"), ScaleType="Fit",
+                                        ImageColor3="#2A3142", Visible=False, ZIndex=4), [
+            node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.55, WHITE], [1, "#B9C0CE"]]}, "Rotation": 90}),
+        ]),
         text("Level", "0/10", U(0, 70, 0, 18), U(0.5, 0, 0, 14), (0.5, 0), ts=14, color="#E3E8F2", display=True, stroke=2,
              ZIndex=6),
         icon("Icon", "Upgrade", 54, U(0.5, 0, 0, 30), (0.5, 0), ZIndex=5),

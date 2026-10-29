@@ -611,6 +611,68 @@
            ]
           },
           {
+           "name": "Tile",
+           "className": "ImageLabel",
+           "properties": {
+            "Size": [
+             [
+              1,
+              0
+             ],
+             [
+              1,
+              0
+             ]
+            ],
+            "Position": [
+             [
+              0,
+              0
+             ],
+             [
+              0,
+              0
+             ]
+            ],
+            "AnchorPoint": [
+             0,
+             0
+            ],
+            "BorderSizePixel": 0,
+            "BackgroundTransparency": 1,
+            "Image": "rbxassetid://126212510631438",
+            "ScaleType": "Fit",
+            "ImageColor3": "#2A3142",
+            "Visible": false,
+            "ZIndex": 4
+           },
+           "children": [
+            {
+             "name": "Shade",
+             "className": "UIGradient",
+             "properties": {
+              "Color": {
+               "keypoints": [
+                [
+                 0,
+                 "#FFFFFF"
+                ],
+                [
+                 0.55,
+                 "#FFFFFF"
+                ],
+                [
+                 1,
+                 "#B9C0CE"
+                ]
+               ]
+              },
+              "Rotation": 90
+             }
+            }
+           ]
+          },
+          {
            "name": "Level",
            "className": "TextLabel",
            "properties": {
