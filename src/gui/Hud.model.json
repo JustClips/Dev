@@ -46,6 +46,9 @@
      "className": "UIScale",
      "properties": {
       "Scale": 1
+     },
+     "attributes": {
+      "CompactScale": 0.78
      }
     },
     {

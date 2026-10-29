@@ -8,6 +8,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AlienModel = require(Shared.AlienModel)
+local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
 local Economy = require(Shared.Config.Economy)
 local Eggs = require(Shared.Config.Eggs)
@@ -97,6 +99,9 @@ function InventoryService:PlacePet(player: Player, uid: string): (boolean, strin
 	if S.AlienService:PlacedCount(player) >= slots then
 		return false, `Your base is full ({slots} pets)! Pick one up first, or rebirth for more room.`
 	end
+	if InventoryService:HeldPet(player) == uid then
+		InventoryService:StopHolding(player)
+	end
 	pet.Placed = true
 	changedBase(player)
 	return true, nil
@@ -134,18 +139,130 @@ function InventoryService:EquipBest(player: Player): (boolean, string?)
 	return true, `Placed your best {math.min(slots, #list)} pets!`
 end
 
+-------------------------------------------------------------------------- holding a pet
+
+local HELD_SCALE = 1.1
+
+-- The pet you hold out in front of you (others see it too), to sell it at the Pet Trader or
+-- put it in your park.
+function InventoryService:HeldPet(player: Player): string?
+	local session = S.DataService:GetSession(player)
+	local uid = session and session.Runtime.HeldPet
+	if uid and session.Data.Pets[uid] and not session.Data.Pets[uid].Placed then
+		return uid
+	end
+	return nil
+end
+
+local function dropHeldModel(player: Player)
+	local held = player.Character and player.Character:FindFirstChild("HeldPet")
+	if held then
+		held:Destroy()
+	end
+end
+
+-- Puts away whatever the player holds (pet or egg).
+function InventoryService:StopHolding(player: Player)
+	local session = S.DataService:GetSession(player)
+	if session then
+		session.Runtime.HeldPet = nil
+	end
+	dropHeldModel(player)
+	S.HatchService:StopHolding(player)
+end
+
+function InventoryService:HoldPet(player: Player, uid: string): (boolean, string?)
+	local session = S.DataService:GetSession(player)
+	local pet = session and session.Data.Pets[uid]
+	if not session or not pet then
+		return false, "That pet is gone"
+	end
+	if pet.Placed then
+		return false, "That pet is on your base. Use the Pets button to take it back."
+	end
+	InventoryService:StopHolding(player)
+	session.Runtime.HeldPet = uid
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not character or not root then
+		return true, nil
+	end
+	local def = Aliens.ById[pet.Id]
+	local model = AssetLibrary.alien(pet.Id, pet.Mutation)
+	model.Name = "HeldPet"
+	model:SetAttribute("PetUid", uid)
+	model:SetAttribute("DisplayName", (if pet.Huge then "Huge " else "") .. AlienModel.displayName(pet.Id, pet.Mutation))
+	local mult = Weights.incomeMult(def and def.Rarity or "Common", pet.Weight)
+	model:ScaleTo(HELD_SCALE * (if pet.Huge then Aliens.HugeScale * 0.6 else 1) * Weights.visualScale(mult))
+	local _, size = model:GetBoundingBox()
+	-- Held up in front of the chest, facing the same way as the player.
+	model:PivotTo(root.CFrame * CFrame.new(0, 0.6, -(root.Size.Z / 2 + size.Z / 2 + 0.6)))
+	for _, part in model:GetDescendants() do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.CanCollide = false
+			part.CanQuery = false
+			part.CanTouch = false
+			part.Massless = true
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = root
+			weld.Part1 = part
+			weld.Parent = part
+		end
+	end
+	model.Parent = character
+	return true, nil
+end
+
+-- What a pet sells for at the Pet Trader.
+function InventoryService:PetValue(player: Player, pet): number
+	return Aliens.income(pet) * Economy.PetSellSeconds * S.BoostService:GetBaseCashMultiplier(player)
+end
+
 function InventoryService:SellPet(player: Player, uid: string): (boolean, string?)
 	local data = S.DataService:GetData(player)
 	local pet = data and data.Pets[uid]
 	if not data or not pet then
 		return false, "That pet is gone"
 	end
-	local value = Aliens.income(pet) * Economy.PetSellSeconds * S.BoostService:GetBaseCashMultiplier(player)
+	local value = InventoryService:PetValue(player, pet)
+	if InventoryService:HeldPet(player) == uid then
+		InventoryService:StopHolding(player)
+	end
 	data.Pets[uid] = nil
 	S.BackpackService:GiveCash(player, value, "SellPet")
 	changedBase(player)
 	local def = Aliens.ById[pet.Id]
 	return true, `Sold {def and def.Name or "pet"} for {Format.cash(value)}`
+end
+
+-- Every pet in the bag (pets on your base stay). Returns how many and the cash.
+function InventoryService:BagPets(player: Player): ({ string }, number)
+	local data = S.DataService:GetData(player)
+	local uids, total = {}, 0
+	for uid, pet in (data and data.Pets or {}) do
+		if not pet.Placed then
+			table.insert(uids, uid)
+			total += InventoryService:PetValue(player, pet)
+		end
+	end
+	return uids, total
+end
+
+function InventoryService:SellAllPets(player: Player): (boolean, string?)
+	local data = S.DataService:GetData(player)
+	local uids, total = InventoryService:BagPets(player)
+	if not data or #uids == 0 then
+		return false, "You have no pets in your bag to sell"
+	end
+	InventoryService:StopHolding(player)
+	for _, uid in uids do
+		data.Pets[uid] = nil
+	end
+	S.BackpackService:GiveCash(player, total, "SellPet")
+	S.AnalyticsService:Custom(player, "SellAllPets", #uids)
+	changedBase(player)
+	return true, `Sold {#uids} pet{if #uids == 1 then "" else "s"} for {Format.cash(total)}`
 end
 
 function InventoryService:UseItem(player: Player, itemId: string): (boolean, string?)
@@ -198,14 +315,19 @@ local ACTIONS: { [string]: (Player, any, Vector3?) -> (boolean, string?) } = {
 	end,
 	-- Hold an egg out, then click a spot in your pet park (PlaceEggAt).
 	HoldEgg = function(player, uid)
+		InventoryService:StopHolding(player)
 		return S.HatchService:Hold(player, uid)
+	end,
+	-- Hold a pet from the bag out in front of you.
+	HoldPet = function(player, uid)
+		return InventoryService:HoldPet(player, uid)
 	end,
 	-- Put down the egg carried on your head (EggService).
 	DropEgg = function(player)
 		return S.EggService:DropCarried(player)
 	end,
 	StopHolding = function(player)
-		S.HatchService:StopHolding(player)
+		InventoryService:StopHolding(player)
 		return true, nil
 	end,
 	PlaceEggAt = function(player, uid, position)
@@ -265,6 +387,44 @@ local ACTIONS: { [string]: (Player, any, Vector3?) -> (boolean, string?) } = {
 	end,
 	SellPet = function(player, uid)
 		return InventoryService:SellPet(player, uid)
+	end,
+	-- Pet Trader (TraderService checks you're at one): sell what you hold, or every bag pet.
+	SellHeld = function(player)
+		if not S.TraderService:IsNear(player) then
+			return false, "Talk to the Pet Trader on your base"
+		end
+		local uid = InventoryService:HeldPet(player)
+		if not uid then
+			return false, "Hold a pet out first: pick one in your bag"
+		end
+		return InventoryService:SellPet(player, uid)
+	end,
+	SellAllPets = function(player)
+		if not S.TraderService:IsNear(player) then
+			return false, "Talk to the Pet Trader on your base"
+		end
+		return InventoryService:SellAllPets(player)
+	end,
+	-- "How much is this worth?": the held pet, or the whole bag with arg "All".
+	Appraise = function(player, arg)
+		local data = S.DataService:GetData(player)
+		if not data then
+			return false, "Still loading"
+		end
+		if arg == "All" then
+			local uids, total = InventoryService:BagPets(player)
+			if #uids == 0 then
+				return false, "You have no pets in your bag"
+			end
+			return true, `{#uids} pet{if #uids == 1 then "" else "s"} for {Format.cash(total)}`
+		end
+		local uid = InventoryService:HeldPet(player)
+		local pet = uid and data.Pets[uid]
+		if not pet then
+			return false, "You're not holding a pet"
+		end
+		local name = (if pet.Huge then "Huge " else "") .. AlienModel.displayName(pet.Id, pet.Mutation)
+		return true, `{name}|{Format.cash(InventoryService:PetValue(player, pet))}`
 	end,
 	UseItem = function(player, itemId)
 		return InventoryService:UseItem(player, itemId)

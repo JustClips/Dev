@@ -87,8 +87,9 @@ def shine(dark="#C9D0DE"):
     return node("Shine", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.55, WHITE], [1, dark]]}, "Rotation": 90})
 
 
-def autoscale():
-    return node("AutoScale", "UIScale", {"Scale": 1})
+def autoscale(compact=None):
+    """compact: extra factor on phones (Ui.rescale reads the CompactScale attribute)."""
+    return node("AutoScale", "UIScale", {"Scale": 1}, attrs={"CompactScale": compact} if compact else None)
 
 
 def padding(l, r=None, t=None, b=None):
@@ -333,6 +334,9 @@ def zone_row(zone_id, title, order):
     ])
 
 
+RAIL_COMPACT = 0.78  # the left rail is a bit smaller on phones (Dev, 2026-10-29)
+
+
 def auto_toggle(name, label, ico, order):
     """Auto Sweep / Auto Sell switch: icon, name, and an ON/OFF tag (HudController colours it)."""
     return button(name, U(0, 230, 0, 50), color=BG, ico=ico, ico_px=40, LayoutOrder=order, Visible=False, dark="#9AA3B8", children=[
@@ -347,7 +351,7 @@ def auto_toggle(name, label, ico, order):
 
 def hud():
     rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
-        autoscale(),
+        autoscale(RAIL_COMPACT),
         node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 26), "SortOrder": "LayoutOrder"}),
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 2),
@@ -669,11 +673,11 @@ def inv_tab(name, label, ico, order):
 
 
 def inventory():
-    """Backpack (Steal an Egg style), sized for phones: one solid window above the hotbar.
-    Pets / Eggs / Items tabs and a search box along the top, the grid on the left, and the
-    picked item's card in a column on the right (a hint shows there until you pick one)."""
-    W, H, SIDE = 780, 340, 230
-    left_w = W - 24 - SIDE - 10
+    """Bag (Steal an Egg style), sized for phones: one solid window above the hotbar.
+    Pets / Eggs / Items tabs, a search box and a close button along the top, then a grid of
+    cards. Tapping a card holds the pet or egg out (HOLDING tag) or uses the potion."""
+    W, H = 720, 330
+    inner = W - 24
     tabs = frame("Tabs", U(0, 364, 0, 44), U(0, 12, 0, 10), children=[
         hlist(8, "Left", "Center"),
         inv_tab("Pets", "Pets", "Alien", 1),
@@ -684,48 +688,32 @@ def inventory():
         border("#FFFFFF", 0, "Stroke"),
         node("Viewport", "ViewportFrame", base(U(1, -6, 1, -24), U(0.5, 0, 0, 2), (0.5, 0), BackgroundTransparency=1,
                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-        icon("Icon", "Potion", 62, U(0.5, 0, 0, 4), (0.5, 0), Visible=False),
+        icon("Icon", "Potion", 62, U(0.5, 0, 0, 6), (0.5, 0), Visible=False),
         text("Name", "", U(1, -4, 0, 26), U(0.5, 0, 1, -1), (0.5, 1), ts=15, display=True, stroke=2, ZIndex=4,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 10})]),
-        frame("Placed", U(0, 22, 0, 22), U(0, 3, 0, 3), bg=SUCCESS, Visible=False, ZIndex=4, children=[
-            border(INK, 2), text("Label", "E", U(1, 0, 1, 0), ts=15, display=True, stroke=1.5, ZIndex=5),
-        ]),
-        text("Count", "", U(0, 66, 0, 20), U(1, -3, 0, 2), (1, 0), ts=16, display=True, stroke=2, xa="Right", Visible=False, ZIndex=4,
+        text("Count", "", U(0, 80, 0, 20), U(1, -3, 0, 2), (1, 0), ts=16, display=True, stroke=2, xa="Right", Visible=False, ZIndex=4,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 9})]),
-        node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=6)),
+        frame("Held", U(0, 74, 0, 20), U(0, 3, 0, 3), bg=SUCCESS, Visible=False, ZIndex=5, children=[
+            border(INK, 2), text("Label", "HOLDING", U(1, 0, 1, 0), ts=13, display=True, stroke=1.5, ZIndex=6),
+        ]),
+        node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=7)),
     ])
-    grid = scroller("Grid", U(0, left_w, 1, -104), U(0, 12, 0, 64), [
-        node("Layout", "UIGridLayout", {"CellSize": U(0, 94, 0, 94), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
+    grid = scroller("Grid", U(0, inner, 1, -104), U(0, 12, 0, 64), [
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 104, 0, 104), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
                                         "HorizontalAlignment": "Left"}),
         padding(2), card,
     ])
-    search = node("Search", "TextBox", base(U(0, left_w - 372, 0, 44), U(0, 384, 0, 10), BackgroundColor3="#14171D",
+    search = node("Search", "TextBox", base(U(0, inner - 364 - 8 - 52, 0, 44), U(0, 384, 0, 10), BackgroundColor3="#14171D",
                                             Text="", PlaceholderText="Search", PlaceholderColor3="#9AA3B8",
                                             TextColor3=WHITE, TextSize=20, FontFace=BODY_HEAVY, ClearTextOnFocus=False,
                                             TextXAlignment="Left", ZIndex=3), [padding(10, 10, 0), border(INK, 2)])
-    side_hint = text("SideHint", "Tap a pet, egg or item to see what you can do with it.", U(0, SIDE - 30, 0, 80),
-                     U(1, -(12 + SIDE / 2), 0.5, 0), (0.5, 0.5), ts=17, color="#9AA3B8", heavy=True)
-    detail = frame("Detail", U(0, SIDE, 1, -20), U(1, -12, 0, 10), (1, 0), bg="#1C1F26", Visible=False, ZIndex=2, children=[
-        border(INK, 3),
-        node("Viewport", "ViewportFrame", base(U(1, -16, 0, 110), U(0.5, 0, 0, 8), (0.5, 0), BackgroundTransparency=1,
-                                               Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=3)),
-        icon("Icon", "Potion", 96, U(0.5, 0, 0, 14), (0.5, 0), Visible=False, ZIndex=3),
-        text("Name", "", U(1, -12, 0, 28), U(0.5, 0, 0, 120), (0.5, 0), ts=22, display=True, stroke=2.5, ZIndex=3,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 12})]),
-        text("Rarity", "", U(1, -12, 0, 22), U(0.5, 0, 0, 148), (0.5, 0), ts=19, display=True, stroke=2, ZIndex=3),
-        text("Info", "", U(1, -16, 0, 40), U(0.5, 0, 0, 172), (0.5, 0), ts=16, color="#C8D0E8", heavy=True, ya="Top", ZIndex=3),
-        button("Primary", U(1, -16, 0, 46), U(0.5, 0, 1, -58), (0.5, 1), color=SUCCESS, label="Place", ts=22, Visible=False, ZIndex=3),
-        button("Secondary", U(1, -16, 0, 40), U(0.5, 0, 1, -10), (0.5, 1), color=DANGER, label="Sell", ts=19, Visible=False, ZIndex=3),
-    ])
+    close = button("Close", U(0, 44, 0, 44), U(1, -12, 0, 10), (1, 0), color=DANGER, label="X", ts=26, stroke=3)
     win = frame("Window", U(0, W, 0, H), U(0.5, 0, 1, -112), (0.5, 1), bg=BG, children=[
         autoscale(), border(INK, 3),
-        # Kept for the controller: the tab buttons show which list is open.
-        text("Title", "All Items", U(0, 10, 0, 10), Visible=False),
-        text("Count", "Pets: 0/60", U(0, left_w, 0, 26), U(0, 12, 1, -8), (0, 1), ts=18, display=True, stroke=2, xa="Left"),
-        tabs, search, grid,
-        text("Empty", "Nothing here yet. Sweep leaves to find eggs!", U(0, left_w, 0, 60), U(0, 12, 0.5, 10), ts=20, color="#C8D0E8",
+        text("Count", "Pets: 0/60", U(0, inner, 0, 26), U(0, 12, 1, -8), (0, 1), ts=18, display=True, stroke=2, xa="Left"),
+        tabs, search, close, grid,
+        text("Empty", "Nothing here yet. Sweep leaves to find eggs!", U(0, inner, 0, 60), U(0, 12, 0.5, 10), ts=20, color="#C8D0E8",
              heavy=True, Visible=False),
-        side_hint, detail,
     ])
     write("Inventory", screen([win], order=6, enabled=False))
 
@@ -825,7 +813,8 @@ def hover():
 
 # ---------------------------------------------------------------- Egg placement banner
 def placing():
-    """Shown while holding an egg: what you're placing, Cancel, and Go to Base when far."""
+    """Shown while holding an egg (what you're placing, Cancel, Go to Base when far) or a pet
+    (Place in park, Put away)."""
     bar_ = plate("Bar", U(0, 520, 0, 92), U(0.5, 0, 1, -112), (0.5, 1), BG, stud=0.5, children=[
         autoscale(),
         icon("Icon", "Egg", 76, U(0, 6, 0.5, 0), (0, 0.5)),
@@ -833,6 +822,7 @@ def placing():
              stroke=2.5, xa="Left", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 10})]),
         text("Sub", "", U(1, -250, 0, 26), U(0, 88, 0, 50), ts=17, color=ACCENT, heavy=True, xa="Left", stroke=2),
         button("GoBase", U(0, 140, 0, 44), U(1, -10, 0, 8), (1, 0), color=SUCCESS, label="Go to Base", ts=18, Visible=False),
+        button("PlacePet", U(0, 140, 0, 44), U(1, -10, 0, 8), (1, 0), color=SUCCESS, label="Place in park", ts=17, Visible=False),
         button("Cancel", U(0, 140, 0, 34), U(1, -10, 1, -8), (1, 1), color=DANGER, label="Cancel (Q)", ts=16),
     ])
     write("Placing", screen([bar_], order=8, enabled=False))
@@ -923,6 +913,30 @@ def rebirth():
         button("SkipButton", U(0, 300, 0, 50), U(0.5, 0, 0, 318), (0.5, 0), color=PREMIUM, label="Skip", ts=24, label_color=INK),
     ]
     write("Rebirth", screen([dim(), window(520, 392, "Rebirth", "Rebirth", body, header=REBIRTH, scale=1.25)], order=10, enabled=False))
+
+
+# ---------------------------------------------------------------- NPC dialog
+def dialog():
+    """Talking to an NPC (DialogController, used by the Pet Trader). Our own window instead
+    of Roblox's Dialog bubbles: the speaker's name on a yellow tab, what they say (typed
+    out), and up to four answers as big buttons."""
+    W, H = 640, 250
+    option = button("Template", U(0, 0, 0, 0), color=BG, label="", ts=21, Visible=False)
+    win = frame("Window", U(0, W, 0, H), U(0.5, 0, 1, -112), (0.5, 1), bg=SURFACE, children=[
+        autoscale(), border(INK, 4),
+        frame("NameTab", U(0, 240, 0, 40), U(0, 16, 0, -26), bg=PREMIUM, ZIndex=3, children=[
+            border(INK, 3),
+            text("Label", "Pet Trader", U(1, -12, 1, 0), U(0, 6, 0, 0), ts=22, color=INK, display=True, ZIndex=4),
+        ]),
+        text("Text", "", U(1, -40, 0, 82), U(0, 20, 0, 24), ts=24, color=INK, heavy=True, xa="Left", ya="Top", TextScaled=True,
+             children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 24, "MinTextSize": 12})]),
+        node("Skip", "TextButton", base(U(1, 0, 0, 110), BackgroundTransparency=1, Text="", ZIndex=2)),
+        frame("Options", U(1, -32, 0, 118), U(0, 16, 1, -14), (0, 1), children=[
+            node("Layout", "UIGridLayout", {"CellSize": U(0.5, -5, 0, 54), "CellPadding": U(0, 10, 0, 10), "SortOrder": "LayoutOrder"}),
+            option,
+        ]),
+    ])
+    write("Dialog", screen([win], order=9, enabled=False))
 
 
 # ---------------------------------------------------------------- Offer + Welcome back
@@ -1216,6 +1230,7 @@ def main():
     inventory()
     base_panels()
     placing()
+    dialog()
     hover()
     rewards()
     rebirth()

@@ -15,7 +15,7 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui") :: PlayerGui
 
 -- Modal screens: only one is open at a time.
-local MODALS = { "Shop", "Index", "Rebirth", "Garage", "Upgrades", "Inventory", "Daily", "Playtime", "Events", "Settings", "PetsPanel", "EggsPanel" }
+local MODALS = { "Shop", "Index", "Rebirth", "Garage", "Upgrades", "Inventory", "Daily", "Playtime", "Events", "Settings", "PetsPanel", "EggsPanel", "Dialog" }
 local POP = TweenInfo.new(0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PRESS = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local HOVER = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -553,7 +553,8 @@ local function rescale()
 	for _, gui in playerGui:GetChildren() do
 		for _, d in gui:GetDescendants() do
 			if d:IsA("UIScale") and d.Name == "AutoScale" then
-				d.Scale = if isModal(d) then w else s
+				local extra = if compact then (d:GetAttribute("CompactScale") :: number?) or 1 else 1
+				d.Scale = (if isModal(d) then w else s) * extra
 			end
 		end
 	end

@@ -24,6 +24,7 @@ local ORDER = {
 	"EggService",
 	"HatchService",
 	"InventoryService",
+	"TraderService",
 	"AlienService",
 	"RebirthService",
 	"EventService",

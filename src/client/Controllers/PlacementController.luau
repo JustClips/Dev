@@ -5,6 +5,8 @@
 -- (Shared/EggSpots, the same rules the server checks). Click or tap to place it. If you
 -- still have eggs and room, the next best egg is in your hands right away. Q, Backspace,
 -- Cancel or equipping a tool puts it away.
+-- Pets from the bag can be held out too (HoldPet): the bar then offers Place in park and
+-- Put away, and the Pet Trader buys what you hold.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -17,6 +19,8 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local AlienModel = require(Shared.AlienModel)
+local Aliens = require(Shared.Config.Aliens)
 local EggSpots = require(Shared.EggSpots)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
@@ -40,6 +44,9 @@ local goBase: GuiButton
 local icon: ImageLabel
 
 local holding: string? = nil
+local heldPet: string? = nil
+local placePet: GuiButton
+local cancelButton: GuiButton
 local ghost: Model? = nil
 local ring: BasePart? = nil
 local ghostOffset = 0
@@ -196,7 +203,80 @@ function PlacementController:IsHolding(): boolean
 	return holding ~= nil
 end
 
+-- The pet or egg in your hands, if any.
+function PlacementController:HeldKey(): string?
+	return holding or heldPet
+end
+
+function PlacementController:HeldPet(): string?
+	return heldPet
+end
+
+local function refreshBag()
+	if C.InventoryController then
+		C.InventoryController:RefreshHeld()
+	end
+end
+
+local function stopPet(silent: boolean?)
+	if not heldPet then
+		return
+	end
+	heldPet = nil
+	if not holding then
+		gui.Enabled = false
+	end
+	placePet.Visible = false
+	if not silent then
+		task.spawn(invoke, "StopHolding")
+	end
+	refreshBag()
+end
+
+function PlacementController:HoldPet(uid: string)
+	local data = State.data
+	local pet = data and data.Pets and data.Pets[uid]
+	if not data or not pet or pet.Placed then
+		return
+	end
+	if holding then
+		PlacementController:Stop(true)
+	end
+	local character = Players.LocalPlayer.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:UnequipTools()
+	end
+	heldPet = uid
+	local def = Aliens.ById[pet.Id]
+	local rarity = def and Eggs.ByName[def.Rarity]
+	titleLabel.Text = "Holding " .. (if pet.Huge then "Huge " else "") .. AlienModel.displayName(pet.Id, pet.Mutation)
+	local kg = pet.Weight or Weights.petKg(def and def.Rarity or "Common")
+	subLabel.Text = `{def and def.Rarity or ""} · {Weights.format(kg)} · Sell it at the Pet Trader`
+	subLabel.TextColor3 = if rarity then rarity.Color else Color3.new(1, 1, 1)
+	icon.Image = AssetLibrary.image("Icon_Alien")
+	goBase.Visible = false
+	placePet.Visible = true
+	Ui.setText(cancelButton, "Put away (Q)")
+	gui.Enabled = true
+	Ui.popIn(gui)
+	refreshBag()
+	task.spawn(function()
+		local ok, message = invoke("HoldPet", uid)
+		if not ok and heldPet == uid then
+			stopPet(true)
+			if message then
+				toast(message, "Bad")
+			end
+		end
+	end)
+end
+
 function PlacementController:Stop(silent: boolean?)
+	if heldPet and not holding then
+		stopPet(silent)
+		return
+	end
 	if not holding then
 		return
 	end
@@ -211,6 +291,7 @@ function PlacementController:Stop(silent: boolean?)
 	if not silent then
 		task.spawn(invoke, "StopHolding")
 	end
+	refreshBag()
 end
 
 function PlacementController:Hold(uid: string)
@@ -228,6 +309,11 @@ function PlacementController:Hold(uid: string)
 	if humanoid then
 		humanoid:UnequipTools()
 	end
+	if heldPet then
+		heldPet = nil -- the server swaps the pet for the egg
+		placePet.Visible = false
+	end
+	Ui.setText(cancelButton, "Cancel (Q)")
 	holding = uid
 	makeGhost(egg)
 	local left = 0
@@ -300,16 +386,36 @@ function PlacementController:Init(controllers)
 	subLabel = Ui.find(gui, "Bar.Sub")
 	goBase = Ui.find(gui, "Bar.GoBase")
 	icon = Ui.find(gui, "Bar.Icon")
+	placePet = Ui.find(gui, "Bar.PlacePet")
+	cancelButton = Ui.find(gui, "Bar.Cancel")
 end
 
 function PlacementController:Start()
-	Ui.button(Ui.find(gui, "Bar.Cancel"), function()
+	Ui.button(cancelButton, function()
 		PlacementController:Stop()
+	end)
+	Ui.button(placePet, function()
+		local uid = heldPet
+		if not uid then
+			return
+		end
+		local ok, message = invoke("PlacePet", uid)
+		if ok then
+			Ui.sound("Pop")
+			stopPet(true)
+			toast("Your pet is on your base now!", "Good")
+		elseif message then
+			toast(message, "Bad")
+		end
 	end)
 	Ui.button(goBase, function()
 		Net.func("Teleport"):InvokeServer("Base")
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
+		if heldPet and not holding and (input.KeyCode == Enum.KeyCode.Q or input.KeyCode == Enum.KeyCode.Backspace) then
+			stopPet()
+			return
+		end
 		if not holding then
 			return
 		end
@@ -344,7 +450,7 @@ function PlacementController:Start()
 	-- Equipping a tool or respawning puts the egg away.
 	local function watch(character: Model)
 		character.ChildAdded:Connect(function(child)
-			if child:IsA("Tool") and holding then
+			if child:IsA("Tool") and (holding or heldPet) then
 				PlacementController:Stop()
 			end
 		end)
@@ -352,6 +458,7 @@ function PlacementController:Start()
 		if humanoid then
 			humanoid.Died:Connect(function()
 				PlacementController:Stop(true)
+				stopPet()
 			end)
 		end
 	end
@@ -364,6 +471,11 @@ function PlacementController:Start()
 		-- The egg left the bag some other way (auto place, sold...).
 		if holding and data.Eggs and not data.Eggs[holding] then
 			PlacementController:Stop(true)
+		end
+		-- The held pet was sold or placed.
+		local pet = heldPet and data.Pets and data.Pets[heldPet]
+		if heldPet and data.Pets and (not pet or pet.Placed) then
+			stopPet(true)
 		end
 	end)
 end

@@ -77,6 +77,11 @@ World.BaseColors = {
 	Color3.fromRGB(255, 77, 94), -- red
 }
 
+-- Where base i's Pet Trader stands, facing into the base.
+function World.traderCFrame(i: number): CFrame
+	return World.baseCFrame(i) * CFrame.new(World.Base.Trader) * CFrame.Angles(0, math.rad(90), 0)
+end
+
 -- CFrame of base i on its platform floor, facing the field.
 function World.baseCFrame(i: number): CFrame
 	local side = if i <= 4 then -1 else 1
@@ -95,6 +100,8 @@ World.Base = {
 	Spawn = Vector3.new(-18, 0, -31),
 	Lamps = { Vector3.new(-40, 0, -40), Vector3.new(40, 0, -40) },
 	Incubators = { Vector3.new(-13, 0, -24), Vector3.new(13, 0, -24) },
+	-- The Pet Trader's stall (TraderService): the NPC stands here facing the path (-X).
+	Trader = Vector3.new(31, 0, -28),
 	-- The fenced pet park. Pets wander inside it.
 	ParkMin = Vector2.new(-42, -14),
 	ParkMax = Vector2.new(42, 42),

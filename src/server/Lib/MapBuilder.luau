@@ -468,6 +468,34 @@ local function fieldEdges()
 	glow(model, "Edge", Vector3.new(f.Max.X - f.Min.X, 0.16, 0.35), CFrame.new(0, y, f.Max.Y), WOOD_DARK)
 end
 
+-- The Pet Trader's market stall (the NPC itself is TraderService's): a counter in front,
+-- four posts with a green and white striped awning, and a sign on top. cf = where the NPC
+-- stands, facing the customer (-Z).
+local function traderStall(parent: Instance, cf: CFrame)
+	local model = make("Model", { Name = "TraderStall" }, parent)
+	local green = Color3.fromRGB(74, 164, 82)
+	block(model, "Counter", Vector3.new(7, 3, 1.8), cf * CFrame.new(0, 1.5, -2.4), WOOD, M.WoodPlanks)
+	block(model, "CounterTop", Vector3.new(7.6, 0.3, 2.3), cf * CFrame.new(0, 3.15, -2.4), green)
+	for _, x in { -3.6, 3.6 } do
+		for _, z in { -3.4, 1.8 } do
+			block(model, "Post", Vector3.new(0.5, 8, 0.5), cf * CFrame.new(x, 4, z), WOOD_DARK, M.Wood)
+		end
+	end
+	-- Striped awning, tilted down toward the customer.
+	for k = 0, 7 do
+		local x = -3.95 + k * 1.13 + 0.565
+		block(model, "Awning", Vector3.new(1.13, 0.25, 6.2), cf * CFrame.new(x, 8.3, -0.8) * CFrame.Angles(math.rad(-8), 0, 0),
+			if k % 2 == 0 then green else WHITE, nil, { CanCollide = false })
+	end
+	sign(model, "TraderSign", cf * CFrame.new(0, 10.2, -0.4), 8, 2.2, Color3.fromRGB(255, 200, 60), "PET TRADER", "Sell your pets")
+	-- A few coins on the counter.
+	for k, x in { -2.2, -1.4, 2.4 } do
+		local coin = block(model, "Coin", Vector3.new(0.18, 0.8, 0.8), cf * CFrame.new(x, 3.4 + (k % 2) * 0.1, -2.4) * CFrame.Angles(0, 0, math.rad(90)),
+			Color3.fromRGB(255, 205, 60), M.Metal, { CanCollide = false })
+		coin.Shape = Enum.PartType.Cylinder
+	end
+end
+
 -- Raised stud-plate platform in the base colour, corner lights, low walls and a name sign.
 function MapBuilder.buildBaseStructure(index: number): Sign
 	local cf = World.baseCFrame(index)
@@ -538,6 +566,7 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 	for k = -4, 4 do
 		block(model, "Post", Vector3.new(0.7, wallH, 0.7), cf * CFrame.new(k * (w - 6) / 8, wallH / 2, d / 2 - 0.4), WOOD_DARK, M.Wood)
 	end
+	traderStall(model, World.traderCFrame(index))
 	-- name sign above the arch, facing the field
 	local arch = World.Base.Arch
 	local s = sign(model, "NameSign", cf * CFrame.new(arch + Vector3.new(0, 15.4, 0)), 19, 4.6, color, "Free Base", "Claim it by joining!", true)

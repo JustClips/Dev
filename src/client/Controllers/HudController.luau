@@ -452,13 +452,15 @@ local function layout(s: number, compact: boolean)
 	local boosts = (el.BoostTemplate :: Instance).Parent :: Frame
 	local boostLayout = boosts:FindFirstChildOfClass("UIListLayout")
 	if compact then
-		el.Wallet.AnchorPoint = Vector2.new(0, 0)
-		el.Wallet.Position = UDim2.new(0, 14, 0, 6)
+		-- Phones: the wallet sits in the bottom-left corner (the thumbstick still works
+		-- under it) and the smaller rail hugs the left edge just above it (Dev, 2026-10-29).
+		el.Wallet.AnchorPoint = Vector2.new(0, 1)
+		el.Wallet.Position = UDim2.new(0, 6, 1, -6)
 		if walletLayout then
-			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
-		el.Rail.AnchorPoint = Vector2.new(0, 0)
-		el.Rail.Position = UDim2.new(0, 14, 0, 6 + math.ceil(128 * s))
+		el.Rail.AnchorPoint = Vector2.new(0, 1)
+		el.Rail.Position = UDim2.new(0, 6, 1, -(14 + math.ceil(118 * s)))
 		boosts.AnchorPoint = Vector2.new(1, 0)
 		boosts.Position = UDim2.new(1, -14, 0, 8 + math.ceil(100 * s))
 		if boostLayout then
