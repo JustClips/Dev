@@ -445,18 +445,8 @@ def hud():
             ]),
         ]),
     ])
-    next_tool = plate("NextTool", U(0, 230, 0, 176), tint=SURFACE, LayoutOrder=1, children=[
-        plate("Header", U(1, 0, 0, 36), tint=HEADER, children=[
-            text("Title", "NEXT TOOL", U(1, 0, 1, 0), ts=22, display=True, stroke=2.5),
-        ]),
-        icon("Icon", "Tool", 54, U(0, 8, 0, 42)),
-        text("ToolName", "Broom", U(1, -72, 0, 26), U(0, 66, 0, 42), ts=22, color=INK, display=True, xa="Left"),
-        text("Hint", "", U(1, -72, 0, 36), U(0, 66, 0, 68), ts=14, color=SUB, xa="Left", ya="Top"),
-        button("Button", U(1, -20, 0, 48), U(0.5, 0, 1, -10), (0.5, 1), color=SUCCESS, label="Buy", ts=24),
-    ])
     right = frame("Right", U(0, 230, 0, 240), U(1, -14, 0.5, 0), (1, 0.5), children=[
         autoscale(), vlist(10, "Right", "Center"),
-        next_tool,
         button("AutoButton", U(0, 230, 0, 50), color=BG, label="Auto: OFF", ts=24, ico="Auto", ico_px=40, LayoutOrder=3, Visible=False,
                dark="#9AA3B8"),
     ])
@@ -729,47 +719,67 @@ def side_button(name, label, ico, color, order):
     ])
 
 
-def list_window(screen_name, title, ico, header_color, head_button, row_children, footer):
-    """Pets / Eggs: a normal window (same size as every other) with a 2-column list."""
+POPUP_W, POPUP_H = 440, 460  # Pets / Growing Eggs side popups
+
+
+def popup_list(screen_name, title, ico, header_color, head_button, row_children, footer):
+    """Pets / Eggs: a small popup beside the Eggs / Pets buttons (BasePanelsController places
+    it) with a one-column list. No dim: the game stays visible; a click outside closes it."""
     row = plate("Template", U(0, 0, 0, 0), tint="#2E3340", stroke=3, Visible=False, children=[
-        node("Viewport", "ViewportFrame", base(U(0, 70, 0, 70), U(0, 4, 0.5, 0), (0, 0.5), BackgroundTransparency=1,
+        node("Viewport", "ViewportFrame", base(U(0, 62, 0, 62), U(0, 4, 0.5, 0), (0, 0.5), BackgroundTransparency=1,
                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-        text("Name", "", U(1, -214, 0, 28), U(0, 80, 0, 10), ts=21, display=True, stroke=2.5, xa="Left",
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 21, "MinTextSize": 10})]),
-        text("Sub", "", U(1, -214, 0, 24), U(0, 80, 0, 40), ts=18, color="#7CFF8C", display=True, stroke=2, xa="Left"),
+        text("Name", "", U(1, -190, 0, 26), U(0, 72, 0, 8), ts=20, display=True, stroke=2.5, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 10})]),
+        text("Sub", "", U(1, -190, 0, 22), U(0, 72, 0, 36), ts=17, color="#7CFF8C", display=True, stroke=2, xa="Left"),
     ] + row_children)
-    body = [
-        head_button,
-        scroller("List", U(1, -24, 1, -164), U(0, 12, 0, 76), [
-            node("Layout", "UIGridLayout", {"CellSize": U(0, 380, 0, 84), "CellPadding": U(0, 10, 0, 10), "SortOrder": "LayoutOrder",
-                                            "HorizontalAlignment": "Left"}),
-            padding(4, 12, 4, 4), row,
+    list_bottom = 72 if footer and len(footer) == 1 else 128
+    win = plate("Window", U(0, POPUP_W, 0, POPUP_H), U(1, -110, 0.5, -30), (1, 0.5), SURFACE, children=[
+        autoscale(),
+        plate("Header", U(1, 0, 0, 56), tint=header_color, children=[
+            icon("Icon", ico, 42, U(0, 8, 0.5, 0), (0, 0.5)),
+            text("Title", title, U(1, -210, 1, -8), U(0, 58, 0.5, 0), (0, 0.5), ts=26, display=True, stroke=3, xa="Left",
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 26, "MinTextSize": 12})]),
         ]),
-        text("Empty", "", U(1, -60, 0, 80), U(0.5, 0, 0.45, 0), (0.5, 0.5), ts=22, color=SUB, heavy=True, Visible=False),
-        footer,
-    ]
-    write(screen_name, screen([dim(), window(WIN_W, WIN_H, title, ico, body, header=header_color)], order=10, enabled=False))
+        button("Close", U(0, 42, 0, 42), U(1, -4, 0, 4), (0.5, 0.5), color=DANGER, label="X", ts=24, ZIndex=6),
+        head_button,
+        scroller("List", U(1, -16, 1, -(64 + list_bottom)), U(0, 8, 0, 64), [
+            node("Layout", "UIGridLayout", {"CellSize": U(1, -14, 0, 74), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
+                                            "HorizontalAlignment": "Left"}),
+            padding(2, 12, 2, 2), row,
+        ]),
+        text("Empty", "", U(1, -50, 0, 80), U(0.5, 0, 0.45, 0), (0.5, 0.5), ts=20, color=SUB, heavy=True, Visible=False),
+    ] + (footer or []))
+    away = node("ClickAway", "TextButton", base(U(1, 400, 1, 400), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
+                                                Text="", AutoButtonColor=False, ZIndex=0))
+    write(screen_name, screen([away, win], order=10, enabled=False))
 
 
 def base_panels():
-    # Eggs / Pets buttons on the right edge (HudController moves them to the top right on phones).
-    buttons = frame("Buttons", U(0, 80, 0, 216), U(1, -14, 0.5, -130), (1, 1), children=[
-        autoscale(), vlist(28, "Right", "Bottom"),
+    # Eggs / Pets / Tools buttons on the right edge (BasePanelsController lays them out:
+    # stacked on PC, a row at the top right on phones).
+    buttons = frame("Buttons", U(0, 80, 0, 324), U(1, -14, 0.5, -130), (1, 1), children=[
+        autoscale(),
         side_button("EggsButton", "Eggs", "Egg", DANGER, 1),
         side_button("PetsButton", "Pets", "Alien", "#FF9A3C", 2),
+        side_button("ToolsButton", "Tools", "Tool", "#4C8DFF", 3),
     ])
     write("BasePanels", screen([buttons], order=4))
-    head = dict(size=U(0, 150, 0, 44), pos=U(1, -64, 0, 32), anchor=(1, 0.5))
-    list_window(
-        "PetsPanel", "0/4 Active", "Alien", "#FF9A3C",
-        button("AddSlot", head["size"], head["pos"], head["anchor"], color=DANGER, label="+ Slots", ts=20, ZIndex=5),
-        [button("Action", U(0, 120, 0, 48), U(1, -10, 0.5, 0), (1, 0.5), color=DANGER, label="Unequip", ts=19)],
-        button("EquipBest", U(0, 320, 0, 56), U(0.5, 0, 1, -14), (0.5, 1), color=SUCCESS, label="Equip Best", ts=26))
-    list_window(
+    head = dict(size=U(0, 132, 0, 40), pos=U(1, -50, 0, 28), anchor=(1, 0.5))
+    popup_list(
+        "PetsPanel", "0/4 Active", "Alien", "#FF9A3C", None,
+        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=DANGER, label="Unequip", ts=18)],
+        [
+            # Two ways to more slots: one for cash, three for Robux (the pass).
+            button("BuySlot", U(0.5, -14, 0, 46), U(0, 10, 1, -66), (0, 1), color=SUCCESS, label="+1 Slot", ts=18),
+            button("AddSlot", U(0.5, -14, 0, 46), U(1, -10, 1, -66), (1, 1), color=PREMIUM, label="+3 Slots", ts=18,
+                   label_color=INK),
+            button("EquipBest", U(1, -20, 0, 46), U(0.5, 0, 1, -10), (0.5, 1), color="#4C8DFF", label="Equip Best", ts=22),
+        ])
+    popup_list(
         "EggsPanel", "Growing Eggs", "Egg", DANGER,
-        button("OpenAll", head["size"], head["pos"], head["anchor"], color=PREMIUM, label="Open All", ts=20, label_color=INK, ZIndex=5),
-        [button("Action", U(0, 120, 0, 48), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="Open", ts=19)],
-        button("PlaceEggs", U(0, 320, 0, 56), U(0.5, 0, 1, -14), (0.5, 1), color="#4C8DFF", label="Place Eggs", ts=24))
+        button("OpenAll", head["size"], head["pos"], head["anchor"], color=PREMIUM, label="Open All", ts=18, label_color=INK, ZIndex=5),
+        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=SUCCESS, label="Open", ts=18)],
+        [button("PlaceEggs", U(1, -20, 0, 50), U(0.5, 0, 1, -10), (0.5, 1), color="#4C8DFF", label="Place Eggs", ts=22)])
 
 
 # ---------------------------------------------------------------- Hover card (pets and eggs in parks)
@@ -1033,6 +1043,9 @@ def settings():
 
 # ---------------------------------------------------------------- Garage
 def garage():
+    """Tools window (screen "Garage"): a Tools tab (the tool ladder: buy the next one with
+    cash or skip with Robux) and a Cars tab (buy, spawn, Robux unlock / rent, and a button
+    that teleports you to the Garage). Opened from the Tools button on the right."""
     row = plate("Template", U(1, -12, 0, 92), tint=WHITE, stud=0.2, Visible=False, children=[
         icon("Icon", "Vehicle", 74, U(0, 6, 0.5, 0), (0, 0.5)),
         text("Name", "Car", U(1, -270, 0, 30), U(0, 86, 0, 8), ts=24, color=INK, display=True, xa="Left"),
@@ -1041,10 +1054,17 @@ def garage():
         button("Main", U(0, 160, 0, 44), U(1, -12, 0, 6), (1, 0), color=SUCCESS, label="Buy", ts=22),
         button("Robux", U(0, 160, 0, 32), U(1, -12, 0, 56), (1, 0), color=PREMIUM, label="", ts=16, label_color=INK, Visible=False),
     ])
-    lst = scroller("List", U(1, -28, 1, -128), U(0, 14, 0, 76), [vlist(10), padding(2, 2, 4, 4), row])
-    hint = text("Hint", "Cars sweep a huge area and hold more leaves. Spawn one here or from slot 2.", U(1, -28, 0, 36),
-                U(0, 14, 1, -10), (0, 1), ts=15, color=SUB, heavy=True)
-    write("Garage", screen([dim(), window(640, 470, "Garage", "Vehicle", [lst, hint], header="#FF9A3C", scale=1.08)], order=10, enabled=False))
+    tabs = frame("Tabs", U(1, -28, 0, 50), U(0, 14, 0, 76), children=[
+        hlist(10, "Left", "Center"),
+        button("TabTools", U(0, 170, 0, 46), color="#4C8DFF", label="Tools", ts=22, ico="Tool", ico_px=34, LayoutOrder=1),
+        button("TabCars", U(0, 170, 0, 46), color="#FF9A3C", label="Cars", ts=22, ico="Vehicle", ico_px=34, LayoutOrder=2),
+    ])
+    lst = scroller("List", U(1, -28, 1, -206), U(0, 14, 0, 134), [vlist(10), padding(2, 2, 4, 4), row])
+    hint = text("Hint", "", U(1, -260, 0, 44), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True, xa="Left")
+    go = button("GoGarage", U(0, 230, 0, 48), U(1, -14, 1, -10), (1, 1), color=SUCCESS, label="Go to Garage", ts=20,
+                ico="Base", ico_px=32)
+    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Tools", "Tool", [tabs, lst, hint, go], header="#4C8DFF")],
+                           order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Upgrades

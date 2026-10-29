@@ -260,6 +260,7 @@ export type PlayerSnapshot = {
 	Flags: { [string]: any },
 	Stats: { [string]: number },
 	Slots: number,
+	SlotCashPrice: number?, -- price of the next pet slot bought with cash (nil = all bought)
 	IncomePerSec: number,
 	CashPacks: { [string]: number },
 	CashMultiplier: number,

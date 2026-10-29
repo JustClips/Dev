@@ -261,7 +261,7 @@ local function sections(data): { Section }
 	return {
 		{ Key = "Boosts", Title = "Server Boosts", Icon = "Icon_Luck", Color = Color3.fromRGB(233, 162, 31), Note = "Everyone on the server gets it!", Items = boostItems(data) },
 		{ Key = "Passes", Title = "Gamepasses", Icon = "Icon_Star", Color = Color3.fromRGB(155, 107, 255), Note = "Yours forever", Items = passItems(data) },
-		{ Key = "Tools", Title = "Tools", Icon = "Icon_Tool", Color = Color3.fromRGB(76, 141, 255), Note = "Buy with cash or skip ahead", Items = toolItems(data) },
+		{ Key = "Tools", Title = "Tools", Icon = "Icon_Tool", Color = Color3.fromRGB(76, 141, 255), Items = toolItems(data) },
 		{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Color = Color3.fromRGB(255, 95, 162), Note = "", Items = eggItems(data) },
 		{ Key = "Cash", Title = "Cash", Icon = "Icon_Cash", Color = Color3.fromRGB(47, 191, 85), Note = "", Items = cashItems(data) },
 	}
@@ -323,7 +323,18 @@ local function openGiftPicker(key: string)
 			count += 1
 			local button = giftTemplate:Clone()
 			button.Name = "Player"
-			Ui.setText(button, other.DisplayName)
+			local label = other.DisplayName
+			-- Skip Rebirth costs what the friend's next rebirth costs (the server picks it).
+			local def = Products.ProductByKey[key]
+			if def and def.Kind == "SkipRebirth" then
+				local stats = other:FindFirstChild("leaderstats")
+				local rebirths = stats and stats:FindFirstChild("Rebirths") :: IntValue?
+				local fits = Products.skipRebirthFor(if rebirths then rebirths.Value else 0)
+				if fits then
+					label = `{label} · {Ui.ROBUX} {fits.Price}`
+				end
+			end
+			Ui.setText(button, label)
 			button.Visible = true
 			button.Parent = giftList
 			Ui.button(button, function()

@@ -33,6 +33,7 @@ function AlienService:GetSlotCount(player: Player): number
 	if data.Gamepasses.ExtraSlots then
 		count += Economy.GamepassSlots
 	end
+	count += math.min(data.Flags.CashSlots or 0, #Economy.SlotCashPrices)
 	return math.min(count, Economy.MaxSlots)
 end
 

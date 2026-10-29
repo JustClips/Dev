@@ -11,7 +11,9 @@ local Economy = {
 	-- Base slots (GAME_PLAN §5.4): how many pets can be placed in your pet park.
 	BaseSlots = 6,
 	GamepassSlots = 3,
-	MaxSlots = 15,
+	-- Pet slots you can also buy with cash, one at a time (Pets panel). Price of the 1st, 2nd...
+	SlotCashPrices = { 10_000, 75_000, 500_000 },
+	MaxSlots = 18,
 
 	-- Inventory (Steal an Egg style): eggs and pets wait here until you place them.
 	PetBagSize = 60,

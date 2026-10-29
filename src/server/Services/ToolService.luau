@@ -534,7 +534,10 @@ function ToolService:Init(services)
 		if type(id) ~= "string" then
 			return false, "Unknown car"
 		end
-		return spawnVehicle(player, id, true)
+		-- From the Tools window: on the Garage pad when you're at the Garage, else at your feet.
+		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		local atGarage = root ~= nil and (root.Position - World.Garage.Position).Magnitude < 60
+		return spawnVehicle(player, id, atGarage)
 	end)
 	Net.onInvoke("BuyVehicle", buyVehicle)
 	Net.onInvoke("EquipTool", function(player)

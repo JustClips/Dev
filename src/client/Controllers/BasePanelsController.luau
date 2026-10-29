@@ -1,8 +1,9 @@
 --!strict
--- The two panels from Steal an Egg, opened from the Eggs / Pets buttons on the right. Each
--- is a normal window (PetsPanel / EggsPanel screens, same size as every other window):
+-- The two panels from Steal an Egg, opened from the Eggs / Pets buttons on the right (the
+-- Tools button under them opens the Tools window). Each is a small popup beside the
+-- buttons (PetsPanel / EggsPanel screens); a click outside closes it:
 --   Pets ("3/4 Active"): pets on your base with Unequip, then pets in your bag with Equip,
---     + Slots (the slots pass, or rebirth once you own it) and Equip Best.
+--     +1 Slot for cash (Economy.SlotCashPrices), +3 Slots for Robux (the pass) and Equip Best.
 --   Eggs ("Growing Eggs"): every egg in an incubator with its timer, Open when ready or
 --     Skip for Robux, Open All, and Place Eggs (fills free incubators from your bag).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -20,6 +21,9 @@ local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
+local BigNum = require(Shared.BigNum)
+local Economy = require(Shared.Config.Economy)
+local Tools = require(Shared.Config.Tools)
 
 local GREEN = Color3.fromRGB(61, 220, 90)
 local RED = Color3.fromRGB(255, 77, 94)
@@ -43,6 +47,7 @@ local lists: { [string]: ScrollingFrame } = {}
 local empties: { [string]: TextLabel } = {}
 local eggsBadge: Frame
 local petsBadge: Frame
+local toolsBadge: Frame
 local open: string? = nil
 local signatures: { [string]: string } = {}
 -- Growing rows, refreshed every second for the timers.
@@ -102,6 +107,21 @@ local function renderPets(data)
 	table.sort(placed, byIncome)
 	table.sort(bag, byIncome)
 	Ui.setText(Ui.find(panel, "Header.Title"), `{data.PlacedCount}/{data.Slots} Active`)
+	-- Slot buttons say what you get and what it costs.
+	local buySlot = Ui.find(panel, "BuySlot") :: TextButton
+	local price = data.SlotCashPrice
+	if price then
+		setButton(buySlot, `+1 Slot {Format.cash(price)}`, if BigNum.gte(data.Cash, price) then GREEN else GREY)
+	else
+		setButton(buySlot, "Rebirth: more slots", GREY)
+	end
+	local addSlot = Ui.find(panel, "AddSlot") :: TextButton
+	local pass = Products.PassByKey.ExtraSlots
+	if data.Gamepasses.ExtraSlots or not pass then
+		setButton(addSlot, "+3 Slots: owned", GREY)
+	else
+		setButton(addSlot, `+{Economy.GamepassSlots} Slots {Ui.ROBUX}{pass.Price}`, GOLD, INK)
+	end
 	local sig = table.concat({ data.InvVersion or 0, data.PlacedCount, data.Slots, data.CashMultiplier or 1 }, "|")
 	if signatures.Active == sig then
 		return
@@ -252,6 +272,9 @@ local function renderBadges(data)
 	end
 	local canPlace = math.min(bagPets, data.Slots - data.PlacedCount)
 	Ui.setBadge(petsBadge, canPlace)
+	-- Tools: a badge when the next tool is affordable.
+	local nextTool = Tools.get(data.ToolTier + 1)
+	Ui.setBadge(toolsBadge, if data.ToolTier < Tools.MaxTier and BigNum.gte(data.Cash, nextTool.Price) then 1 else nil)
 end
 
 local function render()
@@ -293,20 +316,35 @@ local function layoutButtons(_scale: number, compact: boolean)
 	local petsButton = buttons:FindFirstChild("PetsButton") :: GuiObject
 	eggsButton.AnchorPoint = Vector2.new(0.5, 0.5)
 	petsButton.AnchorPoint = Vector2.new(0.5, 0.5)
+	local toolsButton = buttons:FindFirstChild("ToolsButton") :: GuiObject
+	toolsButton.AnchorPoint = Vector2.new(0.5, 0.5)
+	local s = _scale
 	if compact then
 		buttons.AnchorPoint = Vector2.new(1, 0)
 		buttons.Position = UDim2.new(1, -14, 0, 8)
-		buttons.Size = UDim2.fromOffset(176, 80)
+		buttons.Size = UDim2.fromOffset(272, 80)
 		eggsButton.Position = UDim2.fromOffset(40, 40)
 		petsButton.Position = UDim2.fromOffset(136, 40)
+		toolsButton.Position = UDim2.fromOffset(232, 40)
+		-- Popups hang under the button row.
+		for _, panel in panels do
+			panel.AnchorPoint = Vector2.new(1, 0)
+			Ui.setHome(panel, UDim2.new(1, -14, 0, 8 + math.ceil(92 * s)))
+		end
 	else
-		-- Top of the right-hand stack (Eggs, Pets, Next Tool, Auto), centred on the same
-		-- line as the left rail (HudController.rightStackTop).
+		-- Top of the right-hand stack (Eggs, Pets, Tools, Auto), centred on the same line
+		-- as the left rail (HudController.rightStackTop).
 		buttons.AnchorPoint = Vector2.new(1, 0)
-		buttons.Position = UDim2.new(1, -14, 0.5, C.HudController.rightStackTop(_scale))
-		buttons.Size = UDim2.fromOffset(80, 216)
+		buttons.Position = UDim2.new(1, -14, 0.5, C.HudController.rightStackTop(s))
+		buttons.Size = UDim2.fromOffset(80, 324)
 		eggsButton.Position = UDim2.fromOffset(40, 68)
 		petsButton.Position = UDim2.fromOffset(40, 176)
+		toolsButton.Position = UDim2.fromOffset(40, 284)
+		-- Popups open to the left of the buttons.
+		for _, panel in panels do
+			panel.AnchorPoint = Vector2.new(1, 0.5)
+			Ui.setHome(panel, UDim2.new(1, -math.ceil(14 + 96 * s), 0.5, -30))
+		end
 	end
 end
 
@@ -327,6 +365,7 @@ function BasePanelsController:Init(controllers)
 	end
 	eggsBadge = Ui.find(gui, "Buttons.EggsButton.Badge")
 	petsBadge = Ui.find(gui, "Buttons.PetsButton.Badge")
+	toolsBadge = Ui.find(gui, "Buttons.ToolsButton.Badge")
 end
 
 function BasePanelsController:Start()
@@ -336,6 +375,10 @@ function BasePanelsController:Start()
 	Ui.button(Ui.find(gui, "Buttons.EggsButton"), function()
 		BasePanelsController:Toggle("Growing")
 	end)
+	Ui.button(Ui.find(gui, "Buttons.ToolsButton"), function()
+		BasePanelsController:Show(nil)
+		C.GarageController:Toggle()
+	end)
 	for name, screen in screens do
 		local function close()
 			if open == name then
@@ -343,7 +386,7 @@ function BasePanelsController:Start()
 			end
 		end
 		Ui.button(Ui.find(screen, "Window.Close"), close)
-		Ui.button(Ui.find(screen, "Dim"), close)
+		Ui.button(Ui.find(screen, "ClickAway"), close)
 		-- Another window opening closes this one (Ui.open); keep `open` in step.
 		screen:GetPropertyChangedSignal("Enabled"):Connect(function()
 			if not screen.Enabled and open == name then
@@ -363,6 +406,15 @@ function BasePanelsController:Start()
 			C.HudController:Toast("Rebirth for more pet slots!", "Info")
 			C.RebirthController:Toggle()
 		end
+	end)
+	Ui.button(Ui.find(panels.Active, "BuySlot"), function()
+		local data = State.data
+		if data and not data.SlotCashPrice then
+			C.HudController:Toast("Rebirth for more pet slots!", "Info")
+			C.RebirthController:Toggle()
+			return
+		end
+		act("BuySlot")
 	end)
 	Ui.button(Ui.find(panels.Growing, "OpenAll"), function()
 		act("OpenReady")

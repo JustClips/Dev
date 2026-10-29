@@ -67,7 +67,8 @@ end
 local function toggleCar()
 	local data = State.data
 	if data and not data.BestVehicle and not data.InVehicle then
-		C.HudController:Toast("No car yet! Buy one at the Garage on the south plaza.", "Info")
+		C.HudController:Toast("No car yet! Pick one in Tools.", "Info")
+		C.GarageController:Open("Cars")
 		return
 	end
 	local ok, message = Net.func("ToggleVehicle"):InvokeServer()

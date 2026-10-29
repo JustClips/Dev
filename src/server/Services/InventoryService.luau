@@ -241,6 +241,25 @@ local ACTIONS: { [string]: (Player, any, Vector3?) -> (boolean, string?) } = {
 	PickUpPet = function(player, uid)
 		return InventoryService:PickUpPet(player, uid)
 	end,
+	-- One more pet slot for cash (Economy.SlotCashPrices).
+	BuySlot = function(player)
+		local data = S.DataService:GetData(player)
+		if not data then
+			return false, "Still loading"
+		end
+		local bought = data.Flags.CashSlots or 0
+		local price = Economy.SlotCashPrices[bought + 1]
+		if not price then
+			return false, "You bought every cash slot. Rebirth for more!"
+		end
+		if not S.BackpackService:TrySpend(player, price, "PetSlot") then
+			return false, `You need {Format.cash(price)}`
+		end
+		data.Flags.CashSlots = bought + 1
+		S.AlienService:RefreshBase(player)
+		S.StateService:Mark(player)
+		return true, "+1 pet slot!"
+	end,
 	EquipBest = function(player)
 		return InventoryService:EquipBest(player)
 	end,

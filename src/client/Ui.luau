@@ -272,6 +272,13 @@ local function settle(gui: ScreenGui)
 	end
 end
 
+-- Moves a window's resting place (windows that sit next to a HUD button instead of the
+-- screen centre): Ui.show puts the window back here every time it opens.
+function Ui.setHome(window: GuiObject, position: UDim2)
+	homePosition[window] = position
+	window.Position = position
+end
+
 -- Enables a screen and plays the open motion.
 function Ui.show(gui: ScreenGui)
 	bump(gui)

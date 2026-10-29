@@ -296,12 +296,24 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 			return false, "That player isn't here"
 		end
 		recipient = target
-		pendingGifts[player] = { productId = product.Id, toUserId = giftToUserId, at = os.clock() }
+	end
+
+	local targetData = S.DataService:GetData(recipient)
+	-- Skip Rebirth is priced by rebirth: always sell the tier that fits whoever gets it
+	-- (gifting it to a friend prompts the friend's tier, not yours).
+	if product.Kind == "SkipRebirth" then
+		local fits = Products.skipRebirthFor(targetData.Rebirths)
+		if not fits then
+			return false, "Coming soon!"
+		end
+		product = fits
+	end
+	if recipient ~= player then
+		pendingGifts[player] = { productId = product.Id, toUserId = recipient.UserId, at = os.clock() }
 	else
 		pendingGifts[player] = nil
 	end
 
-	local targetData = S.DataService:GetData(recipient)
 	if product.Kind == "StarterPack" and targetData.Flags.StarterPackBought then
 		return false, "Already bought"
 	elseif product.Kind == "ToolSkip" and targetData.ToolTier + 1 ~= product.Tier then
@@ -315,12 +327,6 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		end
 	elseif product.Kind == "GiftPass" and targetData.Gamepasses[product.Pass or ""] then
 		return false, `{recipient.DisplayName} already owns this`
-	elseif product.Kind == "SkipRebirth" then
-		-- Only the price tier for the recipient's current rebirth can be bought.
-		local current = Products.skipRebirthFor(targetData.Rebirths)
-		if not current or current.Key ~= product.Key then
-			return false, "That rebirth skip isn't for your rebirth"
-		end
 	end
 	MarketplaceService:PromptProductPurchase(player, product.Id)
 	return true, nil

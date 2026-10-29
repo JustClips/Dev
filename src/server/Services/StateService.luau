@@ -80,6 +80,9 @@ local function tutorialStep(player: Player, session: any): string
 	if data.ToolTier < 2 then
 		return "Shop"
 	end
+	if (data.Upgrades.Power or 0) < 1 then
+		return "Upgrade"
+	end
 	data.Flags.TutorialDone = true
 	if not data.Flags.TutorialRewarded then
 		data.Flags.TutorialRewarded = true
@@ -137,6 +140,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		Flags = data.Flags,
 		Stats = data.Stats,
 		Slots = S.AlienService:GetSlotCount(player),
+		SlotCashPrice = Economy.SlotCashPrices[(data.Flags.CashSlots or 0) + 1],
 		IncomePerSec = S.AlienService:GetIncomePerSec(player),
 		CashPacks = S.ShopService:GetCashPackAmounts(player),
 		CashMultiplier = S.BoostService:GetCashMultiplier(player),

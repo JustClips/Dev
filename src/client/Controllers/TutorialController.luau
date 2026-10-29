@@ -54,7 +54,13 @@ local STEPS: { Step } = {
 	},
 	{ key = "PlacePet", text = "Put your pet in your park: open your Bag (3) and press Place.", icon = "Icon_Alien" },
 	{ key = "Sell", text = "Sell your leaves at the Recycler for cash!", icon = "Icon_Sell" },
-	{ key = "Shop", text = "Buy a better tool. It sweeps faster!", icon = "Icon_Tool" },
+	{ key = "Shop", text = "Open Tools and buy a better tool. It sweeps faster!", icon = "Icon_Tool" },
+	{
+		key = "Upgrade",
+		text = "Open Upgrades and double-click Sweep Power to buy it!",
+		touch = "Open Upgrades and double-tap Sweep Power to buy it!",
+		icon = "Icon_Upgrade",
+	},
 }
 local STEP_INDEX: { [string]: number } = {}
 for i, step in STEPS do
@@ -282,8 +288,10 @@ local function update()
 		local onHotbar = key == "PlacePet" and not inventoryOpen
 		if onHotbar then
 			pointAt(Ui.find(hud, "Hotbar.BagSlot"))
-		elseif key == "Shop" then
-			pointAt(Ui.find(hud, "Right.NextTool.Button"))
+		elseif key == "Shop" and not Ui.isOpen(Ui.screen("Garage")) then
+			pointAt(Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton"))
+		elseif key == "Upgrade" and not C.UpgradeController:IsOpen() then
+			pointAt(Ui.find(hud, "Rail.UpgradesButton"))
 		else
 			pointAt(nil)
 		end

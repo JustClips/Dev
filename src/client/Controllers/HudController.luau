@@ -22,7 +22,6 @@ local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
 local Weather = require(Shared.Config.Weather)
-local Tools = require(Shared.Config.Tools)
 local Zones = require(Shared.Config.Zones)
 
 local MAX_TOASTS = 4
@@ -36,7 +35,6 @@ local TOAST_COLORS: { [string]: Color3 } = {
 }
 local LUCK_TIERS = { 16, 8, 4, 2 }
 local GREEN = Color3.fromRGB(61, 220, 90)
-local GREY = Color3.fromRGB(166, 174, 194)
 local DANGER = Color3.fromRGB(255, 77, 94)
 local LOCKED = Color3.fromRGB(255, 150, 160) -- readable on the blue zone rows
 local SAND = Color3.fromRGB(233, 201, 139)
@@ -161,17 +159,12 @@ function HudController:Highlight(name: string?)
 		pulseTween:Cancel()
 		pulseTween = nil
 	end
-	local button = el.NextToolButton :: GuiButton
+	local button = Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton") :: GuiButton
 	button.Rotation = 0
-	if name == "NextTool" and not Ui.reducedMotion() then
+	if name == "Tools" and not Ui.reducedMotion() then
 		pulseTween = TweenService:Create(button, TweenInfo.new(0.45, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Rotation = 3 })
 		pulseTween:Play()
 	end
-end
-
-local function setButton(button: GuiButton, enabled: boolean, color: Color3)
-	-- Stays clickable: the server answers "need $X" which is more useful than nothing.
-	button.BackgroundColor3 = if enabled then color else GREY
 end
 
 local function renderZones(data)
@@ -209,20 +202,6 @@ local function render(data)
 	-- Leave room for the FULL tag on the right end of the bar.
 	el.BackpackAmount.Size = if fraction >= 1 then UDim2.new(1, -66, 1, 0) else UDim2.fromScale(1, 1)
 	el.BackpackFill.BackgroundColor3 = if fraction >= 1 then DANGER else SAND
-
-	local nextTier = data.ToolTier + 1
-	if nextTier <= Tools.MaxTier then
-		local def = Tools.get(nextTier)
-		local affordable = BigNum.gte(data.Cash, def.Price)
-		el.NextTool.Visible = true
-		el.NextToolName.Text = def.Name
-		el.NextToolIcon.Image = AssetLibrary.toolIcon(def.Id)
-		Ui.setText(el.NextToolButton, `Buy {Format.cash(def.Price)}`)
-		setButton(el.NextToolButton, affordable, GREEN)
-		el.NextToolHint.Text = `Sweeps {def.Radius} wide, holds {Format.number(def.Capacity)}`
-	else
-		el.NextTool.Visible = false
-	end
 
 	el.AutoButton.Visible = data.Gamepasses.AutoSweep == true
 	Ui.setText(el.AutoButton, if data.AutoSweep then "Auto: ON" else "Auto: OFF")
@@ -422,7 +401,7 @@ end
 -- The left rail and the right-hand stack (Eggs/Pets buttons, then Next Tool + Auto) are
 -- centred on the same line, RAIL_CENTRE px from the screen's middle.
 local RAIL_CENTRE = -30
-local STACK_BUTTONS, STACK_GAP, STACK_RIGHT = 216, 16, 236
+local STACK_BUTTONS, STACK_GAP, STACK_RIGHT = 324, 16, 50
 
 function HudController.rightStackTop(s: number): number
 	return RAIL_CENTRE - math.ceil((STACK_BUTTONS + STACK_GAP + STACK_RIGHT) * s / 2)
@@ -522,11 +501,6 @@ function HudController:Init(controllers)
 	el.AnnouncementText = Ui.find(hud, "Announcement.Text")
 	el.BoostTemplate = Ui.find(hud, "Boosts.Template")
 	el.BoostTip = Ui.find(hud, "BoostTip")
-	el.NextTool = Ui.find(hud, "Right.NextTool")
-	el.NextToolButton = Ui.find(hud, "Right.NextTool.Button")
-	el.NextToolHint = Ui.find(hud, "Right.NextTool.Hint")
-	el.NextToolName = Ui.find(hud, "Right.NextTool.ToolName")
-	el.NextToolIcon = Ui.find(hud, "Right.NextTool.Icon")
 	el.AutoButton = Ui.find(hud, "Right.AutoButton")
 	el.SweepButton = Ui.find(hud, "SweepButton")
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
@@ -658,10 +632,6 @@ function HudController:Start()
 			teleport(if zoneId == "Landing" then "Rocket" else zoneId)
 		end)
 	end
-	Ui.button(el.NextToolButton, function()
-		local ok, message = Net.func("BuyNextTool"):InvokeServer()
-		HudController:Toast(message or "", if ok then "Good" else "Bad")
-	end)
 	Ui.button(el.AutoButton, function()
 		local data = State.data
 		if data then
