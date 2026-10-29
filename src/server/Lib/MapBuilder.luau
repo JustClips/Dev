@@ -29,6 +29,27 @@ local GOLD = Color3.fromRGB(255, 200, 60)
 -- the ground at y + 2. Checked on a live server, so every surface below is filled 2 lower.
 local LIFT = 2
 
+-- The rock walls around the map. Terrain ridges (Rock) run along these lines and
+-- buildProps stands a row of boulders at their foot, on the inside.
+local HUB_X = World.BaseInner + World.BaseSize.Y + 2 -- outer edge of the bases
+local HUB_RIDGE = HUB_X + 53 -- hub sides
+local HUB_BOULDERS = HUB_X + 28
+local HUB_BACK = 258 -- behind the plaza
+local ZONE_RIDGE = 182 -- zone sides
+local ZONE_BOULDERS = 160
+local ZONE_BACK = Zones.List[#Zones.List].Min.Y - 58 -- behind the last zone
+
+-- Where a corridor's ramp sits: z0..z1, snapped out to the 4-stud terrain grid so the
+-- carved cut and the ramp part line up exactly (an off-grid cut left a slot at the top).
+local function rampSpan(c): (number, number, boolean)
+	local mid = (c.Min.Y + c.Max.Y) / 2
+	local highAtMaxZ = c.FromY > c.ToY -- the high end is away from the lower zone
+	if highAtMaxZ then
+		return c.Min.Y, math.ceil(mid / 4) * 4, true
+	end
+	return math.floor(mid / 4) * 4, c.Max.Y, false
+end
+
 -- Ground slab with its walkable surface at surfaceY. cf gives x/z and rotation.
 local function slab(terrain: Terrain, cf: CFrame, sx: number, sz: number, surfaceY: number, material: Enum.Material, depth: number?)
 	local d = depth or 8
@@ -91,9 +112,8 @@ function MapBuilder.buildTerrain()
 	for _, c in World.Corridors do
 		rect(terrain, c.Min.X, c.Min.Y, c.Max.X, c.Max.Y, math.max(c.FromY, c.ToY), M.Pavement)
 		if c.FromY ~= c.ToY then
-			local mid = (c.Min.Y + c.Max.Y) / 2
 			-- The ramp half sits on the low side (next to the crater).
-			local z0, z1 = if c.FromY > c.ToY then c.Min.Y else mid, if c.FromY > c.ToY then mid + 2 else c.Max.Y
+			local z0, z1 = rampSpan(c)
 			carve(terrain, -12, z0, 12, z1, -16, 12)
 			rect(terrain, -12, z0, 12, z1, math.min(c.FromY, c.ToY), M.Grass, 24)
 		end
@@ -115,29 +135,21 @@ function MapBuilder.buildTerrain()
 		slab(terrain, cf, World.BaseSize.X + 4, World.BaseSize.Y + 4, 0, M.Concrete)
 	end
 
-	-- Mountains around everything.
-	local hubX = World.BaseInner + World.BaseSize.Y + 2
-	ridge(terrain, rng, Vector2.new(-hubX - 53, 250), Vector2.new(-hubX - 53, -210), M.Grass, 24, 22, 36, -6)
-	ridge(terrain, rng, Vector2.new(hubX + 53, 250), Vector2.new(hubX + 53, -210), M.Grass, 24, 22, 36, -6)
-	ridge(terrain, rng, Vector2.new(-hubX - 53, 258), Vector2.new(hubX + 53, 258), M.Grass, 24, 22, 36, -6)
-	-- passes between zones
+	-- Rocky mountains around everything (one unbroken line per side, so there are no gaps).
+	ridge(terrain, rng, Vector2.new(-HUB_RIDGE, HUB_BACK), Vector2.new(-HUB_RIDGE, -214), M.Rock, 22, 24, 36, -6)
+	ridge(terrain, rng, Vector2.new(HUB_RIDGE, HUB_BACK), Vector2.new(HUB_RIDGE, -214), M.Rock, 22, 24, 36, -6)
+	ridge(terrain, rng, Vector2.new(-HUB_RIDGE, HUB_BACK), Vector2.new(HUB_RIDGE, HUB_BACK), M.Rock, 22, 24, 36, -6)
+	ridge(terrain, rng, Vector2.new(-HUB_RIDGE, -214), Vector2.new(-ZONE_RIDGE, -232), M.Rock, 12, 24, 34, -6)
+	ridge(terrain, rng, Vector2.new(HUB_RIDGE, -214), Vector2.new(ZONE_RIDGE, -232), M.Rock, 12, 24, 34, -6)
+	ridge(terrain, rng, Vector2.new(-ZONE_RIDGE, -214), Vector2.new(-ZONE_RIDGE, ZONE_BACK), M.Rock, 22, 22, 34, -4)
+	ridge(terrain, rng, Vector2.new(ZONE_RIDGE, -214), Vector2.new(ZONE_RIDGE, ZONE_BACK), M.Rock, 22, 22, 34, -4)
+	ridge(terrain, rng, Vector2.new(-ZONE_RIDGE, ZONE_BACK), Vector2.new(ZONE_RIDGE, ZONE_BACK), M.Rock, 22, 22, 36, -4)
+	-- Low rocky ridges between zones, kept thin so they never cover dust on either side.
 	for _, c in World.Corridors do
 		local z = (c.Min.Y + c.Max.Y) / 2
-		-- thin ridges so they never cover dust in the zones on either side
-		ridge(terrain, rng, Vector2.new(30, z), Vector2.new(170, z), M.Grass, 10, 8, 11, 0)
-		ridge(terrain, rng, Vector2.new(-30, z), Vector2.new(-170, z), M.Grass, 10, 8, 11, 0)
+		ridge(terrain, rng, Vector2.new(30, z), Vector2.new(ZONE_RIDGE, z), M.Rock, 10, 8, 11, 0)
+		ridge(terrain, rng, Vector2.new(-30, z), Vector2.new(-ZONE_RIDGE, z), M.Rock, 10, 8, 11, 0)
 	end
-	local zoneMaterial = { Crater = M.LeafyGrass, DarkSide = M.Sandstone, Mars = M.Concrete, Europa = M.Glacier }
-	for _, zone in Zones.List do
-		local material = zoneMaterial[zone.Id]
-		if material then
-			ridge(terrain, rng, Vector2.new(zone.Min.X - 62, zone.Max.Y), Vector2.new(zone.Min.X - 62, zone.Min.Y), material, 24, 20, 34, -4)
-			ridge(terrain, rng, Vector2.new(zone.Max.X + 62, zone.Max.Y), Vector2.new(zone.Max.X + 62, zone.Min.Y), material, 24, 20, 34, -4)
-		end
-	end
-	-- Back wall behind the last zone.
-	local last = Zones.List[#Zones.List]
-	ridge(terrain, rng, Vector2.new(last.Min.X - 60, last.Min.Y - 58), Vector2.new(last.Max.X + 60, last.Min.Y - 58), zoneMaterial[last.Id] or M.Grass, 24, 22, 36, -4)
 end
 
 -- Lighting -----------------------------------------------------------------------
@@ -724,11 +736,9 @@ local function corridorRamps()
 		if c.FromY == c.ToY then
 			continue
 		end
-		local mid = (c.Min.Y + c.Max.Y) / 2
 		local low, high = math.min(c.FromY, c.ToY), math.max(c.FromY, c.ToY)
-		-- Ramp z range and which end is high (the end away from the crater).
-		local z0, z1 = if c.FromY > c.ToY then c.Min.Y else mid, if c.FromY > c.ToY then mid else c.Max.Y
-		local highAtMaxZ = c.FromY > c.ToY
+		-- Same z range as the cut in the terrain; highAtMaxZ: which end is high.
+		local z0, z1, highAtMaxZ = rampSpan(c)
 		local length = z1 - z0
 		local rot = if highAtMaxZ then CFrame.identity else CFrame.Angles(0, math.rad(180), 0)
 		make("WedgePart", {
@@ -737,6 +747,17 @@ local function corridorRamps()
 			-- terrain walls (smooth terrain rounds its edges and left a visible gap).
 			Size = Vector3.new(c.Max.X - c.Min.X + 6, high - low, length),
 			CFrame = CFrame.new(0, (low + high) / 2, (z0 + z1) / 2) * rot,
+			Color = World.TerrainColors.Pavement,
+			Material = M.Concrete,
+		}, model)
+		-- A flat landing over the top edge: smooth terrain rounds off where it was cut, so
+		-- without it there's a dip between the path and the ramp.
+		local topZ = if highAtMaxZ then z1 else z0
+		local out = if highAtMaxZ then 1 else -1
+		make("Part", {
+			Name = "Landing",
+			Size = Vector3.new(c.Max.X - c.Min.X + 6, 2, 8),
+			CFrame = CFrame.new(0, high - 0.95, topZ + out * 3.5),
 			Color = World.TerrainColors.Pavement,
 			Material = M.Concrete,
 		}, model)
@@ -852,21 +873,49 @@ local function scatter(rng: Random, zone, names: { string }, count: number)
 	end
 end
 
--- Rocks and crystals outside the hub walls, between the bases and the mountains.
-local function hubDecor(rng: Random)
-	local names = { "Rock_Moon1", "Rock_Moon2", "Rock_Moon3", "Crystal_Blue", "Rock_Moon2" }
-	local hubX = World.BaseInner + World.BaseSize.Y + 2
-	for _ = 1, 26 do
-		local side = if rng:NextNumber() < 0.5 then -1 else 1
-		local x = side * rng:NextNumber(hubX + 6, hubX + 30)
-		local z = rng:NextNumber(-200, 240)
-		place(names[rng:NextInteger(1, #names)], CFrame.new(x, 0, z) * yaw(rng:NextNumber(0, 360)), rng:NextNumber(1.2, 2.6))
+-- A row of boulders from a to b (x, z), overlapping so there are no gaps. inward points
+-- into the map; the rocks turn their long side along the row. big: wall boulders, else the
+-- smaller ones on the ridges between zones.
+local function boulderRow(rng: Random, a: Vector2, b: Vector2, inward: Vector2, big: boolean)
+	local dir = (b - a).Unit
+	local length = (b - a).Magnitude
+	local angle = math.atan2(-dir.Y, dir.X)
+	local d = 0
+	while d <= length + 1 do
+		local name = if big or rng:NextNumber() < 0.4 then "Rock_Moon2" else "Rock_Moon1"
+		local meta = AssetLibrary.meta(name)
+		local size = if meta then meta.bounds.max - meta.bounds.min else Vector3.new(12, 5.5, 9)
+		local scale = if big then rng:NextNumber(3, 4) elseif name == "Rock_Moon2" then rng:NextNumber(1.1, 1.4) else rng:NextNumber(1.8, 2.5)
+		local p = a + dir * d + inward * rng:NextNumber(-2, 1)
+		local turn = angle + math.rad(rng:NextNumber(-12, 12)) + (if rng:NextNumber() < 0.5 then math.pi else 0)
+		-- Sunk a little so they sit in the ground, not on it.
+		place(name, CFrame.new(p.X, -size.Y * scale * 0.15, p.Y) * CFrame.Angles(0, turn, 0), scale)
+		if big and rng:NextNumber() < 0.5 then
+			-- a smaller rock tucked in front
+			local s2 = rng:NextNumber(1.3, 1.9)
+			local q = p + inward * (size.Z * scale * 0.35) + dir * rng:NextNumber(-6, 6)
+			place("Rock_Moon1", CFrame.new(q.X, -0.4, q.Y) * yaw(rng:NextNumber(0, 360)), s2)
+		end
+		d += size.X * scale * 0.55
 	end
-	for _ = 1, 10 do
-		local x = rng:NextNumber(-hubX, hubX)
-		local z = rng:NextNumber(206, 232)
-		place(names[rng:NextInteger(1, #names)], CFrame.new(x, 0, z) * yaw(rng:NextNumber(0, 360)), rng:NextNumber(1.2, 2.6))
+end
+
+-- Boulders along the foot of every rock wall (see buildTerrain) and on the zone dividers.
+local function rockWalls(rng: Random)
+	local hx, zx = HUB_BOULDERS, ZONE_BOULDERS
+	local hubBackZ = HUB_BACK - 22
+	local zoneBackZ = ZONE_BACK + 22
+	for _, side in { -1, 1 } do
+		boulderRow(rng, Vector2.new(side * hx, hubBackZ), Vector2.new(side * hx, -214), Vector2.new(-side, 0), true)
+		boulderRow(rng, Vector2.new(side * hx, -214), Vector2.new(side * zx, -232), Vector2.new(-side, 0), true)
+		boulderRow(rng, Vector2.new(side * zx, -232), Vector2.new(side * zx, zoneBackZ), Vector2.new(-side, 0), true)
+		for _, c in World.Corridors do
+			local z = (c.Min.Y + c.Max.Y) / 2
+			boulderRow(rng, Vector2.new(side * 38, z), Vector2.new(side * (zx - 8), z), Vector2.new(0, 1), false)
+		end
 	end
+	boulderRow(rng, Vector2.new(-hx, hubBackZ), Vector2.new(hx, hubBackZ), Vector2.new(0, -1), true)
+	boulderRow(rng, Vector2.new(-zx, zoneBackZ), Vector2.new(zx, zoneBackZ), Vector2.new(0, 1), true)
 end
 
 function MapBuilder.buildProps()
@@ -930,7 +979,7 @@ function MapBuilder.buildProps()
 	scatter(rng, Zones.ById.DarkSide, { "Rock_Mars1", "Rock_Mars2", "Crystal_Red", "Mushroom_Mars" }, 30)
 	scatter(rng, Zones.ById.Mars, { "Rock_Dark1", "Rock_Dark2", "Crystal_Purple", "Mushroom_Glow" }, 30)
 	scatter(rng, Zones.ById.Europa, { "Rock_Ice1", "Rock_Ice2", "Crystal_Ice", "Crystal_Ice" }, 30)
-	hubDecor(rng)
+	rockWalls(rng)
 
 	for i = 1, World.BaseCount do
 		MapBuilder.buildBase(i)
