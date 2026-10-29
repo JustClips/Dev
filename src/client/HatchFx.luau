@@ -274,7 +274,7 @@ end
 -- (speed, tighten 0-1, color) and a remover.
 function HatchFx.swirl(parent: Instance, at: CFrame, radius: number, height: number): ((number, number, Color3) -> (), () -> ())
 	local parts: { MeshPart } = {}
-	for i = 1, 2 do
+	for i = 1, 1 do -- one ribbon (two was too busy)
 		local s = glowMesh("VfxHatchSwirl", WHITE, parent)
 		if s then
 			s.Transparency = 1
@@ -609,7 +609,7 @@ function HatchFx.darken(color: Color3, seconds: number): (() -> ())
 	local cc = Instance.new("ColorCorrectionEffect")
 	cc.Name = "HatchDarken"
 	cc.Parent = Lighting
-	local target = { Brightness = -0.22, Contrast = 0.15, Saturation = -0.35, TintColor = Color3.new(1, 1, 1):Lerp(color, 0.25) }
+	local target = { Brightness = -0.14, Contrast = 0.1, Saturation = -0.25, TintColor = Color3.new(1, 1, 1):Lerp(color, 0.25) }
 	TweenService:Create(cc, TweenInfo.new(seconds, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), target):Play()
 	return function()
 		local t = TweenService:Create(cc, TweenInfo.new(0.5), { Brightness = 0, Contrast = 0, Saturation = 0, TintColor = WHITE })
