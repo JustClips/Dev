@@ -7,7 +7,7 @@ Tool.Grip from the grip point in meta.json.
 import math
 import random
 import bpy
-from mathutils import Vector
+from mathutils import Euler, Matrix, Vector
 from lib import (Asset, use, sphere, ico, box, cyl, cone, torus, capsule, tube, join,
                  deform, noise_deform)
 from aliens import shade, eye
@@ -379,26 +379,39 @@ def car_details(s, W, L, wr, color, kind):
     if kind != "hover":
         # dashboard in front of the seat, steering column out of it, wheel with spokes on
         # the column's end (they used to float above the floor)
+        # The dash is body-coloured (darker) with a light panel facing the driver (+Y), so
+        # it doesn't read as a second seat.
         dash_y = -0.9 * s
-        p.append(box("2A2A3A", loc=(0, dash_y, top + 0.35 * s), size=(W * 0.55, 0.5 * s, 0.7 * s), bevel=0.15 * s))
-        p.append(box("9BE6FF", loc=(-0.6 * s, dash_y + 0.26 * s, top + 0.45 * s), size=(0.45 * s, 0.03 * s, 0.25 * s)))
-        p.append(box("FFD23C", loc=(0.6 * s, dash_y + 0.26 * s, top + 0.45 * s), size=(0.3 * s, 0.03 * s, 0.25 * s)))
+        p.append(box(shade(color, -0.3), loc=(0, dash_y, top + 0.35 * s), size=(W * 0.45, 0.5 * s, 0.7 * s), bevel=0.15 * s))
+        p.append(box("E6E6EE", loc=(0, dash_y + 0.24 * s, top + 0.42 * s), size=(W * 0.36, 0.04 * s, 0.4 * s), bevel=0.015 * s))
+        p.append(box("9BE6FF", loc=(-0.6 * s, dash_y + 0.27 * s, top + 0.45 * s), size=(0.45 * s, 0.03 * s, 0.25 * s)))
+        p.append(box("FFD23C", loc=(0.6 * s, dash_y + 0.27 * s, top + 0.45 * s), size=(0.3 * s, 0.03 * s, 0.25 * s)))
         col0 = Vector((0, dash_y + 0.1 * s, top + 0.55 * s))
         col1 = Vector((0, -0.35 * s, top + 1.1 * s))
         p.append(tube("2A2A3A", [tuple(col0), tuple(col1)], 0.09 * s, seg=8))
-        tilt = 50
-        p.append(torus("2A2A3A", loc=tuple(col1), R=0.45 * s, r=0.07 * s, rot=(tilt, 0, 0), seg=18, mseg=6))
-        for ang in (0, 120, 240):
-            sp = box("2A2A3A", loc=(0, 0, 0), size=(0.9 * s, 0.07 * s, 0.07 * s), rot=(0, 0, ang))
-            sp.location = col1
-            sp.rotation_euler = (math.radians(tilt), 0, 0)
+        # The wheel's axis runs along the column, so it faces the driver. Rotating about X
+        # by t turns +Z into (0, -sin t, cos t); t = -atan2(dy, dz) lines that up with the
+        # column. In the wheel's own frame X is left/right and +Y points down the rim.
+        d = col1 - col0
+        tilt = -math.degrees(math.atan2(d.y, d.z))
+        frame_rot = Euler((math.radians(tilt), 0, 0)).to_matrix().to_4x4()
+        wheel_m = Matrix.Translation(col1) @ frame_rot
+        rim_r = 0.45 * s
+        p.append(torus("2A2A3A", loc=tuple(col1), R=rim_r, r=0.07 * s, rot=(tilt, 0, 0), seg=18, mseg=6))
+        # three spokes from the hub to the rim, in the ring's plane: right, left, bottom
+        for ang in (0, 180, 90):
+            sp = box("2A2A3A", loc=(0, 0, 0), size=(rim_r, 0.08 * s, 0.07 * s))
+            sp.matrix_world = wheel_m @ Matrix.Rotation(math.radians(ang), 4, "Z") @ Matrix.Translation((rim_r / 2, 0, 0))
             bpy.context.view_layer.update()
+            bpy.ops.object.select_all(action="DESELECT")
             sp.select_set(True)
             bpy.context.view_layer.objects.active = sp
-            bpy.ops.object.transform_apply(location=True, rotation=True)
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
             sp.select_set(False)
             p.append(sp)
-        p.append(cyl("FF4A4A", loc=tuple(col1), r=0.12 * s, h=0.12 * s, rot=(tilt, 0, 0), verts=10))
+        # hub cap on the column's end, facing the driver
+        n = d.normalized()
+        p.append(cyl("FF4A4A", loc=tuple(col1 + n * 0.05 * s), r=0.14 * s, h=0.1 * s, rot=(tilt, 0, 0), verts=12))
     for x in (-1, 1):
         p.append(cyl("C8C8D2", loc=(x * (W / 2 - 0.9 * s), L / 2 + 0.2 * s, wr + 0.6 * s), r=0.18 * s, h=0.8 * s, rot=(90, 0, 0), verts=10))
         # mirrors on short stalks from the body's top edge (they used to float beside the car)
