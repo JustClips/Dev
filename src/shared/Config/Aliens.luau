@@ -49,6 +49,13 @@ local List: { AlienDef } = {
 		Passive = { Name = "Pack Hunter", Stat = "Radius", Value = 0.2 } },
 	{ Id = "Unicorn", Name = "Unicorn", Rarity = "Legendary", Income = 1_800, Color = Color3.fromRGB(250, 248, 255), Size = 3.3,
 		Passive = { Name = "Rainbow Luck", Stat = "Luck", Value = 0.25 } },
+
+	{ Id = "Dragon", Name = "Dragon", Rarity = "Mythic", Income = 8_000, Color = Color3.fromRGB(216, 52, 44), Size = 3.4,
+		Passive = { Name = "Dragon's Hoard", Stat = "CritMult", Value = 1 } },
+	{ Id = "Phoenix", Name = "Phoenix", Rarity = "Mythic", Income = 10_000, Color = Color3.fromRGB(255, 122, 26), Size = 3,
+		Passive = { Name = "Rebirth Flame", Stat = "HatchSpeed", Value = 0.3 } },
+	{ Id = "Kitsune", Name = "Kitsune", Rarity = "Mythic", Income = 12_500, Color = Color3.fromRGB(248, 246, 242), Size = 3.2,
+		Passive = { Name = "Fox Fire", Stat = "Incubators", Value = 1 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new

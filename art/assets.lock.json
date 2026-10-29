@@ -56,6 +56,14 @@
    "id": 135950191965326,
    "sha": "1660d895ca0bcc58901231051dab2d8686ff13afb5d222635dd51bcfbff63362"
   },
+  "Pet_Dragon_Idle": {
+   "id": 80069818289083,
+   "sha": "9bc1cd8b21de82c384e38c21e64a73034a899e10f0dee6bfe970ac1b7262ea30"
+  },
+  "Pet_Dragon_Walk": {
+   "id": 131234778935871,
+   "sha": "77afb0f99953fbbfc4a4e9e1cb7ba8d3fcd05af190901a3055f266f7f9ecd739"
+  },
   "Pet_Duck_Idle": {
    "id": 91610326371606,
    "sha": "420500e663558202d8fc3b0022aec2b5be0eba0e1c5f2e4cb2cc451e0164b40e"
@@ -79,6 +87,14 @@
   "Pet_Idle": {
    "id": 90304779560671,
    "sha": "268e2852459d4b5a354615e3d7bed4b62a86fb1b0206603a595dfb6cb9051cd2"
+  },
+  "Pet_Kitsune_Idle": {
+   "id": 125212694674157,
+   "sha": "0b34f9f384cfce99bb98e5b20f76513d05a085f248461aca4fb72652306cdbf4"
+  },
+  "Pet_Kitsune_Walk": {
+   "id": 108225726686158,
+   "sha": "b140f642e32ce69c5a3b11ca206285349c69c50d99aaf4f3b3994f6e79910055"
   },
   "Pet_Lion_Idle": {
    "id": 108544388212872,
@@ -111,6 +127,14 @@
   "Pet_Penguin_Walk": {
    "id": 105554717136142,
    "sha": "837e70a47fe7681e0e5792b4af5f16f213d906cad3ea8d7ef9133f32028f6141"
+  },
+  "Pet_Phoenix_Idle": {
+   "id": 126842253870955,
+   "sha": "2707cc51e8918b0c29cf671f62730afcf93093f03bb6354355d36bfa28833189"
+  },
+  "Pet_Phoenix_Walk": {
+   "id": 113202964194332,
+   "sha": "5067d0f526b79887a5e1cdc5db6b67e33e08a0165b8cf91ab1daa0c60f89f196"
   },
   "Pet_Raccoon_Idle": {
    "id": 122273785089414,
@@ -822,6 +846,74 @@
    "id": 123733274417863,
    "sha": "e08110ec4b48f59c972689b93df6af0c9f1eee54fadcb65778af64776a570e49"
   },
+  "PetSkin_Dragon_Bloodlit": {
+   "id": 117391864282150,
+   "sha": "19a9d27c49eaef3bf6d7525f9fb8cb105a874729b270f78454c131b4bb9247e1"
+  },
+  "PetSkin_Dragon_Disco_0": {
+   "id": 71273584130738,
+   "sha": "d941ad9bf8dbcde7064d365ce829c1bc8c6243dd435d742f3020f109496f3d73"
+  },
+  "PetSkin_Dragon_Disco_1": {
+   "id": 83520878843927,
+   "sha": "06710a8143698bfd187a7a1a41b2592573735dab1b7f6409a40d7ed485e3de44"
+  },
+  "PetSkin_Dragon_Disco_2": {
+   "id": 138783296834980,
+   "sha": "a7642b2d40373cc16a09b39de73237bc4d42a0f5026f6b8023e25fd0e8ec267b"
+  },
+  "PetSkin_Dragon_Disco_3": {
+   "id": 78132091376624,
+   "sha": "9a8f135aa3da56e2c479d022a6fcb94ab6625273f8cdb8ba24905d93e940339b"
+  },
+  "PetSkin_Dragon_Frozen": {
+   "id": 82913913663024,
+   "sha": "23dfe8f3c8593e79970916452ebf16c7438f4b920a662154fe5d9c408904e782"
+  },
+  "PetSkin_Dragon_Golden": {
+   "id": 116885112635417,
+   "sha": "7b1f833171ce4747b027fc269268a015fc080f25cecb42032089783057d2f788"
+  },
+  "PetSkin_Dragon_MoonDusted": {
+   "id": 132011973945663,
+   "sha": "b5bd3fc836e7e4341949e6acaad3022d36c4bf8985b015367c7791565a67da7e"
+  },
+  "PetSkin_Dragon_Rainbow_0": {
+   "id": 121671047265109,
+   "sha": "4a9a164631d5b8ca3936ad3cd79f92a2cc0d6e52799887dd3e25f5a36ca41ad6"
+  },
+  "PetSkin_Dragon_Rainbow_1": {
+   "id": 140243268637698,
+   "sha": "8419d040a531d1d1cfd4890fc360b44ca0694feb60c8fc3149cd433c9c5a10b7"
+  },
+  "PetSkin_Dragon_Rainbow_2": {
+   "id": 138543604165999,
+   "sha": "1e903cb6f2e90bbf7c947c75e71ca3edcd3f99fcebda40a54859a7036f07db62"
+  },
+  "PetSkin_Dragon_Rainbow_3": {
+   "id": 73834456274812,
+   "sha": "457d502fd6ccd6ada25626d587b3ba4266a1abb9d0846b1ebb855d6d3eebbfd2"
+  },
+  "PetSkin_Dragon_Shocked": {
+   "id": 109668914194035,
+   "sha": "e6affb4929a4e384c8e8944394859c295a649f52f6c67038d472b19bebac192c"
+  },
+  "PetSkin_Dragon_Starlit": {
+   "id": 123465309410860,
+   "sha": "d56d99a66e82628dcbb0fa63eba469f7aff4c02e4a0706ac57b29dfe60d2bf6b"
+  },
+  "PetSkin_Dragon_Starstruck": {
+   "id": 138378236015148,
+   "sha": "c5577054d95acca7ff09911d20019cdbe6e6a27bde8c1216e734ca894d923110"
+  },
+  "PetSkin_Dragon_Wet": {
+   "id": 84810838442126,
+   "sha": "85d170fe7695bb95bebb657caf81a912399112cf53707149972d344027417353"
+  },
+  "PetSkin_Dragon_Windswept": {
+   "id": 83912025916275,
+   "sha": "be79baefe9ed567bb234a4b49123e4193f230b60a79bffe8c95109b4e2702626"
+  },
   "PetSkin_Duck_Bloodlit": {
    "id": 78517664252308,
    "sha": "5b07d44c9ddc55d04eb3f6501417854735e49c3663c6f959dcb0f442b16e90c8"
@@ -957,6 +1049,74 @@
   "PetSkin_Fox_Windswept": {
    "id": 90662215169929,
    "sha": "01fa2f03c1eb850a322abf2f3db693202dcd23ed037934f9ab4adfa3caada45a"
+  },
+  "PetSkin_Kitsune_Bloodlit": {
+   "id": 108775522539569,
+   "sha": "d8f50ba1f2f120c1d721f8fb92f8960b70d1048ce616f4a95ff0333b3b52daec"
+  },
+  "PetSkin_Kitsune_Disco_0": {
+   "id": 91365217112102,
+   "sha": "1be61e79509505dce60247329de849b69c1673c31f6e0f48e2ead24b882819bd"
+  },
+  "PetSkin_Kitsune_Disco_1": {
+   "id": 124770900198344,
+   "sha": "046f0c23edd590e7ed9994b38ab4774cd16924a4ca49b5b59abf85e2121d0d3a"
+  },
+  "PetSkin_Kitsune_Disco_2": {
+   "id": 86102372664255,
+   "sha": "ab9ede9c3c0a8c7c39e0aed8f426318731fee915cca1038faa4f6049b4d23b82"
+  },
+  "PetSkin_Kitsune_Disco_3": {
+   "id": 109030590366104,
+   "sha": "ff44120884d4105f470a91b319b8b29f470d3107d9fdc28735ac71043e7df436"
+  },
+  "PetSkin_Kitsune_Frozen": {
+   "id": 113014829938496,
+   "sha": "ab0d19cb6b1c3076d3f3bbcab7e7da3cd30ac29abf3b9c88682bcd36b9ed4f26"
+  },
+  "PetSkin_Kitsune_Golden": {
+   "id": 96001240112456,
+   "sha": "6f0d3bc3ff9b4f7a332d47545c7616f2fd5fe27b38b6ff7a5911223d2c823be2"
+  },
+  "PetSkin_Kitsune_MoonDusted": {
+   "id": 107343011785897,
+   "sha": "da4d70a5c5aa1eb7ad51d05e86ee474c02a25e5d1f4cbbb9f710df4ed5fee375"
+  },
+  "PetSkin_Kitsune_Rainbow_0": {
+   "id": 91075958166755,
+   "sha": "8ac95958f77aa66f38eec7753a2f70b85486adeff392b67b4319b181461c3cf9"
+  },
+  "PetSkin_Kitsune_Rainbow_1": {
+   "id": 111070392627006,
+   "sha": "32e79e5d1c9cbb64406870e18f264abaca853ae100f6e2eea93de138ddd2b7d2"
+  },
+  "PetSkin_Kitsune_Rainbow_2": {
+   "id": 72702266463646,
+   "sha": "370e34a8cfbd40531af07d49fc7d5462c6e00918087aaf4cd992beabebafa01c"
+  },
+  "PetSkin_Kitsune_Rainbow_3": {
+   "id": 136535685878065,
+   "sha": "a6de6c633de14a4b94db245b03c37be20aca0a6d17594ff1e258f1c57f6e5eb7"
+  },
+  "PetSkin_Kitsune_Shocked": {
+   "id": 107095648480040,
+   "sha": "ba5f343908fa363b3aed39835969f41432e3ca8d0c7ed2dfc8b3e6a3402ee9a3"
+  },
+  "PetSkin_Kitsune_Starlit": {
+   "id": 80508780071950,
+   "sha": "b522c9d198ba144f2af5af18a49a5394e7bf46de3a58e3a6d13adc6b607d5aff"
+  },
+  "PetSkin_Kitsune_Starstruck": {
+   "id": 90006075816932,
+   "sha": "ae071631270ce42bdad5abb61e59fb47f5400eab23e311a50092da257cf4efff"
+  },
+  "PetSkin_Kitsune_Wet": {
+   "id": 91294596728318,
+   "sha": "64aa4ea6adf902ee3c7db77e86771d0183553f4a273d64505dd770780c131c03"
+  },
+  "PetSkin_Kitsune_Windswept": {
+   "id": 107049893886548,
+   "sha": "8bafd3f4c12100876e200110b4db007aff5fb66e305d3eda24f0bd69c92e674e"
   },
   "PetSkin_Lion_Bloodlit": {
    "id": 136435929241131,
@@ -1229,6 +1389,74 @@
   "PetSkin_Penguin_Windswept": {
    "id": 125027057986182,
    "sha": "c24c9a26a5e4fb983ed53814e4456be9df129df4ba461c82e12d5eb27a45baae"
+  },
+  "PetSkin_Phoenix_Bloodlit": {
+   "id": 94739095490037,
+   "sha": "ccf9e9e7400705c473997e4aa63c8ce99fc156e3f7fdd15376faf033c15ea79b"
+  },
+  "PetSkin_Phoenix_Disco_0": {
+   "id": 86177470586612,
+   "sha": "daf3bf3997baaf5793ce11130e27dbdc5167d3d365807b7b58c4637654b3196f"
+  },
+  "PetSkin_Phoenix_Disco_1": {
+   "id": 91063932209276,
+   "sha": "d99be8d5031b3dcf94300b6cb063d51aa741df2b35bf87ed6d5e9687c882578d"
+  },
+  "PetSkin_Phoenix_Disco_2": {
+   "id": 131527446460088,
+   "sha": "3c4afb56ac099352be4ee30c48393ebac03cc295fe0296f8b416f197c4fe4144"
+  },
+  "PetSkin_Phoenix_Disco_3": {
+   "id": 113606029568386,
+   "sha": "3151356c725eae4eb9fcd8ffe90f4b59e0bba2321cd6f2f50bb9aa6b5d57afd0"
+  },
+  "PetSkin_Phoenix_Frozen": {
+   "id": 87725565879819,
+   "sha": "234e76bf268ede10ec60f8f984dc08cdc8753054a495f5fc36de6a3c08bd593b"
+  },
+  "PetSkin_Phoenix_Golden": {
+   "id": 88436559920332,
+   "sha": "8b7d9c2ecc1e4fca04b9cfd1d677305432c31c70c33da321c89b94ffaf4f7db0"
+  },
+  "PetSkin_Phoenix_MoonDusted": {
+   "id": 120399947661989,
+   "sha": "3dc20ccbbac039d3dbc61fe8f2f4a0912cb26ab2169bdf4d9c43ef2d2e3c0445"
+  },
+  "PetSkin_Phoenix_Rainbow_0": {
+   "id": 103892839635533,
+   "sha": "0ba8c225b9e763537f8b1a16066ea09c8011ca93543defd655d876845c9713b6"
+  },
+  "PetSkin_Phoenix_Rainbow_1": {
+   "id": 129554415454851,
+   "sha": "e21c229d0f5b66bff47052d6ba344353d1586a231ad4e5668b6d08c5f68b21a2"
+  },
+  "PetSkin_Phoenix_Rainbow_2": {
+   "id": 133817795280864,
+   "sha": "31ef0ba2a0063f4873ed65aa0c7473eb39d70cf6fe1f8a93d6a84b7230376ac4"
+  },
+  "PetSkin_Phoenix_Rainbow_3": {
+   "id": 111683092187966,
+   "sha": "802c42286776fb2f00f33c16a34ceb7da4d414d70a8e43fbeaf1ced156f13546"
+  },
+  "PetSkin_Phoenix_Shocked": {
+   "id": 96812975463571,
+   "sha": "aeca32df6d9fb0208a10f46585e87552506e77c433014c6e147a26816112650f"
+  },
+  "PetSkin_Phoenix_Starlit": {
+   "id": 100923738675062,
+   "sha": "9e0b2d251d97b585957a928d6c6d928985f856e6ec2eff871bcd2824da60f7d1"
+  },
+  "PetSkin_Phoenix_Starstruck": {
+   "id": 72141790405923,
+   "sha": "1a946a940e3318c24f0eabe32c13cd2434009d6929caa206d2efacf35554bf66"
+  },
+  "PetSkin_Phoenix_Wet": {
+   "id": 132726000421804,
+   "sha": "fa6b0b87c3678d5f24f3690f17ad7c53f38b11f7519ea5bef6dae3873ace74bb"
+  },
+  "PetSkin_Phoenix_Windswept": {
+   "id": 132296783902838,
+   "sha": "0dd0ac9355b3766274c3fdb9c3c9fa716de3d5468c3db6eba0131e40aa15671b"
   },
   "PetSkin_Raccoon_Bloodlit": {
    "id": 77477593244368,
@@ -1800,6 +2028,10 @@
    "id": 134555901794284,
    "sha": "ec583db829abcc3fbfadc04be86c8df97718a60b3382834a564bf4164cfa993f"
   },
+  "Alien_Dragon": {
+   "id": 87498446687918,
+   "sha": "c8aaae836dcb354e41bf50652838a744a4ae6d7e508729fc061eebf9c6aaf02f"
+  },
   "Alien_Duck": {
    "id": 126739095804296,
    "sha": "96d3b1b4484cfac4f2469c6554f27860c35ab193451d58c0e7a51ace307d03de"
@@ -1851,6 +2083,10 @@
   "Alien_Glorp": {
    "id": 78723008226480,
    "sha": "7fba89fefa01a6a784bf43be8327f56019156488d4b24e4e7d8b84b3fcedc0fe"
+  },
+  "Alien_Kitsune": {
+   "id": 125210262446651,
+   "sha": "57febe6f30e76b9b9f9277a482d95ed3217f7604d2fe8b23ac3cddab2dc85576"
   },
   "Alien_Lion": {
    "id": 116473394980379,
@@ -1915,6 +2151,10 @@
   "Alien_Penguin": {
    "id": 98067690150618,
    "sha": "3a8991d43f7cd053c30a013b24ac2768c0278fc8c54ab055014d834233b5d409"
+  },
+  "Alien_Phoenix": {
+   "id": 96133380097025,
+   "sha": "3ac9a6df04f7555c3bb88a30ad6acbe97a0048e541c11817b0f2e446dc063693"
   },
   "Alien_QuasarPup": {
    "id": 115937635188361,
