@@ -939,6 +939,21 @@ def dialog():
     write("Dialog", screen([win], order=9, enabled=False))
 
 
+def confirm():
+    """Are-you-sure popup (ConfirmController), e.g. before using a potion from the bag. Opens
+    over the bag without closing it."""
+    win = window(460, 350, "Use item?", "Potion", popup=True, children=[
+        icon("Big", "Potion", 96, U(0.5, 0, 0, 66), (0.5, 0)),
+        text("Name", "", U(1, -40, 0, 34), U(0.5, 0, 0, 164), (0.5, 0), ts=28, color=INK, display=True,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 14})]),
+        text("Text", "", U(1, -40, 0, 44), U(0.5, 0, 0, 200), (0.5, 0), ts=18, color=SUB, heavy=True,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 11})]),
+        button("Yes", U(0, 190, 0, 56), U(0.5, -100, 1, -16), (0.5, 1), color=SUCCESS, label="Use", ts=28),
+        button("No", U(0, 190, 0, 56), U(0.5, 100, 1, -16), (0.5, 1), color=DANGER, label="Cancel", ts=26),
+    ])
+    write("Confirm", screen([dim(), win], order=14, enabled=False))
+
+
 # ---------------------------------------------------------------- Offer + Welcome back
 def offer():
     # Offer card: slides in next to the left rail (OfferController places it), with what you
@@ -1231,6 +1246,7 @@ def main():
     base_panels()
     placing()
     dialog()
+    confirm()
     hover()
     rewards()
     rebirth()

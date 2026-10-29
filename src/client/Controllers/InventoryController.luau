@@ -158,7 +158,19 @@ local function tapped(entry: Entry)
 	end
 	Ui.sound("Click")
 	if entry.kind == "Item" then
-		act("UseItem", entry.key)
+		local def = Items.ById[entry.key]
+		if not def then
+			return
+		end
+		C.ConfirmController:Ask({
+			title = "Use item?",
+			name = def.Name,
+			text = def.Description,
+			icon = def.Icon,
+			yes = "Use",
+		}, function()
+			act("UseItem", entry.key)
+		end)
 		return
 	end
 	if heldKey() == entry.key then

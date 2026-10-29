@@ -22,6 +22,7 @@ local ORDER = {
 	"InventoryController",
 	"PlacementController",
 	"PromptController",
+	"ConfirmController",
 	"DialogController",
 	"TraderController",
 	"HoverController",
