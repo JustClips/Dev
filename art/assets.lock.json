@@ -4832,6 +4832,30 @@
    "id": 118065667707706,
    "sha": "62cfcccd59674f5ffd0041ba6c9772f5bba7cf4a780f9eb2210ff59e645b7b75"
   },
+  "Boulder_1": {
+   "id": 127571926205123,
+   "sha": "b2640f382eb8ac5be3a70a1c0e1255db16d2ca15e41d595a8d6c6065aa08453a"
+  },
+  "Boulder_2": {
+   "id": 87267704243182,
+   "sha": "377775b4725dd999305b0205c9da8180138a0d95a4ede945d642adef4e68c585"
+  },
+  "Boulder_3": {
+   "id": 77328908792006,
+   "sha": "522e1534b71f381f505dd905372eb1fc5edb74fbb69ac5ee3089fe3db9bd7d29"
+  },
+  "Cliff_1": {
+   "id": 77669831700684,
+   "sha": "e23be2bd8489cb34cded4256272f91f26fdf386781ee2a8569afeea93f608dc0"
+  },
+  "Cliff_2": {
+   "id": 113263945993045,
+   "sha": "dc3ab84fe504a8c549c933a57b58caea3d0306ea5d7f58faeec77a3c920e564b"
+  },
+  "Cliff_3": {
+   "id": 82868844287581,
+   "sha": "74b06efd607464b3a8b08908fce9ac456051b4e1b38214c54af41391b92baa84"
+  },
   "Clump_Autumn1": {
    "id": 116671657693410,
    "sha": "91743193ca765f59ddbe9dfcb0f2b61a4a26f60b78dc9b34d4cac5903549b4fd"

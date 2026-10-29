@@ -5007,6 +5007,99 @@ Assets.Models = {
 		},
 		sign = Vector3.new(0.0, 11.4, -0.3),
 	},
+	Boulder_1 = {
+		bounds = {
+			max = Vector3.new(4.667, 5.857, 3.851),
+			min = Vector3.new(-3.807, -0.642, -3.544),
+		},
+		id = 127571926205123,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Boulder_2 = {
+		bounds = {
+			max = Vector3.new(2.711, 3.707, 2.7),
+			min = Vector3.new(-2.332, -0.726, -2.037),
+		},
+		id = 87267704243182,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Boulder_3 = {
+		bounds = {
+			max = Vector3.new(8.623, 8.353, 7.401),
+			min = Vector3.new(-6.449, -0.707, -4.982),
+		},
+		id = 77328908792006,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Cliff_1 = {
+		bounds = {
+			max = Vector3.new(14.055, 15.357, 6.118),
+			min = Vector3.new(-13.429, -1.21, -9.392),
+		},
+		id = 77669831700684,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+		segment = {
+			depth = 12.0,
+			height = 15,
+			length = 24.0,
+		},
+	},
+	Cliff_2 = {
+		bounds = {
+			max = Vector3.new(13.339, 16.358, 6.178),
+			min = Vector3.new(-13.335, -1.284, -8.969),
+		},
+		id = 113263945993045,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+		segment = {
+			depth = 12.0,
+			height = 16,
+			length = 24.0,
+		},
+	},
+	Cliff_3 = {
+		bounds = {
+			max = Vector3.new(13.778, 14.355, 6.342),
+			min = Vector3.new(-13.832, -1.274, -9.64),
+		},
+		id = 82868844287581,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+		segment = {
+			depth = 12.0,
+			height = 14,
+			length = 24.0,
+		},
+	},
 	Clump_Autumn1 = {
 		atlas = "PileAtlas_Autumn",
 		bounds = {
