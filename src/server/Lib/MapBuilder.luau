@@ -954,7 +954,7 @@ function MapBuilder.buildProps()
 	-- Windmills face the hub (front = -Z, sails on that side), and their sails turn.
 	for i, x in { -56, 56 } do
 		local pos = Vector3.new(x, 0, 194)
-		spinSails(place("Satellite", CFrame.lookAt(pos, Vector3.new(0, 0, 0)), 1.4), 0.45 + 0.1 * i)
+		spinSails(place("Satellite", CFrame.lookAt(pos, Vector3.new(0, 0, 0)), 2.8), 0.4 + 0.08 * i)
 	end
 	-- a car on display in the garage
 	place("Vehicle_SweeperCart", World.Garage * CFrame.new(3, 0.6, 2) * yaw(-25))
