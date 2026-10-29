@@ -1,5 +1,7 @@
 --!strict
 -- Shows the server's contextual offers and the "welcome back" offline income screen.
+local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
@@ -275,6 +277,18 @@ function OfferController:ShowGained(amount: any, source: string?)
 	end)
 end
 
+local doublePending: number? = nil
+
+-- Closes the welcome-back window and shows the offline cash coming in (it was already paid
+-- on join; this is the reward moment).
+local function claimWelcome()
+	Ui.hide(welcomeGui)
+	if welcomeAmount then
+		OfferController:ShowGained(welcomeAmount, "OfflineIncome")
+		welcomeAmount = nil
+	end
+end
+
 local function showWelcome(info)
 	welcomeAmount = info.Amount
 	Ui.find(welcomeGui, "Window.Amount").Text = "+" .. Format.cash(info.Amount)
@@ -354,26 +368,40 @@ function OfferController:Start()
 			prompt(offer.Product)
 		end
 	end)
-	Ui.button(Ui.find(welcomeGui, "Window.Close"), function()
-		Ui.hide(welcomeGui)
-	end)
-	Ui.button(Ui.find(welcomeGui, "Window.Collect"), function()
-		Ui.hide(welcomeGui)
-		if welcomeAmount then
-			OfferController:ShowGained(welcomeAmount, "OfflineIncome")
-			welcomeAmount = nil
-		end
-	end)
+	-- The welcome-back window only closes from its own buttons (Dev: a stray click shouldn't
+	-- close it). Close and Collect both claim the normal reward; 2x claims it too if the
+	-- purchase doesn't go through.
+	Ui.button(Ui.find(welcomeGui, "Window.Close"), claimWelcome)
+	Ui.button(Ui.find(welcomeGui, "Window.Collect"), claimWelcome)
 	Net.event("CashGained").OnClientEvent:Connect(function(info)
 		OfferController:ShowGained(info.Amount, info.Source)
 	end)
-	Ui.button(Ui.find(welcomeGui, "Dim"), function()
-		Ui.hide(welcomeGui)
-	end)
 	Ui.button(Ui.find(welcomeGui, "Window.Double"), function()
+		local double = Products.ProductByKey.DoubleOffline
 		Ui.hide(welcomeGui)
 		Net.event("OfferResponse"):FireServer("DoubleOffline", true)
-		prompt("DoubleOffline")
+		local ok, message = Net.func("PromptPurchase"):InvokeServer("DoubleOffline")
+		if ok and double then
+			doublePending = double.Id
+		else
+			if message then
+				C.HudController:Toast(message, "Bad")
+			end
+			claimWelcome()
+		end
+	end)
+	-- 2x cancelled or failed: fall back to the normal reward. When it goes through, the
+	-- server pays the extra and its own "+cash" pop shows.
+	MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId, productId, purchased)
+		if userId ~= Players.LocalPlayer.UserId or productId ~= doublePending then
+			return
+		end
+		doublePending = nil
+		if purchased then
+			welcomeAmount = nil
+		else
+			claimWelcome()
+		end
 	end)
 	Net.event("ShowOffer").OnClientEvent:Connect(showOffer)
 	task.spawn(function()

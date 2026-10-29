@@ -108,7 +108,7 @@ function FollowerController:Init()
 end
 
 function FollowerController:Start()
-	AssetLibrary.waitReady(45)
+	AssetLibrary.waitFor("CoreReady", 45)
 	for _, player in Players:GetPlayers() do
 		watch(player)
 	end

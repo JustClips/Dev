@@ -35,7 +35,7 @@ from lib import Asset  # noqa: E402
 U = 0.13            # cube size in studs (BASE_U times the pet's SCALE while it builds)
 BASE_U = U
 # Bigger pets: same cube grid, bigger cubes.
-SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6}
+SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6}
 FPS = 30
 IDLE = (0, 90)      # frames
 WALK = (120, 138)
@@ -1271,6 +1271,190 @@ def sea_serpent():
     return a
 
 
+# ====================================================================== zone: City
+
+
+def pigeon():
+    G, GL, D, N1, N2, O = "8E96A3", "B4BBC6", "4A505C", "5FA88A", "8A6AB0", "E8963C"
+    parts = []
+    leg = Part("LegL", "Body", joint=(1.5, -0.5, 2))
+    leg.box(1, 2, -1, 0, 1, 2, "D86A6A")
+    leg.box(1, 3, -2, 0, 0, 1, "D86A6A")
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-3, 3, -4, 5, 2, 8, lambda i, j, k: GL if (j == -4 and k <= 5) else G)
+    body.box(-2, 2, 5, 8, 4, 6, lambda i, j, k: D if j == 7 else G)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -2, 8))
+    head.rbox(-2, 2, -5, -1, 8, 12, lambda i, j, k: (N1 if (i + k) % 2 else N2) if k <= 9 else G, edges=(False, False, True))
+    head.box(-1, 1, -7, -5, 10, 11, "C8BFB4")
+    head.set([(-1, -5, 11), (0, -5, 11)], "F6F2EA")         # cere
+    eyes(head, -5, 11, xs=(-2, 1), w=1, h=1)
+    head.set([(-2, -5, 10), (1, -5, 10)], O)                  # orange rings under the eyes
+    parts.append(head)
+    wing = Part("WingL", "Body", joint=(3, 0, 7))
+    wing.box(3, 4, -2, 6, 3, 7, lambda i, j, k: D if j in (2, 4) else G)
+    parts += [wing, wing.mirror("WingR")]
+    a = assemble("Pigeon", parts)
+    a.extra["float"] = True
+    return a
+
+
+def rat():
+    G, GD, P, B = "8C7F78", "6A5E58", "F2A0A8", "D8CCC4"
+    parts = legs(GD, P, 2, -4, 2)
+    body = Part("Body")
+    body.rbox(-3, 3, -5, 5, 2, 7, lambda i, j, k: B if k == 2 else G)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -5, 5))
+    head.rbox(-3, 3, -9, -4, 3, 8, G, edges=(True, False, True))
+    head.box(-1, 1, -12, -9, 4, 6, G)                          # pointy snout
+    head.set([(-1, -12, 5), (0, -12, 5)], P)
+    head.set([(-3, -11, 5), (2, -11, 5)], "E8E0D8")            # whiskers
+    eyes(head, -9, 6, xs=(-2, 1), w=1, h=1)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2.5, -6.5, 8))
+    ear.box(1, 4, -7, -6, 8, 11, lambda i, j, k: None if (k == 10 and i in (1, 3)) else (P if (i == 2 and k == 9) else G))
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 5, 3))
+    tail.set([(0, 5 + t, 3 + (1 if t > 3 else 0)) for t in range(6)], P)
+    tail2 = Part("Tail2", "Tail", joint=(0, 11, 4))
+    tail2.set([(0, 11 + t, 4 + (1 if t in (2, 3) else (2 if t > 3 else 0))) for t in range(6)], P)
+    parts += [tail, tail2]
+    return assemble("Rat", parts)
+
+
+def corgi():
+    O, W, D, N = "E8963C", "FAF3E8", "B86A24", "2A1C16"
+    parts = legs(O, W, 2, -6, 4)
+    for p in parts:
+        if p.name.startswith("LegF"):
+            for c in p.cells:
+                p.cells[c] = W
+    body = Part("Body")
+    body.rbox(-3, 3, -7, 7, 2, 7, lambda i, j, k: W if (k == 2 or (j <= -6 and k <= 5)) else O)
+    body.rbox(-2, 2, 7, 9, 3, 7, W)                            # fluffy butt, no tail
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -7, 6))
+    head.rbox(-4, 4, -12, -6, 6, 12, lambda i, j, k: W if (j == -12 and (k <= 8 or i in (-1, 0))) else O, edges=(True, False, True))
+    head.box(-2, 2, -14, -12, 6, 9, W)
+    head.set([(-1, -14, 8), (0, -14, 8)], N)
+    head.set([(-1, -14, 6), (0, -14, 6)], "FF7A8E")            # tongue
+    eyes(head, -12, 9)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2.5, -8.5, 12))
+    for k, xs in ((12, (1, 2, 3)), (13, (1, 2, 3)), (14, (2, 3)), (15, (3,))):
+        for x in xs:
+            ear.cells[(x, -9, k)] = "FFC8B0" if (x == 2 and k in (12, 13)) else O
+    parts += [ear, ear.mirror("EarR")]
+    return assemble("Corgi", parts)
+
+
+def bulldog():
+    F, W, M, R, S = "D8B48A", "FAF3E8", "3A2A22", "C8302A", "D8DDE4"
+    parts = legs(F, W, 3, -6, 4, spread=1)
+    body = Part("Body")
+    body.rbox(-4, 4, -7, 6, 3, 9, lambda i, j, k: W if (j <= -6 and k <= 7 and -2 <= i <= 1) else F)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -7, 8))
+    head.rbox(-5, 5, -12, -6, 6, 13, lambda i, j, k: M if (j == -12 and 6 <= k <= 9 and -3 <= i <= 2) else (W if (j == -12 and i in (-1, 0) and k >= 10) else F))
+    head.set([(-1, -13, 8), (0, -13, 8)], "1A1210")            # nose
+    head.set([(-3, -13, 6), (2, -13, 6), (-2, -13, 6), (1, -13, 6)], "FFFFFF")   # underbite teeth
+    eyes(head, -12, 10, xs=(-4, 2))
+    for c in [(x, -12, z) for x in (-5, 4) for z in (6, 7)]:   # jowls
+        head.cells[c] = F
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(4, -8.5, 13))
+    ear.set([(3, -9, 13), (4, -9, 13), (4, -9, 12)], M)
+    parts += [ear, ear.mirror("EarR")]
+    collar = Part("Collar", "Body", joint=(0, -6, 8), noise=False)
+    for i in range(-4, 4):
+        for k in (8,):
+            collar.cells[(i, -8, k)] = S if i % 2 == 0 else R
+    collar.box(-4, 4, -7, -6, 8, 9, R)
+    parts.append(collar)
+    tail = Part("Tail", "Body", joint=(0, 6, 7))
+    tail.set([(-1, 6, 7), (0, 6, 7), (0, 7, 8)], F)
+    parts.append(tail)
+    return assemble("Bulldog", parts)
+
+
+def robo_pup():
+    M, D, J, C = "B8C2CC", "5A6672", "8A96A4", "5FF0FF"
+    parts = legs(M, D, 4, -6, 4)
+    for p in parts:
+        for c in list(p.cells):
+            if c[2] == 2:
+                p.cells[c] = J                                  # knee joints
+    body = Part("Body")
+    body.box(-3, 3, -7, 7, 4, 9, lambda i, j, k: D if (k == 8 and j % 3 == 0) or (i in (-3, 2) and j % 4 == 0) else M)
+    parts.append(body)
+    core = Part("Core_Glow", "Body", joint=(0, -7, 6), noise=False, glow=C)
+    core.box(-1, 1, -8, -7, 5, 7, C)
+    parts.append(core)
+    head = Part("Head", "Body", joint=(0, -7, 8))
+    head.box(-4, 4, -12, -6, 7, 13, lambda i, j, k: D if (k == 12 and abs(i + 0.5) < 2) else M)
+    head.box(-2, 2, -14, -12, 7, 10, M)
+    head.set([(-1, -14, 9), (0, -14, 9)], D)
+    head.set([(-2, -14, 7), (-1, -14, 7), (0, -14, 7), (1, -14, 7)], D)    # speaker grill mouth
+    visor = [(x, -12, z) for x in range(-3, 3) for z in (10, 11)]
+    for v in visor:
+        head.cells.pop(v, None)
+    parts.append(head)
+    eyes_ = Part("Visor_Glow", "Head", joint=(0, -12, 10.5), noise=False, glow=C)
+    eyes_.set(visor, C)
+    parts.append(eyes_)
+    ear = Part("EarL", "Head", joint=(3, -8.5, 13))
+    ear.box(2, 4, -9, -8, 13, 15, D)
+    parts += [ear, ear.mirror("EarR")]
+    ant = Part("Antenna_Glow", "Head", joint=(0, -9, 13), noise=False, glow="FF5A7A")
+    ant.set([(0, -9, 14), (0, -9, 15)], "FF5A7A")
+    parts.append(ant)
+    ant_rod = Part("Antenna", "Head", joint=(0, -9, 13))
+    ant_rod.set([(0, -9, 13)], D)
+    parts.append(ant_rod)
+    tail = Part("Tail", "Body", joint=(0, 7, 8))
+    tail.set([(0, 7, 8), (0, 8, 9), (0, 8, 10), (0, 9, 11)], D)
+    parts.append(tail)
+    return assemble("RoboPup", parts)
+
+
+def gargoyle():
+    S, SD, MO, E = "8A8C90", "66686E", "6A8A4A", "FF7A3A"
+    parts = legs(S, SD, 4, -6, 4, spread=1)
+    stone = lambda i, j, k: SD if (i * 7 + j * 3 + k * 5) % 9 == 0 else (MO if (i + j * 2 + k) % 23 == 0 else S)   # noqa: E731
+    body = Part("Body")
+    body.rbox(-4, 4, -6, 6, 4, 11, stone)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -6, 10))
+    head.rbox(-4, 4, -11, -5, 9, 15, stone, edges=(True, False, True))
+    head.box(-3, 3, -13, -11, 9, 11, stone)                   # snarling jaw
+    head.set([(-3, -13, 10), (2, -13, 10)], "E8E4DA")          # tusks
+    eye_cells = [(x, -11, 13) for x in (-3, -2, 1, 2)]
+    for c in eye_cells:
+        head.cells.pop(c, None)
+    for x in (-4, 3):                                         # curled horns
+        head.set([(x, -8, 15), (x, -7, 16), (x, -6, 16), (x, -5, 15)], SD)
+    parts.append(head)
+    glow = Part("Eyes_Glow", "Head", joint=(0, -11, 13), noise=False, glow=E)
+    glow.set(eye_cells, E)
+    parts.append(glow)
+    wing = Part("WingL", "Body", joint=(4, -2, 10))
+    for d in range(9):
+        for j in range(-5, -5 + 9 - d):
+            bone = j == -5 or d in (0, 4, 8)
+            wing.cells[(4 + d, j, 10 + d // 2)] = SD if bone else S
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 6, 6))
+    tail.box(-1, 1, 6, 10, 5, 7, S)
+    tail.box(-2, 2, 10, 12, 5, 7, SD)
+    parts.append(tail)
+    a = assemble("Gargoyle", parts)
+    a.extra["float"] = True
+    a.extra["aura"] = "Gloom"
+    return a
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
@@ -1278,7 +1462,8 @@ PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon":
         "Dragon": dragon, "Phoenix": phoenix, "Kitsune": kitsune,
         "AutumnStag": autumn_stag,
         "Hedgehog": hedgehog, "Frog": frog, "Swan": swan, "Beaver": beaver, "Peacock": peacock, "Griffin": griffin,
-        "Crab": crab, "Seagull": seagull, "Seal": seal, "Dolphin": dolphin, "Shark": shark, "SeaSerpent": sea_serpent}
+        "Crab": crab, "Seagull": seagull, "Seal": seal, "Dolphin": dolphin, "Shark": shark, "SeaSerpent": sea_serpent,
+        "Pigeon": pigeon, "Rat": rat, "Corgi": corgi, "Bulldog": bulldog, "RoboPup": robo_pup, "Gargoyle": gargoyle}
 
 
 # ------------------------------------------------------------------------- animation
@@ -1800,6 +1985,59 @@ def fly(amp, legs=("LegL", "LegR"), quad=False, base=None):
     return {"Idle": lambda w: pose(w, 2, amp, -4), "Walk": lambda w: pose(w, 2, amp * 1.4, -14)}
 
 
+def rat_idle(w):
+    sniff = s(14 * w) * max(0.0, s(w))
+    up = max(0.0, -s(w)) ** 3                                  # stands up on its back legs to look around
+    return {
+        "Body": ((0, 0, 0.06 * up), (-25 * up, 0, 0)),
+        "Head": ((0, 0, 0), (-4 * sniff + 15 * up, 0, 20 * s(3 * w) * up)),
+        "LegFL": ((0, 0, 0), (-30 * up, 0, 0)), "LegFR": ((0, 0, 0), (-30 * up, 0, 0)),
+        "LegBL": ((0, 0, 0), (25 * up, 0, 0)), "LegBR": ((0, 0, 0), (25 * up, 0, 0)),
+        "EarL": ((0, 0, 0), (0, -8 * max(0.0, s(5 * w)) ** 6, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 14 * s(2 * w))), "Tail2": ((0, 0, 0), (0, 0, 22 * s(2 * w - 1))),
+    }
+
+
+def corgi_idle(w):
+    wiggle = s(10 * w) * max(0.0, s(w))                        # butt wiggle
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 0, 6 * wiggle)),
+        "Head": ((0, 0, 0), (-4 * s(2 * w), 8 * s(w + 2), 10 * s(w))),
+        "EarL": ((0, 0, 0), (0, -6 * max(0.0, s(4 * w)) ** 6, 0)),
+        "EarR": ((0, 0, 0), (0, 6 * max(0.0, s(4 * w + 1)) ** 6, 0)),
+    }
+
+
+def bulldog_idle(w):
+    huff = s(4 * w)
+    return {
+        "Body": ((0, 0, 0.012 * (1 + huff)), (1.5 * huff, 0, 0)),
+        "Head": ((0, 0, 0), (-3 * huff, 0, 8 * s(w))),
+        "Tail": ((0, 0, 0), (0, 0, 30 * s(10 * w))),
+        "EarL": ((0, 0, 0), (0, -6 * max(0.0, s(3 * w)) ** 6, 0)),
+    }
+
+
+def robo_idle(w):
+    scan = 30 * s(w)
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, 0), (-4 * s(4 * w) * 0, 0, scan)),
+        "Antenna_Glow": ((0, 0.0, 0), (20 * s(6 * w), 0, 0)),
+        "Antenna": ((0, 0, 0), (20 * s(6 * w), 0, 0)),
+        "EarL": ((0, 0, 0), (0, -15 * (s(3 * w) > 0.7), 0)), "EarR": ((0, 0, 0), (0, 15 * (s(3 * w) > 0.7), 0)),
+        "Tail": ((0, 0, 0), (0, 0, 35 * s(8 * w))),
+    }
+
+
+def robo_walk(w):
+    p = walk(30, 0.03, 30, 0, 0)(w)
+    p.pop("Tail2")
+    p["Antenna_Glow"] = ((0, 0, 0), (15 * s(2 * w), 0, 0))
+    p["Antenna"] = ((0, 0, 0), (15 * s(2 * w), 0, 0))
+    return p
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -1832,6 +2070,12 @@ ANIMS = {
     "Dolphin": {"Idle": swim(6, 14), "Walk": swim(10, 26, 0.12)},
     "Shark": {"Idle": swim(4, 10), "Walk": swim(6, 20, 0.1)},
     "SeaSerpent": {"Idle": serpent(1, 14), "Walk": serpent(2, 22)},
+    "Pigeon": fly(50, base=duck_idle),
+    "Rat": {"Idle": rat_idle, "Walk": walk(40, 0.03, 0, 0, 0)},
+    "Corgi": {"Idle": corgi_idle, "Walk": walk(46, 0.05, 0, 0, 6)},
+    "Bulldog": {"Idle": bulldog_idle, "Walk": heavy_walk},
+    "RoboPup": {"Idle": robo_idle, "Walk": robo_walk},
+    "Gargoyle": fly(35, quad=True, base=dragon_idle),
 }
 
 

@@ -87,6 +87,20 @@ local List: { AlienDef } = {
 		Passive = { Name = "Feeding Frenzy", Stat = "Power", Value = 0.25 } },
 	{ Id = "SeaSerpent", Name = "Sea Serpent", Rarity = "Mythic", Zone = "DarkSide", Income = 150_000, Color = Color3.fromRGB(31, 165, 154), Size = 4.5,
 		Passive = { Name = "Tidal Wave", Stat = "Radius", Value = 0.3 } },
+
+	-- City (zone Mars): income x60.
+	{ Id = "Pigeon", Name = "Pigeon", Rarity = "Common", Zone = "Mars", Income = 90, Color = Color3.fromRGB(140, 148, 164), Size = 1.8,
+		Passive = { Name = "Crumb Finder", Stat = "DustValue", Value = 0.08 } },
+	{ Id = "Rat", Name = "Rat", Rarity = "Uncommon", Zone = "Mars", Income = 480, Color = Color3.fromRGB(128, 120, 116), Size = 1.6,
+		Passive = { Name = "Scurry", Stat = "ComboTime", Value = 0.5 } },
+	{ Id = "Corgi", Name = "Corgi", Rarity = "Rare", Zone = "Mars", Income = 2_400, Color = Color3.fromRGB(226, 146, 66), Size = 2,
+		Passive = { Name = "Royal Waddle", Stat = "PetIncome", Value = 0.08 } },
+	{ Id = "Bulldog", Name = "Bulldog", Rarity = "Epic", Zone = "Mars", Income = 13_800, Color = Color3.fromRGB(210, 180, 140), Size = 2.4,
+		Passive = { Name = "Stubborn", Stat = "Offline", Value = 0.25 } },
+	{ Id = "RoboPup", Name = "Robo Pup", Rarity = "Legendary", Zone = "Mars", Income = 84_000, Color = Color3.fromRGB(176, 190, 204), Size = 2.8,
+		Passive = { Name = "Overclock", Stat = "HatchSpeed", Value = 0.25 } },
+	{ Id = "Gargoyle", Name = "Gargoyle", Rarity = "Mythic", Zone = "Mars", Income = 600_000, Color = Color3.fromRGB(110, 112, 124), Size = 4.4,
+		Passive = { Name = "Stone Guardian", Stat = "Backpack", Value = 0.35 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new

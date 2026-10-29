@@ -371,6 +371,11 @@ function BasePanelsController:Init(controllers)
 end
 
 function BasePanelsController:Start()
+	-- Rows drawn before the pet/egg models loaded show placeholders: redraw once they're in.
+	AssetLibrary.onCoreReady(function()
+		table.clear(signatures)
+		render()
+	end)
 	Ui.button(Ui.find(gui, "Buttons.PetsButton"), function()
 		BasePanelsController:Toggle("Active")
 	end)

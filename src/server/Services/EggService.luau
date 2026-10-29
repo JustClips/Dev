@@ -183,7 +183,7 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 	if visual:GetAttribute("Placeholder") then
 		-- Spawned before the models finished loading: swap in the real egg once they have.
 		task.spawn(function()
-			if not AssetLibrary.waitReady(180) or visual.Parent ~= egg then
+			if not AssetLibrary.waitFor("EggsReady", 180) or visual.Parent ~= egg then
 				return
 			end
 			local real = AssetLibrary.egg(rarity)
