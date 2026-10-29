@@ -2829,7 +2829,7 @@ Assets.Models = {
 			max = Vector3.new(4.61, 6.777, 6.885),
 			min = Vector3.new(-4.61, -0.027, -8.302),
 		},
-		id = 78243046900871,
+		id = 106372080359347,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2862,7 +2862,7 @@ Assets.Models = {
 			max = Vector3.new(5.25, 5.987, 7.65),
 			min = Vector3.new(-5.25, 0.0, -9.225),
 		},
-		id = 72240447380338,
+		id = 74461445246561,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2895,7 +2895,7 @@ Assets.Models = {
 			max = Vector3.new(3.92, 6.21, 5.865),
 			min = Vector3.new(-3.92, -0.023, -7.073),
 		},
-		id = 118398449501138,
+		id = 115866889900635,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2928,7 +2928,7 @@ Assets.Models = {
 			max = Vector3.new(6.28, 11.34, 9.18),
 			min = Vector3.new(-6.28, -0.036, -11.07),
 		},
-		id = 98428431878820,
+		id = 116291400771910,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2961,7 +2961,7 @@ Assets.Models = {
 			max = Vector3.new(10.956, 9.13, 14.08),
 			min = Vector3.new(-10.956, -0.044, -13.53),
 		},
-		id = 101851130950472,
+		id = 128684971372566,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2994,7 +2994,7 @@ Assets.Models = {
 			max = Vector3.new(12.2, 11.6, 10.2),
 			min = Vector3.new(-12.2, -0.04, -12.3),
 		},
-		id = 104187341689312,
+		id = 99227199847194,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -3027,7 +3027,7 @@ Assets.Models = {
 			max = Vector3.new(3.402, 5.425, 5.1),
 			min = Vector3.new(-3.402, -0.02, -6.15),
 		},
-		id = 90323898930348,
+		id = 118672620046467,
 		kind = "vehicle",
 		parts = {
 			Body = {

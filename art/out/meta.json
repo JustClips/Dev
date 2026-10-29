@@ -5694,7 +5694,7 @@
    3.78,
    1.35
   ],
-  "tris": 11288
+  "tris": 11404
  },
  "Vehicle_HoverSweeper": {
   "bounds": {
@@ -5820,7 +5820,7 @@
    3.22,
    1.15
   ],
-  "tris": 12400
+  "tris": 12516
  },
  "Vehicle_MoonCrawler": {
   "bounds": {
@@ -5883,7 +5883,7 @@
    5.04,
    1.8
   ],
-  "tris": 11600
+  "tris": 11716
  },
  "Vehicle_RocketSweeper": {
   "bounds": {
@@ -5946,7 +5946,7 @@
    6.16,
    2.2
   ],
-  "tris": 11186
+  "tris": 11302
  },
  "Vehicle_SolarRover": {
   "bounds": {
@@ -6009,7 +6009,7 @@
    5.6,
    2.0
   ],
-  "tris": 13248
+  "tris": 13364
  },
  "Vehicle_SweeperCart": {
   "bounds": {
@@ -6072,7 +6072,7 @@
    2.8,
    1.0
   ],
-  "tris": 10940
+  "tris": 11056
  },
  "ZoneGate": {
   "bounds": {

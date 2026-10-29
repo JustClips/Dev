@@ -625,32 +625,32 @@
    "sha": "e8551773dbfcee639e07ae1195aa7bd7a6dc815d9d2d389f393054b74e2e53f4"
   },
   "Vehicle_DustTruck": {
-   "id": 78243046900871,
-   "sha": "e6a2f25d8a291fb112428012e7e31d214b797288845d8c237dea02099139a924"
+   "id": 106372080359347,
+   "sha": "e851ace48fdea2ba9fc557e04d43d2539ff64ef09d894caad30ff2601515fce7"
   },
   "Vehicle_HoverSweeper": {
-   "id": 72240447380338,
-   "sha": "c796afabe376e13d75a36a1e887e35e10a10fbddadc95bd3ee3c6d2ce7acb6c9"
+   "id": 74461445246561,
+   "sha": "6d88d6bbdcb0c88e9740f2a636e63465daf9c1ce35697baf936e2d9c7ab6c267"
   },
   "Vehicle_MoonBuggy": {
-   "id": 118398449501138,
-   "sha": "29de67c114bca9e2298e22bae09350f0e49479f544fa87bcd182eaef29fc03bd"
+   "id": 115866889900635,
+   "sha": "a5565fc01b08c62a6269a797778e461d5188c2b9ee12e20235798ff465e0a3fd"
   },
   "Vehicle_MoonCrawler": {
-   "id": 98428431878820,
-   "sha": "e85b06339c1ca54c315c791004be1d096f4f33e3f738213f0eb11fb139b69fda"
+   "id": 116291400771910,
+   "sha": "8ea5e5bd49bb8d66d2060c83dcc54ded64a541f87ed238eba5b71f14328c0138"
   },
   "Vehicle_RocketSweeper": {
-   "id": 101851130950472,
-   "sha": "22fcd6307472f6556b049dee283e3f7112339f78d5b0bccda093ee6d02c758b9"
+   "id": 128684971372566,
+   "sha": "c2d3069102e6214261586bb1fce02610a4f1dabb263e3ca22c1a10ae99e4889f"
   },
   "Vehicle_SolarRover": {
-   "id": 104187341689312,
-   "sha": "d75f7494ed25a89f69d7a00d5f27137995c73b324c9be48dcc879f43e965ff04"
+   "id": 99227199847194,
+   "sha": "a96a781edeedb7dab334eca7bab7f160c7ff4a8474c89944d68ea8046e24a13d"
   },
   "Vehicle_SweeperCart": {
-   "id": 90323898930348,
-   "sha": "9b90fef307950d72b1c8309937cdfe36d1bc4dec80a367cbd94caf2ea4bc77f8"
+   "id": 118672620046467,
+   "sha": "1ca156d218290187d445aa556c90c6113c5650f7f5408cdaa4f3cb74cb3f1e71"
   },
   "ZoneGate": {
    "id": 120653370862097,
