@@ -121,7 +121,7 @@ local pool: { BasePart } = {}
 local ready = false
 local queued: { () -> () } = {}
 
-type Fly = { tile: Tile, start: number, from: CFrame, target: (() -> Vector3)?, spin: number, swirl: number, fade: boolean }
+type Fly = { tile: Tile, start: number, from: CFrame, target: (() -> Vector3)?, spin: number, swirl: number, fade: boolean, noImage: boolean }
 local clumpsOn = false -- the Clump_* meshes are loaded and tiles use them
 local flying: { Fly } = {}
 type Grow = { tile: Tile, start: number }
@@ -1300,6 +1300,9 @@ local function flyAway(tile: Tile, sweeper: Sweeper?)
 		spin = (Grid.hash(tile.id, 9) - 0.5) * 18,
 		swirl = Grid.hash(tile.id, 11) * math.pi * 2,
 		fade = fade,
+		-- The ground image was hidden (3D leaves or a pile drawn instead): keep it hidden,
+		-- or a flat leaf picture pops up where the leaves just were (Dev).
+		noImage = tile.decal.Transparency >= 0.99,
 	})
 	burstPart.Position = from.Position
 	local e = bursts[burstKind(tile.id)]
@@ -1354,11 +1357,14 @@ local function stepFlying(now: number)
 			tile.decal.Transparency = if u > 0.85 then (u - 0.85) / 0.15 else 0
 		end
 		local cf = CFrame.new(pos) * f.from.Rotation * CFrame.Angles(t * f.spin * 0.4, t * f.spin, 0)
+		if f.noImage then
+			tile.decal.Transparency = 1
+		end
 		if f.fade then
 			-- The leaves fly on their own: the ground image (or 3D pile) stays put and fades
 			-- or sinks away fast.
 			tile.part.CFrame = f.from
-			tile.decal.Transparency = math.min(1, t * 3)
+			tile.decal.Transparency = if f.noImage then 1 else math.min(1, t * 3)
 			placeProps(tile, math.max(0.02, 1 - t * 1.8), t * 0.3)
 		else
 			tile.part.CFrame = cf
