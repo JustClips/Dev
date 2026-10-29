@@ -260,8 +260,9 @@ local function emitter(parent: Instance, props: { [string]: any }): ParticleEmit
 	e.LightInfluence = 0.3
 	e.Shape = Enum.ParticleEmitterShape.Box
 	e.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+	local anyE = e :: any
 	for key, value in props do
-		(e :: any)[key] = value
+		anyE[key] = value
 	end
 	e.Parent = parent
 	return e
@@ -1009,68 +1010,85 @@ local function goldenHour(scene: Scene)
 	motes(scene, "Vfx_Star", ColorSequence.new(rgb(255, 230, 150)), 12, 0.8, 1)
 end
 
+-- Aurora: curtains of light hanging along both long sides of the map, fixed in the world
+-- so every player sees the same sky wherever they are.
 local function aurora(scene: Scene)
-	local anchor = keep(scene, part("SkyAnchor", Vector3.new(1, 1, 1)))
+	local anchor = keep(scene, part("Aurora", Vector3.new(1, 1, 1)))
+	anchor.CFrame = CFrame.new()
 	local colors = {
 		ColorSequence.new({ ColorSequenceKeypoint.new(0, rgb(80, 255, 170)), ColorSequenceKeypoint.new(0.5, rgb(80, 220, 255)), ColorSequenceKeypoint.new(1, rgb(170, 100, 255)) }),
 		ColorSequence.new({ ColorSequenceKeypoint.new(0, rgb(170, 100, 255)), ColorSequenceKeypoint.new(0.5, rgb(80, 255, 170)), ColorSequenceKeypoint.new(1, rgb(80, 220, 255)) }),
 		ColorSequence.new(rgb(90, 255, 190)),
 	}
-	for i, color in colors do
-		local z = -380 - i * 60
-		local y = 170 + i * 25
-		local a0 = attachment(anchor, Vector3.new(-560, y, z), Vector3.zAxis)
-		local a1 = attachment(anchor, Vector3.new(560, y + 20, z), Vector3.zAxis)
-		local beam = Instance.new("Beam")
-		beam.Attachment0 = a0
-		beam.Attachment1 = a1
-		beam.CurveSize0 = 260 * (if i % 2 == 0 then -1 else 1)
-		beam.CurveSize1 = 260 * (if i % 2 == 0 then -1 else 1)
-		beam.Width0 = 170
-		beam.Width1 = 140
-		beam.Segments = 60
-		beam.FaceCamera = true
-		beam.Texture = img("Vfx_Aurora")
-		beam.TextureMode = Enum.TextureMode.Wrap
-		beam.TextureLength = 260
-		beam.TextureSpeed = 0.06 * i
-		beam.LightEmission = 1
-		beam.LightInfluence = 0
-		beam.Color = color
-		beam.Transparency = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 1),
-			NumberSequenceKeypoint.new(0.2, 0.3),
-			NumberSequenceKeypoint.new(0.8, 0.3),
-			NumberSequenceKeypoint.new(1, 1),
-		})
-		beam.Parent = anchor
+	local zA, zB = MAP_MAX.Y + 250, MAP_MIN.Y - 250
+	local groundY = groundAt(Vector3.new(0, 0, (MAP_MIN.Y + MAP_MAX.Y) / 2)).Y
+	for side = -1, 1, 2 do
+		local edge = if side < 0 then MAP_MIN.X else MAP_MAX.X
+		for i, color in colors do
+			local x = edge + side * (260 + i * 70)
+			local y = groundY + 190 + i * 30
+			-- Several pieces along the map so each one can wave on its own.
+			local pieces = 3
+			for k = 0, pieces - 1 do
+				local z0 = zA + (zB - zA) * k / pieces
+				local z1 = zA + (zB - zA) * (k + 1) / pieces
+				local a0 = attachment(anchor, Vector3.new(x, y, z0), Vector3.xAxis)
+				local a1 = attachment(anchor, Vector3.new(x, y + 25, z1), Vector3.xAxis)
+				local beam = Instance.new("Beam")
+				beam.Attachment0 = a0
+				beam.Attachment1 = a1
+				local bend = 200 * (if (i + k) % 2 == 0 then -1 else 1)
+				beam.CurveSize0 = bend
+				beam.CurveSize1 = bend
+				beam.Width0 = 190
+				beam.Width1 = 160
+				beam.Segments = 50
+				beam.FaceCamera = true
+				beam.Texture = img("Vfx_Aurora")
+				beam.TextureMode = Enum.TextureMode.Wrap
+				beam.TextureLength = 260
+				beam.TextureSpeed = 0.05 * i
+				beam.LightEmission = 1
+				beam.LightInfluence = 0
+				beam.Color = color
+				beam.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 0.9),
+					NumberSequenceKeypoint.new(0.2, 0.3),
+					NumberSequenceKeypoint.new(0.8, 0.3),
+					NumberSequenceKeypoint.new(1, 0.9),
+				})
+				beam.Parent = anchor
+			end
+		end
 	end
 	motes(scene, "Vfx_Star", ColorSequence.new(rgb(180, 255, 230)), 14, 0.6, 1)
-	addUpdate(scene, function(_, at, floor)
-		anchor.CFrame = CFrame.new(Vector3.new(at.X, floor.Y, at.Z))
-	end)
 end
 
--- Starfall: shooting stars streak down all over the sky; the server's stars land on eggs
--- and the field (WeatherStrike).
+-- Starfall: shooting stars streak down all over the map's sky; the server's stars land
+-- on eggs and the field (WeatherStrike).
 local function starfall(scene: Scene)
 	local nextStar = 0
 	motes(scene, "Vfx_Star", ColorSequence.new(STAR), 16, 0.7, 1)
-	addUpdate(scene, function(_, at, floor)
+	local groundY = groundAt(Vector3.new(0, 0, (MAP_MIN.Y + MAP_MAX.Y) / 2)).Y
+	addUpdate(scene, function()
 		if os.clock() < nextStar then
 			return
 		end
-		nextStar = os.clock() + rng:NextNumber(0.25, 0.7)
-		local start = Vector3.new(at.X + rng:NextNumber(-400, 400), floor.Y + rng:NextNumber(220, 320), at.Z + rng:NextNumber(-400, 400))
+		nextStar = os.clock() + rng:NextNumber(0.12, 0.35)
+		local start = Vector3.new(
+			rng:NextNumber(MAP_MIN.X - 300, MAP_MAX.X + 300),
+			groundY + rng:NextNumber(220, 340),
+			rng:NextNumber(MAP_MIN.Y - 200, MAP_MAX.Y + 200)
+		)
 		local travel = Vector3.new(rng:NextNumber(-1, 1) * 120, -rng:NextNumber(140, 220), rng:NextNumber(-1, 1) * 120)
-		local star = part("ShootingStar", Vector3.new(1.4, 1.4, 1.4))
+		local star = part("ShootingStar", Vector3.new(1.6, 1.6, 1.6))
 		star.Shape = Enum.PartType.Ball
 		star.Material = Enum.Material.Neon
 		star.Color = STAR
 		star.Transparency = 0
 		star.Position = start
-		local t0 = attachment(star, Vector3.new(0, 0.7, 0))
-		local t1 = attachment(star, Vector3.new(0, -0.7, 0))
+		local t0 = attachment(star, Vector3.new(0, 0.8, 0))
+		local t1 = attachment(star, Vector3.new(0, -0.8, 0))
 		local trail = Instance.new("Trail")
 		trail.Attachment0 = t0
 		trail.Attachment1 = t1
@@ -1089,14 +1107,19 @@ local function starfall(scene: Scene)
 	end)
 end
 
--- Disco: a giant mirror ball over the zone you're in, coloured light beams sweeping the
--- ground with spots of light, lasers from four towers, confetti, and everything pulsing
--- to the beat.
+-- Disco: the whole map is the dance floor. Every zone gets its own mirror ball, sweeping
+-- coloured spotlights with light spots on the ground, laser towers at its corners and
+-- confetti over it. Everything runs on server time, so every player sees the same show.
 local BEAT = 60 / 118 -- Funky Disco Beats tempo
-local function disco(scene: Scene)
+local function discoZone(scene: Scene, zone: any, index: number): (number) -> ()
 	local rig = keep(scene, Instance.new("Model"))
-	rig.Name = "Disco"
+	rig.Name = "Disco_" .. zone.Id
 	rig.Parent = folder
+	local size = zone.Max - zone.Min
+	local mid = (zone.Min + zone.Max) / 2
+	local floorY = groundAt(Vector3.new(mid.X, 0, mid.Y)).Y
+	local hub = Vector3.new(mid.X, floorY, mid.Y)
+
 	local ball = part("MirrorBall", Vector3.new(26, 26, 26), rig)
 	ball.Transparency = 0
 	ball.Material = Enum.Material.SmoothPlastic
@@ -1109,10 +1132,12 @@ local function disco(scene: Scene)
 	ballLight.Range = 60
 	ballLight.Brightness = 4
 	ballLight.Parent = ball
-	local hang = part("Chain", Vector3.new(0.6, 120, 0.6), rig)
-	hang.Transparency = 0
-	hang.Material = Enum.Material.Metal
-	hang.Color = rgb(60, 60, 70)
+	local ballPos = hub + Vector3.new(0, 80, 0)
+	local chain = part("Chain", Vector3.new(0.6, 140, 0.6), rig)
+	chain.Transparency = 0
+	chain.Material = Enum.Material.Metal
+	chain.Color = rgb(60, 60, 70)
+	chain.CFrame = CFrame.new(ballPos + Vector3.new(0, 83, 0))
 	emitter(ball, {
 		Texture = img("Vfx_Star"),
 		Size = seq(3, 0),
@@ -1125,11 +1150,11 @@ local function disco(scene: Scene)
 		ShapeStyle = Enum.ParticleEmitterShapeStyle.Surface,
 	})
 
-	-- Light beams from the ball to moving spots on the ground.
 	local center = attachment(ball, Vector3.zero)
 	local floorPart = part("DiscoFloor", Vector3.new(1, 1, 1), rig)
+	floorPart.CFrame = CFrame.new(hub)
 	local spots = {}
-	for i = 1, 10 do
+	for i = 1, 8 do
 		local spotAtt = attachment(floorPart, Vector3.zero)
 		local beam = Instance.new("Beam")
 		beam.Attachment0 = center
@@ -1149,26 +1174,30 @@ local function disco(scene: Scene)
 		decal.Texture = img("Vfx_Spot")
 		decal.Transparency = 0.15
 		decal.Parent = light
-		table.insert(spots, { att = spotAtt, beam = beam, decal = decal, light = light, phase = i * 0.7, speed = rng:NextNumber(0.4, 0.9) * (if i % 2 == 0 then 1 else -1) })
+		table.insert(spots, { att = spotAtt, beam = beam, decal = decal, light = light, phase = i * 0.8 + index, speed = (0.4 + (i % 4) * 0.13) * (if i % 2 == 0 then 1 else -1) })
 	end
 
-	-- Lasers from towers at the corners of the zone, crossing over the middle.
 	local lasers = {}
-	for i = 1, 4 do
+	for corner = 1, 4 do
+		local sx = if corner == 1 or corner == 2 then -1 else 1
+		local sz = if corner == 1 or corner == 3 then -1 else 1
+		local base = hub + Vector3.new(sx * size.X * 0.52, 0, sz * size.Y * 0.48)
 		local tower = part("Tower", Vector3.new(3, 40, 3), rig)
 		tower.Transparency = 0
 		tower.Material = Enum.Material.Metal
 		tower.Color = rgb(40, 40, 50)
+		tower.CFrame = CFrame.new(base + Vector3.new(0, 20, 0))
 		local head = part("Head", Vector3.new(5, 5, 5), rig)
 		head.Transparency = 0
 		head.Material = Enum.Material.Neon
+		head.CFrame = CFrame.new(base + Vector3.new(0, 42, 0))
 		local from = attachment(head, Vector3.zero)
-		local to = attachment(floorPart, Vector3.zero)
 		local beams = {}
-		for k = 1, 3 do
+		for _ = 1, 3 do
+			local target = attachment(floorPart, Vector3.zero)
 			local beam = Instance.new("Beam")
 			beam.Attachment0 = from
-			beam.Attachment1 = if k == 1 then to else attachment(floorPart, Vector3.zero)
+			beam.Attachment1 = target
 			beam.Width0 = 0.5
 			beam.Width1 = 0.5
 			beam.FaceCamera = true
@@ -1176,21 +1205,21 @@ local function disco(scene: Scene)
 			beam.LightInfluence = 0
 			beam.Transparency = NumberSequence.new(0.1)
 			beam.Parent = head
-			table.insert(beams, beam)
+			table.insert(beams, { beam = beam, target = target })
 		end
-		table.insert(lasers, { tower = tower, head = head, beams = beams, corner = i })
+		table.insert(lasers, { head = head, beams = beams, corner = corner })
 	end
 
-	-- Confetti around the player.
-	local confetti = follower(scene, "Confetti", Vector3.new(90, 1, 90))
+	local confetti = part("Confetti", Vector3.new(size.X, 1, size.Y), rig)
+	confetti.CFrame = CFrame.new(hub + Vector3.new(0, 45, 0))
 	for _, color in { rgb(255, 80, 120), rgb(255, 220, 60), rgb(80, 200, 255), rgb(140, 255, 120), rgb(200, 110, 255) } do
 		emitter(confetti, {
 			Texture = img("Vfx_Confetti"),
 			EmissionDirection = Enum.NormalId.Bottom,
-			Size = seq(0.7),
+			Size = seq(0.8),
 			Speed = NumberRange.new(4, 8),
-			Lifetime = NumberRange.new(5, 7),
-			Rate = 12,
+			Lifetime = NumberRange.new(6, 8),
+			Rate = 9,
 			SpreadAngle = Vector2.new(40, 40),
 			Acceleration = Vector3.new(0, -2, 0),
 			Drag = 0.4,
@@ -1201,50 +1230,16 @@ local function disco(scene: Scene)
 			LightEmission = 0.4,
 		})
 	end
-	motes(scene, "Vfx_Note", RAINBOW, 10, 1.1, 3, Vector3.new(60, 10, 60))
 
-	local tint = Instance.new("ColorCorrectionEffect")
-	tint.Name = "WeatherDisco"
-	tint.Parent = Lighting
-	table.insert(scene.cleanup, function()
-		TweenService:Create(tint, TweenInfo.new(2), { TintColor = Color3.new(1, 1, 1), Brightness = 0 }):Play()
-		task.delay(2.1, function()
-			tint:Destroy()
-		end)
-	end)
-
-	-- The zone the ball hangs over: the one you're in (eases over when you move on).
-	local hub = Vector3.zero
-	local hubSize = Vector2.new(200, 200)
-	addUpdate(scene, function(dt, at, floor)
-		local t = os.clock()
-		local zoneCenter, zoneSize = Vector3.new(at.X, floor.Y, at.Z), Vector2.new(200, 200)
-		for _, zone in Zones.List do
-			if at.X >= zone.Min.X - 40 and at.X <= zone.Max.X + 40 and at.Z >= zone.Min.Y - 40 and at.Z <= zone.Max.Y + 40 then
-				zoneCenter = Vector3.new((zone.Min.X + zone.Max.X) / 2, floor.Y, (zone.Min.Y + zone.Max.Y) / 2)
-				zoneSize = zone.Max - zone.Min
-				break
-			end
-		end
-		if hub == Vector3.zero then
-			hub, hubSize = zoneCenter, zoneSize
-		end
-		local k = math.min(1, dt * 1.5)
-		hub = hub:Lerp(zoneCenter, k)
-		hubSize = hubSize:Lerp(zoneSize, k)
+	local rx, rz = size.X * 0.45, size.Y * 0.45
+	return function(t: number)
 		local beat = (t % BEAT) / BEAT
 		local pulse = 1 - beat
-		local hue = (t * 0.12) % 1
-
-		local ballPos = Vector3.new(hub.X, floor.Y + 75, hub.Z)
+		local hue = (t * 0.12 + index * 0.2) % 1
 		ball.CFrame = CFrame.new(ballPos) * CFrame.Angles(0, t * 0.8, 0)
-		local ballTint = Color3.fromHSV(hue, 0.3, 1)
-		mesh.VertexColor = Vector3.new(ballTint.R, ballTint.G, ballTint.B)
-		hang.CFrame = CFrame.new(ballPos + Vector3.new(0, 73, 0))
+		local tintBall = Color3.fromHSV(hue, 0.3, 1)
+		mesh.VertexColor = Vector3.new(tintBall.R, tintBall.G, tintBall.B)
 		ballLight.Color = Color3.fromHSV(hue, 0.6, 1)
-		floorPart.CFrame = CFrame.new(Vector3.new(hub.X, floor.Y, hub.Z))
-
-		local rx, rz = hubSize.X * 0.45, hubSize.Y * 0.45
 		for i, s in spots do
 			local a = t * s.speed + s.phase
 			local wob = math.sin(t * 0.7 + i) * 0.35 + 0.65
@@ -1254,29 +1249,44 @@ local function disco(scene: Scene)
 			s.beam.Color = ColorSequence.new(color)
 			s.beam.Width1 = 14 + pulse * 6
 			s.decal.Color3 = color
-			s.light.CFrame = CFrame.new(Vector3.new(hub.X, floor.Y, hub.Z) + offset)
+			s.light.CFrame = CFrame.new(hub + offset)
 		end
 		for _, l in lasers do
-			local sx = if l.corner == 1 or l.corner == 2 then -1 else 1
-			local sz = if l.corner == 1 or l.corner == 3 then -1 else 1
-			local base = Vector3.new(hub.X + sx * hubSize.X * 0.55, floor.Y, hub.Z + sz * hubSize.Y * 0.48)
-			l.tower.CFrame = CFrame.new(base + Vector3.new(0, 20, 0))
-			l.head.CFrame = CFrame.new(base + Vector3.new(0, 42, 0))
 			local color = Color3.fromHSV((hue + l.corner * 0.25) % 1, 1, 1)
 			l.head.Color = color
-			for k, beam in l.beams do
+			for k, b in l.beams do
 				local sweep = t * (0.9 + k * 0.2) + l.corner + k
-				local target = Vector3.new(math.sin(sweep) * rx, 0.2, math.cos(sweep * 0.8) * rz)
-				local endAtt = beam.Attachment1 :: Attachment
-				endAtt.Position = target
-				beam.Color = ColorSequence.new(color)
-				beam.Width0 = 0.4 + pulse * 0.4
-				beam.Width1 = beam.Width0
+				b.target.Position = Vector3.new(math.sin(sweep) * rx, 0.2, math.cos(sweep * 0.8) * rz)
+				b.beam.Color = ColorSequence.new(color)
+				b.beam.Width0 = 0.4 + pulse * 0.4
+				b.beam.Width1 = b.beam.Width0
 			end
 		end
-		tint.TintColor = Color3.fromHSV(hue, 0.22, 1)
+	end
+end
+
+local function disco(scene: Scene)
+	local zones = {}
+	for i, zone in Zones.List do
+		table.insert(zones, discoZone(scene, zone, i))
+	end
+	local tint = Instance.new("ColorCorrectionEffect")
+	tint.Name = "WeatherDisco"
+	tint.Parent = Lighting
+	table.insert(scene.cleanup, function()
+		TweenService:Create(tint, TweenInfo.new(2), { TintColor = Color3.new(1, 1, 1), Brightness = 0 }):Play()
+		task.delay(2.1, function()
+			tint:Destroy()
+		end)
+	end)
+	addUpdate(scene, function()
+		local t = Workspace:GetServerTimeNow()
+		for _, update in zones do
+			update(t)
+		end
+		local pulse = 1 - (t % BEAT) / BEAT
+		tint.TintColor = Color3.fromHSV((t * 0.12) % 1, 0.22, 1)
 		tint.Brightness = pulse * 0.06
-		confetti.CFrame = CFrame.new(at + Vector3.new(0, 35, 0))
 	end)
 end
 
