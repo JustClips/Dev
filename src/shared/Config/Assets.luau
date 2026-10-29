@@ -95,6 +95,69 @@ Assets.Models = {
 			},
 		},
 	},
+	Alien_Cat = {
+		anims = {
+			idle = "Pet_Cat_Idle",
+			walk = "Pet_Cat_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.52, 2.21, 1.17),
+			min = Vector3.new(-0.52, 0.0, -1.56),
+		},
+		id = 98115194406864,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.325, 1.82, -1.04),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.325, 1.82, -1.04),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.04, -0.78),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.52, 0.52),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.52, 0.52),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.52, -0.52),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.52, -0.52),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.04, 0.78),
+				parent = "Body",
+			},
+			Tail2 = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.43, 1.04),
+				parent = "Tail",
+			},
+		},
+		voxel = true,
+	},
 	Alien_CometCat = {
 		bounds = {
 			max = Vector3.new(0.55, 2.211, 1.42),
@@ -535,6 +598,69 @@ Assets.Models = {
 				parent = "Body",
 			},
 		},
+	},
+	Alien_Dog = {
+		anims = {
+			idle = "Pet_Dog_Idle",
+			walk = "Pet_Dog_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.65, 2.08, 1.17),
+			min = Vector3.new(-0.65, 0.0, -1.95),
+		},
+		id = 134555901794284,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.52, 1.95, -1.17),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.52, 1.95, -1.17),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.17, -0.91),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.65, 0.65),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.65, 0.65),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.65, -0.65),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.65, -0.65),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.17, 0.91),
+				parent = "Body",
+			},
+			Tail2 = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.69, 1.04),
+				parent = "Tail",
+			},
+		},
+		voxel = true,
 	},
 	Alien_Dusty = {
 		bounds = {
@@ -2535,6 +2661,97 @@ Assets.Models = {
 			},
 		},
 	},
+	LeafDump = {
+		bounds = {
+			max = Vector3.new(3.9, 5.966, 3.3),
+			min = Vector3.new(-4.39, 0.0, -3.35),
+		},
+		id = 77639113965628,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Leaf_Birch = {
+		bounds = {
+			max = Vector3.new(0.242, 0.036, 0.361),
+			min = Vector3.new(-0.242, -0.036, -0.551),
+		},
+		id = 96601474512216,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Maple = {
+		bounds = {
+			max = Vector3.new(0.421, 0.052, 0.421),
+			min = Vector3.new(-0.421, -0.053, -0.552),
+		},
+		id = 134717605810868,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Oak = {
+		bounds = {
+			max = Vector3.new(0.299, 0.047, 0.32),
+			min = Vector3.new(-0.299, -0.047, -0.606),
+		},
+		id = 140467676604506,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Paper = {
+		bounds = {
+			max = Vector3.new(0.429, 0.058, 0.465),
+			min = Vector3.new(-0.482, -0.078, -0.445),
+		},
+		id = 106384808489451,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Seaweed = {
+		bounds = {
+			max = Vector3.new(0.222, 0.039, 0.601),
+			min = Vector3.new(-0.201, -0.039, -0.601),
+		},
+		id = 130445140053376,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
+	Leaf_Snow = {
+		bounds = {
+			max = Vector3.new(0.458, 0.199, 0.368),
+			min = Vector3.new(-0.5, -0.187, -0.346),
+		},
+		id = 78516068863706,
+		kind = "prop",
+		parts = {
+			Leaf = {
+				collide = false,
+			},
+		},
+	},
 	Mushroom_Glow = {
 		bounds = {
 			max = Vector3.new(2.0, 2.432, 0.83),
@@ -2866,6 +3083,123 @@ Assets.Models = {
 			},
 		},
 		tip = Vector3.new(-0.0, -0.81, -1.85),
+	},
+	Trash_Bottle = {
+		bounds = {
+			max = Vector3.new(0.285, 0.565, 0.6),
+			min = Vector3.new(-0.285, -0.005, -0.89),
+		},
+		id = 106236133945773,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_Bucket = {
+		bounds = {
+			max = Vector3.new(0.53, 0.975, 0.505),
+			min = Vector3.new(-0.53, -0.075, -0.812),
+		},
+		id = 78846520972834,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_Can = {
+		bounds = {
+			max = Vector3.new(0.327, 0.665, 0.61),
+			min = Vector3.new(-0.327, -0.005, -0.61),
+		},
+		id = 92881779116784,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_ChipBag = {
+		bounds = {
+			max = Vector3.new(0.6, 0.37, 0.88),
+			min = Vector3.new(-0.6, -0.006, -0.88),
+		},
+		id = 83740529075055,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_Cup = {
+		bounds = {
+			max = Vector3.new(0.35, 0.67, 0.475),
+			min = Vector3.new(-0.35, -0.03, -1.02),
+		},
+		id = 94334139515348,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_JuiceBox = {
+		bounds = {
+			max = Vector3.new(0.375, 0.63, 0.6),
+			min = Vector3.new(-0.375, 0.0, -1.003),
+		},
+		id = 87361897530132,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_PaperBall = {
+		bounds = {
+			max = Vector3.new(0.464, 0.853, 0.46),
+			min = Vector3.new(-0.422, -0.013, -0.425),
+		},
+		id = 87396935425239,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_PizzaBox = {
+		bounds = {
+			max = Vector3.new(0.75, 0.255, 0.75),
+			min = Vector3.new(-0.75, 0.0, -0.75),
+		},
+		id = 76989347266114,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Trash_Shell = {
+		bounds = {
+			max = Vector3.new(0.688, 0.26, 0.55),
+			min = Vector3.new(-0.688, -0.02, -0.425),
+		},
+		id = 105374300628530,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
 	},
 	Tree_Bulb = {
 		bounds = {
@@ -3352,6 +3686,10 @@ Assets.Animations = {
 	Egg_MythicIdle = 101861978498535,
 	Egg_RareIdle = 75646233175758,
 	Egg_UncommonIdle = 77677946832650,
+	Pet_Cat_Idle = 116879062487754,
+	Pet_Cat_Walk = 107848775286331,
+	Pet_Dog_Idle = 137526014819773,
+	Pet_Dog_Walk = 135950191965326,
 	Pet_Happy = 104759341584430,
 	Pet_Idle = 90304779560671,
 	Pet_Walk = 140251033269648,

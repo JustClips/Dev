@@ -487,8 +487,25 @@ function AssetLibrary.animation(name: string): Animation?
 end
 
 -- Loads an animation on a rigged model (AnimationController) or a Humanoid character.
+-- Pets with their own animations (voxel pets: meta.anims) play those instead of the
+-- shared Pet_Idle / Pet_Walk.
+local OWN_ANIM = { Pet_Idle = "idle", Pet_Walk = "walk" }
+
+local function ownAnimation(model: Instance, name: string): string?
+	local key = OWN_ANIM[name]
+	if not key then
+		return nil
+	end
+	local holder = if model:IsA("Model") then model else model:FindFirstAncestorOfClass("Model")
+	local alienId = holder and holder:GetAttribute("AlienId")
+	local meta = if type(alienId) == "string" then Assets.Models["Alien_" .. alienId] else nil
+	local anims = meta and (meta :: any).anims
+	return anims and anims[key]
+end
+
 function AssetLibrary.loadTrack(model: Instance, name: string): AnimationTrack?
-	local anim = AssetLibrary.animation(name)
+	local own = ownAnimation(model, name)
+	local anim = (own and AssetLibrary.animation(own)) or AssetLibrary.animation(name)
 	if not anim then
 		return nil
 	end

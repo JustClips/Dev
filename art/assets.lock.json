@@ -24,6 +24,22 @@
    "id": 77677946832650,
    "sha": "9edcbaa0872fbde377f35c41a07006b44299f676357c958657ce01dec22fc381"
   },
+  "Pet_Cat_Idle": {
+   "id": 116879062487754,
+   "sha": "da74738af5fb3ae0354b47cc86c22fbda98ac69a8ea9b4839087298d359e8fd0"
+  },
+  "Pet_Cat_Walk": {
+   "id": 107848775286331,
+   "sha": "28c9c0c28acd5f7086f4eef07c935a7866ec16846dd639fa1504067ec30fd5c2"
+  },
+  "Pet_Dog_Idle": {
+   "id": 137526014819773,
+   "sha": "6e39a1821b12c861318b013ad0f8efd1a8dc8e1f15fc408c7c95c82cb3e0d426"
+  },
+  "Pet_Dog_Walk": {
+   "id": 135950191965326,
+   "sha": "1660d895ca0bcc58901231051dab2d8686ff13afb5d222635dd51bcfbff63362"
+  },
   "Pet_Happy": {
    "id": 104759341584430,
    "sha": "a40b382a682d5bbe2a05a20293135b58a33f9b5b32f5201c252f27f3cb3f9e0c"
@@ -576,6 +592,10 @@
    "id": 84675890297461,
    "sha": "083a72aa3b713caf6ef39fc36c5a95332c8e51576c98a27b927f5caa04bf567a"
   },
+  "Alien_Cat": {
+   "id": 98115194406864,
+   "sha": "54b4f8a5207d598288612aea08f95240647e5e72bc5ee29edada61eda4e2469b"
+  },
   "Alien_CometCat": {
    "id": 125292055407746,
    "sha": "1b470b5a37dbca18834706bb57614ec7b3b7426ac355fbff8a1872827e6f074f"
@@ -615,6 +635,10 @@
   "Alien_CrystalOrbo": {
    "id": 112365460068347,
    "sha": "6cf5a26206824e6a1aeb8c8fd6fdbd0a151512052b1f4c7632e2c781cd416b9a"
+  },
+  "Alien_Dog": {
+   "id": 134555901794284,
+   "sha": "ec583db829abcc3fbfadc04be86c8df97718a60b3382834a564bf4164cfa993f"
   },
   "Alien_Dusty": {
    "id": 91580234759228,
@@ -832,6 +856,34 @@
    "id": 135968835675127,
    "sha": "5509374f50dfe2c70d7db7c99e7bf4229a1e8fd8dd57df8e64ecca4638509220"
   },
+  "LeafDump": {
+   "id": 77639113965628,
+   "sha": "3601d5cb079eb34987504b79516e99644a6e53daa9584eebfbd44bdb67f66cf1"
+  },
+  "Leaf_Birch": {
+   "id": 96601474512216,
+   "sha": "7bee91437aaa85be76503d2309e0ccca95f243d7c52c3bd25245d829939178fa"
+  },
+  "Leaf_Maple": {
+   "id": 134717605810868,
+   "sha": "4ecc4246879129d600fd0bd9f24d5f5a6c8b77d88d686a0ab9a61f3c3995aef5"
+  },
+  "Leaf_Oak": {
+   "id": 140467676604506,
+   "sha": "fa87eec536d4bf7fa8434b6fbc5a8864c855fb5c3defca3abf604262d0d910ed"
+  },
+  "Leaf_Paper": {
+   "id": 106384808489451,
+   "sha": "43ae56d627642a7ff537f2d9bdb922f1d12bf106d1c36b303fe3ef04a2f26fe2"
+  },
+  "Leaf_Seaweed": {
+   "id": 130445140053376,
+   "sha": "2bcd55b657b1dea69441e39f1967e8008bc9f3607d2f4a27753c010cd91a55c1"
+  },
+  "Leaf_Snow": {
+   "id": 78516068863706,
+   "sha": "5a6cd4a65cd21f49102f19fa9f1cb22667fa1e118ecb8a8b560e7be11403b028"
+  },
   "Mushroom_Glow": {
    "id": 136474999711601,
    "sha": "015c4e88f98f76815429cecca6d6558cbbad6e039bf4504915c9bb674ef2ef25"
@@ -923,6 +975,42 @@
   "Tool_TurboVacuum": {
    "id": 104795889853784,
    "sha": "9e42bc5a4053528b9fb57c6f464a2140cb2f086553d32ab7a7915a935d768d5a"
+  },
+  "Trash_Bottle": {
+   "id": 106236133945773,
+   "sha": "5147dcba75d562c585f926f875ffa9898ae01f943074a1e1c72e3779016d41a7"
+  },
+  "Trash_Bucket": {
+   "id": 78846520972834,
+   "sha": "5a54f8d92f09a8f778460c23c47097916089beb02607dffff707cbc6c308d352"
+  },
+  "Trash_Can": {
+   "id": 92881779116784,
+   "sha": "169aed2e97b33c5d864fed090a28213d84496e536870bb351438dfa69512db78"
+  },
+  "Trash_ChipBag": {
+   "id": 83740529075055,
+   "sha": "dd9569e011c4c92c7b3c96e01d4785a7403f2827d5017a0dc530cb626d19cd3c"
+  },
+  "Trash_Cup": {
+   "id": 94334139515348,
+   "sha": "ad6d7e682a8f15f4dc66d87cef2f9ed1642599135a807d0b66685301d67612b8"
+  },
+  "Trash_JuiceBox": {
+   "id": 87361897530132,
+   "sha": "775c101413a82807fe20e51dd7aa7638d1a7a9ccb2b75ca3ffd8271ed9a430c6"
+  },
+  "Trash_PaperBall": {
+   "id": 87396935425239,
+   "sha": "e16522951ac6c7f81fd80c11429ea42d7e18052a7ae804e9ab53c60a9ebf8c41"
+  },
+  "Trash_PizzaBox": {
+   "id": 76989347266114,
+   "sha": "7bdc1c3ffa6d7c474a7470e0b2bf4cd2dc72f3ad5c9a38352069c4a97b90ea62"
+  },
+  "Trash_Shell": {
+   "id": 105374300628530,
+   "sha": "72cc6d595e68680b26062fdacc4f3e6399f8e376eb52236b8112b6ac1c0bc06d"
   },
   "Tree_Bulb": {
    "id": 138798623622064,

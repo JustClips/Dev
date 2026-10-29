@@ -7,6 +7,7 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Aliens = require(Shared.Config.Aliens)
 local Economy = require(Shared.Config.Economy)
 local Signal = require(Shared.Signal)
 local Types = require(Shared.Types)
@@ -151,6 +152,25 @@ local function migrate(data: any)
 	end
 end
 
+-- Pets get removed when they're remade (all old aliens went on 2026-10-29). A saved pet
+-- whose kind no longer exists becomes one of the current Common pets (keeping its
+-- mutation, weight and Huge), and the Index forgets removed kinds. Safe to run every load.
+local function replaceRemovedPets(data: any)
+	local commons = Aliens.ByRarity.Common or Aliens.List
+	local n = 0
+	for _, pet in data.Pets or {} do
+		if type(pet) == "table" and not Aliens.ById[pet.Id] then
+			n += 1
+			pet.Id = commons[(n - 1) % #commons + 1].Id
+		end
+	end
+	for id in data.Index or {} do
+		if not Aliens.ById[id] then
+			data.Index[id] = nil
+		end
+	end
+end
+
 local function pickStore(): any
 	if game.GameId == 0 then
 		warn("[DataService] Place isn't published: using an in-memory mock DataStore (nothing is saved).")
@@ -201,6 +221,7 @@ local function onPlayerAdded(player: Player)
 	local data = profile.Data or deepCopy(TEMPLATE)
 	migrate(data)
 	reconcile(data, TEMPLATE)
+	replaceRemovedPets(data)
 	profile.Data = data
 
 	local session: Session = {
