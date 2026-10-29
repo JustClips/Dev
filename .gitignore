@@ -6,3 +6,4 @@ sourcemap.json
 art/out/*
 !art/out/meta.json
 __pycache__/
+build/
