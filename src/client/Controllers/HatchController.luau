@@ -774,6 +774,7 @@ local function invoke(action: string, arg: string?)
 end
 
 -- Owner prompts on growing eggs: Skip (Robux) while growing, Open when ready.
+local EGG_PROMPT_RANGE = 6 -- studs from the egg's side
 local function updateEggPrompts()
 	local me = Players.LocalPlayer.UserId
 	local now = State.now()
@@ -789,7 +790,6 @@ local function updateEggPrompts()
 		if not prompt then
 			local p = Instance.new("ProximityPrompt")
 			p.Name = "EggPrompt"
-			p.MaxActivationDistance = 12
 			p.RequiresLineOfSight = false
 			p.HoldDuration = 0.25
 			p.Parent = root
@@ -806,6 +806,9 @@ local function updateEggPrompts()
 		local ready = (egg:GetAttribute("EndsAt") or 0) <= now
 		local rarity = egg:GetAttribute("Rarity") :: string
 		local p = prompt :: ProximityPrompt
+		-- Set every update: growing the egg (Model:ScaleTo) scales the prompt's range too,
+		-- which made Skip Hatch show up from far away on big eggs.
+		p.MaxActivationDistance = EGG_PROMPT_RANGE + math.max(root.Size.X, root.Size.Z) / 2
 		p:SetAttribute("Ready", ready)
 		p.ObjectText = `{rarity} Egg`
 		if ready then
