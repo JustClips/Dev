@@ -20,7 +20,7 @@ local FILL = Color3.fromRGB(61, 220, 90)
 local SUB = Color3.fromRGB(181, 186, 198)
 local POP = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
-local folder: Folder
+local folder: ScreenGui
 type Shown = { gui: BillboardGui, fill: Frame, scale: UIScale, holdStart: number?, conns: { RBXScriptConnection } }
 local shown: { [ProximityPrompt]: Shown } = {}
 
@@ -74,6 +74,7 @@ local function build(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInp
 	gui.StudsOffset = Vector3.new(prompt.UIOffset.X / 50, 1.5 + prompt.UIOffset.Y / 50, 0)
 	gui.Adornee = prompt.Parent :: Instance
 	gui.ResetOnSpawn = false
+	gui.Active = true -- so taps on it reach the button
 	local scale = Instance.new("UIScale")
 	scale.Scale = 0.6
 	scale.Parent = gui
@@ -188,8 +189,10 @@ local function restyle(d: Instance)
 end
 
 function PromptController:Init()
-	folder = Instance.new("Folder")
+	-- Billboards only draw inside a ScreenGui (not a plain Folder) in PlayerGui.
+	folder = Instance.new("ScreenGui")
 	folder.Name = "Prompts"
+	folder.ResetOnSpawn = false
 	folder.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
@@ -200,7 +203,14 @@ function PromptController:Start()
 	Workspace.DescendantAdded:Connect(restyle)
 	ProximityPromptService.PromptShown:Connect(function(prompt, inputType)
 		hide(prompt)
-		shown[prompt] = build(prompt, inputType)
+		local ok, entry = pcall(build, prompt, inputType)
+		if ok then
+			shown[prompt] = entry
+		else
+			-- Never leave a prompt invisible: fall back to Roblox's own look.
+			warn("[PromptController]", entry)
+			prompt.Style = Enum.ProximityPromptStyle.Default
+		end
 	end)
 	ProximityPromptService.PromptHidden:Connect(hide)
 	-- The hold fill.
