@@ -10,7 +10,8 @@
 -- (mutations by chance, lightning / falling stars that hit eggs), makes eggs grow faster,
 -- and other services ask here for its bonuses (cash, luck, golden piles, Huge, regrow).
 -- Admin chat commands: "/weather <id>" (any weather or moon id, or "off"), "/night"
--- (skip to sunset), "/day", "/eggrain", "/hatchtest <rarity> [huge] [mutation]" (hatch show only).
+-- (skip to sunset), "/day", "/eggrain", "/hatchtest <rarity> [huge] [mutation]" (hatch show only),
+-- "/eggvariants [rarity]" (a row of that egg in every weather variant for 2 minutes).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -18,6 +19,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Aliens = require(Shared.Config.Aliens)
+local AssetLibrary = require(Shared.AssetLibrary)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
 local Weather = require(Shared.Config.Weather)
@@ -294,6 +296,63 @@ local function onChat(player: Player, message: string)
 		jumpTo(0)
 	elseif command == "/eggrain" then
 		S.EventService:TriggerShower(player)
+	elseif command == "/eggvariants" then
+		-- A row of one egg rarity in every weather variant, in front of you for 2 minutes.
+		local rarity = "Rare"
+		for _, def in Eggs.Rarities do
+			if string.lower(def.Name) == (args[2] or "") then
+				rarity = def.Name
+			end
+		end
+		local char = player.Character
+		local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if not root then
+			return
+		end
+		local folder = Instance.new("Folder")
+		folder.Name = "EggVariants"
+		folder.Parent = workspace
+		local names = {}
+		for _, m in Eggs.Mutations do
+			if m.WeatherOnly or m.Name == "Golden" or m.Name == "Rainbow" then
+				table.insert(names, m.Name)
+			end
+		end
+		local face = CFrame.lookAt(root.Position, root.Position + root.CFrame.LookVector * Vector3.new(1, 0, 1))
+		for i, name in names do
+			local egg = AssetLibrary.egg(rarity)
+			egg.Name = name
+			local x = (i - (#names + 1) / 2) * 6
+			local at = face * CFrame.new(x, 0, -14)
+			local ray = workspace:Raycast(at.Position + Vector3.new(0, 20, 0), Vector3.new(0, -60, 0))
+			local y = if ray then ray.Position.Y else root.Position.Y - 3
+			egg:PivotTo(CFrame.new(at.Position.X, y, at.Position.Z) * face.Rotation * CFrame.Angles(0, math.pi, 0))
+			egg:ScaleTo(1.25)
+			for _, d in egg:GetDescendants() do
+				if d:IsA("BasePart") then
+					d.CanCollide = false
+				end
+			end
+			AssetLibrary.applyMutation(egg, name)
+			local label = Instance.new("BillboardGui")
+			label.Size = UDim2.fromOffset(160, 30)
+			label.StudsOffsetWorldSpace = Vector3.new(0, 5.5, 0)
+			label.AlwaysOnTop = true
+			local text = Instance.new("TextLabel")
+			text.BackgroundTransparency = 1
+			text.Size = UDim2.fromScale(1, 1)
+			text.Text = Eggs.MutationByName[name].Label
+			text.TextColor3 = Eggs.MutationByName[name].Color
+			text.TextStrokeTransparency = 0
+			text.TextScaled = true
+			text.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+			text.Parent = label
+			label.Parent = egg.PrimaryPart or egg:FindFirstChildWhichIsA("BasePart")
+			egg.Parent = folder
+		end
+		task.delay(120, function()
+			folder:Destroy()
+		end)
 	elseif command == "/hatchtest" then
 		-- Plays the hatch show for a pet of that rarity without giving anything:
 		-- "/hatchtest legendary", "/hatchtest mythic huge", "/hatchtest rare golden".
@@ -308,13 +367,14 @@ local function onChat(player: Player, message: string)
 		local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
 		local bucket = rarity and Aliens.ByRarity[rarity]
 		if not rarity or not bucket or #bucket == 0 or not data or not data.BaseIndex or data.BaseIndex == 0 or not root then
-			Net.fire("Notify", player, "Use: /hatchtest <common|uncommon|rare|epic|legendary|mythic|cosmic> [huge|golden|rainbow]", "Info")
+			Net.fire("Notify", player, "Use: /hatchtest <common|uncommon|rare|epic|legendary|mythic|cosmic> [huge] [frozen|wet|charged|golden|...]", "Info")
 			return
 		end
 		local def = bucket[math.random(1, #bucket)]
 		local mutation: string? = nil
 		for _, m in Eggs.Mutations do
-			if string.lower(m.Name) == args[3] or string.lower(m.Name) == args[4] then
+			local name, label = string.lower(m.Name), string.lower(m.Label)
+			if name == args[3] or name == args[4] or label == args[3] or label == args[4] then
 				mutation = m.Name
 			end
 		end
@@ -327,6 +387,7 @@ local function onChat(player: Player, message: string)
 			Huge = huge,
 			Rarity = def.Rarity,
 			EggRarity = def.Rarity,
+			EggMutation = mutation,
 			X = spot.X,
 			Z = spot.Z,
 		})

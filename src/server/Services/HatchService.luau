@@ -235,6 +235,7 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 			Weight = weight,
 			EggUid = entry.Uid,
 			EggRarity = entry.Rarity,
+			EggMutation = entry.Mutation, -- the weather's upgrade on the egg itself (the show draws it)
 			EggWeight = entry.Weight,
 			X = entry.X,
 			Z = entry.Z,

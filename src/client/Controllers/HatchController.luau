@@ -578,6 +578,7 @@ local function play(info)
 	end
 	local egg = AssetLibrary.egg(eggRarity)
 	egg.Name = "OpeningEgg"
+	AssetLibrary.applyMutation(egg, info.EggMutation)
 	local eggLooks = looks(egg)
 	egg:ScaleTo(scene.eggScale)
 	egg:PivotTo(scene.origin)
@@ -1187,6 +1188,7 @@ function HatchController:Start()
 				local eggRarity = info.EggRarity or info.Rarity
 				local egg = AssetLibrary.egg(eggRarity)
 				egg.Name = "WaitingEgg"
+				AssetLibrary.applyMutation(egg, info.EggMutation)
 				for _, d in egg:GetDescendants() do
 					if d:IsA("BasePart") then
 						d.Anchored = true

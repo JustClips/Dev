@@ -417,6 +417,84 @@ local function applyVoxelSkin(model: Model, mutation: string): boolean
 	return true
 end
 
+-- Weather-upgraded eggs: the bricks get the mutation's own paint job (tools/egg_skins.py)
+-- and its 3D add-on (art/blender/egg_mutations.py: snow cap and icicles, puddle and drips,
+-- lightning bolts, leaf ring, blood moon, stars, a star stuck in the top, gold coins, a
+-- rainbow, a disco ball). Dev found the see-through coat on eggs ugly (2026-10-29).
+type EggAddPart = { material: Enum.Material?, transparency: number?, reflectance: number?, onTop: boolean? }
+local EGG_ADD_PARTS: { [string]: EggAddPart } = {
+	Ice = { material = Enum.Material.Ice, transparency = 0.15 },
+	Snow = { material = Enum.Material.Sand },
+	Water = { material = Enum.Material.Glass, transparency = 0.35, reflectance = 0.15 },
+	Gold = { reflectance = 0.3 },
+	Ball = { reflectance = 0.45, onTop = true },
+	Moon = { onTop = true },
+	Star = { reflectance = 0.15, onTop = true },
+}
+local EGG_TOP = 3.2 -- top of a plain egg at scale 1; toppers (sprout, crown...) go above
+
+local function applyEggMutation(model: Model, mutation: string): boolean
+	if model:GetAttribute("Kind") ~= "egg" then
+		return false
+	end
+	local rarity = model:GetAttribute("EggRarity") or model:GetAttribute("Rarity")
+	local skin = if type(rarity) == "string" then Assets.Images[`EggSkin_{rarity}_{mutation}`] else nil
+	if not skin then
+		return false
+	end
+	for _, d in model:GetDescendants() do
+		if d:IsA("MeshPart") and d.TextureID ~= "" and not d:GetAttribute("Glow") then
+			d.TextureID = skin
+		end
+	end
+	local add = AssetLibrary.get("EggMut_" .. mutation)
+	if add then
+		local scale = model:GetScale()
+		local pivot = model:GetPivot()
+		-- How far the egg's own topper sticks up above a plain egg (in scale-1 studs).
+		local box, size = model:GetBoundingBox()
+		local top = (pivot:PointToObjectSpace(box.Position).Y + size.Y / 2) / scale
+		local lift = math.max(0, top - EGG_TOP)
+		add:ScaleTo(scale)
+		add:PivotTo(pivot)
+		local anchor = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+		for _, part in add:GetChildren() do
+			if not part:IsA("BasePart") then
+				continue
+			end
+			local look = EGG_ADD_PARTS[part.Name]
+			if look then
+				if look.material and not part:GetAttribute("Glow") then
+					part.Material = look.material
+				end
+				part.Transparency = look.transparency or part.Transparency
+				part.Reflectance = look.reflectance or 0
+				if look.onTop and lift > 0 then
+					part.CFrame = pivot * CFrame.new(0, lift * scale, 0) * pivot:ToObjectSpace(part.CFrame)
+				end
+			end
+			part.Name = "Mutation" .. part.Name
+			part:SetAttribute("MutationAddOn", true)
+			part.CastShadow = false
+			part.CanCollide = false
+			part.CanTouch = false
+			part.Massless = true
+			if anchor and not anchor.Anchored then
+				part.Anchored = false
+				local weld = Instance.new("WeldConstraint")
+				weld.Part0 = anchor
+				weld.Part1 = part
+				weld.Parent = part
+			else
+				part.Anchored = true
+			end
+			part.Parent = model
+		end
+		add:Destroy()
+	end
+	return true
+end
+
 function AssetLibrary.applyMutation(model: Model, mutation: string?)
 	if not mutation or model:GetAttribute("CoatFor") == mutation then
 		return
@@ -426,10 +504,11 @@ function AssetLibrary.applyMutation(model: Model, mutation: string?)
 	if applyVoxelSkin(model, mutation) then
 		return
 	end
+	local eggDone = applyEggMutation(model, mutation)
 	-- Pets sparkle from their Body; eggs (no Body) from their main part.
 	local body = (model:FindFirstChild("Body") or model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")) :: BasePart?
 	local coat = COATS[mutation]
-	if coat then
+	if coat and not eggDone then
 		addCoat(model, coat)
 	end
 	local look = WEATHER_LOOKS[mutation]
@@ -471,6 +550,7 @@ function AssetLibrary.egg(rarity: string): Model
 	local model = AssetLibrary.get("Egg_" .. rarity)
 	if model then
 		model.Name = rarity .. "Egg"
+		model:SetAttribute("EggRarity", rarity)
 		AssetLibrary.eggExtras(model, rarity)
 		return model
 	end

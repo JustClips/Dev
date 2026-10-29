@@ -406,6 +406,286 @@
    "id": 114720155624899,
    "sha": "7ea119751b8a03cfdd9b40d16c8c4527978450dfcbfc877db8d6757585c525df"
   },
+  "EggSkin_Common_Bloodlit": {
+   "id": 127389763269575,
+   "sha": "51ea91d70088af38a1e717aea15fcbabaa6c643b85d7760ccddd95d5019611ba"
+  },
+  "EggSkin_Common_Disco": {
+   "id": 82712213824338,
+   "sha": "bde1ef5aa18e356c9ad60fd0e3b8081bff03f6b07433e56221ebdb389dabdf5a"
+  },
+  "EggSkin_Common_Frozen": {
+   "id": 106156372400078,
+   "sha": "f24d15b9a746027989fb1357f893f0de450308fd69f3580725c8192afab02454"
+  },
+  "EggSkin_Common_Golden": {
+   "id": 109891343584948,
+   "sha": "e35c0f410308a14eb3e1e46a5b488c7ffa94133aad301c1a433c33d88a138bd0"
+  },
+  "EggSkin_Common_Rainbow": {
+   "id": 136700909057020,
+   "sha": "15efe83b63abb1652339d07239f8138f668e0fccce1f3418c580a6925630737f"
+  },
+  "EggSkin_Common_Shocked": {
+   "id": 71830498544264,
+   "sha": "254cadf45fa298a7d7746b98632f7feac265372bf12eeae00be06ea9d6ce7f01"
+  },
+  "EggSkin_Common_Starlit": {
+   "id": 138480845238668,
+   "sha": "1e3510abb552476524eec4bda93edf1fc1c22f709720cdd0aa86508587277be5"
+  },
+  "EggSkin_Common_Starstruck": {
+   "id": 102107380575678,
+   "sha": "f6e384366d75b34935a2f68b1c4f46abc3c991f08722c1fe98db6ddab650e954"
+  },
+  "EggSkin_Common_Wet": {
+   "id": 102619965733512,
+   "sha": "4b19726d0db1ab29aed932abf32f232635879ab7d698922c5c360b953efbcf27"
+  },
+  "EggSkin_Common_Windswept": {
+   "id": 139969394738676,
+   "sha": "3dbbaabdf20ef53f4f0347303acc1ee2896adab7abb1eb458b2f945a10f595b0"
+  },
+  "EggSkin_Cosmic_Bloodlit": {
+   "id": 103256007428020,
+   "sha": "0838c76f90233d18dd4cbb30365a8c4880290b56542b8d87b7973f68ba8ab4e4"
+  },
+  "EggSkin_Cosmic_Disco": {
+   "id": 82439786579578,
+   "sha": "b6bc280ae0cde15298006fa0f0a01011735c16f4e2f0eba21b2c4771b03c56d9"
+  },
+  "EggSkin_Cosmic_Frozen": {
+   "id": 80157474565940,
+   "sha": "c1556f7619723254fe28a6f62d55aaba9eb491fd1331846cdc7df5d8066ade02"
+  },
+  "EggSkin_Cosmic_Golden": {
+   "id": 82733981974150,
+   "sha": "4d12d21fb4c41dcf1c54a98b30792359040cab2831295f0d6f44d22bcbffe072"
+  },
+  "EggSkin_Cosmic_Rainbow": {
+   "id": 125089399362845,
+   "sha": "fa1e0dae3fc3d78aae94f93df1e2d3d8a456eda4fc8d1c9ebc8d8677a6107cb1"
+  },
+  "EggSkin_Cosmic_Shocked": {
+   "id": 115889702886236,
+   "sha": "fdfd3a4f15d589449bf7227a3c07737e3d403df3083231b42483721d3c8960de"
+  },
+  "EggSkin_Cosmic_Starlit": {
+   "id": 79507295733665,
+   "sha": "67b5e8d7421c485ffd4275a6f85283305d59978f8a40a4456d1503339db4c86d"
+  },
+  "EggSkin_Cosmic_Starstruck": {
+   "id": 80921414830185,
+   "sha": "5ad3e6c850333616e27fc33398ba665936983efefac3a1b7e8f9359d42c5b106"
+  },
+  "EggSkin_Cosmic_Wet": {
+   "id": 79422246999307,
+   "sha": "3ccbefcfa4e2708ced301dc1d1da1a4cee92054ad04bc2d3a28ea02c10c5bd67"
+  },
+  "EggSkin_Cosmic_Windswept": {
+   "id": 100792934392494,
+   "sha": "d80c0c1ce2a1c45964ac1665d1fe8954d347bc93e66093651b045dd5109cc71b"
+  },
+  "EggSkin_Epic_Bloodlit": {
+   "id": 120361371490172,
+   "sha": "8fb0556fc99a278f7490fafae721a3a286670f580e0d05f646c50aa2bf00d2b8"
+  },
+  "EggSkin_Epic_Disco": {
+   "id": 84490937237070,
+   "sha": "2733d71f1e5ab908726c456a7e64d7eca92da05c282da9819a90169260049970"
+  },
+  "EggSkin_Epic_Frozen": {
+   "id": 105871594276658,
+   "sha": "c1c1ee213fe3d814105440283b90277049325024309556048ffa2bc28d967447"
+  },
+  "EggSkin_Epic_Golden": {
+   "id": 136916709968850,
+   "sha": "fd371f96762fceda48b0ba50bedb5082e999c7240995b42f4ce55c92db50c1d7"
+  },
+  "EggSkin_Epic_Rainbow": {
+   "id": 82800345863586,
+   "sha": "1142dbb7aaa4bf3c1fd4531eceb37abe382be2d7840c96417b80e6bdc380aafb"
+  },
+  "EggSkin_Epic_Shocked": {
+   "id": 126887604625900,
+   "sha": "329fa20f6c5c919fc55a62e39ef71d6d39a5f41fc58bfeb5ce772c2ace3346fc"
+  },
+  "EggSkin_Epic_Starlit": {
+   "id": 85220325303263,
+   "sha": "2d4a124a728395334323fb50f841bddf23282f955d47b692542289b756de30b0"
+  },
+  "EggSkin_Epic_Starstruck": {
+   "id": 97980681906167,
+   "sha": "122a3ef4d55652ad8341fac20a9d0403e0cd4731c8d1097e37bd98a983306350"
+  },
+  "EggSkin_Epic_Wet": {
+   "id": 120423850894198,
+   "sha": "27f8f2ee320ed0b8dd0464e51dfcacd2af010ead0b9f22211c7f4a3eee026a59"
+  },
+  "EggSkin_Epic_Windswept": {
+   "id": 130486960428364,
+   "sha": "2792b3791b7449f13fa5b95183fcf29286be7bb351bcca0449678c7a4382c919"
+  },
+  "EggSkin_Legendary_Bloodlit": {
+   "id": 78785801566480,
+   "sha": "aa743677439f8e92af1052c918f84f2e25f458811e88257e0f343cda51d7cccc"
+  },
+  "EggSkin_Legendary_Disco": {
+   "id": 112971606997244,
+   "sha": "3c5dba085d913536d73719512909e7598aebd9c5211232013b41e3a0204d58f2"
+  },
+  "EggSkin_Legendary_Frozen": {
+   "id": 83374693308931,
+   "sha": "f62cb3b624271e178be5d8faf98ce2bd12790624349ce0a1aa628da398a673b2"
+  },
+  "EggSkin_Legendary_Golden": {
+   "id": 112510320079630,
+   "sha": "b37a4ce35b309fda38fdc81dabe105d2b6f827222a1cb850a46bcc46ee15dfab"
+  },
+  "EggSkin_Legendary_Rainbow": {
+   "id": 126740637286836,
+   "sha": "b3148f09656abe9c2484daffb545dcae2de39db731e1c3f670d5c9485977ac0f"
+  },
+  "EggSkin_Legendary_Shocked": {
+   "id": 115134854471901,
+   "sha": "936a61ef75afcc2b04364bcfa8aca2562ba37b1fec32c57679fa1d967979544d"
+  },
+  "EggSkin_Legendary_Starlit": {
+   "id": 131702712757697,
+   "sha": "bdb3a018d7272d1d4e25ee7fe31c672545b29c87ca3c4789ccd7096b977ff499"
+  },
+  "EggSkin_Legendary_Starstruck": {
+   "id": 78317231610635,
+   "sha": "95994449d48de3de607328c1ff8351c8bd951c01a47ac2260d7ea0cc50d9c90a"
+  },
+  "EggSkin_Legendary_Wet": {
+   "id": 116000368993892,
+   "sha": "1d3d0c9b70d563d3a41d331637a69354ed63d10ae83cc187da85a9b2e67178c0"
+  },
+  "EggSkin_Legendary_Windswept": {
+   "id": 112461073349580,
+   "sha": "ccb4b7e273a16adea40905ddfc0acfc18175f637682b96c55a9d6dc0007c626c"
+  },
+  "EggSkin_Mythic_Bloodlit": {
+   "id": 73272253529686,
+   "sha": "500ba51ac33cb3e9c1a196252106a8057cab2dbd3cc11ad4b363660f789f4eba"
+  },
+  "EggSkin_Mythic_Disco": {
+   "id": 130363348541763,
+   "sha": "bd56d1db84a86da7851f0808ffd657a0042a6010d44e993b17ad6ab4c05b2e48"
+  },
+  "EggSkin_Mythic_Frozen": {
+   "id": 112478322722240,
+   "sha": "f817363f69190042275b2113f6a104e3012220ff4109533b71f61372479c3fbb"
+  },
+  "EggSkin_Mythic_Golden": {
+   "id": 81341746888609,
+   "sha": "165d9566a2d22bc6bbed9e17fe218f249f7928853af338922267602409d60343"
+  },
+  "EggSkin_Mythic_Rainbow": {
+   "id": 138332667162196,
+   "sha": "5fafbfcbce9fb0180998a095e964fc4b2f72bfa2187a8640fae575e25a541b79"
+  },
+  "EggSkin_Mythic_Shocked": {
+   "id": 139494713759094,
+   "sha": "58446ffc713a05474d19518d017a085c5da4ffac2eb376951758e25366e4974a"
+  },
+  "EggSkin_Mythic_Starlit": {
+   "id": 88142896266400,
+   "sha": "7e0624ac48e9733329738c629b62f1b984e1c9a8d2d72b1d710521613b0d55dc"
+  },
+  "EggSkin_Mythic_Starstruck": {
+   "id": 102483246885763,
+   "sha": "1775dee502617926bd11ecefdf954932048476e8e9c3affaf734eff86886b522"
+  },
+  "EggSkin_Mythic_Wet": {
+   "id": 100333765012480,
+   "sha": "c6b2505f19e7df56f57594f938838e8d1769adb8ed281f5677dae5ddf40a4827"
+  },
+  "EggSkin_Mythic_Windswept": {
+   "id": 111011528622026,
+   "sha": "635b910e446074b4d254f3eaf3dae6f459dbc98f50b77a8f45e57a3d3b8ebf7c"
+  },
+  "EggSkin_Rare_Bloodlit": {
+   "id": 104872004795480,
+   "sha": "66d7a8d44bbb1b3ae8a4f13b8acb49b1b980de999f58b6f4eb9ec55250e24d9c"
+  },
+  "EggSkin_Rare_Disco": {
+   "id": 128126639164628,
+   "sha": "c4c1804c6080e138eae5d704fdb4702cb16941dcb37d277fc26d2e0d43f27352"
+  },
+  "EggSkin_Rare_Frozen": {
+   "id": 139850768833653,
+   "sha": "f7a18c6aefdc98293f718f25ccf53b24c1204bc097a6fc15d5530e2d7396a3aa"
+  },
+  "EggSkin_Rare_Golden": {
+   "id": 101951770531281,
+   "sha": "56949b276ea2a30d6e9dd8a174ca5aecde19b26aac397e8c47a580332d02897a"
+  },
+  "EggSkin_Rare_Rainbow": {
+   "id": 82470518234434,
+   "sha": "c758967d782b79f06450f61ef9200180ce85d00052434bba27329ac4d387179c"
+  },
+  "EggSkin_Rare_Shocked": {
+   "id": 120437992368661,
+   "sha": "bda8ec440b64ecc09d20b54973f0f3cab9cca98a8f50abe766c3ff506123863a"
+  },
+  "EggSkin_Rare_Starlit": {
+   "id": 128628148310019,
+   "sha": "84696d877307b9749ab7e7cff124f9e61ec77cf36f31b115c528212c2333c4ea"
+  },
+  "EggSkin_Rare_Starstruck": {
+   "id": 121746590696135,
+   "sha": "3c3dd7b2c21f0b75d2b5887da4ba06ca0b705fabe1b9c29593d34d7f0ceecad0"
+  },
+  "EggSkin_Rare_Wet": {
+   "id": 134425696803654,
+   "sha": "c1dd860b09cd1038baf5039dc7b79d8e79b125666b77b0b1d5ecb9e732162773"
+  },
+  "EggSkin_Rare_Windswept": {
+   "id": 91612841436381,
+   "sha": "2e0b37df35ac125fa7968ed46072cc96ce7c3b39f71d38d63e02d55f875381cf"
+  },
+  "EggSkin_Uncommon_Bloodlit": {
+   "id": 84882478648067,
+   "sha": "e11e849578b1dc0860c42331badd37d14ec35130efedb49aa4608b560beb8aee"
+  },
+  "EggSkin_Uncommon_Disco": {
+   "id": 73114374933347,
+   "sha": "4a4444852ed91fe8651e505f763cea997a454b15e437dd55744fd9a869263e84"
+  },
+  "EggSkin_Uncommon_Frozen": {
+   "id": 118033684765026,
+   "sha": "f417a70dfdf7f5fca91b2360cb43c7809313b712c4622f8b7963e85aa449f8aa"
+  },
+  "EggSkin_Uncommon_Golden": {
+   "id": 113376718638527,
+   "sha": "4c54a3494083874187c28e87489333f63146476314cba8e08cd925a442e7dbab"
+  },
+  "EggSkin_Uncommon_Rainbow": {
+   "id": 90567917896153,
+   "sha": "8cf2dd26265fd8d6f07241dab3665808663af2d59bf4a1d931e6fffbe83f2ce3"
+  },
+  "EggSkin_Uncommon_Shocked": {
+   "id": 111263268490986,
+   "sha": "5463d05e9af26b3819ccae84233995358bef4d1ff5cac1d44053f4224dcc79a2"
+  },
+  "EggSkin_Uncommon_Starlit": {
+   "id": 96910930456124,
+   "sha": "0edf8f5007c872af8e3cf3f67ce59ba06f7737fab203794e0f29d655c6305878"
+  },
+  "EggSkin_Uncommon_Starstruck": {
+   "id": 100553542238742,
+   "sha": "32dcb724828bb7697578abe1b893594582fbcb2c808d7eeff1be1fdccf01cbef"
+  },
+  "EggSkin_Uncommon_Wet": {
+   "id": 76681303477180,
+   "sha": "9a276dde334e7fec5427070208b57654db59e6fcbf32d56944832be49d07611b"
+  },
+  "EggSkin_Uncommon_Windswept": {
+   "id": 76996657436793,
+   "sha": "10a3df1c8e7484752af829d25141d572be95f7d5e2427aa3926d5f07296eee9a"
+  },
   "FxBubble": {
    "id": 96742845739725,
    "sha": "da3e5da45844a3f7eb7ec220943f77081cf74a31a029768c4e1283ecd13b6e9f"
@@ -3843,6 +4123,46 @@
   "Earth": {
    "id": 114016814855287,
    "sha": "aa649a461b4c4cb9b27df930a1fa5e8ef0d213e326943c618d3cb5115a5fe8c4"
+  },
+  "EggMut_Bloodlit": {
+   "id": 131356735188281,
+   "sha": "988f12d0a9ee66c4c45cd06480a53fae13f02a8d59695b38df68a61e4ca963ee"
+  },
+  "EggMut_Disco": {
+   "id": 96053521328222,
+   "sha": "ed78c86d6fd3964f4c746ae03b6fae03c8e0e596afa18613c3aa8fe4597256cc"
+  },
+  "EggMut_Frozen": {
+   "id": 84102681767573,
+   "sha": "40497e5c0634a5680473922dd5737e51b48617803173ba322bb7820a826e46b5"
+  },
+  "EggMut_Golden": {
+   "id": 75753023694901,
+   "sha": "eda8b63899682b68b21457ffdc944e5c0098971a8503c3bbf9ea43e6eeff14ad"
+  },
+  "EggMut_Rainbow": {
+   "id": 110499309810687,
+   "sha": "1a234998699a3f67a47963d69dee8f4228fd4ef70c9894bbd00b254c2145632a"
+  },
+  "EggMut_Shocked": {
+   "id": 105690920796203,
+   "sha": "f2407c74fc6535bf49745d4fd682678dac80905f35f759e9f9fa5f73107cfa47"
+  },
+  "EggMut_Starlit": {
+   "id": 139943377391363,
+   "sha": "bc12d7b84aeecf4b39af380adbf90011b0e8f3576159a06e0a933587178a18f6"
+  },
+  "EggMut_Starstruck": {
+   "id": 123916686094755,
+   "sha": "240d7bce70dc7ee12e9f8f2ce350b9a99ef3184aca92272e272d4f16b93d0098"
+  },
+  "EggMut_Wet": {
+   "id": 81833097905601,
+   "sha": "a33f96d1885cba96dbfa17b73165632b6eef85bbeb002972437c2ea8fbb67065"
+  },
+  "EggMut_Windswept": {
+   "id": 117754158727803,
+   "sha": "7f9d4af9d09856d527ba371d13c900469cd9bf5debb855ec7523a100f8bfc978"
   },
   "Egg_Common": {
    "id": 106875191261029,

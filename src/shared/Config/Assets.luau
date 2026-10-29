@@ -4693,6 +4693,146 @@ Assets.Models = {
 			},
 		},
 	},
+	EggMut_Bloodlit = {
+		bounds = {
+			max = Vector3.new(0.66, 4.68, 0.132),
+			min = Vector3.new(-0.528, 3.36, -0.132),
+		},
+		id = 131356735188281,
+		kind = "eggmut",
+		parts = {
+			Moon = {
+				collide = false,
+				glow = "FF3B30",
+			},
+		},
+	},
+	EggMut_Disco = {
+		bounds = {
+			max = Vector3.new(0.528, 5.34, 0.66),
+			min = Vector3.new(-0.66, 3.492, -0.528),
+		},
+		id = 96053521328222,
+		kind = "eggmut",
+		parts = {
+			Ball = {
+				collide = false,
+			},
+		},
+	},
+	EggMut_Frozen = {
+		bounds = {
+			max = Vector3.new(1.662, 3.3, 1.669),
+			min = Vector3.new(-1.681, -0.059, -1.851),
+		},
+		id = 84102681767573,
+		kind = "eggmut",
+		parts = {
+			Ice = {
+				collide = false,
+			},
+			Snow = {
+				collide = false,
+			},
+		},
+	},
+	EggMut_Golden = {
+		bounds = {
+			max = Vector3.new(1.848, 0.528, 2.112),
+			min = Vector3.new(-2.112, 0.0, -1.98),
+		},
+		id = 75753023694901,
+		kind = "eggmut",
+		parts = {
+			Gold = {
+				collide = false,
+			},
+		},
+	},
+	EggMut_Rainbow = {
+		bounds = {
+			max = Vector3.new(3.564, 3.564, 0.957),
+			min = Vector3.new(-3.564, 0.0, 0.693),
+		},
+		id = 110499309810687,
+		kind = "eggmut",
+		parts = {
+			Arc = {
+				collide = false,
+			},
+		},
+	},
+	EggMut_Shocked = {
+		bounds = {
+			max = Vector3.new(1.913, 4.084, 1.771),
+			min = Vector3.new(-2.717, 1.56, -2.096),
+		},
+		id = 105690920796203,
+		kind = "eggmut",
+		parts = {
+			Bolts = {
+				collide = false,
+				glow = "FFF06A",
+			},
+		},
+	},
+	EggMut_Starlit = {
+		bounds = {
+			max = Vector3.new(2.146, 4.044, 2.348),
+			min = Vector3.new(-2.223, 1.184, -2.332),
+		},
+		id = 139943377391363,
+		kind = "eggmut",
+		parts = {
+			Stars = {
+				collide = false,
+				glow = "CFDCFF",
+			},
+		},
+	},
+	EggMut_Starstruck = {
+		bounds = {
+			max = Vector3.new(1.774, 4.117, 2.035),
+			min = Vector3.new(-2.097, 2.469, -1.994),
+		},
+		id = 123916686094755,
+		kind = "eggmut",
+		parts = {
+			Sparks = {
+				collide = false,
+				glow = "FFE68A",
+			},
+			Star = {
+				collide = false,
+			},
+		},
+	},
+	EggMut_Wet = {
+		bounds = {
+			max = Vector3.new(2.244, 2.772, 1.848),
+			min = Vector3.new(-2.244, -0.132, -2.376),
+		},
+		id = 81833097905601,
+		kind = "eggmut",
+		parts = {
+			Water = {
+				collide = false,
+			},
+		},
+	},
+	EggMut_Windswept = {
+		bounds = {
+			max = Vector3.new(2.052, 2.432, 2.058),
+			min = Vector3.new(-2.112, 0.701, -1.943),
+		},
+		id = 117754158727803,
+		kind = "eggmut",
+		parts = {
+			Leaves = {
+				collide = false,
+			},
+		},
+	},
 	Egg_Common = {
 		bounds = {
 			max = Vector3.new(1.32, 3.168, 1.32),
@@ -6216,6 +6356,76 @@ Assets.Images = {
 	BannerLuck = "rbxassetid://81303789977135",
 	BannerStarter = "rbxassetid://115565610992968",
 	Chevron = "rbxassetid://114720155624899",
+	EggSkin_Common_Bloodlit = "rbxassetid://127389763269575",
+	EggSkin_Common_Disco = "rbxassetid://82712213824338",
+	EggSkin_Common_Frozen = "rbxassetid://106156372400078",
+	EggSkin_Common_Golden = "rbxassetid://109891343584948",
+	EggSkin_Common_Rainbow = "rbxassetid://136700909057020",
+	EggSkin_Common_Shocked = "rbxassetid://71830498544264",
+	EggSkin_Common_Starlit = "rbxassetid://138480845238668",
+	EggSkin_Common_Starstruck = "rbxassetid://102107380575678",
+	EggSkin_Common_Wet = "rbxassetid://102619965733512",
+	EggSkin_Common_Windswept = "rbxassetid://139969394738676",
+	EggSkin_Cosmic_Bloodlit = "rbxassetid://103256007428020",
+	EggSkin_Cosmic_Disco = "rbxassetid://82439786579578",
+	EggSkin_Cosmic_Frozen = "rbxassetid://80157474565940",
+	EggSkin_Cosmic_Golden = "rbxassetid://82733981974150",
+	EggSkin_Cosmic_Rainbow = "rbxassetid://125089399362845",
+	EggSkin_Cosmic_Shocked = "rbxassetid://115889702886236",
+	EggSkin_Cosmic_Starlit = "rbxassetid://79507295733665",
+	EggSkin_Cosmic_Starstruck = "rbxassetid://80921414830185",
+	EggSkin_Cosmic_Wet = "rbxassetid://79422246999307",
+	EggSkin_Cosmic_Windswept = "rbxassetid://100792934392494",
+	EggSkin_Epic_Bloodlit = "rbxassetid://120361371490172",
+	EggSkin_Epic_Disco = "rbxassetid://84490937237070",
+	EggSkin_Epic_Frozen = "rbxassetid://105871594276658",
+	EggSkin_Epic_Golden = "rbxassetid://136916709968850",
+	EggSkin_Epic_Rainbow = "rbxassetid://82800345863586",
+	EggSkin_Epic_Shocked = "rbxassetid://126887604625900",
+	EggSkin_Epic_Starlit = "rbxassetid://85220325303263",
+	EggSkin_Epic_Starstruck = "rbxassetid://97980681906167",
+	EggSkin_Epic_Wet = "rbxassetid://120423850894198",
+	EggSkin_Epic_Windswept = "rbxassetid://130486960428364",
+	EggSkin_Legendary_Bloodlit = "rbxassetid://78785801566480",
+	EggSkin_Legendary_Disco = "rbxassetid://112971606997244",
+	EggSkin_Legendary_Frozen = "rbxassetid://83374693308931",
+	EggSkin_Legendary_Golden = "rbxassetid://112510320079630",
+	EggSkin_Legendary_Rainbow = "rbxassetid://126740637286836",
+	EggSkin_Legendary_Shocked = "rbxassetid://115134854471901",
+	EggSkin_Legendary_Starlit = "rbxassetid://131702712757697",
+	EggSkin_Legendary_Starstruck = "rbxassetid://78317231610635",
+	EggSkin_Legendary_Wet = "rbxassetid://116000368993892",
+	EggSkin_Legendary_Windswept = "rbxassetid://112461073349580",
+	EggSkin_Mythic_Bloodlit = "rbxassetid://73272253529686",
+	EggSkin_Mythic_Disco = "rbxassetid://130363348541763",
+	EggSkin_Mythic_Frozen = "rbxassetid://112478322722240",
+	EggSkin_Mythic_Golden = "rbxassetid://81341746888609",
+	EggSkin_Mythic_Rainbow = "rbxassetid://138332667162196",
+	EggSkin_Mythic_Shocked = "rbxassetid://139494713759094",
+	EggSkin_Mythic_Starlit = "rbxassetid://88142896266400",
+	EggSkin_Mythic_Starstruck = "rbxassetid://102483246885763",
+	EggSkin_Mythic_Wet = "rbxassetid://100333765012480",
+	EggSkin_Mythic_Windswept = "rbxassetid://111011528622026",
+	EggSkin_Rare_Bloodlit = "rbxassetid://104872004795480",
+	EggSkin_Rare_Disco = "rbxassetid://128126639164628",
+	EggSkin_Rare_Frozen = "rbxassetid://139850768833653",
+	EggSkin_Rare_Golden = "rbxassetid://101951770531281",
+	EggSkin_Rare_Rainbow = "rbxassetid://82470518234434",
+	EggSkin_Rare_Shocked = "rbxassetid://120437992368661",
+	EggSkin_Rare_Starlit = "rbxassetid://128628148310019",
+	EggSkin_Rare_Starstruck = "rbxassetid://121746590696135",
+	EggSkin_Rare_Wet = "rbxassetid://134425696803654",
+	EggSkin_Rare_Windswept = "rbxassetid://91612841436381",
+	EggSkin_Uncommon_Bloodlit = "rbxassetid://84882478648067",
+	EggSkin_Uncommon_Disco = "rbxassetid://73114374933347",
+	EggSkin_Uncommon_Frozen = "rbxassetid://118033684765026",
+	EggSkin_Uncommon_Golden = "rbxassetid://113376718638527",
+	EggSkin_Uncommon_Rainbow = "rbxassetid://90567917896153",
+	EggSkin_Uncommon_Shocked = "rbxassetid://111263268490986",
+	EggSkin_Uncommon_Starlit = "rbxassetid://96910930456124",
+	EggSkin_Uncommon_Starstruck = "rbxassetid://100553542238742",
+	EggSkin_Uncommon_Wet = "rbxassetid://76681303477180",
+	EggSkin_Uncommon_Windswept = "rbxassetid://76996657436793",
 	FxBubble = "rbxassetid://96742845739725",
 	FxDrop = "rbxassetid://77803196346204",
 	FxLeaf = "rbxassetid://99661789362706",
