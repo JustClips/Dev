@@ -219,6 +219,7 @@ export type ProfileData = {
 	Backpack: number,
 	BackpackValue: number,
 	ToolTier: number,
+	EquippedTool: number?, -- picked in the Tools menu (nil = the best you own)
 	OwnedTools: { [number]: boolean },
 	Vehicles: { [string]: boolean },
 	Upgrades: { [string]: number },

@@ -21,10 +21,16 @@ local ToolService = {}
 
 local S: any
 
--- The hand tool tier you own.
+-- The hand tool you sweep with: the one you picked in the Tools menu (any tier you own),
+-- or your best one.
 function ToolService:GetEffectiveTier(player: Player): number
 	local data = S.DataService:GetData(player)
-	return if data then math.clamp(data.ToolTier, 1, Tools.MaxTier) else 1
+	if not data then
+		return 1
+	end
+	local best = math.clamp(data.ToolTier, 1, Tools.MaxTier)
+	local picked = data.EquippedTool
+	return if type(picked) == "number" and picked >= 1 and picked <= best then picked else best
 end
 
 function ToolService:OwnsVehicle(player: Player, id: string): boolean
@@ -467,6 +473,7 @@ function ToolService:SetTier(player: Player, tier: number)
 	end
 	tier = math.clamp(tier, 1, Tools.MaxTier)
 	data.ToolTier = tier
+	data.EquippedTool = nil -- a new tool goes straight into your hands
 	data.OwnedTools = {}
 	for t = 1, tier do
 		data.OwnedTools[t] = true
@@ -527,6 +534,20 @@ end
 function ToolService:Init(services)
 	S = services
 	Net.onInvoke("BuyNextTool", buyNext)
+	-- Use any tool you own (Tools menu), not only the best one.
+	Net.onInvoke("EquipTool", function(player, tier: any)
+		local data = S.DataService:GetData(player)
+		if not data then
+			return false, "Still loading"
+		end
+		if type(tier) ~= "number" or tier ~= math.floor(tier) or tier < 1 or tier > data.ToolTier then
+			return false, "You don't own that tool"
+		end
+		data.EquippedTool = if tier == data.ToolTier then nil else tier
+		giveTool(player, true)
+		S.StateService:Mark(player)
+		return true, `{Tools.get(tier).Name} equipped`
+	end)
 	Net.onInvoke("ToggleVehicle", function(player)
 		local session = S.DataService:GetSession(player)
 		if session and session.Runtime.Vehicle then

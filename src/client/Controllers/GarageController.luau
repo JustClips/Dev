@@ -63,23 +63,29 @@ local function newRow(order: number, name: string): Frame
 end
 
 local function toolRows(data)
+	local current = data.EffectiveTier or data.ToolTier
 	for _, tool in Tools.List do
 		local row = newRow(tool.Tier, tool.Id)
 		local owned = tool.Tier <= data.ToolTier
 		local isNext = tool.Tier == data.ToolTier + 1
 		;(row:FindFirstChild("Name") :: TextLabel).Text = tool.Name
 		;(row:FindFirstChild("Stats") :: TextLabel).Text =
-			`Width {tool.Radius} · Power {tool.Power} · Holds {Format.number(tool.Capacity)}`
-		;(row:FindFirstChild("Price") :: TextLabel).Text = if tool.Tier == data.ToolTier
+			`Width {tool.Radius} · Leaves x{tool.Power} · Holds {Format.number(tool.Capacity)}`
+		;(row:FindFirstChild("Price") :: TextLabel).Text = if tool.Tier == current
 			then "In your hands"
 			elseif owned then "Owned"
 			else Format.cash(tool.Price)
 		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.toolIcon(tool.Id)
 		local main = row:FindFirstChild("Main") :: TextButton
 		if owned then
-			Ui.setText(main, if tool.Tier == data.ToolTier then "Equipped" else "Owned")
-			main.BackgroundColor3 = GREY
-			Ui.button(main, function() end)
+			local equipped = tool.Tier == current
+			Ui.setText(main, if equipped then "Equipped" else "Equip")
+			main.BackgroundColor3 = if equipped then GREY else BLUE
+			Ui.button(main, function()
+				if tool.Tier ~= (State.data and State.data.EffectiveTier or data.ToolTier) then
+					toast(Net.func("EquipTool"):InvokeServer(tool.Tier))
+				end
+			end)
 		elseif isNext then
 			Ui.setText(main, `Buy {Format.cash(tool.Price)}`)
 			main.BackgroundColor3 = if BigNum.gte(data.Cash, tool.Price) then GREEN else GREY
@@ -114,7 +120,7 @@ local function carRows(data)
 		local locked = not owned and not rented and data.Rebirths < car.RequiredRebirths
 		;(row:FindFirstChild("Name") :: TextLabel).Text = car.Name
 		;(row:FindFirstChild("Stats") :: TextLabel).Text =
-			`Width {car.Radius} · Power {car.Power} · Holds {Format.number(car.Capacity)}`
+			`Width {car.Radius} · Leaves x{car.Power} · Holds {Format.number(car.Capacity)}`
 		;(row:FindFirstChild("Price") :: TextLabel).Text = if owned
 			then "Owned"
 			elseif rented then "Rented for this run"
@@ -163,11 +169,14 @@ local function carRows(data)
 	end
 end
 
-local function render()
+-- keepScroll: redraws after a purchase or equip stay where you were in the list
+-- (Dev: buying jumped back to the top). Opening or switching tabs starts at the top.
+local function render(keepScroll: boolean?)
 	local data = State.data
 	if not data or not gui.Enabled then
 		return
 	end
+	local scroll = list.CanvasPosition
 	for _, child in list:GetChildren() do
 		if child:IsA("Frame") and child ~= template then
 			child:Destroy()
@@ -183,7 +192,15 @@ local function render()
 		hint.Text = "Cars sweep a huge area and hold more. Spawn one here or from slot 2."
 		carRows(data)
 	end
-	list.CanvasPosition = Vector2.zero
+	if keepScroll then
+		list.CanvasPosition = scroll
+		-- The canvas grows back after the layout updates; set it again once it has.
+		task.defer(function()
+			list.CanvasPosition = scroll
+		end)
+	else
+		list.CanvasPosition = Vector2.zero
+	end
 end
 
 function GarageController:Open(which: string?)
@@ -241,7 +258,7 @@ function GarageController:Start()
 	end)
 	local lastSignature = ""
 	State.Changed:Connect(function(data)
-		local parts = { tostring(data.RentedVehicle), tostring(data.ToolTier) }
+		local parts = { tostring(data.RentedVehicle), tostring(data.ToolTier), tostring(data.EffectiveTier) }
 		for _, tool in Tools.List do
 			table.insert(parts, tostring(BigNum.gte(data.Cash, tool.Price)))
 		end
@@ -251,7 +268,7 @@ function GarageController:Start()
 		local signature = table.concat(parts, "|")
 		if signature ~= lastSignature then
 			lastSignature = signature
-			render()
+			render(true)
 		end
 	end)
 end

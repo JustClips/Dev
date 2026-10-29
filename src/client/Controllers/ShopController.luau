@@ -195,7 +195,7 @@ local function toolItems(data): { Item }
 		return items
 	end
 	local def = Tools.get(tier)
-	local desc = `Radius {def.Radius} · Power {def.Power} · Holds {Format.number(def.Capacity)}`
+	local desc = `Radius {def.Radius} · Leaves x{def.Power} · Holds {Format.number(def.Capacity)}`
 	local affordable = BigNum.gte(data.Cash, def.Price)
 	table.insert(items, {
 		Name = def.Name,
@@ -218,7 +218,7 @@ local function toolItems(data): { Item }
 		local after = Tools.get(tier + 1)
 		table.insert(items, {
 			Name = after.Name,
-			Desc = `Radius {after.Radius} · Power {after.Power} · Holds {Format.number(after.Capacity)}`,
+			Desc = `Radius {after.Radius} · Leaves x{after.Power} · Holds {Format.number(after.Capacity)}`,
 			Price = "Locked",
 			Color = GREY,
 			Enabled = false,

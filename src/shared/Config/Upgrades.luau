@@ -23,7 +23,7 @@ export type StatDef = {
 
 -- What each stat does in the game (where it is applied).
 local Stats: { [string]: StatDef } = {
-	Power = { Name = "Sweep Power", Icon = "Icon_Tool_Broom", Format = "percent" }, -- ToolService
+	Power = { Name = "Leaves per Pile", Icon = "Icon_Tool_Broom", Format = "percent" }, -- ToolService: leaves from each pile, and tough piles take fewer swipes
 	Backpack = { Name = "Backpack", Icon = "Icon_Backpack", Format = "percent" }, -- ToolService
 	Speed = { Name = "Walk Speed", Icon = "Icon_Speed", Format = "plus" }, -- walkSpeed
 	Luck = { Name = "Egg Luck", Icon = "Icon_Luck", Format = "percent" }, -- EggService
@@ -106,7 +106,7 @@ end
 -- A sub-tree's root has no Parent: it needs its lab instead.
 -- stylua: ignore
 local Main = {
-	n("Power",      0,  0, nil,          "Power",     "Sweep Power",    "Clear leaves faster",              10, 0.15, 150,     1.9),
+	n("Power",      0,  0, nil,          "Power",     "Sweep Power",    "Every pile gives more leaves",     10, 0.25, 150,     1.9),
 	n("Backpack",   1,  0, "Power",      "Backpack",  "Backpack",       "Carry more leaves per trip",       10, 0.25, 300,     2.2),
 	n("LeafValue",  0,  1, "Power",      "DustValue", "Leaf Value",     "Every leaf sells for more",        10, 0.10, 800,     2.2),
 	n("Speed",     -1,  0, "Power",      "Speed",     "Running Shoes",  "Walk faster",                       8, 2,    400,     2.0),
@@ -117,7 +117,7 @@ local Main = {
 	n("Radius",     2, -1, "Backpack",   "Radius",    "Wide Sweep",     "Sweep a bigger area at once",       5, 0.05, 25_000,  2.6),
 	n("Cash",       1,  1, "LeafValue",  "Cash",      "Money Magnet",   "More cash from everything",        10, 0.05, 50_000,  2.5),
 	n("LeafValue2", 0,  2, "LeafValue",  "DustValue", "Fancy Leaves",   "Every leaf sells for more",        10, 0.15, 60_000,  2.4),
-	n("Power2",    -2,  0, "Speed",      "Power",     "Strong Arms",    "Clear leaves even faster",         10, 0.15, 20_000,  2.3),
+	n("Power2",    -2,  0, "Speed",      "Power",     "Strong Arms",    "Even more leaves from every pile", 10, 0.20, 20_000,  2.3),
 	n("Speed2",    -2,  1, "Speed",      "Speed",     "Rocket Shoes",   "Walk even faster",                  5, 2,    3_000_000, 2.5, 1),
 	n("Backpack3",  3,  0, "Backpack2",  "Backpack",  "Leaf Truck",     "Carry way more leaves",            10, 0.25, 3_000_000, 2.3, 1),
 	n("Radius2",    3, -1, "Radius",     "Radius",    "Mega Sweep",     "Sweep a bigger area at once",       5, 0.05, 3_000_000, 2.6, 1),
@@ -125,8 +125,8 @@ local Main = {
 	n("Cash2",      1,  2, "Cash",       "Cash",      "Rich Sweeper",   "More cash from everything",        10, 0.05, 5_000_000, 2.5, 1),
 	n("Cash3",      1,  3, "Cash2",      "Cash",      "Golden Broom",   "More cash from everything",        10, 0.05, 500_000_000, 2.5, 3),
 	n("LeafValue3", 0,  3, "LeafValue2", "DustValue", "Diamond Leaves", "Every leaf sells for way more",    10, 0.20, 150_000_000, 2.4, 2),
-	n("Power3",    -3,  0, "Power2",     "Power",     "Mighty Sweep",   "Clear leaves much faster",         10, 0.20, 2_000_000, 2.3, 1),
-	n("Power4",    -4,  0, "Power3",     "Power",     "Titan Sweep",    "Clear leaves insanely fast",       10, 0.25, 100_000_000, 2.3, 2),
+	n("Power3",    -3,  0, "Power2",     "Power",     "Mighty Sweep",   "Much more leaves from every pile",         10, 0.20, 2_000_000, 2.3, 1),
+	n("Power4",    -4,  0, "Power3",     "Power",     "Titan Sweep",    "Huge leaf hauls from every pile",       10, 0.25, 100_000_000, 2.3, 2),
 }
 
 -- stylua: ignore
