@@ -57,8 +57,9 @@ def jitter(col, c):
 
 
 class Part:
-    def __init__(self, name, parent=None, joint=None, noise=True):
-        self.name, self.parent, self.noise = name, parent, noise
+    def __init__(self, name, parent=None, joint=None, noise=True, glow=None):
+        """glow: hex colour; the part turns Neon in that colour in game (eyes, horns)."""
+        self.name, self.parent, self.noise, self.glow = name, parent, noise, glow
         self.joint = joint            # in grid units, None = centre of the part
         self.cells = {}
 
@@ -142,7 +143,7 @@ def assemble(key, parts):
         o = mesh_part(a, p)
         j = p.joint if p.joint is not None else p.centre()
         a.parts[p.name] = {"obj": o, "parent": p.parent, "joint": [x * U for x in j] if p.parent else None,
-                           "glow": None, "material": None, "collide": False}
+                           "glow": p.glow, "material": None, "collide": False}
     a.extra["voxel"] = True
     a.extra["anims"] = {"idle": f"Pet_{key}_Idle", "walk": f"Pet_{key}_Walk"}
     return a
@@ -626,9 +627,114 @@ def tiger():
     return assemble("Tiger", parts)
 
 
+# ---------------------------------------------------------------------------- lion
+
+
+def lion():
+    G, M, MD, L, N = "E8A93A", "A0581E", "7A3E14", "F6DFB0", "4A2A20"
+    parts = legs(G, L, 5, -7, 5)
+    body = Part("Body")
+    body.box(-3, 3, -8, 8, 5, 11, lambda i, j, k: L if k == 5 and -6 <= j <= 5 else G)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -8, 10))
+    head.rbox(-6, 6, -12, -6, 7, 19, lambda i, j, k: MD if (i + k) % 4 == 0 else M)    # the mane
+    for c in [c for c in head.cells if -4 <= c[0] < 4 and 9 <= c[2] < 16 and c[1] == -12]:
+        del head.cells[c]
+    head.box(-4, 4, -14, -11, 9, 16, G)                       # face
+    eyes(head, -14, 12)
+    head.box(-2, 2, -15, -14, 9, 12, L)                       # muzzle
+    head.set([(-1, -15, 11), (0, -15, 11)], N)
+    head.set([(-1, -15, 9), (0, -15, 9)], shade(L, -0.25))
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(3.5, -10.5, 19))
+    ear.box(3, 5, -11, -10, 19, 20, G)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 8, 9))
+    tail.box(-1, 1, 8, 12, 8, 10, G)
+    tail2 = Part("Tail2", "Tail", joint=(0, 12, 9))
+    tail2.box(-1, 1, 12, 15, 7, 9, G)
+    tail2.rbox(-2, 2, 14, 17, 5, 9, lambda i, j, k: MD if k == 5 else M, edges=(True, False, True))   # tuft
+    parts += [tail, tail2]
+    return assemble("Lion", parts)
+
+
+# ---------------------------------------------------------------------- arctic wolf
+
+
+def arctic_wolf():
+    W, G, B, N, I = "DCE6F0", "AEBFD3", "F8FBFF", "2A2E38", "6FE6FF"
+    parts = legs(W, G, 6, -8, 6)
+    body = Part("Body")
+    body.box(-3, 3, -9, 9, 6, 12, lambda i, j, k: B if (k == 6 and -7 <= j <= 6) or (j == -9 and k <= 9 and -2 <= i <= 1) else (G if k == 11 and abs(i + 0.5) < 2 else W))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -9, 11))
+    head.box(-4, 4, -15, -9, 10, 17, lambda i, j, k: G if k == 16 else W)
+    head.box(-2, 2, -18, -15, 10, 13, lambda i, j, k: B if k < 12 else W)    # long snout
+    head.set([(-1, -18, 12), (0, -18, 12), (-1, -17, 12), (0, -17, 12)], N)
+    eye_cells = [(x, -15, z) for x in (-3, -2, 1, 2) for z in (13, 14)]
+    for c in eye_cells:
+        head.cells.pop(c, None)
+    parts.append(head)
+    glow = Part("Eyes_Glow", "Head", joint=(0, -15, 13.5), noise=False, glow=I)
+    glow.set(eye_cells, I)
+    parts.append(glow)
+    ear = Part("EarL", "Head", joint=(3, -11.5, 17))
+    ear.box(2, 4, -12, -11, 17, 19, lambda i, j, k: G if i == 3 or k == 18 else W)
+    ear.set([(3, -12, 19)], G)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 9, 10))
+    tail.box(-1, 1, 9, 12, 9, 12, W)
+    tail2 = Part("Tail2", "Tail", joint=(0, 12, 9))
+    tail2.rbox(-2, 2, 11, 16, 6, 11, lambda i, j, k: B if j >= 14 else W, edges=(True, False, True))
+    parts += [tail, tail2]
+    return assemble("ArcticWolf", parts)
+
+
+# ------------------------------------------------------------------------- unicorn
+
+
+RAINBOW_BANDS = ["FF6B7A", "FFA24A", "FFE15A", "7EE07A", "6AB8FF", "B98BFF"]
+
+
+def unicorn():
+    W, H, S, P = "FAF8FF", "C8B8E8", "F5D6E8", "E58FB4"
+    parts = legs(W, H, 7, -7, 5)
+    for p in parts:
+        for c in list(p.cells):
+            if c[2] <= 1:
+                p.cells[c] = H                               # hooves
+    body = Part("Body")
+    body.rbox(-3, 3, -8, 8, 7, 13, W)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -7, 12))
+    head.box(-2, 2, -9, -5, 11, 17, W)                       # neck
+    head.rbox(-3, 3, -13, -7, 16, 21, W, edges=(True, False, False))
+    head.box(-2, 2, -15, -13, 16, 19, S)                      # muzzle
+    head.set([(-2, -15, 17), (1, -15, 17)], P)                # nostrils
+    eyes(head, -13, 19, xs=(-3, 1), shine=False)
+    parts.append(head)
+    horn = Part("Horn_Glow", "Head", joint=(0, -10, 21), noise=False, glow="FFD54A")
+    horn.box(-1, 1, -11, -9, 21, 22, "FFD54A")
+    horn.box(-1, 0, -11, -10, 22, 25, "FFD54A")
+    parts.append(horn)
+    mane = Part("Mane", "Head", joint=(0, -6, 17))
+    mane.box(-1, 1, -8, -4, 12, 22, lambda i, j, k: None if (j == -8 and k < 20) else RAINBOW_BANDS[(k + j) % 6])
+    parts.append(mane)
+    ear = Part("EarL", "Head", joint=(2, -8.5, 21))
+    ear.box(1, 3, -9, -8, 21, 23, lambda i, j, k: P if (i == 1 and k == 21) else W)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 8, 11))
+    tail.box(-1, 1, 8, 10, 9, 13, lambda i, j, k: RAINBOW_BANDS[k % 6])
+    tail2 = Part("Tail2", "Tail", joint=(0, 9.5, 9))
+    tail2.box(-1, 1, 9, 12, 4, 10, lambda i, j, k: RAINBOW_BANDS[k % 6])
+    parts += [tail, tail2]
+    return assemble("Unicorn", parts)
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
-        "Panda": panda, "Owl": owl, "Tiger": tiger}
+        "Panda": panda, "Owl": owl, "Tiger": tiger,
+        "Lion": lion, "ArcticWolf": arctic_wolf, "Unicorn": unicorn}
 
 
 # ------------------------------------------------------------------------- animation
@@ -863,6 +969,50 @@ def tiger_idle(w):
     }
 
 
+def lion_idle(w):
+    shake = s(14 * w) * max(0.0, s(w)) ** 4                 # proud mane shake now and then
+    return {
+        "Body": ((0, 0, 0.015 * (1 - c(2 * w))), (1.5 * s(2 * w), 0, 0)),
+        "Head": ((0, 0, 0), (-4 + 3 * s(2 * w), 14 * shake, 10 * s(w + 2) * (1 - abs(shake)))),
+        "EarL": ((0, 0, 0), (0, -8 * abs(shake), 0)), "EarR": ((0, 0, 0), (0, 8 * abs(shake), 0)),
+        "Tail": ((0, 0, 0), (-6, 0, 16 * s(w))),
+        "Tail2": ((0, 0, 0), (12 * s(2 * w), 0, 26 * s(w - 1))),
+    }
+
+
+def wolf_idle(w):
+    howl = max(0.0, s(w)) ** 3                              # throws its head back to howl
+    return {
+        "Body": ((0, 0, -0.03 * howl), (-6 * howl, 0, 0)),
+        "Head": ((0, 0, 0.02 * howl), (-40 * howl, 0, 10 * s(2 * w) * (1 - howl))),
+        "LegBL": ((0, 0, 0), (-10 * howl, 0, 0)), "LegBR": ((0, 0, 0), (-10 * howl, 0, 0)),
+        "EarL": ((0, 0, 0), (12 * howl, 0, 0)), "EarR": ((0, 0, 0), (12 * howl, 0, 0)),
+        "Tail": ((0, 0, 0), (-10, 0, 12 * s(w))),
+        "Tail2": ((0, 0, 0), (6 * s(2 * w), 0, 20 * s(w - 1))),
+    }
+
+
+def unicorn_idle(w):
+    stamp = max(0.0, s(2 * w)) ** 4 * (s(w) > 0)            # paws the ground with a front hoof
+    return {
+        "Body": ((0, 0, 0.015 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, 0), (-6 * s(2 * w), 3 * s(w), 10 * s(w + 1))),
+        "Mane": ((0, 0, 0), (0, 10 * s(3 * w), 0)),
+        "LegFL": ((0, 0, 0.0), (-40 * stamp, 0, 0)),
+        "EarL": ((0, 0, 0), (0, -8 * max(0.0, s(4 * w)) ** 6, 0)),
+        "EarR": ((0, 0, 0), (0, 8 * max(0.0, s(4 * w + 1)) ** 6, 0)),
+        "Tail": ((0, 0, 0), (-4, 0, 14 * s(w))),
+        "Tail2": ((0, 0, 0), (8 * s(2 * w), 0, 22 * s(w - 1))),
+    }
+
+
+def prance(w):
+    p = walk(38, 0.1, 14, -6, 4)(w)
+    p["Head"] = ((0, 0, 0), (-8 * s(2 * w), 0, 4 * s(w)))
+    p["Mane"] = ((0, 0, 0), (12 * s(2 * w + 1), 6 * s(w), 0))
+    return p
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -876,6 +1026,9 @@ ANIMS = {
     "Panda": {"Idle": panda_idle, "Walk": heavy_walk},
     "Owl": {"Idle": owl_idle, "Walk": owl_walk},
     "Tiger": {"Idle": tiger_idle, "Walk": walk(30, 0.04, 14, -4, 3)},
+    "Lion": {"Idle": lion_idle, "Walk": walk(28, 0.04, 10, -4, 0)},
+    "ArcticWolf": {"Idle": wolf_idle, "Walk": walk(36, 0.07, 12, -8, 4)},
+    "Unicorn": {"Idle": unicorn_idle, "Walk": prance},
 }
 
 
