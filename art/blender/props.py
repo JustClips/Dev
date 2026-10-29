@@ -412,8 +412,13 @@ def car_details(s, W, L, wr, color, kind):
         # hub cap on the column's end, facing the driver
         n = d.normalized()
         p.append(cyl("FF4A4A", loc=tuple(col1 + n * 0.05 * s), r=0.14 * s, h=0.1 * s, rot=(tilt, 0, 0), verts=12))
+    if kind not in ("hover", "rocket"):
+        # one tailpipe under the rear bumper, coming out of the chassis' underside (the old
+        # pair ran straight through the bumper's ends)
+        tx = W / 2 - 1.2 * s
+        p.append(cyl("4A4A55", loc=(tx, L / 2 + 0.05 * s, wr + 0.1 * s), r=0.13 * s, h=0.5 * s, rot=(90, 0, 0), verts=10))
+        p.append(cyl("1E1E26", loc=(tx, L / 2 + 0.3 * s, wr + 0.1 * s), r=0.085 * s, h=0.04 * s, rot=(90, 0, 0), verts=10))
     for x in (-1, 1):
-        p.append(cyl("C8C8D2", loc=(x * (W / 2 - 0.9 * s), L / 2 + 0.2 * s, wr + 0.6 * s), r=0.18 * s, h=0.8 * s, rot=(90, 0, 0), verts=10))
         # mirrors on short stalks from the body's top edge (they used to float beside the car)
         base_pt = (x * (W / 2 - 0.45), -1.3 * s, top - 0.05 * s)
         tip = (x * (W / 2 + 0.05 * s), -1.3 * s, top + 0.55 * s)
@@ -421,9 +426,18 @@ def car_details(s, W, L, wr, color, kind):
         p.append(sphere("C8C8D2", loc=(tip[0] + x * 0.1 * s, tip[1], tip[2] + 0.12 * s), scale=(0.18 * s, 0.1 * s, 0.24 * s)))
     if kind in ("cart", "buggy", "crawler"):
         hy = 2.9 * s if kind != "crawler" else 2.6 * s
-        p.append(box(shade(color, -0.15), loc=(0, hy, wr + 2.0 * s), size=(W * 0.62, 1.6 * s, 1.6 * s), bevel=0.3 * s))
-        p.append(box("B4E6FF", loc=(0, hy - 0.81 * s, wr + 2.1 * s), size=(W * 0.4, 0.04 * s, 0.9 * s)))
-        p.append(box("A0A0AA", loc=(0, hy - 0.83 * s, wr + 1.85 * s), size=(W * 0.38, 0.04 * s, 0.35 * s)))
+        # dust hopper behind the seat: a bin with a darker hinged lid and a handle, and a
+        # window on its BACK showing the swept leaves (the window used to face the seat,
+        # so from behind it was a plain box)
+        hz = wr + 2.0 * s
+        p.append(box(shade(color, -0.15), loc=(0, hy, hz), size=(W * 0.62, 1.6 * s, 1.6 * s), bevel=0.3 * s))
+        p.append(box(shade(color, -0.4), loc=(0, hy, hz + 0.8 * s), size=(W * 0.62 + 0.12 * s, 1.7 * s, 0.16 * s), bevel=0.06 * s))
+        p.append(box("C8C8D2", loc=(0, hy + 0.84 * s, hz + 0.62 * s), size=(0.9 * s, 0.14 * s, 0.12 * s), bevel=0.04 * s))
+        back = hy + 0.8 * s
+        p.append(box("2A2A3A", loc=(0, back + 0.01 * s, hz - 0.05 * s), size=(W * 0.44, 0.04 * s, 0.95 * s), bevel=0.02 * s))
+        p.append(box("B4E6FF", loc=(0, back + 0.03 * s, hz - 0.05 * s), size=(W * 0.4, 0.04 * s, 0.85 * s)))
+        p.append(box("E09A3C", loc=(0, back + 0.05 * s, hz - 0.33 * s), size=(W * 0.38, 0.04 * s, 0.28 * s)))
+        p.append(box("C8642E", loc=(0, back + 0.06 * s, hz - 0.18 * s), size=(W * 0.3, 0.04 * s, 0.08 * s)))
     return p
 
 
