@@ -340,7 +340,8 @@ function WeatherService:Start()
 
 			for _, def in active() do
 				if def.Strikes and clock >= nextStrike then
-					nextStrike = clock + rng:NextNumber(Weather.StrikeEvery[1], Weather.StrikeEvery[2])
+					local every = def.StrikeEvery or Weather.StrikeEvery
+					nextStrike = clock + rng:NextNumber(every[1], every[2])
 					strike(def)
 				end
 				if def.DropEggs and clock >= nextDrop then

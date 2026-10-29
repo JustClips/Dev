@@ -29,6 +29,7 @@ export type WeatherDef = {
 	EggChance: number?, -- per growing egg per EggTick
 	Strikes: string?, -- "Lightning" | "Star"
 	StrikeMutation: string?,
+	StrikeEvery: { number }?, -- seconds between strikes (default Weather.StrikeEvery)
 	CashMult: number?,
 	LuckMult: number?,
 	GoldenMult: number?,
@@ -106,6 +107,7 @@ Weather.List = {
 		Color = Color3.fromRGB(255, 235, 140),
 		Blurb = "Falling stars hit eggs and make them Starstruck!",
 		Strikes = "Star",
+		StrikeEvery = { 9, 16 }, -- big impacts, so fewer of them than lightning
 		StrikeMutation = "Starstruck",
 		LuckMult = 1.5,
 	},

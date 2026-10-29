@@ -606,7 +606,7 @@ end
 local STAR = rgb(255, 230, 140)
 local function fallingStar(target: Vector3, seconds: number, onLand: (() -> ())?)
 	local from = target + Vector3.new(rng:NextNumber(-1, 1) * 160, 280, rng:NextNumber(-1, 1) * 160)
-	local star = part("Star", Vector3.new(2.2, 2.2, 2.2))
+	local star = part("Star", Vector3.new(3, 3, 3))
 	star.Shape = Enum.PartType.Ball
 	star.Material = Enum.Material.Neon
 	star.Color = STAR
@@ -651,24 +651,130 @@ local function fallingStar(target: Vector3, seconds: number, onLand: (() -> ())?
 	end)
 end
 
+-- Star impact: a white-gold flash and a column of light, two shockwaves and a glowing
+-- crater mark on the ground, sparks and embers, a dust ring, leaf bits thrown out, and the
+-- real leaves around it blown outward (LeafController:Blast). Close by, a small shake.
+local function starImpact(floor: Vector3, hitEgg: boolean)
+	local up = Vector3.new(0, 1, 0)
+	-- Flash: a neon ball that swells and fades, with a burst of light.
+	local orb = part("StarFlash", Vector3.new(3, 3, 3))
+	orb.Shape = Enum.PartType.Ball
+	orb.Material = Enum.Material.Neon
+	orb.Color = rgb(255, 250, 225)
+	orb.Transparency = 0
+	orb.Position = floor + up * 1.2
+	TweenService:Create(orb, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = Vector3.new(15, 15, 15), Transparency = 1 }):Play()
+	local light = Instance.new("PointLight")
+	light.Color = STAR
+	light.Range = 45
+	light.Brightness = 9
+	light.Parent = orb
+	TweenService:Create(light, TweenInfo.new(0.9, Enum.EasingStyle.Quad), { Brightness = 0, Range = 20 }):Play()
+	-- A column of light that shoots up and thins out.
+	local pillar = part("StarPillar", Vector3.new(10, 2.6, 2.6)) -- a cylinder runs along X
+	pillar.Shape = Enum.PartType.Cylinder
+	pillar.Material = Enum.Material.Neon
+	pillar.Color = STAR
+	pillar.Transparency = 0.15
+	pillar.CFrame = CFrame.new(floor + up * 5) * CFrame.Angles(0, 0, math.pi / 2)
+	TweenService:Create(pillar, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.new(70, 0.4, 0.4),
+		CFrame = CFrame.new(floor + up * 35) * CFrame.Angles(0, 0, math.pi / 2),
+		Transparency = 1,
+	}):Play()
+	task.delay(1, function()
+		orb:Destroy()
+		pillar:Destroy()
+	end)
+	-- Ground: a fast thin wave, a slower wide one, a glowing crater that fades.
+	shockRing(floor, rgb(255, 245, 200), 4, 48, 0.5)
+	task.delay(0.08, function()
+		shockRing(floor, STAR, 3, 30, 0.9)
+	end)
+	decalOnGround("Vfx_Spot", floor, 22, STAR, 0.05, 2.5)
+	decalOnGround("Vfx_Scorch", floor, 9, rgb(255, 200, 90), 0.3, 4)
+	-- Sparks out in every direction, then embers drifting up for a moment.
+	sparkBurst(floor + up * 1.5, STAR, 45, nil, 1.2)
+	sparkBurst(floor + up * 1, rgb(255, 255, 240), 20, "Vfx_Sparkle", 0.7)
+	local embers = part("StarEmbers", Vector3.new(6, 1, 6))
+	embers.Position = floor + up
+	local ember = emitter(embers, {
+		Texture = img("Vfx_Sparkle"),
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.2, 0.9), NumberSequenceKeypoint.new(1, 0) }),
+		Speed = NumberRange.new(3, 8),
+		Lifetime = NumberRange.new(0.8, 1.6),
+		EmissionDirection = Enum.NormalId.Top,
+		SpreadAngle = Vector2.new(30, 30),
+		Color = ColorSequence.new(rgb(255, 245, 190), rgb(255, 170, 70)),
+		LightEmission = 1,
+		LightInfluence = 0,
+		Rate = 45,
+	})
+	task.delay(0.8, function()
+		ember.Enabled = false
+	end)
+	task.delay(2.6, function()
+		embers:Destroy()
+	end)
+	-- Dust kicked up in a ring, and bits of leaf thrown out.
+	smokePuff(floor, rgb(205, 180, 140), 14, 5)
+	local debris = part("StarDebris", Vector3.new(4, 0.5, 4))
+	debris.Position = floor + up * 0.5
+	local bits = emitter(debris, {
+		Texture = img("Vfx_LeafMaple"),
+		Size = seq(1.1, 0.8),
+		Speed = NumberRange.new(22, 42),
+		Lifetime = NumberRange.new(0.9, 1.5),
+		EmissionDirection = Enum.NormalId.Top,
+		SpreadAngle = Vector2.new(65, 65),
+		Acceleration = Vector3.new(0, -45, 0),
+		Drag = 1.6,
+		Rotation = NumberRange.new(0, 360),
+		RotSpeed = NumberRange.new(-500, 500),
+		Color = ColorSequence.new(rgb(255, 160, 60), rgb(220, 70, 40)),
+		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.8, 0), NumberSequenceKeypoint.new(1, 1) }),
+		LightInfluence = 0.8,
+		Rate = 0,
+	})
+	bits:Emit(36)
+	task.delay(2, function()
+		debris:Destroy()
+	end)
+	if C and C.LeafController and C.LeafController.Blast then
+		C.LeafController:Blast(floor, 13)
+	end
+	soundAt("EggLand", floor, 1.4, 0.7)
+	soundAt("Sparkle", floor, 1.2)
+	if hitEgg then
+		crackle(floor, STAR, 2)
+	end
+	-- Only a small shake, and only when it lands close to you.
+	local dist = (floor - focus()).Magnitude
+	if dist < 45 then
+		shake(0.12 + 0.3 * (1 - dist / 45), 0.3)
+	end
+end
+
 local function starAt(position: Vector3, hitEgg: boolean)
 	local floor = if hitEgg then position else groundAt(position)
 	if (floor - focus()).Magnitude > 900 then
 		return
 	end
 	soundAt("EggFall", floor, 0.7, 1.2)
+	-- Where it will land glows brighter as it falls.
+	local mark = part("StarMark", Vector3.new(4, 0.05, 4))
+	mark.Position = floor + Vector3.new(0, 0.1, 0)
+	local markDecal = Instance.new("Decal")
+	markDecal.Face = Enum.NormalId.Top
+	markDecal.Texture = img("Vfx_Ring")
+	markDecal.Color3 = STAR
+	markDecal.Transparency = 0.9
+	markDecal.Parent = mark
+	TweenService:Create(mark, TweenInfo.new(1.1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = Vector3.new(12, 0.05, 12) }):Play()
+	TweenService:Create(markDecal, TweenInfo.new(1.1), { Transparency = 0.25 }):Play()
 	fallingStar(floor, 1.1, function()
-		sparkBurst(floor + Vector3.new(0, 1.5, 0), STAR, 40, nil, 1.1)
-		shockRing(floor, STAR, 3, 24, 0.6)
-		decalOnGround("Vfx_Spot", floor, 18, STAR, 0.2, 1.5)
-		soundAt("Sparkle", floor, 1.2)
-		if hitEgg then
-			crackle(floor, STAR, 2)
-		end
-		local dist = (floor - focus()).Magnitude
-		if dist < 60 then
-			shake(0.25 * (1 - dist / 60), 0.2)
-		end
+		mark:Destroy()
+		starImpact(floor, hitEgg)
 	end)
 end
 
@@ -1236,7 +1342,7 @@ local function starfall(scene: Scene)
 		if os.clock() < nextStar then
 			return
 		end
-		nextStar = os.clock() + rng:NextNumber(0.12, 0.35)
+		nextStar = os.clock() + rng:NextNumber(0.6, 1.4)
 		local start = Vector3.new(
 			rng:NextNumber(MAP_MIN.X - 300, MAP_MAX.X + 300),
 			groundY + rng:NextNumber(220, 340),

@@ -106,6 +106,7 @@ type Leaf = {
 	color: Color3,
 	phase: number,
 	kicked: number,
+	reach: number?, -- how far it may end up from its spot (blasts throw leaves further)
 }
 type Chunk = { ids: { number }, center: Vector3, radius: number, built: boolean }
 
@@ -924,7 +925,7 @@ end
 
 ------------------------------------------------------------------ wind
 
-type GustLeaf = { leaf: Leaf, at: number, dir: Vector3 }
+type GustLeaf = { leaf: Leaf, at: number, dir: Vector3, force: Vector3? }
 local gustQueue: { GustLeaf } = {}
 local nextGust = os.clock() + 6
 local flutterAcc = 0
@@ -968,7 +969,7 @@ local function stepWind(now: number, dt: number)
 			table.remove(gustQueue, i)
 			local tile = g.leaf.tile
 			if tile.leaves and tiles[tile.id] == tile then
-				blow(g.leaf, g.dir * (4 + math.random() * 5) + Vector3.new(0, 2 + math.random() * 3, 0), now)
+				blow(g.leaf, g.force or (g.dir * (4 + math.random() * 5) + Vector3.new(0, 2 + math.random() * 3, 0)), now)
 			end
 		end
 	end
@@ -1011,8 +1012,9 @@ local function stepMoving(now: number, dt: number)
 			v = Vector3.new(v.X * 0.5, 0, v.Z * 0.5)
 		end
 		local flat = Vector3.new(o.X, 0, o.Z)
-		if flat.Magnitude > MAX_DRIFT then
-			flat = flat.Unit * MAX_DRIFT
+		local limit = leaf.reach or MAX_DRIFT
+		if flat.Magnitude > limit then
+			flat = flat.Unit * limit
 			o = Vector3.new(flat.X, o.Y, flat.Z)
 		end
 		local r = leaf.rot + leaf.spin * dt
@@ -1406,6 +1408,9 @@ end
 local function stepShaking(now: number)
 	for tile, started in shaking do
 		local t = (now - started) / SHAKE_TIME
+		if t < 0 then
+			continue -- a blast wave that hasn't reached this tile yet
+		end
 		if t >= 1 or tiles[tile.id] ~= tile then
 			shaking[tile] = nil
 			if tiles[tile.id] == tile then
@@ -1531,6 +1536,51 @@ function LeafController:Disturb(position: Vector3, radius: number)
 			end
 		end
 	end)
+end
+
+-- Something slammed into the ground here (a falling star): a wave runs out from the spot.
+-- Leaves inside `radius` are thrown up and outward, piles further out (to twice the
+-- radius) ruffle and their leaves hop as the wave passes.
+local BLAST_WAVE_SPEED = 70 -- studs a second the wave travels
+local BLAST_REACH = 9 -- studs a thrown leaf may land from its spot
+function LeafController:Blast(position: Vector3, radius: number)
+	local now = os.clock()
+	local outer = radius * 2
+	local thrown = 0
+	Grid.forEachInRadius(position, outer, function(id)
+		local tile = tiles[id]
+		if not tile then
+			return
+		end
+		local centre = tile.base.Position
+		local d = flatDistance(centre, position)
+		if d > outer then
+			return
+		end
+		local arrive = now + d / BLAST_WAVE_SPEED
+		shaking[tile] = arrive
+		for _, leaf in tile.leaves or {} do
+			local p = leaf.home + leaf.off
+			local dx, dz = p.X - position.X, p.Z - position.Z
+			local ld = math.sqrt(dx * dx + dz * dz)
+			local dir = if ld > 0.05 then Vector3.new(dx / ld, 0, dz / ld) else Vector3.new(math.random() - 0.5, 0, math.random() - 0.5).Unit
+			local force
+			if ld <= radius then
+				local power = 1 - ld / radius * 0.55
+				force = dir * (12 + math.random() * 10) * power + Vector3.new(0, (9 + math.random() * 7) * power, 0)
+				leaf.reach = BLAST_REACH
+				thrown += 1
+			elseif math.random() < 0.6 then
+				force = dir * (1 + math.random() * 2) + Vector3.new(0, 1.5 + math.random() * 2.5, 0)
+			end
+			if force then
+				table.insert(gustQueue, { leaf = leaf, at = now + ld / BLAST_WAVE_SPEED + math.random() * 0.05, dir = dir, force = force })
+			end
+		end
+	end)
+	if thrown > 0 then
+		playAt("RustleBig", position, 1.2, 1, 0.85 + math.random() * 0.1)
+	end
 end
 
 -- How many tiles are drawn right now (debug / tests).
