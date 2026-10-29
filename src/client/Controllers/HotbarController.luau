@@ -2,7 +2,7 @@
 -- Our own hotbar (the default Roblox backpack is hidden):
 --   1 = your sweeping tool (equip / put away)
 --   2 = your car (spawn under you / put away). With no car it points you to the Garage.
---   3 = your bag (inventory). A badge shows eggs ready to open / waiting to be placed.
+--   3 = your bag (inventory). A badge counts what's new in it since you last opened it.
 --   4 (or G) = drop the egg on your head. Only shown while you carry one.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -114,19 +114,9 @@ local function render(_: any?)
 	carName.TextColor3 = if car then INK else GREY
 	carIcon.Image = if car then AssetLibrary.carIcon(car.Id) else AssetLibrary.image("Icon_Lock")
 	setSelected(carSlot, data.InVehicle)
-	-- Badge: eggs ready to open, else eggs waiting for a free incubator.
-	local ready, waiting = 0, 0
-	for _, entry in data.Hatching do
-		if entry.EndsAt <= State.now() then
-			ready += 1
-		end
-	end
-	if #data.Hatching < data.Incubators then
-		for _ in data.Eggs or {} do
-			waiting += 1
-		end
-	end
-	Ui.setBadge(bagSlot:FindFirstChild("Badge") :: Frame, if ready > 0 then ready else waiting)
+	-- Badge: what's new in the bag since you last opened it (ready eggs in your park have
+	-- their own badge on the Eggs button, so they don't count here).
+	Ui.setBadge(bagSlot:FindFirstChild("Badge") :: Frame, C.InventoryController:NewCount())
 	setSelected(toolSlot, not data.InVehicle and sweepTool(player.Character) ~= nil)
 	local carrying = #(data.CarriedEggs or {})
 	dropSlot.Visible = carrying > 0

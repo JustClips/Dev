@@ -358,11 +358,11 @@
         "Position": [
          [
           1,
-          2
+          4
          ],
          [
           0,
-          -7
+          -8
          ]
         ],
         "AnchorPoint": [
@@ -377,13 +377,45 @@
        },
        "children": [
         {
+         "name": "Round",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           1,
+           0
+          ]
+         }
+        },
+        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "ApplyStrokeMode": "Border"
+         }
+        },
+        {
+         "name": "Gloss",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.5,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#B8B8B8"
+            ]
+           ]
+          },
+          "Rotation": 90
          }
         },
         {
@@ -726,11 +758,11 @@
         "Position": [
          [
           1,
-          2
+          4
          ],
          [
           0,
-          -7
+          -8
          ]
         ],
         "AnchorPoint": [
@@ -745,13 +777,45 @@
        },
        "children": [
         {
+         "name": "Round",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           1,
+           0
+          ]
+         }
+        },
+        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "ApplyStrokeMode": "Border"
+         }
+        },
+        {
+         "name": "Gloss",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.5,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#B8B8B8"
+            ]
+           ]
+          },
+          "Rotation": 90
          }
         },
         {
@@ -1094,11 +1158,11 @@
         "Position": [
          [
           1,
-          2
+          4
          ],
          [
           0,
-          -7
+          -8
          ]
         ],
         "AnchorPoint": [
@@ -1113,13 +1177,45 @@
        },
        "children": [
         {
+         "name": "Round",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           1,
+           0
+          ]
+         }
+        },
+        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "ApplyStrokeMode": "Border"
+         }
+        },
+        {
+         "name": "Gloss",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.5,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#B8B8B8"
+            ]
+           ]
+          },
+          "Rotation": 90
          }
         },
         {
@@ -1462,11 +1558,11 @@
         "Position": [
          [
           1,
-          2
+          4
          ],
          [
           0,
-          -7
+          -8
          ]
         ],
         "AnchorPoint": [
@@ -1481,13 +1577,45 @@
        },
        "children": [
         {
+         "name": "Round",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           1,
+           0
+          ]
+         }
+        },
+        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "ApplyStrokeMode": "Border"
+         }
+        },
+        {
+         "name": "Gloss",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.5,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#B8B8B8"
+            ]
+           ]
+          },
+          "Rotation": 90
          }
         },
         {
@@ -1830,11 +1958,11 @@
         "Position": [
          [
           1,
-          2
+          4
          ],
          [
           0,
-          -7
+          -8
          ]
         ],
         "AnchorPoint": [
@@ -1849,13 +1977,45 @@
        },
        "children": [
         {
+         "name": "Round",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           1,
+           0
+          ]
+         }
+        },
+        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "ApplyStrokeMode": "Border"
+         }
+        },
+        {
+         "name": "Gloss",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.5,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#B8B8B8"
+            ]
+           ]
+          },
+          "Rotation": 90
          }
         },
         {
@@ -2198,11 +2358,11 @@
         "Position": [
          [
           1,
-          2
+          4
          ],
          [
           0,
-          -7
+          -8
          ]
         ],
         "AnchorPoint": [
@@ -2217,13 +2377,45 @@
        },
        "children": [
         {
+         "name": "Round",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           1,
+           0
+          ]
+         }
+        },
+        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "ApplyStrokeMode": "Border"
+         }
+        },
+        {
+         "name": "Gloss",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.5,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#B8B8B8"
+            ]
+           ]
+          },
+          "Rotation": 90
          }
         },
         {
@@ -7170,11 +7362,11 @@
         "Position": [
          [
           1,
-          2
+          4
          ],
          [
           0,
-          -7
+          -8
          ]
         ],
         "AnchorPoint": [
@@ -7189,13 +7381,45 @@
        },
        "children": [
         {
+         "name": "Round",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           1,
+           0
+          ]
+         }
+        },
+        {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
           "Color": "#FFFFFF",
           "Thickness": 2.5,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "ApplyStrokeMode": "Border"
+         }
+        },
+        {
+         "name": "Gloss",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.5,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#B8B8B8"
+            ]
+           ]
+          },
+          "Rotation": 90
          }
         },
         {

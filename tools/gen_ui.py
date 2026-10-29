@@ -192,10 +192,13 @@ BADGE_RED = "#FF2E4D"
 
 
 def badge(z=6, px=24):
-    """Count badge (Pet Sim style but square): red, white outline, white number. Controllers
-    set it with Ui.setBadge, which widens it for 2-3 digits and pops it when it changes."""
-    return frame("Badge", U(0, px, 0, px), U(1, 2, 0, -7), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, children=[
-        node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2.5, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
+    """Count badge: a round red bubble (Dev asked for a circle) with a white ring, a glossy
+    top and a white number. The one exception to the no-rounded-corners rule. Controllers
+    set it with Ui.setBadge, which widens it into a pill for 2-3 digits and pops it."""
+    return frame("Badge", U(0, px, 0, px), U(1, 4, 0, -8), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, children=[
+        node("Round", "UICorner", {"CornerRadius": [1, 0]}),
+        node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2.5, "ApplyStrokeMode": "Border"}),
+        node("Gloss", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.5, WHITE], [1, "#B8B8B8"]]}, "Rotation": 90}),
         text("Label", "1", U(1, 0, 1, 0), ts=px - 9, display=True, stroke=2, ZIndex=z + 1),
     ])
 

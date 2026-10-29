@@ -12,7 +12,7 @@ local Grid = require(Shared.Grid)
 
 local LeafMeshes = {}
 
-export type Look = { kinds: { string }, colors: { Color3 } }
+export type Look = { name: string, kinds: { string }, colors: { Color3 } }
 
 local function rgb(r: number, g: number, b: number): Color3
 	return Color3.fromRGB(r, g, b)
@@ -21,22 +21,27 @@ end
 -- What lies on the ground in each kind of zone.
 local LOOKS: { [string]: Look } = {
 	Autumn = {
+		name = "Autumn",
 		kinds = { "Leaf_Maple", "Leaf_Maple", "Leaf_Oak", "Leaf_Birch" },
 		colors = { rgb(236, 118, 38), rgb(214, 66, 40), rgb(244, 186, 52), rgb(170, 98, 44), rgb(228, 148, 40), rgb(196, 52, 36) },
 	},
 	Park = {
+		name = "Park",
 		kinds = { "Leaf_Oak", "Leaf_Birch", "Leaf_Maple" },
 		colors = { rgb(112, 176, 62), rgb(150, 196, 70), rgb(196, 204, 70), rgb(232, 182, 52), rgb(92, 150, 58) },
 	},
 	Seaweed = {
+		name = "Seaweed",
 		kinds = { "Leaf_Seaweed" },
 		colors = { rgb(58, 140, 82), rgb(40, 112, 92), rgb(104, 162, 62), rgb(132, 120, 52) },
 	},
 	Paper = {
+		name = "Paper",
 		kinds = { "Leaf_Paper", "Leaf_Paper", "Leaf_Maple" },
 		colors = { rgb(246, 246, 240), rgb(232, 226, 210), rgb(212, 226, 242), rgb(244, 232, 160) },
 	},
 	Snow = {
+		name = "Snow",
 		kinds = { "Leaf_Snow" },
 		colors = { rgb(246, 250, 255), rgb(226, 236, 250), rgb(236, 244, 255) },
 	},

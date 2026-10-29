@@ -15,6 +15,11 @@
 -- image. Walking or driving through kicks them up and aside, they flutter down and lie where
 -- they land; sweeping makes them hop; clearing a tile sends each leaf flying into the
 -- nozzle on its own path while the ground image fades. Trash uses the Trash_* meshes.
+-- Once the Clump_* meshes load, every tile is a real 3D pile instead of an image (Drift_*
+-- heaps pile up against fences and edges). Each tool clears differently: brooms push the
+-- leaves along the ground and flick them into your backpack, the leaf blower throws them
+-- up and away, vacuums (and cars) suck them into the nozzle. Wind gusts lift leaves now
+-- and then, single leaves flutter, and walking through leaves rustles.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -22,12 +27,14 @@ local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
 local LeafMeshes = require(Client.LeafMeshes)
+local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local Assets = require(Shared.Config.Assets)
 local Grid = require(Shared.Grid)
 local Net = require(Shared.Net)
+local Sounds = require(Shared.Config.Sounds)
 
 local LeafController = {}
 
@@ -48,7 +55,8 @@ local GOLD_IMAGE = "Ground_Gold"
 -- 3D leaves (only near you, so phones stay smooth).
 local MESH_DISTANCE = if TOUCH then 30 else 44 -- tiles closer than this get 3D leaves
 local MESH_KEEP = MESH_DISTANCE + 10
-local LEAVES_PER_TILE = if TOUCH then 3 else 5
+local LEAVES_PER_TILE = if TOUCH then 4 else 7
+local EDGE_LEAVES = 3 -- extra leaves on tiles against a fence or edge (drifts)
 local EXTRA_FLYERS = if TOUCH then 1 else 2 -- more leaves fly off a cleared tile than lie on it
 local MAX_LEAF_FLIGHTS = if TOUCH then 220 else 450
 local DETAIL_BUDGET = 40 -- tiles given leaves per pass
@@ -56,6 +64,15 @@ local MAX_DRIFT = 3 -- studs a kicked leaf can end up from its spot
 local KICK_SPEED = 3 -- walking slower than this doesn't move leaves
 local HOP = 0.25 -- part of a flight spent hopping up before the pull starts
 local DEFAULT_GROUND = { "Ground_Autumn1", "Ground_Autumn2", "Ground_Autumn3" }
+-- 3D piles (models thread): how many variants each look has.
+local CLUMPS = { Autumn = 4, Park = 3, Seaweed = 2, Paper = 2, Snow = 2 }
+local DRIFTS = { Autumn = 2, Park = 1, Snow = 1 }
+local GOLD_CLUMP = "Clump_Gold1"
+local DRIFT_CHANCE = 0.65 -- edge tiles that get a drift heap
+-- Wind
+local GUST_EVERY = { 8, 15 } -- seconds between gusts
+local GUST_SPEED = 24 -- studs per second the gust front travels
+local GUST_SHARE = 0.35 -- part of the leaves a gust lifts
 
 type Tile = {
 	id: number,
@@ -67,7 +84,11 @@ type Tile = {
 	trashBase: CFrame?,
 	trashScale: number,
 	leaves: { Leaf }?,
+	props: { Prop }?,
+	edge: Vector3?,
 }
+-- A solid mesh on a tile (its pile or drift heap). rel is relative to the tile's part.
+type Prop = { part: BasePart, name: string, scale: Vector3, rel: CFrame, clump: boolean }
 -- A 3D leaf lying on a tile. `off` is how far it was kicked from its spot.
 type Leaf = {
 	part: BasePart,
@@ -96,14 +117,20 @@ local ready = false
 local queued: { () -> () } = {}
 
 type Fly = { tile: Tile, start: number, from: CFrame, target: (() -> Vector3)?, spin: number, swirl: number, fade: boolean }
+local clumpsOn = false -- the Clump_* meshes are loaded and tiles use them
 local flying: { Fly } = {}
 type Grow = { tile: Tile, start: number }
 local growing: { Grow } = {}
 local shaking: { [Tile]: number } = {}
 local detailed: { [Tile]: boolean } = {} -- tiles that have 3D leaves
+local detailList: { Tile } = {} -- the same tiles as a list (random picks)
 local moving: { [Leaf]: boolean } = {} -- kicked leaves still in the air or sliding
+-- Who cleared a tile: where their leaves go and how (tool style).
+type Sweeper = { root: Vector3, target: () -> Vector3, style: string }
 type LeafFlight = {
 	part: BasePart,
+	style: string,
+	push: Vector3,
 	from: Vector3,
 	rot: Vector3,
 	spin: Vector3,
@@ -254,10 +281,162 @@ local function leafColor(id: number, k: number, look: LeafMeshes.Look): Color3
 	return look.colors[math.floor(Grid.hash(id, 100 + k) * #look.colors) + 1]
 end
 
+------------------------------------------------------------------ 3D piles
+
+local meshTemplates: { [string]: BasePart } = {}
+local meshPools: { [string]: { BasePart } } = {}
+
+local function takeMesh(name: string): BasePart?
+	local list = meshPools[name]
+	local part = list and table.remove(list)
+	if part then
+		return part
+	end
+	local t = meshTemplates[name]
+	if not t then
+		local model = AssetLibrary.get(name)
+		local found = model and model:FindFirstChildWhichIsA("BasePart")
+		if not found then
+			if model then
+				model:Destroy()
+			end
+			return nil
+		end
+		found.Parent = nil
+		model:Destroy()
+		found.Anchored = true
+		found.CanCollide = false
+		found.CanQuery = false
+		found.CanTouch = false
+		found.CastShadow = false
+		found.Name = name
+		found:SetAttribute("BaseSize", found.Size)
+		meshTemplates[name] = found
+		t = found
+	end
+	return (t :: BasePart):Clone()
+end
+
+local function giveMesh(part: BasePart)
+	part.Parent = nil
+	local list = meshPools[part.Name]
+	if not list then
+		list = {}
+		meshPools[part.Name] = list
+	end
+	table.insert(list, part)
+end
+
+local function clumpName(id: number, look: LeafMeshes.Look): string
+	local n = CLUMPS[look.name] or 0
+	return `Clump_{look.name}{math.floor(Grid.hash(id, 15) * n) + 1}`
+end
+
+-- The side of a tile that has no tile next to it (a fence, wall, path or the zone's edge).
+local function edgeOf(id: number): Vector3?
+	local zg = Grid.zoneGridOfId(id)
+	if not zg then
+		return nil
+	end
+	local index = id - zg.FirstId
+	local col, row = index % zg.Cols, index // zg.Cols
+	local function missing(c: number, r: number): boolean
+		return c < 0 or r < 0 or c >= zg.Cols or r >= zg.Rows or not zg.Exists[r * zg.Cols + c]
+	end
+	if missing(col + 1, row) then
+		return Vector3.new(1, 0, 0)
+	elseif missing(col - 1, row) then
+		return Vector3.new(-1, 0, 0)
+	elseif missing(col, row + 1) then
+		return Vector3.new(0, 0, 1)
+	elseif missing(col, row - 1) then
+		return Vector3.new(0, 0, -1)
+	end
+	return nil
+end
+
+-- Puts the tile's meshes where its part is, at `k` times their size (grow / shrink).
+local function placeProps(tile: Tile, k: number, sink: number?)
+	local props = tile.props
+	if not props then
+		return
+	end
+	local frame = tile.part.CFrame
+	for _, prop in props do
+		local base = LeafMeshes.baseSize(prop.part)
+		local size = base * prop.scale * math.max(k, 0.02)
+		prop.part.Size = size
+		prop.part.CFrame = frame * prop.rel * CFrame.new(0, size.Y / 2 - 0.03 - (sink or 0), 0)
+	end
+end
+
+local function addProp(tile: Tile, name: string, scale: Vector3, rel: CFrame, clump: boolean): Prop?
+	local part = takeMesh(name)
+	if not part then
+		return nil
+	end
+	local prop: Prop = { part = part, name = name, scale = scale, rel = rel, clump = clump }
+	local props = tile.props or {}
+	tile.props = props
+	table.insert(props, prop)
+	part.Parent = folder
+	return prop
+end
+
+local function dropProps(tile: Tile)
+	for _, prop in tile.props or {} do
+		giveMesh(prop.part)
+	end
+	tile.props = nil
+end
+
+-- The pile and, against an edge, a drift heap.
+local function buildProps(tile: Tile)
+	local id = tile.id
+	local zg = Grid.zoneGridOfId(id)
+	if not zg then
+		return
+	end
+	local look = LeafMeshes.lookOf(id)
+	local s = zg.Zone.TileSize / 4
+	local spread = s * (0.92 + Grid.hash(id, 16) * 0.2)
+	local height = s * (0.8 + Grid.hash(id, 17) * 0.5)
+	local name = if golden[id] then GOLD_CLUMP else clumpName(id, look)
+	local yaw = CFrame.Angles(0, Grid.hash(id, 18) * math.pi * 2, 0)
+	if addProp(tile, name, Vector3.new(spread, height, spread), yaw, true) then
+		tile.decal.Transparency = 1
+	end
+	local edge = tile.edge
+	local drifts = DRIFTS[look.name] or DRIFTS.Autumn
+	if edge and Grid.hash(id, 14) < DRIFT_CHANCE then
+		local name2 = `Drift_{if DRIFTS[look.name] then look.name else "Autumn"}{math.floor(Grid.hash(id, 19) * drifts) + 1}`
+		-- High side (+Z) against the edge, sloping down toward the open ground.
+		local centre = tile.base.Position
+		local at = centre + edge * zg.Zone.TileSize * 0.3
+		local world = CFrame.lookAt(at, at - edge)
+		addProp(tile, name2, Vector3.new(s, s * (0.85 + Grid.hash(id, 20) * 0.4), s), tile.part.CFrame:ToObjectSpace(world), false)
+	end
+	placeProps(tile, 1)
+end
+
 local function setGoldLook(tile: Tile, on: boolean)
 	local zg = Grid.zoneGridOfId(tile.id)
 	local ground = zg and zg.Zone.Ground or DEFAULT_GROUND
 	tile.decal.Texture = image(if on then GOLD_IMAGE else ground[math.floor(Grid.hash(tile.id, 3) * #ground) + 1])
+	if tile.props then
+		for _, prop in tile.props do
+			if prop.clump then
+				local name = if on then GOLD_CLUMP else clumpName(tile.id, LeafMeshes.lookOf(tile.id))
+				local part = if name ~= prop.name then takeMesh(name) else nil
+				if part then
+					giveMesh(prop.part)
+					prop.part, prop.name = part, name
+					part.Parent = folder
+				end
+			end
+		end
+		placeProps(tile, 1)
+	end
 	if tile.leaves then
 		local look = LeafMeshes.lookOf(tile.id)
 		for k, leaf in tile.leaves do
@@ -300,8 +479,11 @@ local function makeTile(id: number): Tile?
 	part.CFrame = base
 	local decal = part:FindFirstChild("Ground") :: Decal
 	decal.Transparency = 0
-	local tile: Tile = { id = id, part = part, decal = decal, base = base, size = s, trashScale = 1 }
+	local tile: Tile = { id = id, part = part, decal = decal, base = base, size = s, trashScale = 1, edge = edgeOf(id) }
 	setGoldLook(tile, golden[id] == true)
+	if clumpsOn then
+		buildProps(tile)
+	end
 	local kind = Grid.trashKind(id)
 	if kind then
 		local at = CFrame.new(position.X, zg.Zone.GroundY + 0.05, position.Z) * CFrame.Angles(0, Grid.hash(id, 6) * math.pi * 2, 0)
@@ -335,11 +517,19 @@ local function addLeaves(tile: Tile)
 	local look = LeafMeshes.lookOf(id)
 	local center = tile.base.Position
 	local groundY = zg.Zone.GroundY + 0.07
-	local n = if tile.trash then 2 else LEAVES_PER_TILE
+	local edge = tile.edge
+	local n = if tile.trash then 2 else LEAVES_PER_TILE + (if edge then EDGE_LEAVES else 0)
+	local pile = if tile.props then 0.28 * size / 4 else 0 -- leaves lie on top of a 3D pile
 	local leaves = {}
 	for k = 1, n do
 		local r = size * 0.55 * math.sqrt(Grid.hash(id, 20 + k))
 		local a = Grid.hash(id, 40 + k) * math.pi * 2
+		local onTop = pile * math.max(0, 1 - r / (size * 0.55))
+		local shift = Vector3.zero
+		if edge and k > n - EDGE_LEAVES then
+			shift = edge * size * 0.35 -- the extra ones heap up against the edge
+			onTop += pile
+		end
 		local kind = look.kinds[math.floor(Grid.hash(id, 80 + k) * #look.kinds) + 1]
 		local color = if golden[id] then LeafMeshes.Gold else leafColor(id, k, look)
 		local scale = size / 4 * (0.9 + Grid.hash(id, 60 + k) * 0.6)
@@ -350,7 +540,7 @@ local function addLeaves(tile: Tile)
 		local leaf: Leaf = {
 			part = part,
 			tile = tile,
-			home = Vector3.new(center.X + math.cos(a) * r, groundY + k * 0.015, center.Z + math.sin(a) * r),
+			home = Vector3.new(center.X + math.cos(a) * r, groundY + onTop + k * 0.015, center.Z + math.sin(a) * r) + shift,
 			off = Vector3.zero,
 			vel = Vector3.zero,
 			rot = Vector3.new(Grid.hash(id, 120 + k) * 0.5 - 0.25, Grid.hash(id, 140 + k) * math.pi * 2, Grid.hash(id, 160 + k) * 0.5 - 0.25),
@@ -386,6 +576,7 @@ local function release(tile: Tile)
 		tiles[tile.id] = nil
 	end
 	stripLeaves(tile)
+	dropProps(tile)
 	shaking[tile] = nil
 	local sparkle = tile.part:FindFirstChild("Gold")
 	if sparkle then
@@ -451,6 +642,21 @@ local function refreshChunks()
 	if not at then
 		return
 	end
+	-- The 3D piles just finished loading: rebuild what's drawn so every tile gets one.
+	if not clumpsOn and AssetLibrary.has("Clump_Autumn1") then
+		clumpsOn = true
+		for _, chunk in chunks do
+			if chunk.built then
+				chunk.built = false
+				for _, id in chunk.ids do
+					local tile = tiles[id]
+					if tile then
+						release(tile)
+					end
+				end
+			end
+		end
+	end
 	local flat = Vector3.new(at.X, 0, at.Z)
 	local wanted = {}
 	for _, chunk in chunks do
@@ -510,6 +716,10 @@ local function refreshDetail()
 	if not LeafMeshes.ready() then
 		return
 	end
+	table.clear(detailList)
+	for tile in detailed do
+		table.insert(detailList, tile)
+	end
 	local budget = DETAIL_BUDGET
 	Grid.forEachInRadius(at, MESH_DISTANCE, function(id)
 		if budget <= 0 then
@@ -532,8 +742,71 @@ local function refreshDetail()
 	end)
 end
 
+------------------------------------------------------------------ sounds
+
+-- Short clips played where the leaves are (positional, cut off with a quick fade).
+local soundRoot: BasePart? = nil
+type Voice = { attachment: Attachment, sound: Sound, token: number }
+local voices: { Voice } = {}
+local nextVoice = 1
+local MAX_VOICES = 6
+
+local function playAt(name: string, position: Vector3, duration: number, volume: number, pitch: number)
+	local def = Sounds.Sfx[name]
+	local root = soundRoot
+	if not def or def.Id == "" or not root then
+		return
+	end
+	local voice = voices[nextVoice]
+	if not voice then
+		local attachment = Instance.new("Attachment")
+		attachment.Parent = root
+		local sound = Instance.new("Sound")
+		sound.RollOffMinDistance = 10
+		sound.RollOffMaxDistance = 90
+		sound.SoundGroup = Ui.soundGroup("SFX")
+		sound.Parent = attachment
+		voice = { attachment = attachment, sound = sound, token = 0 }
+		voices[nextVoice] = voice
+	end
+	nextVoice = nextVoice % MAX_VOICES + 1
+	local v = voice :: Voice
+	v.token += 1
+	local mine = v.token
+	v.attachment.Position = position
+	if v.sound.SoundId ~= def.Id then
+		v.sound.SoundId = def.Id
+	end
+	v.sound.Volume = def.Volume * volume
+	v.sound.PlaybackSpeed = pitch
+	v.sound.TimePosition = 0
+	v.sound:Play()
+	task.delay(duration, function()
+		if v.token ~= mine then
+			return
+		end
+		local steps = 6
+		for i = steps - 1, 0, -1 do
+			task.wait(0.025)
+			if v.token ~= mine then
+				return
+			end
+			v.sound.Volume = def.Volume * volume * i / steps
+		end
+		v.sound:Stop()
+	end)
+end
+
+local RUSTLES = { Autumn = "Rustle", Park = "Rustle", Seaweed = "RustleSeaweed", Paper = "RustlePaper", Snow = "RustleSnow" }
+
+local function rustleName(id: number): string
+	return RUSTLES[LeafMeshes.lookOf(id).name] or "Rustle"
+end
+
 -- Someone walks or drives through: leaves in front of them get kicked up and aside.
-local function kick(at: Vector3, radius: number, velocity: Vector3, now: number)
+-- Returns how many leaves moved and one of their tiles (for the rustle sound).
+local function kick(at: Vector3, radius: number, velocity: Vector3, now: number): (number, number?)
+	local count, someTile = 0, nil
 	local speed = Vector3.new(velocity.X, 0, velocity.Z).Magnitude
 	Grid.forEachInRadius(at, radius + 2, function(id)
 		local tile = tiles[id]
@@ -561,8 +834,23 @@ local function kick(at: Vector3, radius: number, velocity: Vector3, now: number)
 			leaf.spin += Vector3.new(math.random() * 16 - 8, math.random() * 12 - 6, math.random() * 16 - 8) * push
 			leaf.kicked = now
 			moving[leaf] = true
+			count += 1
+			someTile = id
 		end
 	end)
+	return count, someTile
+end
+
+local lastRustle: { [Player]: number } = {}
+
+-- Rustle where a player's feet (or car) went through leaves.
+local function rustle(player: Player, at: Vector3, count: number, id: number?, now: number, speed: number)
+	if count <= 0 or not id or now - (lastRustle[player] or 0) < 0.28 then
+		return
+	end
+	lastRustle[player] = now
+	local volume = math.min(1, 0.35 + count / 6) * math.clamp(speed / 16, 0.5, 1)
+	playAt(rustleName(id), at, 0.45, volume, 0.9 + math.random() * 0.25)
 end
 
 local function kickers(now: number)
@@ -586,13 +874,80 @@ local function kickers(now: number)
 			if Vector3.new(v.X, 0, v.Z).Magnitude > KICK_SPEED then
 				local brush = seat.Parent:FindFirstChild("Brush", true)
 				local p = if brush and brush:IsA("BasePart") then brush.Position else seat.Position
-				kick(Vector3.new(p.X, root.Position.Y - 3, p.Z), 5, v, now)
+				local count, id = kick(Vector3.new(p.X, root.Position.Y - 3, p.Z), 5, v, now)
+				rustle(player, p, count, id, now, v.Magnitude)
 			end
 		else
 			local v = root.AssemblyLinearVelocity
 			if Vector3.new(v.X, 0, v.Z).Magnitude > KICK_SPEED then
 				local feet = root.Position - Vector3.new(0, humanoid.HipHeight + root.Size.Y / 2, 0)
-				kick(feet, 2.4, v, now)
+				local count, id = kick(feet, 2.4, v, now)
+				rustle(player, feet, count, id, now, v.Magnitude)
+			end
+		end
+	end
+end
+
+------------------------------------------------------------------ wind
+
+type GustLeaf = { leaf: Leaf, at: number, dir: Vector3 }
+local gustQueue: { GustLeaf } = {}
+local nextGust = os.clock() + 6
+local flutterAcc = 0
+local FLUTTER_RATE = 8 -- single leaves a second that lift a little on their own
+
+local function blow(leaf: Leaf, force: Vector3, now: number)
+	leaf.vel += force
+	leaf.spin += Vector3.new(math.random() * 10 - 5, math.random() * 8 - 4, math.random() * 10 - 5)
+	leaf.kicked = now
+	moving[leaf] = true
+end
+
+-- A gust sweeps across the area: its front passes over the leaves one row at a time,
+-- lifting some and carrying them a little way downwind.
+local function startGust(now: number)
+	local at = focus()
+	if not at or #detailList == 0 then
+		return
+	end
+	local angle = 0.35 + (math.random() * 2 - 1) * 0.7
+	local dir = Vector3.new(math.cos(angle), 0, math.sin(angle))
+	for tile in detailed do
+		for _, leaf in tile.leaves or {} do
+			if math.random() < GUST_SHARE then
+				local along = (leaf.home - at):Dot(dir)
+				table.insert(gustQueue, { leaf = leaf, at = now + (along + MESH_KEEP) / GUST_SPEED + math.random() * 0.25, dir = dir })
+			end
+		end
+	end
+	playAt("Gust", at - dir * 20 + Vector3.new(0, 4, 0), 2.6, 1, 0.95 + math.random() * 0.15)
+end
+
+local function stepWind(now: number, dt: number)
+	if now >= nextGust then
+		nextGust = now + GUST_EVERY[1] + math.random() * (GUST_EVERY[2] - GUST_EVERY[1])
+		startGust(now)
+	end
+	for i = #gustQueue, 1, -1 do
+		local g = gustQueue[i]
+		if now >= g.at then
+			table.remove(gustQueue, i)
+			local tile = g.leaf.tile
+			if tile.leaves and tiles[tile.id] == tile then
+				blow(g.leaf, g.dir * (4 + math.random() * 5) + Vector3.new(0, 2 + math.random() * 3, 0), now)
+			end
+		end
+	end
+	-- Now and then a single leaf lifts a little and settles again.
+	flutterAcc += dt * FLUTTER_RATE
+	while flutterAcc >= 1 do
+		flutterAcc -= 1
+		local tile = detailList[math.random(1, math.max(1, #detailList))]
+		local leaves = tile and tile.leaves
+		if leaves and #leaves > 0 and tiles[tile.id] == tile then
+			local leaf = leaves[math.random(1, #leaves)]
+			if not moving[leaf] then
+				blow(leaf, Vector3.new(math.random() * 0.8 - 0.4, 0.8 + math.random() * 0.9, math.random() * 0.8 - 0.4), now)
 			end
 		end
 	end
@@ -649,28 +1004,55 @@ local function stepMoving(now: number, dt: number)
 	end
 end
 
--- A leaf leaving a cleared tile on its own path: a hop, then sucked into the nozzle with
--- a swirl (or, with nobody close, puffed up and faded).
-local function launchLeaf(part: BasePart, from: Vector3, rot: Vector3, target: (() -> Vector3)?, delay: number)
+-- A leaf leaving a cleared tile on its own path, by the sweeper's tool:
+--   vacuum (and cars): a hop, then sucked into the nozzle with a swirl,
+--   broom: pushed along the ground ahead of the sweep, then flicked into the backpack,
+--   blower: thrown up and away in a cone, spinning, and gone,
+--   nobody close: puffed up and faded.
+local function launchLeaf(part: BasePart, from: Vector3, rot: Vector3, sweeper: Sweeper?, delay: number)
 	if #leafFlights >= MAX_LEAF_FLIGHTS then
 		LeafMeshes.give(part)
 		return
 	end
 	part.Parent = folder
+	local style = if sweeper then sweeper.style else "puff"
+	local away = if sweeper then Vector3.new(from.X - sweeper.root.X, 0, from.Z - sweeper.root.Z) else Vector3.zero
+	if away.Magnitude < 0.05 then
+		local a = math.random() * math.pi * 2
+		away = Vector3.new(math.cos(a), 0, math.sin(a))
+	end
+	away = away.Unit
+	local push: Vector3
+	local time: number
+	if style == "blower" then
+		local side = Vector3.new(-away.Z, 0, away.X) * (math.random() * 2 - 1) * 5
+		push = away * (11 + math.random() * 7) + side + Vector3.new(0, 9 + math.random() * 6, 0)
+		time = 1 + math.random() * 0.3
+	elseif style == "broom" then
+		push = away * (1.5 + math.random() * 1.8)
+		time = FLY_TIME * (1.3 + math.random() * 0.4)
+	else
+		push = Vector3.zero
+		time = FLY_TIME * (0.8 + math.random() * 0.5)
+	end
 	table.insert(leafFlights, {
 		part = part,
+		style = style,
+		push = push,
 		from = from,
 		rot = rot,
-		spin = Vector3.new(math.random() * 24 - 12, math.random() * 16 - 8, math.random() * 24 - 12),
+		spin = Vector3.new(math.random() * 24 - 12, math.random() * 16 - 8, math.random() * 24 - 12) * (if style == "blower" then 1.8 else 1),
 		start = os.clock() + delay,
-		time = FLY_TIME * (0.8 + math.random() * 0.5),
-		target = target,
+		time = time,
+		target = if sweeper then sweeper.target else nil,
 		swirl = math.random() * math.pi * 2,
 		side = 0.6 + math.random() * 1.2,
 		hop = 1 + math.random() * 1.8,
 		size = part.Size,
 	})
 end
+
+local BROOM_SKID = 0.55 -- part of a broom flight spent sliding along the ground
 
 local flightParts: { BasePart } = {}
 local flightCFrames: { CFrame } = {}
@@ -685,18 +1067,38 @@ local function stepLeafFlights(now: number)
 			LeafMeshes.give(f.part)
 			continue
 		end
-		local hop = f.from + Vector3.new(0, f.hop, 0)
 		local pos: Vector3
 		local k = 1
-		if not f.target then
+		local r = f.rot + f.spin * t
+		if f.style == "blower" then
+			local secs = t * f.time
+			pos = f.from + f.push * secs * (1 - secs * 0.3) + Vector3.new(0, -11 * secs * secs, 0)
+			f.part.Transparency = if t > 0.6 then (t - 0.6) / 0.4 else 0
+		elseif f.style == "broom" and f.target then
+			if t < BROOM_SKID then
+				-- Tumbling along the ground ahead of the broom, in little bounces.
+				local u = t / BROOM_SKID
+				local e = 1 - (1 - u) * (1 - u)
+				pos = f.from + f.push * e + Vector3.new(0, math.abs(math.sin(u * math.pi * 3)) * 0.35 * (1 - u), 0)
+				r = Vector3.new(f.rot.X + u * 6, f.rot.Y + f.spin.Y * t, f.rot.Z)
+			else
+				-- Flicked up in an arc into the backpack.
+				local u = (t - BROOM_SKID) / (1 - BROOM_SKID)
+				local start = f.from + f.push
+				pos = start:Lerp(f.target(), u * u) + Vector3.new(0, math.sin(u * math.pi) * 2.2, 0)
+				k = 1 - 0.7 * u
+			end
+		elseif not f.target then
 			local e = t * t * (3 - 2 * t)
+			local hop = f.from + Vector3.new(0, f.hop, 0)
 			pos = f.from:Lerp(hop + Vector3.new(math.cos(f.swirl) * 2, 3, math.sin(f.swirl) * 2), e)
 			f.part.Transparency = t * t
 		elseif t < HOP then
 			local u = t / HOP
-			pos = f.from:Lerp(hop, 1 - (1 - u) * (1 - u))
+			pos = f.from:Lerp(f.from + Vector3.new(0, f.hop, 0), 1 - (1 - u) * (1 - u))
 		else
 			local u = (t - HOP) / (1 - HOP)
+			local hop = f.from + Vector3.new(0, f.hop, 0)
 			local line = hop:Lerp(f.target(), u * u)
 			local side = (1 - u) * f.side
 			local a = f.swirl + u * 10
@@ -706,7 +1108,6 @@ local function stepLeafFlights(now: number)
 		if k < 1 then
 			f.part.Size = f.size * k
 		end
-		local r = f.rot + f.spin * t
 		table.insert(flightParts, f.part)
 		table.insert(flightCFrames, CFrame.new(pos) * CFrame.fromEulerAnglesYXZ(r.X, r.Y, r.Z))
 	end
@@ -753,6 +1154,18 @@ local function makeBursts()
 		e.Parent = burstPart
 		bursts[name] = e
 	end
+	local shine = Instance.new("ParticleEmitter")
+	shine.Name = "Shine"
+	shine.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	shine.Color = ColorSequence.new(Color3.fromRGB(220, 255, 190), Color3.fromRGB(140, 235, 110))
+	shine.Enabled = false
+	shine.LightEmission = 0.8
+	shine.Lifetime = NumberRange.new(0.5, 0.8)
+	shine.Speed = NumberRange.new(1, 2.5)
+	shine.EmissionDirection = Enum.NormalId.Top
+	shine.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.3, 1.1), NumberSequenceKeypoint.new(1, 0) })
+	shine.Parent = burstPart
+	bursts.Shine = shine
 end
 
 local function burstKind(id: number): string
@@ -771,40 +1184,52 @@ local function burstKind(id: number): string
 	return if Grid.hash(id, 8) < 0.6 then "Leaf" else "Oval"
 end
 
--- Where a player's sweeper swallows leaves: the car's brush, the tool's tip, or the player.
-local function suctionPoint(character: Model): (() -> Vector3)?
+local VACUUMS = { ShopVac = true, TurboVacuum = true }
+
+-- A player's sweeper: where their leaves go (the car's brush, the vacuum's nozzle, their
+-- backpack for brooms) and how they clear (style).
+local function sweeperOf(character: Model): Sweeper?
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	local root = character:FindFirstChild("HumanoidRootPart")
 	if not humanoid or not root or not root:IsA("BasePart") then
 		return nil
 	end
+	local rootPart: BasePart = root
 	local seat = humanoid.SeatPart
 	if seat and seat:IsA("VehicleSeat") and seat.Parent then
 		local brush = seat.Parent:FindFirstChild("Brush", true)
 		local part: BasePart = if brush and brush:IsA("BasePart") then brush else seat
-		return function()
+		return { root = part.Position, style = "vacuum", target = function()
 			return part.Position
-		end
+		end }
 	end
 	local tool = character:FindFirstChildOfClass("Tool")
+	local toolId = tool and tool:GetAttribute("ToolId")
 	local handle = tool and tool:FindFirstChild("Handle")
-	if handle and handle:IsA("BasePart") then
+	if toolId == "LeafBlower" then
+		return { root = rootPart.Position, style = "blower", target = function()
+			return rootPart.Position
+		end }
+	end
+	if handle and handle:IsA("BasePart") and VACUUMS[toolId :: any] then
 		local tip = handle:FindFirstChild("Tip")
-		if tip and tip:IsA("Attachment") then
-			return function()
-				return tip.WorldPosition
-			end
-		end
-		return function()
-			return handle.Position
-		end
+		return { root = rootPart.Position, style = "vacuum", target = function()
+			return if tip and tip:IsA("Attachment") then tip.WorldPosition else handle.Position
+		end }
 	end
-	return function()
-		return root.Position
-	end
+	-- Brooms, mops, toothbrushes: into the backpack on your back.
+	local bag = character:FindFirstChild("LeafBag")
+	local body = bag and bag:FindFirstChild("Body")
+	return { root = rootPart.Position, style = "broom", target = function()
+		if body and body:IsA("BasePart") and body.Parent then
+			return body.Position + Vector3.new(0, body.Size.Y * 0.4, 0)
+		end
+		return rootPart.Position + Vector3.new(0, 1, 0)
+	end }
 end
 
-local function flyAway(tile: Tile, target: (() -> Vector3)?)
+local function flyAway(tile: Tile, sweeper: Sweeper?)
+	local target = if sweeper and sweeper.style ~= "blower" then sweeper.target else nil
 	tiles[tile.id] = nil
 	shaking[tile] = nil
 	local from = tile.part.CFrame
@@ -816,7 +1241,7 @@ local function flyAway(tile: Tile, target: (() -> Vector3)?)
 		detailed[tile] = nil
 		for k, leaf in leaves do
 			moving[leaf] = nil
-			launchLeaf(leaf.part, leaf.home + leaf.off, leaf.rot, target, k * 0.03 + math.random() * 0.05)
+			launchLeaf(leaf.part, leaf.home + leaf.off, leaf.rot, sweeper, k * 0.03 + math.random() * 0.05)
 		end
 		local zg = Grid.zoneGridOfId(tile.id)
 		local size = zg and zg.Zone.TileSize or 4
@@ -827,7 +1252,7 @@ local function flyAway(tile: Tile, target: (() -> Vector3)?)
 				local a = math.random() * math.pi * 2
 				local r = math.random() * size * 0.4
 				local at = from.Position + Vector3.new(math.cos(a) * r, 0.05, math.sin(a) * r)
-				launchLeaf(part, at, Vector3.new(0, math.random() * math.pi * 2, 0), target, 0.05 + k * 0.04)
+				launchLeaf(part, at, Vector3.new(0, math.random() * math.pi * 2, 0), sweeper, 0.05 + k * 0.04)
 			end
 		end
 	end
@@ -844,6 +1269,13 @@ local function flyAway(tile: Tile, target: (() -> Vector3)?)
 	local e = bursts[burstKind(tile.id)]
 	if e then
 		e:Emit(if golden[tile.id] then 6 else 2)
+	end
+	-- Clean ground: a little green-white glint where the leaves were.
+	if fade and Grid.hash(tile.id, 21) < 0.5 then
+		local shine = bursts.Shine
+		if shine then
+			shine:Emit(1)
+		end
 	end
 end
 
@@ -887,12 +1319,15 @@ local function stepFlying(now: number)
 		end
 		local cf = CFrame.new(pos) * f.from.Rotation * CFrame.Angles(t * f.spin * 0.4, t * f.spin, 0)
 		if f.fade then
-			-- The leaves fly on their own: the ground image stays put and fades out fast.
+			-- The leaves fly on their own: the ground image (or 3D pile) stays put and fades
+			-- or sinks away fast.
 			tile.part.CFrame = f.from
 			tile.decal.Transparency = math.min(1, t * 3)
+			placeProps(tile, math.max(0.02, 1 - t * 1.8), t * 0.3)
 		else
 			tile.part.CFrame = cf
 			tile.part.Size = tile.size * Vector3.new(k, 1, k)
+			placeProps(tile, k)
 		end
 		if tile.trash then
 			tile.trash:PivotTo(cf * CFrame.Angles(t * 6, 0, t * 4))
@@ -915,6 +1350,7 @@ local function stepGrowing(now: number)
 		-- Overshoot a little, then settle.
 		local k = if t < 0.7 then t / 0.7 * 1.12 else 1.12 - (t - 0.7) / 0.3 * 0.12
 		tile.part.Size = tile.size * Vector3.new(math.max(k, 0.05), 1, math.max(k, 0.05))
+		placeProps(tile, math.max(k, 0.05))
 		if tile.leaves then
 			for _, leaf in tile.leaves do
 				leaf.part.Size = leaf.size * math.clamp(k, 0.05, 1.12)
@@ -922,6 +1358,7 @@ local function stepGrowing(now: number)
 		end
 		if t >= 1 then
 			tile.part.Size = tile.size
+			placeProps(tile, 1)
 			if tile.leaves then
 				for _, leaf in tile.leaves do
 					leaf.part.Size = leaf.size
@@ -939,6 +1376,7 @@ local function stepShaking(now: number)
 			shaking[tile] = nil
 			if tiles[tile.id] == tile then
 				tile.part.CFrame = tile.base
+				placeProps(tile, 1)
 				if tile.trash and tile.trashBase then
 					tile.trash:PivotTo(tile.trashBase)
 				end
@@ -947,7 +1385,12 @@ local function stepShaking(now: number)
 		end
 		local a = math.sin(t * math.pi * 6) * 0.12 * (1 - t)
 		local lift = math.sin(t * math.pi) * 0.25
-		tile.part.CFrame = tile.base * CFrame.new(0, lift, 0) * CFrame.Angles(a * 0.5, a, 0)
+		if tile.props then
+			-- A 3D pile ruffles (squashes and swells) instead of jumping.
+			placeProps(tile, 1 + math.sin(t * math.pi * 6) * 0.07 * (1 - t))
+		else
+			tile.part.CFrame = tile.base * CFrame.new(0, lift, 0) * CFrame.Angles(a * 0.5, a, 0)
+		end
 		if tile.trash and tile.trashBase then
 			tile.trash:PivotTo(tile.trashBase * CFrame.new(0, lift * 1.5, 0) * CFrame.Angles(a, 0, a))
 		end
@@ -956,22 +1399,25 @@ end
 
 ------------------------------------------------------------------ server events
 
+local lastClearSound = 0
+
 local function onCleared(packed: buffer)
 	local at = focus()
 	-- Everyone sweeping nearby: their cleared leaves get sucked into their tool or car.
-	local sweepers: { { root: Vector3, target: () -> Vector3 } } = {}
+	local sweepers: { Sweeper } = {}
 	if at then
 		for _, player in Players:GetPlayers() do
 			local character = player.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart")
 			if character and root and root:IsA("BasePart") and (root.Position - at).Magnitude < FLY_DISTANCE + SUCK_RANGE then
-				local target = suctionPoint(character)
-				if target then
-					table.insert(sweepers, { root = root.Position, target = target })
+				local sweeper = sweeperOf(character)
+				if sweeper then
+					table.insert(sweepers, sweeper)
 				end
 			end
 		end
 	end
+	local nearCount = 0
 	for _, id in Grid.unpack(packed) do
 		cleared[id] = true
 		local tile = tiles[id]
@@ -980,17 +1426,26 @@ local function onCleared(packed: buffer)
 			local near = at ~= nil and (p - at).Magnitude < FLY_DISTANCE
 			if near and #flying < MAX_FLYING then
 				local best, bestD = nil, SUCK_RANGE
-				for _, s in sweepers do
-					local d = (s.root - p).Magnitude
+				for _, sw in sweepers do
+					local d = (sw.root - p).Magnitude
 					if d < bestD then
-						best, bestD = s.target, d
+						best, bestD = sw, d
 					end
+				end
+				if at and (p - at).Magnitude < 30 then
+					nearCount += 1
 				end
 				flyAway(tile, best)
 			else
 				release(tile)
 			end
 		end
+	end
+	-- One rustle for a batch of leaves cleared near you.
+	local now = os.clock()
+	if at and nearCount > 0 and now - lastClearSound > 0.16 then
+		lastClearSound = now
+		playAt("RustleBig", at, 0.35, math.min(1, 0.3 + nearCount / 8), 0.95 + math.random() * 0.2)
 	end
 end
 
@@ -1057,6 +1512,17 @@ function LeafController:Init()
 	folder = Instance.new("Folder")
 	folder.Name = "Leaves"
 	folder.Parent = Workspace
+	local root = Instance.new("Part")
+	root.Name = "LeafSounds"
+	root.Anchored = true
+	root.CanCollide = false
+	root.CanQuery = false
+	root.CanTouch = false
+	root.Transparency = 1
+	root.Size = Vector3.one
+	root.CFrame = CFrame.new()
+	root.Parent = folder
+	soundRoot = root
 	buildChunks()
 	makeBursts()
 end
@@ -1109,6 +1575,7 @@ function LeafController:Start()
 		stepGrowing(now)
 		stepShaking(now)
 		kickers(now)
+		stepWind(now, dt)
 		stepMoving(now, dt)
 		if not ready then
 			return
