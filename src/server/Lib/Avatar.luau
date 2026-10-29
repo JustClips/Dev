@@ -59,24 +59,43 @@ local function clamp(description: HumanoidDescription)
 end
 
 local cache: { [Player]: HumanoidDescription } = setmetatable({}, { __mode = "k" }) :: any
+local fetching: { [Player]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+local FETCH_WAIT = 4 -- seconds a spawn waits for the avatar before using the plain one
 
--- Spawns the player's character with their avatar clamped to the default size. Falls back
--- to a plain LoadCharacter when the avatar can't be fetched (Studio test players, outages).
-function Avatar.loadCharacter(player: Player)
-	local description = cache[player]
-	if not description then
+-- Fetches the player's avatar in the background (called on join, while the save loads), so
+-- spawning doesn't wait on the web request.
+function Avatar.prefetch(player: Player)
+	if cache[player] or fetching[player] then
+		return
+	end
+	fetching[player] = true
+	task.spawn(function()
 		local ok, fetched = pcall(function()
 			return Players:GetHumanoidDescriptionFromUserId(player.UserId)
 		end)
 		if ok and fetched then
 			clamp(fetched)
 			cache[player] = fetched
-			description = fetched
 		end
+		fetching[player] = nil
+	end)
+end
+
+-- Spawns the player's character with their avatar clamped to the default size. Falls back
+-- to a plain LoadCharacter when the avatar can't be fetched (Studio test players, outages).
+function Avatar.loadCharacter(player: Player)
+	Avatar.prefetch(player)
+	local deadline = os.clock() + FETCH_WAIT
+	while fetching[player] and os.clock() < deadline do
+		task.wait(0.1)
 	end
+	if player.Parent == nil then
+		return
+	end
+	local description = cache[player]
 	if description then
 		local loaded = pcall(function()
-			player:LoadCharacterWithHumanoidDescription((description :: HumanoidDescription):Clone())
+			player:LoadCharacterWithHumanoidDescription(description:Clone())
 		end)
 		if loaded then
 			return

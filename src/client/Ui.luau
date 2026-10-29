@@ -75,8 +75,15 @@ function Ui.sound(name: string, speed: number?)
 	end)
 end
 
+-- StarterGui only copies into PlayerGui once the character spawns (after the save loads),
+-- so this can take a while on join; wait without the "infinite yield" warning.
 function Ui.screen(name: string): ScreenGui
-	return playerGui:WaitForChild(name) :: ScreenGui
+	local gui = playerGui:FindFirstChild(name)
+	while not gui do
+		playerGui.ChildAdded:Wait()
+		gui = playerGui:FindFirstChild(name)
+	end
+	return gui :: ScreenGui
 end
 
 -- Ui.find(root, "Window.Header.Title")

@@ -58,6 +58,10 @@ end
 function BaseService:Init(services)
 	S = services
 	Avatar.setupGroups()
+	Players.PlayerAdded:Connect(Avatar.prefetch)
+	for _, player in Players:GetPlayers() do
+		Avatar.prefetch(player)
+	end
 	S.DataService.ProfileLoaded:Connect(function(player: Player, session)
 		local index = freeIndex()
 		if not index then
