@@ -386,6 +386,10 @@
    "id": 112094954408852,
    "sha": "05f7c1493b9cfec240bb6c8c4d3e94fcb3bea9f2a82535b5e96c2f89a412f814"
   },
+  "Vfx_Bokeh": {
+   "id": 83889622826048,
+   "sha": "d19f1b4743099a642282bb49e197153588a11d436fd37a7b7e8e964915b75619"
+  },
   "Vfx_Confetti": {
    "id": 105135858287260,
    "sha": "5ef27c72a81a0b0c8693ed862fa383df3cef3cf8db8d3c43aec15e91079acf07"
@@ -402,6 +406,10 @@
    "id": 127790595590235,
    "sha": "f220948abe8f013d40270428472f511fe4e7ea65288bdd3ebf075389c4081004"
   },
+  "Vfx_GodRay": {
+   "id": 91843493156883,
+   "sha": "df0d6d4eb4c297696e9acd3b15065457332567acb42f5fea29cf045bf06e316e"
+  },
   "Vfx_GoldMoon": {
    "id": 139954707040753,
    "sha": "37926abb7bef0fe58667818d4daf8a8668ffbce14a9215c1916341b91c394fd7"
@@ -409,6 +417,18 @@
   "Vfx_Leaf": {
    "id": 136133170622834,
    "sha": "4cebf615a0a4b16a2b9859f6a6f234f7e9e7b5ce3caa65f6a3d6fc30d70f64d6"
+  },
+  "Vfx_LeafGreen": {
+   "id": 79808813737351,
+   "sha": "68c9fa190b4b5b03d1a2768b2fb75f67d58682b52aefd5f522a5618988bee89e"
+  },
+  "Vfx_LeafMaple": {
+   "id": 72940370716698,
+   "sha": "77ba3beea5480dd9368558ddcfcf14ca97a2eccfffaed014bca210a4f9d68614"
+  },
+  "Vfx_LeafOval": {
+   "id": 83661492103731,
+   "sha": "608b161295f2d1b0fdebb9cb96f3ac6261e197740d912dee22edb545a867ab61"
   },
   "Vfx_MegaMoon": {
    "id": 127766407180176,
@@ -423,8 +443,8 @@
    "sha": "da9bbeed8789c712fba83585e10ec26399ab0b462176b2e4c931f16f20a3b15d"
   },
   "Vfx_RainSheet": {
-   "id": 75131187314377,
-   "sha": "d176bc24b75e1c5b0c486c7c58b601fb220f7f272694ee2dc1bb01c80d119713"
+   "id": 76055605911556,
+   "sha": "a666346e36c549fb0f3c92854eb40927ece8618ac1e1f701a0f2cb3cce99d0ff"
   },
   "Vfx_Rainbow": {
    "id": 107122876836669,
@@ -446,6 +466,10 @@
    "id": 87504712074169,
    "sha": "8be2158c3f83ecdde34850c23a20bad572041d86bbe1e1b28301dc256daabd03"
   },
+  "Vfx_Sparkle": {
+   "id": 91255733305215,
+   "sha": "9698982248633ef11e7726c085c42883a1147cfe0a54a8ecb91b9c21e858e09e"
+  },
   "Vfx_Splash": {
    "id": 94265707379182,
    "sha": "496f21f73bf6036a9f6ab475aaffde43faea5b891a105fd97ec8d4aeac4e3886"
@@ -461,6 +485,10 @@
   "Vfx_Trail": {
    "id": 91306814207040,
    "sha": "fcabc196034b4030ac3c583d1e49c0284e735f8daab3a9e340bbb5fface848cb"
+  },
+  "Vfx_Wind": {
+   "id": 128498857580699,
+   "sha": "3faa5a866ace6e25c7c7b27ffde3787d28b6371b2e39605364dc4bfc7ca7f176"
   }
  },
  "models": {

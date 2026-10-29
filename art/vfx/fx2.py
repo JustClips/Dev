@@ -158,9 +158,115 @@ def splash():
     write(np.ones(sheet_a.shape + (3,)) * np.array([0.9, 0.95, 1.0]), sheet_a, "Splash")
 
 
+# Rain curtain for distant Beams. A Beam runs the image's X along its length, so the
+# streaks are drawn along X (they fall down the beam) and the image tiles in X.
+def rain_sheet():
+    w, h = 256, 256
+    a = np.zeros((h, w))
+    rng = np.random.default_rng(12)
+    xs = np.arange(w)
+    for _ in range(220):
+        y0 = rng.uniform(0, h)
+        x0 = rng.uniform(0, w)
+        length = rng.uniform(25, 70)
+        thick = rng.uniform(0.5, 1.1)
+        strength = rng.uniform(0.25, 0.8)
+        dx = (xs - x0) % w  # wraps so it tiles along the length
+        along = smoothstep(0, length * 0.3, dx) * smoothstep(length, length * 0.6, dx)
+        rows = np.arange(h)[:, None]
+        across = np.exp(-(((rows - y0 + h / 2) % h - h / 2) / thick) ** 2)
+        a = np.maximum(a, across * along[None, :] * strength)
+    edge = smoothstep(0, 40, np.arange(h)) * smoothstep(h, h - 40, np.arange(h))
+    a *= edge[:, None]
+    write(np.ones((h, w, 3)) * np.array([0.85, 0.9, 1.0]), a, "RainSheet")
+
+
+# Big soft out-of-focus snowflake for flakes close to the camera.
+def bokeh():
+    s = 64
+    y, x = (np.mgrid[0:s, 0:s] + 0.5) / s - 0.5
+    d = np.hypot(x, y)
+    a = smoothstep(0.42, 0.3, d) * (0.55 + 0.45 * smoothstep(0.25, 0.4, d))
+    write(np.ones((s, s, 3)), a, "Bokeh")
+
+
+# Four-point glint for sparkles (crisper than the cartoon star).
+def sparkle():
+    s = 128
+    y, x = (np.mgrid[0:s, 0:s] + 0.5) / s - 0.5
+    d = np.hypot(x, y)
+    rays = np.exp(-np.abs(x) * 60) * np.exp(-np.abs(y) * 6) + np.exp(-np.abs(y) * 60) * np.exp(-np.abs(x) * 6)
+    diag = (np.exp(-np.abs(x - y) * 70) + np.exp(-np.abs(x + y) * 70)) * np.exp(-d * 14) * 0.5
+    core = np.exp(-(d / 0.06) ** 2) + np.exp(-d / 0.08) * 0.4
+    a = np.clip(rays + diag + core, 0, 1) * smoothstep(0.5, 0.4, d)
+    write(np.ones((s, s, 3)), a, "Sparkle")
+
+
+# Wind wisp: a thin curling stroke along X with faded ends (FacingCamera particles).
+def wind():
+    w, h = 256, 64
+    y, x = np.mgrid[0:h, 0:w] + 0.5
+    u = x / w
+    centre = h * 0.5 + np.sin(u * math.pi * 2.2) * h * 0.18 + np.sin(u * math.pi * 5) * h * 0.05
+    across = np.exp(-((y - centre) / 1.6) ** 2)
+    along = smoothstep(0, 0.35, u) * smoothstep(1, 0.7, u)
+    write(np.ones((h, w, 3)), across * along * 0.9, "Wind")
+
+
+# Coloured autumn leaves (drawn in colour, emitters use white): maple, oval and birch.
+def leaves():
+    from PIL import ImageDraw
+    s, k = 128, 4
+    specs = {
+        "LeafMaple": ((235, 90, 35), (255, 160, 40)),
+        "LeafOval": ((240, 170, 40), (255, 220, 90)),
+        "LeafGreen": ((110, 165, 55), (180, 210, 80)),
+    }
+    for name, (dark, light) in specs.items():
+        mask = Image.new("L", (s * k, s * k), 0)
+        d = ImageDraw.Draw(mask)
+        c = s * k / 2
+        pts = []
+        for i in range(240):
+            t = i / 240 * math.tau
+            if name == "LeafMaple":
+                r = 0.3 + 0.12 * abs(math.cos(t * 2.5)) ** 3 + 0.06 * math.cos(t * 10)
+                r *= 1 - 0.25 * max(0, math.cos(t)) ** 8  # notch at the stem
+            elif name == "LeafOval":
+                r = 0.42 / math.sqrt((math.cos(t) / 1.0) ** 2 + (math.sin(t) / 0.55) ** 2) * 0.5 + 0.02 * math.cos(t * 18)
+            else:
+                r = 0.4 / math.sqrt((math.cos(t) / 1.0) ** 2 + (math.sin(t) / 0.5) ** 2) * 0.5
+            pts.append((c + math.sin(t) * r * s * k, c - math.cos(t) * r * s * k))
+        d.polygon(pts, fill=255)
+        alpha = np.asarray(mask.resize((s, s), Image.LANCZOS)) / 255
+        y, x = (np.mgrid[0:s, 0:s] + 0.5) / s - 0.5
+        g = np.clip(0.5 - y * 1.2 + x * 0.4, 0, 1)[..., None]
+        rgb = (np.array(dark) / 255) * (1 - g) + (np.array(light) / 255) * g
+        vein = np.exp(-(x / 0.012) ** 2) * (np.abs(y) < 0.4)
+        side = (np.exp(-((y + np.abs(x) * 0.8) % 0.12 / 0.012) ** 2) * (np.abs(x) < 0.2) * 0.6)
+        rgb = rgb * (1 - 0.35 * np.clip(vein + side, 0, 1))[..., None]
+        write(rgb, alpha, name)
+
+
+# Light shaft for Golden Hour: soft vertical-in-beam glow (bright along the middle of the
+# width, fading toward the bottom end of the length).
+def godray():
+    w, h = 128, 64
+    y, x = (np.mgrid[0:h, 0:w] + 0.5)
+    u, v = x / w, y / h
+    a = np.exp(-((v - 0.5) / 0.22) ** 2) * smoothstep(0, 0.15, u) * smoothstep(1, 0.4, u)
+    write(np.ones((h, w, 3)), a * 0.9, "GodRay")
+
+
 if __name__ == "__main__":
     rain()
     splash()
+    rain_sheet()
+    bokeh()
+    sparkle()
+    wind()
+    leaves()
+    godray()
     moon("GoldMoon", (255, 222, 120), (205, 140, 30), (255, 190, 60), seed=3)
     moon("BloodMoon", (255, 95, 80), (150, 15, 20), (255, 40, 40), seed=5)
     moon("MegaMoon", (245, 248, 255), (165, 180, 215), (170, 205, 255), seed=8, glow_strength=1.0)
