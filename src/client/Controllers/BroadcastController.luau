@@ -81,9 +81,10 @@ local function showNext()
 			child:Destroy()
 		end
 	end
-	label(announceCard, "ANNOUNCEMENT", 15, GOLD, Enum.FontWeight.Heavy, 1)
+	local title = if type(info.Title) == "string" then info.Title else "ANNOUNCEMENT"
+	label(announceCard, title, 15, GOLD, Enum.FontWeight.Heavy, 1)
 	label(announceCard, info.Text, 24, WHITE, Enum.FontWeight.Heavy, 2)
-	label(announceCard, `from {info.From}`, 13, SUB, Enum.FontWeight.Bold, 3)
+	label(announceCard, `from {info.From}{if info.Global then " · every server" else ""}`, 13, SUB, Enum.FontWeight.Bold, 3)
 	announceCard.Visible = true
 	Ui.sound("Announce")
 	local scale = announceCard:FindFirstChild("Pop") :: UIScale

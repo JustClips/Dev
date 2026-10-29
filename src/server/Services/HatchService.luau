@@ -76,6 +76,7 @@ local function hatchSeconds(data, rarity: string): number
 		seconds *= Eggs.FasterHatchMult
 	end
 	seconds /= Upgrades.multiplier(data.Upgrades, "HatchSpeed")
+	seconds /= S.AdminService:Mult("Hatch") -- admin "Hatch Speed" event
 	return math.ceil(seconds)
 end
 
@@ -212,7 +213,7 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	local luck = S.BoostService:GetServerLuck() * S.BoostService:GetPersonalLuck(player)
 	-- An egg the weather upgraded while it grew hatches with that mutation.
 	local mutation = entry.Mutation or rollMutation(luck)
-	local huge = rng:NextNumber() < math.min(1, Aliens.HugeChance * luck * S.WeatherService:GetHugeMult())
+	local huge = rng:NextNumber() < math.min(1, Aliens.HugeChance * luck * S.WeatherService:GetHugeMult() * S.AdminService:Mult("Huge"))
 	local isNew = not data.Index[def.Id]
 	data.Index[def.Id] = true
 	local petUid = S.DataService:NewUid(data, "p")

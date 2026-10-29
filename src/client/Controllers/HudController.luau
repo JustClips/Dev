@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
+local HttpService = game:GetService("HttpService")
 local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
@@ -15,6 +16,7 @@ local State = require(Client.State)
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Admin = require(Shared.Config.Admin)
 local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
@@ -341,6 +343,22 @@ local function renderBoosts()
 		local cycles = math.floor((now - cycleStart) / Weather.CycleSeconds)
 		local nightEnds = math.floor(cycleStart + (cycles + 1) * Weather.CycleSeconds)
 		add("Moon", "Icon_Weather_" .. moon.Id, Weather.chipLabel(moon), nightEnds, moon.Name, moon.Blurb)
+	end
+	-- Admin events (AdminService), each its own chip.
+	local okEvents, adminEvents = pcall(function()
+		return HttpService:JSONDecode(State.server("AdminEvents") or "[]")
+	end)
+	if okEvents and type(adminEvents) == "table" then
+		for _, e in adminEvents do
+			local def = Admin.Events[e.Type]
+			if def and (tonumber(e.EndsAt) or 0) > now then
+				local w = if e.Type == "Weather" then Weather.ById[e.Value] else nil
+				local label = if def.Unit == "x" then `{e.Value}x` elseif def.Unit == "+" then `+{e.Value}` else ""
+				local icon = if w then "Icon_Weather_" .. w.Id else def.Icon
+				local name = if w then w.Name elseif label ~= "" then `{label} {def.Name}` else def.Name
+				add("Admin" .. tostring(e.Id), icon, if w then Weather.chipLabel(w) else label, e.EndsAt, `Admin event: {name}`, def.Blurb)
+			end
+		end
 	end
 	local data = State.data
 	if data and (data.Boosts.Cash2x or 0) > now then

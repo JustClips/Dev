@@ -251,8 +251,13 @@ local function onNight()
 	publish()
 end
 
-local function isAdmin(player: Player): boolean
-	return RunService:IsStudio() or table.find(Weather.Admins, player.UserId) ~= nil
+local trusted = false -- set while the admin panel runs a command (AdminService checked it)
+
+local function isAdmin(player: Player?): boolean
+	if trusted then
+		return true
+	end
+	return player ~= nil and (RunService:IsStudio() or table.find(Weather.Admins, player.UserId) ~= nil)
 end
 
 -- Moves the cycle so it is now `t` seconds into it.
@@ -395,8 +400,13 @@ local function onChat(player: Player, message: string)
 end
 
 -- The admin panel runs the same commands as admin chat ("/weather rain", "/night"...).
-function WeatherService:RunCommand(player: Player, message: string)
-	onChat(player, message)
+function WeatherService:RunCommand(player: Player?, message: string)
+	trusted = true
+	local ok, err = pcall(onChat :: any, player, message)
+	trusted = false
+	if not ok then
+		warn("[Weather] " .. tostring(err))
+	end
 end
 
 function WeatherService:Init(services)

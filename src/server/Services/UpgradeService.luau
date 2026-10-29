@@ -104,9 +104,10 @@ function UpgradeService:Start()
 		while true do
 			task.wait(2)
 			for player, session in S.DataService:GetSessions() do
-				local fast = S.BoostService:GetSpeedBonus(player) > 0
-				if session.Runtime.SpeedPotion ~= fast then
-					session.Runtime.SpeedPotion = fast
+				-- Potions and admin speed events change the bonus; re-apply when it does.
+				local bonus = S.BoostService:GetSpeedBonus(player)
+				if session.Runtime.SpeedBonus ~= bonus then
+					session.Runtime.SpeedBonus = bonus
 					applyWalkSpeed(player)
 				end
 			end

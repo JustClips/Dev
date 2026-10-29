@@ -114,6 +114,27 @@ function EventService:TriggerShower(buyer: Player?)
 	-- During the countdown it is already on its way; the purchase still counts.
 end
 
+-- Admin panel: an Egg Rain right now for `seconds` (longer if one is already falling).
+function EventService:AdminShower(seconds: number)
+	local ends = os.time() + seconds
+	if stateName == "Shower" then
+		stateEndsAt = math.max(stateEndsAt, ends)
+		publish()
+		return
+	end
+	stateName = "Shower"
+	stateEndsAt = ends
+	publish()
+	Net.fireAll("Announce", "Egg Rain! Grab the rare eggs!", "Event")
+end
+
+-- Admin panel: stops a falling Egg Rain now.
+function EventService:AdminStopShower()
+	if stateName == "Shower" or stateName == "Countdown" then
+		endShower()
+	end
+end
+
 function EventService:GetState(): string
 	return stateName
 end

@@ -38,7 +38,8 @@ function BoostService:GetServerLuck(): number
 	-- A live event (Config/Rewards.Events) multiplies whatever luck is running.
 	local event = Rewards.activeEvent(now)
 	-- So does the weather (Rainbow, Aurora Night).
-	return best * (if event then event.LuckMult else 1) * S.WeatherService:GetLuckMult()
+	-- Admin events (AdminService) stack on top.
+	return best * (if event then event.LuckMult else 1) * S.WeatherService:GetLuckMult() * S.AdminService:Mult("Luck")
 end
 
 function BoostService:AddServerLuck(mult: number, minutes: number, buyer: Player?)
@@ -76,7 +77,7 @@ end
 
 -- Speed potion: extra walk speed while active.
 function BoostService:GetSpeedBonus(player: Player): number
-	return if BoostService:IsBoostActive(player, "Speed") then Items.SpeedBonus else 0
+	return (if BoostService:IsBoostActive(player, "Speed") then Items.SpeedBonus else 0) + S.AdminService:Add("Speed")
 end
 
 function BoostService:HasPass(player: Player, key: string): boolean
@@ -100,7 +101,7 @@ function BoostService:GetCashMultiplier(player: Player): number
 	if (data.Boosts.Cash2x or 0) > os.time() then
 		mult *= Economy.Cash2xBoostMult
 	end
-	return mult
+	return mult * S.AdminService:Mult("Cash")
 end
 
 -- Same as above without temporary boosts (used for offline income).
