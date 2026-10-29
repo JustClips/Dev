@@ -20,6 +20,14 @@ local Mutations: { MutationDef } = {
 	{ Name = "MoonDusted", Label = "Sparkly", Chance = 500, IncomeMult = 5, Color = Color3.fromRGB(220, 235, 255) },
 	{ Name = "Rainbow", Label = "Rainbow", Chance = 100, IncomeMult = 3, Color = Color3.fromRGB(255, 120, 230) },
 	{ Name = "Golden", Label = "Golden", Chance = 20, IncomeMult = 2, Color = Color3.fromRGB(255, 205, 50) },
+	-- Weather mutations: only during their weather (Config/Weather), never in the roll above.
+	{ Name = "Starlit", Label = "Starlit", Chance = 0, IncomeMult = 4, Color = Color3.fromRGB(120, 255, 210), WeatherOnly = true },
+	{ Name = "Bloodlit", Label = "Bloodlit", Chance = 0, IncomeMult = 4, Color = Color3.fromRGB(230, 40, 50), WeatherOnly = true },
+	{ Name = "Disco", Label = "Disco", Chance = 0, IncomeMult = 3, Color = Color3.fromRGB(200, 90, 255), WeatherOnly = true },
+	{ Name = "Shocked", Label = "Shocked", Chance = 0, IncomeMult = 2.5, Color = Color3.fromRGB(255, 230, 70), WeatherOnly = true },
+	{ Name = "Frozen", Label = "Frozen", Chance = 0, IncomeMult = 2, Color = Color3.fromRGB(170, 225, 255), WeatherOnly = true },
+	{ Name = "Windswept", Label = "Windswept", Chance = 0, IncomeMult = 1.5, Color = Color3.fromRGB(255, 165, 70), WeatherOnly = true },
+	{ Name = "Wet", Label = "Wet", Chance = 0, IncomeMult = 1.5, Color = Color3.fromRGB(80, 160, 255), WeatherOnly = true },
 }
 
 local Eggs = {

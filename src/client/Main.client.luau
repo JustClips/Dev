@@ -30,6 +30,7 @@ local ORDER = {
 	"PetController",
 	"GarageController",
 	"UpgradeController",
+	"WeatherController",
 }
 
 local folder = Client:WaitForChild("Controllers")

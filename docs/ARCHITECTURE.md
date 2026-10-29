@@ -46,7 +46,8 @@ Players only get a character once their profile has loaded (`CharacterAutoLoads 
 | HatchService | Eggs grow in the pet park. The egg limit is the incubator count (4, +1 per 2 rebirths, max 8). The player holds an egg out (a welded `HeldEgg` model) and clicks a spot; `Shared/EggSpots` checks the spot (inside the park, clear of props, spaced from other eggs) on both client and server, and saves `X`/`Z` in base space. The player places eggs; timers are saved as unix `EndsAt` (they keep running offline). When ready the player opens the egg: the pet is rolled from the egg's zone pool (`Aliens.pool`), with mutation and Huge rolls scaled by server and personal luck. Skip Hatch finishes the egg the player picked. Weights (`Config/Weights`): every egg rolls a size class (Normal, Big, Heavy, Giant, Colossal; luck makes the big ones likelier) and a kg weight; the pet's weight is the egg's size multiplier x 0.85-1.15, and its income scales with weight (`Aliens.income`). |
 | AlienService | Base pet limit (slot count), income every second from placed pets, offline income on join, publishes `base.Aliens` (one Folder per placed pet, named by uid, rendered by every client's PetController) and `base.Hatching` (growing eggs right on the grass at their saved spots, scaled by weight), the top-3 followers attribute. |
 | RebirthService | Cost, reset, +50% cash per rebirth. |
-| EventService | Meteor Shower state machine. |
+| EventService | Egg Rain state machine (eggs fall from the sky via `EggDrop`). |
+| WeatherService | Live weather (Config/Weather): rolls one every few minutes, gives its bonuses (cash, luck, golden piles, Huge, weather mutations), Thunderstorm strikes, admin chat commands `/weather <id>` / `/weather off` / `/eggrain`. Client side: WeatherController draws sky, particles, sounds, banner. |
 | ShopService | Idempotent `ProcessReceipt`, gamepass checks, gifting, what each product grants. `CashFor(player, seconds, floor)` scales free cash rewards like cash packs. |
 | RewardService | Free rewards from `Config/Rewards.luau`, one remote `Rewards(action, arg)`: ClaimDaily (7-day streak in `data.Daily`, a missed day restarts it), ClaimPlaytime(i) (session playtime counted by its 1 s loop), StartStay (the stay offer: a potion after 5 more minutes, 30 min cooldown), ClaimGroup (off while `Rewards.Group.Id` is 0), SignUp(eventId) (`Flags.EventSignups`: 1 signed up, 2 rewarded; the gift is paid when a signed-up player is in game during the event). Writes the event name and countdown on the plaza event board. A live event also multiplies server luck (`BoostService:GetServerLuck`). |
 | OfferService | Contextual offers with cooldowns, never before the first hatch. |
@@ -60,7 +61,7 @@ LoadingController (loading screen until terrain, models, images, save and charac
 
 Client → server (all rate limited): `SweepTick`, `OfferResponse`, `SetAutoSweep`, and the functions `GetState`, `BuyNextTool`, `Rebirth`, `PromptPurchase(key, giftToUserId?)`, `ToggleVehicle`, `SpawnVehicle(id)`, `BuyVehicle(id)`, `BuyUpgrade(id, count?)`, `EquipTool`, `Teleport(target)`, `Inventory(action, arg)`, `Rewards(action, arg)`.
 
-Server → client: `PlayerState`, `TilesCleared` (buffer of u16 ids), `SweepResult`, `Notify`, `Announce`, `HatchCompleted`, `WelcomeBack`, `ShowOffer`, `MeteorImpact`, `BunnyPop`.
+Server → client: `PlayerState`, `TilesCleared` (buffer of u16 ids), `SweepResult`, `Notify`, `Announce`, `HatchCompleted`, `WelcomeBack`, `ShowOffer`, `EggDrop`, `WeatherStrike`, `BunnyPop`.
 
 The client never sends amounts. Every cash, egg and tool change happens on the server.
 

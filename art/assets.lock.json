@@ -290,6 +290,42 @@
    "id": 73298238468657,
    "sha": "aa27d4d694f2fdcdf99a733aa96dfe82e9fba309b81e8126ac57aa4d32416875"
   },
+  "Icon_Weather_Aurora": {
+   "id": 127656847792687,
+   "sha": "43f037f7d5bdac02454f7163b054c4f65c4054039559a91d57bef551ff31d5f0"
+  },
+  "Icon_Weather_BloodMoon": {
+   "id": 86593550107233,
+   "sha": "fcf8a9613f8f28628c05ef9a6c165e799a7e9de63b4b859b92eccd44b085e6b7"
+  },
+  "Icon_Weather_Disco": {
+   "id": 120417506952660,
+   "sha": "a88fca9b1f1414bfca9610ea89ac2e1fcef7576f072e0af25416c493e4a0269f"
+  },
+  "Icon_Weather_GoldenHour": {
+   "id": 76027006606662,
+   "sha": "308b04c03184fe468afd770c6980826d7aff4e0309b53eb8e05fa3e316d4577b"
+  },
+  "Icon_Weather_Rain": {
+   "id": 94254875405147,
+   "sha": "deb041db5dd60201911d4dff2b364270768134a0041fa385ceb8cbb8604d081f"
+  },
+  "Icon_Weather_Rainbow": {
+   "id": 106606990716899,
+   "sha": "c37498765fdcfc9af8e885bc8c6f4b8f82bf9bffb25ad50333b7c83620e50e16"
+  },
+  "Icon_Weather_Snow": {
+   "id": 138027398855010,
+   "sha": "9f44616e7d1da8034975b8b40536734e38f34a5236c9013664719cb046d865f9"
+  },
+  "Icon_Weather_Thunderstorm": {
+   "id": 128033834924846,
+   "sha": "0497aacc30968ebdb953b490788b555f10667d5a59889334536858d414f733bf"
+  },
+  "Icon_Weather_Windy": {
+   "id": 121278465483092,
+   "sha": "2db96a3b549229918de7ced8b0c71a9e142bfedcb4f45d60069162cb8bb7b156"
+  },
   "Icon_Zones": {
    "id": 122184194125026,
    "sha": "f076ccf5113c28da7b76514531dd5475c0c48ac7d362793d519f6f1d0b266bf1"
@@ -325,6 +361,50 @@
   "Stud": {
    "id": 117181516497135,
    "sha": "2e9081d73b3c248de74091c495aba252063d3ecd2e80aa868a0569c6b3e31f26"
+  },
+  "Vfx_Aurora": {
+   "id": 104351324810625,
+   "sha": "b96f57d1c8e2cd09a6fdb15345bba13454fc7d0b48435fa747c2eb2a3fcf7be0"
+  },
+  "Vfx_BloodMoon": {
+   "id": 99164652863066,
+   "sha": "924b14abfc817636d577dadcf1cfffd0d603accf1f00b7f73ad53f2b0a3de4cf"
+  },
+  "Vfx_Glow": {
+   "id": 127790595590235,
+   "sha": "f220948abe8f013d40270428472f511fe4e7ea65288bdd3ebf075389c4081004"
+  },
+  "Vfx_Leaf": {
+   "id": 136133170622834,
+   "sha": "4cebf615a0a4b16a2b9859f6a6f234f7e9e7b5ce3caa65f6a3d6fc30d70f64d6"
+  },
+  "Vfx_Note": {
+   "id": 78579136606448,
+   "sha": "11475d059180bc5239c1a8a3a4b45ee754d15c8c9cad78b8d3b3399430d3da85"
+  },
+  "Vfx_Rain": {
+   "id": 136695156263425,
+   "sha": "90773f096f0230cc686c3c4cf1f6b9468164e2d28d2892f35aff60dbe0be65ee"
+  },
+  "Vfx_Rainbow": {
+   "id": 107122876836669,
+   "sha": "cdff5c723e2c45b4a01e98395cd1ee0b4d0434f4b49a65b05711bf9e5e374307"
+  },
+  "Vfx_Ring": {
+   "id": 133543463929183,
+   "sha": "5ca262a35fc89d33b25bb387edbd39c2e955598cb16d4d7c2c054fee64aedbc7"
+  },
+  "Vfx_Snow": {
+   "id": 87504712074169,
+   "sha": "8be2158c3f83ecdde34850c23a20bad572041d86bbe1e1b28301dc256daabd03"
+  },
+  "Vfx_Star": {
+   "id": 112677765949874,
+   "sha": "1953e0a02e68a9edffb33ec221e1264c37ebd226eab5e2447ce951fa5f45addc"
+  },
+  "Vfx_Trail": {
+   "id": 91306814207040,
+   "sha": "fcabc196034b4030ac3c583d1e49c0284e735f8daab3a9e340bbb5fface848cb"
   }
  },
  "models": {

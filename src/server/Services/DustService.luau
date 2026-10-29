@@ -136,11 +136,25 @@ function DustService:TakeGolden(id: number): boolean
 	return false
 end
 
--- Tops every zone up to Economy.Golden.PerZone golden piles on standing dust.
+-- Lightning strike (Thunderstorm): turns up to `count` standing piles around a spot golden.
+function DustService:StrikeGolden(position: Vector3, radius: number, count: number): number
+	local made = 0
+	Grid.forEachInRadius(position, radius, function(id)
+		if made < count and hp[id] and hp[id] > 0 and not golden[id] then
+			setGolden(id, true)
+			made += 1
+		end
+	end)
+	return made
+end
+
+-- Tops every zone up to Economy.Golden.PerZone golden piles on standing dust
+-- (more during Golden Hour).
 function DustService:RefreshGolden(rng: Random)
+	local perZone = math.floor(Economy.Golden.PerZone * S.WeatherService:GetGoldenMult())
 	for zoneId, ids in zoneTiles do
 		local tries = 0
-		while (goldenCount[zoneId] or 0) < Economy.Golden.PerZone and tries < 20 do
+		while (goldenCount[zoneId] or 0) < perZone and tries < 20 * perZone / Economy.Golden.PerZone do
 			tries += 1
 			local id = ids[rng:NextInteger(1, #ids)]
 			if hp[id] > 0 and not golden[id] then

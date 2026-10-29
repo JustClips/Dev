@@ -269,38 +269,6 @@ local function onSweepResult(result)
 	end
 end
 
--- Meteor Shower: a glowing rock falls where an egg is about to land.
-local function onMeteor(position: Vector3)
-	local camera = Workspace.CurrentCamera
-	if not camera or (position - camera.Focus.Position).Magnitude > 400 then
-		return
-	end
-	local meteor = Instance.new("Part")
-	meteor.Name = "Meteor"
-	meteor.Shape = Enum.PartType.Ball
-	meteor.Size = Vector3.new(4, 4, 4)
-	meteor.Material = Enum.Material.Neon
-	meteor.Color = Color3.fromRGB(255, 140, 60)
-	meteor.Anchored = true
-	meteor.CanCollide = false
-	meteor.CanQuery = false
-	meteor.CanTouch = false
-	meteor.CastShadow = false
-	meteor.Position = position + Vector3.new(30, 160, 30)
-	local light = Instance.new("PointLight")
-	light.Color = meteor.Color
-	light.Range = 20
-	light.Parent = meteor
-	meteor.Parent = Workspace
-	local fall = TweenService:Create(meteor, TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Position = position })
-	fall:Play()
-	fall.Completed:Connect(function()
-		meteor:Destroy()
-		emitterPart.Position = position
-		emitter:Emit(25)
-	end)
-end
-
 -- True while you're using your hand tool (for its effects, ToolFxController).
 function SweepController:IsToolActive(): boolean
 	return toolActive
@@ -339,7 +307,6 @@ function SweepController:Start()
 
 	Net.event("TilesCleared").OnClientEvent:Connect(onTilesCleared)
 	Net.event("SweepResult").OnClientEvent:Connect(onSweepResult)
-	Net.event("MeteorImpact").OnClientEvent:Connect(onMeteor)
 	Net.event("BunnyPop").OnClientEvent:Connect(function(position: Vector3)
 		local camera = Workspace.CurrentCamera
 		if camera and (position - camera.Focus.Position).Magnitude < 200 then

@@ -37,7 +37,8 @@ function BoostService:GetServerLuck(): number
 	end
 	-- A live event (Config/Rewards.Events) multiplies whatever luck is running.
 	local event = Rewards.activeEvent(now)
-	return best * (if event then event.LuckMult else 1)
+	-- So does the weather (Rainbow, Aurora Night).
+	return best * (if event then event.LuckMult else 1) * S.WeatherService:GetLuckMult()
 end
 
 function BoostService:AddServerLuck(mult: number, minutes: number, buyer: Player?)

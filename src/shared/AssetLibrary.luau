@@ -154,6 +154,30 @@ function AssetLibrary.meta(name: string)
 	return Assets.Models[name]
 end
 
+type WeatherLook = {
+	color: Color3?, -- tint (or full repaint when repaint = true)
+	repaint: boolean?,
+	material: Enum.Material?,
+	rainbow: boolean?, -- colour-cycling neon (Disco)
+	texture: string, -- particle texture (Assets.Images name)
+	fx: Color3,
+	size: number?,
+	rate: number?,
+	speed: number?,
+	accel: Vector3?,
+	glow: number?,
+}
+
+local WEATHER_LOOKS: { [string]: WeatherLook } = {
+	Wet = { color = Color3.fromRGB(90, 150, 255), material = Enum.Material.Glass, texture = "Vfx_Rain", fx = Color3.fromRGB(150, 200, 255), size = 0.4, rate = 8, speed = 0.5, accel = Vector3.new(0, -12, 0), glow = 0.3 },
+	Shocked = { color = Color3.fromRGB(255, 235, 90), texture = "Vfx_Star", fx = Color3.fromRGB(255, 240, 120), size = 0.5, rate = 10, speed = 3, glow = 1 },
+	Frozen = { color = Color3.fromRGB(185, 230, 255), repaint = true, material = Enum.Material.Ice, texture = "Vfx_Snow", fx = Color3.fromRGB(230, 245, 255), size = 0.35, rate = 5, speed = 0.6, accel = Vector3.new(0, -2, 0), glow = 0.5 },
+	Windswept = { color = Color3.fromRGB(255, 175, 90), texture = "Vfx_Leaf", fx = Color3.fromRGB(255, 160, 60), size = 0.45, rate = 4, speed = 3, glow = 0 },
+	Bloodlit = { color = Color3.fromRGB(170, 20, 30), repaint = true, material = Enum.Material.SmoothPlastic, texture = "Vfx_Glow", fx = Color3.fromRGB(255, 70, 60), size = 0.4, rate = 10, speed = 1, accel = Vector3.new(0, 3, 0), glow = 1 },
+	Starlit = { color = Color3.fromRGB(40, 60, 140), repaint = true, material = Enum.Material.Neon, texture = "Vfx_Star", fx = Color3.fromRGB(150, 255, 220), size = 0.45, rate = 8, speed = 0.8, glow = 1 },
+	Disco = { rainbow = true, texture = "Vfx_Note", fx = Color3.fromRGB(255, 255, 255), size = 0.5, rate = 4, speed = 2, accel = Vector3.new(0, 2, 0), glow = 0.4 },
+}
+
 -- Mutation looks. Golden and Rainbow repaint the pet; Moon-Dusted keeps colours and sparkles.
 function AssetLibrary.applyMutation(model: Model, mutation: string?)
 	if not mutation then
@@ -179,6 +203,54 @@ function AssetLibrary.applyMutation(model: Model, mutation: string?)
 		if mutation == "Rainbow" then
 			model:AddTag("RainbowPet")
 		end
+	end
+	-- Weather mutations (Config/Weather): a recolour and/or a particle effect.
+	local look = WEATHER_LOOKS[mutation]
+	if look then
+		if look.color then
+			for _, d in model:GetDescendants() do
+				if d:IsA("MeshPart") and not d:GetAttribute("Glow") then
+					if look.repaint then
+						d.TextureID = ""
+						d.Color = look.color
+					else
+						d.Color = d.Color:Lerp(look.color, 0.45)
+					end
+					if look.material then
+						d.Material = look.material
+					end
+				end
+			end
+		end
+		if look.rainbow then
+			local i = 0
+			for _, d in model:GetDescendants() do
+				if d:IsA("MeshPart") and not d:GetAttribute("Glow") then
+					i += 1
+					d.TextureID = ""
+					d.Material = Enum.Material.Neon
+					d:SetAttribute("RainbowOffset", i * 0.21)
+				end
+			end
+			model:AddTag("RainbowPet")
+		end
+		if body then
+			local fx = Instance.new("ParticleEmitter")
+			fx.Name = "MutationSparkles"
+			fx.Texture = Assets.Images[look.texture] or "rbxasset://textures/particles/sparkles_main.dds"
+			fx.Color = ColorSequence.new(look.fx)
+			fx.Size = NumberSequence.new(look.size or 0.35, 0)
+			fx.Rate = look.rate or 6
+			fx.Lifetime = NumberRange.new(0.8, 1.4)
+			fx.Speed = NumberRange.new(look.speed or 1, (look.speed or 1) * 1.6)
+			fx.SpreadAngle = Vector2.new(180, 180)
+			fx.Acceleration = look.accel or Vector3.zero
+			fx.Rotation = NumberRange.new(0, 360)
+			fx.RotSpeed = NumberRange.new(-90, 90)
+			fx.LightEmission = look.glow or 0.6
+			fx.Parent = body
+		end
+		return
 	end
 	if body and (mutation == "MoonDusted" or mutation == "Golden") then
 		local sparkles = Instance.new("ParticleEmitter")

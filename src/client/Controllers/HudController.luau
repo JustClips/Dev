@@ -21,6 +21,7 @@ local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
+local Weather = require(Shared.Config.Weather)
 local Tools = require(Shared.Config.Tools)
 local Zones = require(Shared.Config.Zones)
 
@@ -334,6 +335,11 @@ local function renderBoosts()
 	if event then
 		add("Event", "Icon_Event", `{event.LuckMult}x`, event.EndsAt, event.Name, `Live event: {event.LuckMult}x egg luck for everyone.`)
 	end
+	local weather = Weather.ById[State.server("Weather") or ""]
+	local weatherEnds = State.server("WeatherEndsAt") or 0
+	if weather and weatherEnds > now then
+		add("Weather", "Icon_Weather_" .. weather.Id, Weather.chipLabel(weather), weatherEnds, weather.Name, weather.Blurb)
+	end
 	local data = State.data
 	if data and (data.Boosts.Cash2x or 0) > now then
 		add("Cash2x", "Icon_Cash", "2x", data.Boosts.Cash2x, "2x Cash", "Your pets and selling earn double cash.")
@@ -380,7 +386,8 @@ local function renderBoosts()
 		local c = chip :: TextButton
 		local label = c:FindFirstChild("Label") :: TextLabel?
 		if label then
-			label.Text = `{entry.label} {Format.countdown(entry.endsAt - now)}`
+			local left = Format.countdown(entry.endsAt - now)
+			label.Text = if entry.label == "" then left else `{entry.label} {left}`
 		end
 		c.LayoutOrder = i
 		local icon = c:FindFirstChild("Icon") :: ImageLabel?

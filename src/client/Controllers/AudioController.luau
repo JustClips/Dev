@@ -29,6 +29,8 @@ local loaded = false
 local rows: { [string]: Frame } = {}
 local dragging: string? = nil
 local currentName = ""
+local duck = 1 -- playlist volume share (WeatherController turns it down for the disco)
+local currentSound: Sound? = nil
 
 local function applyVolumes()
 	musicGroup.Volume = volumes.Music
@@ -114,7 +116,8 @@ local function playMusic()
 			end
 		end
 		sound:Play()
-		TweenService:Create(sound, TweenInfo.new(2), { Volume = Sounds.MusicVolume }):Play()
+		currentSound = sound
+		TweenService:Create(sound, TweenInfo.new(2), { Volume = Sounds.MusicVolume * duck }):Play()
 		local length = sound.TimeLength
 		local fadeAt = math.max(1, length - 2.5)
 		while sound.Parent and sound.IsPlaying and sound.TimePosition < fadeAt do
@@ -124,6 +127,15 @@ local function playMusic()
 		task.wait(2)
 		sound:Destroy()
 		task.wait(1.5)
+	end
+end
+
+-- Turns the playlist down (0-1 share of its normal volume), e.g. while the disco plays.
+function AudioController:SetMusicDuck(share: number)
+	duck = math.clamp(share, 0, 1)
+	local sound = currentSound
+	if sound and sound.Parent then
+		TweenService:Create(sound, TweenInfo.new(1.5), { Volume = Sounds.MusicVolume * duck }):Play()
 	end
 end
 

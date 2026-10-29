@@ -48,7 +48,8 @@ Anything else in Output (red errors especially) is a bug worth reporting.
 - [ ] Your top 3 aliens follow you around.
 
 ### Server events
-- [ ] The Moon Clean % bar fills as the server sweeps. At 100% a Meteor Shower starts: the sky tints, meteors fall and drop eggs, then the Moon regrows.
+- [ ] The World Clean % bar fills as the server sweeps. At 100% an Egg Rain starts: the sky turns pink, eggs fall out of the sky onto glowing landing rings, then the leaves regrow.
+- [ ] Weather: a minute after the server starts (then every 2.5-4.5 min) a weather rolls. In Studio type `/weather Rain` (or Thunderstorm, Snow, Windy, Rainbow, GoldenHour, BloodMoon, Aurora, Disco, `off`) and `/eggrain` in chat to try each one.
 - [ ] Server luck products show the luck banner for everyone.
 
 ### Monetization (after step 2)

@@ -39,7 +39,27 @@ Sounds.Sfx = {
 	Meteor = { Id = id(9118614718), Volume = 0.6 }, -- Rock Impact 1
 	RockBreak = { Id = id(9118587698), Volume = 0.55 }, -- Rock Drop Breaks 3
 	Gift = { Id = id(1840890621), Volume = 0.45 }, -- Twinkle Sting
+	-- Egg Rain and weather
+	EggFall = { Id = id(9116418234), Volume = 0.5 }, -- Magic Tone Falling Shimmer Flanged 1
+	EggLand = { Id = id(9114109952), Volume = 0.7 }, -- Dirt Impacts 2
+	Thunder1 = { Id = id(9116282544), Volume = 0.7 }, -- Lightning Strike Sharp Hissing Crack 1
+	Thunder2 = { Id = id(9116282646), Volume = 0.7 }, -- Lightning Strike Sharp Hissing Crack 3
+	Thunder3 = { Id = id(9116282791), Volume = 0.7 }, -- Lightning Strike Sharp Hissing Crack 4
+	WeatherStart = { Id = id(9119447936), Volume = 0.45 }, -- Sparkle Bell Tree Wind Chimes 1
+	BloodMoonStart = { Id = id(9125637399), Volume = 0.5 }, -- Magic Growl Eerie Tonal Swells
 } :: { [string]: SoundDef }
+
+-- Looping weather beds (WeatherController), faded in and out with the weather.
+-- Music = true plays through the music slider and quietens the playlist meanwhile.
+Sounds.Weather = {
+	Rain = { Id = id(9112853287), Volume = 0.35 }, -- Rain Heavy 1
+	Thunderstorm = { Id = id(9120020741), Volume = 0.5 }, -- Thunder Light Rain 1
+	Snow = { Id = id(9113286969), Volume = 0.25 }, -- Barstow Wind Light Blustery Low Howl 2
+	Windy = { Id = id(9114057128), Volume = 0.4 }, -- Desert Wind Whistley Light Gusts 2
+	BloodMoon = { Id = id(140269757258221), Volume = 0.35 }, -- Eerie Drone (APM)
+	Aurora = { Id = id(9112835862), Volume = 0.3 }, -- Night Ambience 1
+	Disco = { Id = id(9038367768), Volume = 0.5, Music = true }, -- Funky Disco Beats (APM)
+} :: { [string]: { Id: string, Volume: number, Music: boolean? } }
 
 -- Background music, shuffled. Cute and calm so it never gets annoying.
 Sounds.Music = {

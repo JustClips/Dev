@@ -1,17 +1,19 @@
 --!strict
 -- Meteor Shower state machine (GAME_PLAN §5.8):
 -- Filling -> (Moon bar 100% or product) -> Countdown 10 s -> Shower 60 s (Rare+ eggs rain) -> respawn dust -> Filling.
--- State is published as attributes on ReplicatedStorage.ServerState.
-local Lighting = game:GetService("Lighting")
+-- State is published as attributes on ReplicatedStorage.ServerState. The sky, the falling
+-- eggs and their landing marks are drawn by the client (WeatherController).
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
+local Grid = require(Shared.Grid)
 local Net = require(Shared.Net)
 
 local TICK = 0.5
-local SKY_TWEEN = TweenInfo.new(3)
+-- Seconds an egg takes to fall from the sky; the real egg appears when it lands.
+local FALL_SECONDS = 2.2
 
 local EventService = {}
 
@@ -19,19 +21,11 @@ local S: any
 local rng = Random.new()
 local stateName = "Filling"
 local stateEndsAt = 0
-local normalLighting: { [string]: any } = {}
 
 local function publish()
 	local state = S.StateService:GetServerState()
 	state:SetAttribute("EventState", stateName)
 	state:SetAttribute("EventEndsAt", stateEndsAt)
-end
-
-local function setSky(shower: boolean)
-	local goal = if shower
-		then { Ambient = Color3.fromRGB(150, 90, 120), OutdoorAmbient = Color3.fromRGB(140, 80, 110), ColorShift_Top = Color3.fromRGB(255, 120, 80) }
-		else normalLighting
-	TweenService:Create(Lighting, SKY_TWEEN, goal):Play()
 end
 
 local function startCountdown()
@@ -45,7 +39,6 @@ local function startShower()
 	stateName = "Shower"
 	stateEndsAt = os.time() + Economy.Shower.DurationSeconds
 	publish()
-	setSky(true)
 	Net.fireAll("Announce", "Egg Rain! Grab the rare eggs!", "Event")
 end
 
@@ -55,15 +48,36 @@ local function endShower()
 	S.DustService:RespawnAll()
 	S.DustService:ResetMoonProgress()
 	publish()
-	setSky(false)
 	Net.fireAll("Announce", "The leaves are back. Start sweeping!", "Event")
 end
 
-local function dropMeteor()
-	local position = S.DustService:GetRandomMoonPosition(rng)
-	Net.fireAll("MeteorImpact", position)
-	task.delay(1.2, function()
-		local rarity = S.EggService:RollShowerRarity(S.BoostService:GetServerLuck())
+-- Half the eggs land near someone so everybody gets to see (and chase) them.
+local function dropSpot(): Vector3
+	local players = Players:GetPlayers()
+	if #players > 0 and rng:NextNumber() < 0.5 then
+		local character = players[rng:NextInteger(1, #players)].Character
+		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if root then
+			local spot = root.Position + Vector3.new(rng:NextNumber(-35, 35), 0, rng:NextNumber(-35, 35))
+			local found: Vector3? = nil
+			Grid.forEachInRadius(spot, 8, function(id)
+				found = found or Grid.tilePosition(id)
+			end)
+			if found then
+				return found
+			end
+		end
+	end
+	return S.DustService:GetRandomMoonPosition(rng)
+end
+
+-- An egg falls out of the sky (every client draws the fall and the landing mark), then
+-- the real, pick-up-able egg appears where it lands.
+local function dropEgg()
+	local position = dropSpot()
+	local rarity = S.EggService:RollShowerRarity(S.BoostService:GetServerLuck())
+	Net.fireAll("EggDrop", position, rarity, FALL_SECONDS)
+	task.delay(FALL_SECONDS, function()
 		S.EggService:SpawnEgg(position, rarity, nil)
 	end)
 end
@@ -88,11 +102,6 @@ end
 
 function EventService:Init(services)
 	S = services
-	normalLighting = {
-		Ambient = Lighting.Ambient,
-		OutdoorAmbient = Lighting.OutdoorAmbient,
-		ColorShift_Top = Lighting.ColorShift_Top,
-	}
 end
 
 function EventService:Start()
@@ -115,7 +124,7 @@ function EventService:Start()
 			elseif stateName == "Shower" then
 				if os.clock() >= nextEgg then
 					nextEgg = os.clock() + Economy.Shower.EggInterval
-					dropMeteor()
+					dropEgg()
 				end
 				if now >= stateEndsAt then
 					endShower()

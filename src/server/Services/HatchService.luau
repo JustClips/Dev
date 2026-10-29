@@ -175,11 +175,12 @@ end
 
 local function rollMutation(luck: number): string?
 	for _, mutation in Eggs.Mutations do
-		if rng:NextNumber() < math.min(1, luck / mutation.Chance) then
+		if not mutation.WeatherOnly and rng:NextNumber() < math.min(1, luck / mutation.Chance) then
 			return mutation.Name
 		end
 	end
-	return nil
+	-- The live weather (Config/Weather) can give its own mutation.
+	return S.WeatherService:RollMutation(rng)
 end
 
 -- Opens a ready egg: rolls the pet and puts it in the inventory.
@@ -211,7 +212,7 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	local def = pool[rng:NextInteger(1, #pool)]
 	local luck = S.BoostService:GetServerLuck() * S.BoostService:GetPersonalLuck(player)
 	local mutation = rollMutation(luck)
-	local huge = rng:NextNumber() < math.min(1, Aliens.HugeChance * luck)
+	local huge = rng:NextNumber() < math.min(1, Aliens.HugeChance * luck * S.WeatherService:GetHugeMult())
 	local isNew = not data.Index[def.Id]
 	data.Index[def.Id] = true
 	local petUid = S.DataService:NewUid(data, "p")

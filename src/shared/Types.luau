@@ -4,7 +4,18 @@
 export type BigNum = { m: number, e: number }
 
 export type Rarity = "Common" | "Uncommon" | "Rare" | "Epic" | "Legendary" | "Mythic" | "Cosmic"
-export type Mutation = "Golden" | "Rainbow" | "MoonDusted"
+export type Mutation =
+	"Golden"
+	| "Rainbow"
+	| "MoonDusted"
+	-- Weather mutations (Config/Weather): only hatch during their weather.
+	| "Wet"
+	| "Shocked"
+	| "Frozen"
+	| "Windswept"
+	| "Bloodlit"
+	| "Starlit"
+	| "Disco"
 
 export type ToolDef = {
 	Tier: number,
@@ -104,6 +115,7 @@ export type MutationDef = {
 	Chance: number, -- 1 in N
 	IncomeMult: number,
 	Color: Color3,
+	WeatherOnly: boolean?, -- never rolled normally, only during its weather
 }
 
 export type ProductKind =

@@ -452,6 +452,118 @@ def _egg_rain():
     ]
 
 
+def cloud(cx, cy, s, fill=WHITE):
+    """Puffy cloud centred on (cx, cy), about 2s wide."""
+    return [
+        path("M %s %s C %s %s %s %s %s %s C %s %s %s %s %s %s C %s %s %s %s %s %s "
+             "C %s %s %s %s %s %s C %s %s %s %s %s %s Z" % (
+                 cx - s, cy + s * 0.45,
+                 cx - s * 1.25, cy + s * 0.45, cx - s * 1.2, cy - s * 0.15, cx - s * 0.72, cy - s * 0.1,
+                 cx - s * 0.7, cy - s * 0.75, cx + s * 0.05, cy - s * 0.85, cx + s * 0.2, cy - s * 0.35,
+                 cx + s * 0.55, cy - s * 0.65, cx + s * 1.15, cy - s * 0.4, cx + s * 0.95, cy + s * 0.05,
+                 cx + s * 1.3, cy + s * 0.1, cx + s * 1.3, cy + s * 0.45, cx + s, cy + s * 0.45,
+                 cx + s * 0.4, cy + s * 0.45, cx - s * 0.4, cy + s * 0.45, cx - s, cy + s * 0.45), fill),
+        hl(cx - s * 0.35, cy - s * 0.35, s * 0.22, s * 0.12, rot=-15),
+    ]
+
+
+def drop(cx, cy, s, fill=BLUE):
+    d = "M %s %s C %s %s %s %s %s %s C %s %s %s %s %s %s C %s %s %s %s %s %s Z" % (
+        cx, cy - s,
+        cx + s * 0.25, cy - s * 0.4, cx + s * 0.62, cy, cx + s * 0.62, cy + s * 0.38,
+        cx + s * 0.62, cy + s * 1.05, cx - s * 0.62, cy + s * 1.05, cx - s * 0.62, cy + s * 0.38,
+        cx - s * 0.62, cy, cx - s * 0.25, cy - s * 0.4, cx, cy - s)
+    return path(d, fill)
+
+
+@icon("Weather_Rain")
+def _w_rain():
+    return [drop(150, 400, 62), drop(270, 430, 62), drop(390, 400, 62)] + cloud(256, 210, 170, GREY)
+
+
+@icon("Weather_Thunderstorm")
+def _w_storm():
+    return (cloud(256, 190, 170, DGREY) +
+            [poly([(290, 250), (170, 400), (250, 400), (210, 500), (360, 330), (280, 330), (330, 250)], YELLOW)])
+
+
+@icon("Weather_Snow")
+def _w_snow():
+    out = []
+    for i in range(3):
+        a = i * 60
+        out.append(rect(236, 50, 40, 412, SKY, r=20, rot=a, shade=False))
+    for i in range(6):
+        a = math.radians(i * 60 - 90)
+        cx, cy = 256 + math.cos(a) * 140, 256 + math.sin(a) * 140
+        out.append(circle(round(cx), round(cy), 34, WHITE, shade=False))
+    out.append(circle(256, 256, 64, WHITE))
+    return out
+
+
+@icon("Weather_Windy")
+def _w_windy():
+    return [
+        stroke_line("M 40 170 C 180 170 260 160 300 120 C 330 90 300 40 260 60", width=W * 1.4),
+        stroke_line("M 30 260 C 200 260 330 260 400 230 C 460 200 440 140 390 160", width=W * 1.4),
+        stroke_line("M 60 350 C 160 350 220 350 260 380", width=W * 1.4),
+        path("M 330 470 C 300 400 340 330 440 300 C 470 380 430 450 330 470 Z", ORANGE),
+        stroke_line("M 340 460 C 370 400 400 360 440 310", width=W * 0.5),
+    ]
+
+
+@icon("Weather_Rainbow")
+def _w_rainbow():
+    out = []
+    for r, col in ((210, RED), (175, ORANGE), (140, YELLOW), (105, GREEN), (70, BLUE)):
+        out.append(path("M %s 350 A %s %s 0 0 1 %s 350 L %s 350 A %s %s 0 0 0 %s 350 Z" % (
+            256 - r, r, r, 256 + r, 256 + r - 35, r - 35, r - 35, 256 - r + 35), col, shade=False))
+    return out + cloud(110, 380, 80) + cloud(400, 380, 80)
+
+
+@icon("Weather_GoldenHour")
+def _w_sun():
+    out = []
+    for i in range(8):
+        a = i * 45
+        out.append(rect(236, 30, 40, 100, ORANGE, r=20, rot=0, shade=False))
+        out[-1].attrs["transform"] = "rotate(%s 256 256)" % a
+    return out + [circle(256, 256, 130, GOLD), hl(210, 200, 36, 22, rot=-35)]
+
+
+@icon("Weather_BloodMoon")
+def _w_blood():
+    return [circle(256, 256, 200, RED), circle(190, 200, 34, RED_D, body=False, shade=False),
+            circle(320, 310, 46, RED_D, body=False, shade=False), circle(300, 170, 22, RED_D, body=False, shade=False),
+            circle(180, 330, 24, RED_D, body=False, shade=False), hl(160, 140, 40, 22, rot=-35)]
+
+
+@icon("Weather_Aurora")
+def _w_aurora():
+    return [
+        path("M 40 330 C 120 180 200 300 270 170 C 330 60 420 170 470 90 L 470 230 C 420 300 340 200 280 300 "
+             "C 210 420 120 300 40 450 Z", "#5CF2B4"),
+        path("M 40 450 C 120 300 210 420 280 300 C 340 200 420 300 470 230 L 470 300 C 420 380 340 290 280 380 "
+             "C 210 480 120 380 40 500 Z", PURPLE, shade=False),
+        poly(star_points(130, 110, 50, 20, n=4, rot=0), YELLOW, shade=False),
+        poly(star_points(380, 360, 36, 15, n=4, rot=0), WHITE, shade=False),
+    ]
+
+
+@icon("Weather_Disco")
+def _w_disco():
+    out = [stroke_line("M 256 20 L 256 80", width=W * 0.8), circle(256, 280, 190, GREY)]
+    cols = [SKY, PINK, YELLOW, PURPLE, GREEN, BLUE]
+    k = 0
+    for gy in range(120, 460, 56):
+        for gx in range(80, 460, 56):
+            if (gx + 28 - 256) ** 2 + (gy + 28 - 280) ** 2 < 165 ** 2:
+                out.append(rect(gx + 4, gy + 4, 48, 48, cols[k % len(cols)], r=4, body=False, shade=False, line=False, opacity=0.85))
+                k += 1
+    out.append(hl(190, 200, 40, 24, rot=-35, opacity=0.8))
+    return out
+
+
 @icon("Backpack")
 def _backpack():
     return [

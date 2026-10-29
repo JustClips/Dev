@@ -92,9 +92,10 @@ local function onSweep(player: Player, position: any)
 	local goldenMult = Economy.Golden.Mult * Upgrades.multiplier(levels, "Golden")
 
 	local totalDust, totalValue, goldenHits, critHits = 0, 0, 0, 0
+	local weatherMult = S.WeatherService:GetCashMult()
 	for _, id in cleared do
 		local tileZone = S.DustService:GetZone(id)
-		local mult = runtime.Combo
+		local mult = runtime.Combo * weatherMult
 		if S.DustService:TakeGolden(id) then
 			mult *= goldenMult
 			goldenHits += 1
