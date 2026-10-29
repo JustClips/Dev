@@ -1031,70 +1031,70 @@ def garage():
 
 
 # ---------------------------------------------------------------- Upgrades
-TREE_BG = "#20242C"  # dark board behind the hexagons
-HEX_W, HEX_H = 80, 92  # one tree node (HexTile is pointy-top, 0.866 wide)
+HEX_W, HEX_H = 130, 150  # one tree node (HexTile is pointy-top, 0.866 wide)
 
 
 def upgrades():
-    """Upgrade tree (Slime RNG style): a dark board you drag around with hexagon nodes, and a
-    detail card on the right. UpgradeController builds the nodes and links from
-    Config/Upgrades by cloning Canvas.NodeTemplate / Canvas.LinkTemplate."""
+    """Upgrade tree, Slime RNG style: full screen over the dimmed world, a honeycomb of hexagon
+    nodes (icon, name and price inside), a big title on top and CLOSE at the bottom. Tap a hex
+    to buy it; Lab hexes open their own sub-tree (BACK returns). UpgradeController builds the
+    boards from Config/Upgrades by cloning Board.Scaler.Canvas.NodeTemplate."""
+    fit = lambda mx, mn=9: node("Fit", "UITextSizeConstraint", {"MaxTextSize": mx, "MinTextSize": mn})
     node_t = node("NodeTemplate", "ImageButton", base(U(0, HEX_W, 0, HEX_H), anchor=(0.5, 0.5), BackgroundTransparency=1,
                                                        Image=img("HexTile"), ScaleType="Fit", AutoButtonColor=False,
-                                                       Visible=False, ZIndex=3), [
-        node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.5, WHITE], [1, "#C9CFDB"]]}, "Rotation": 90}),
-        node("Glow", "ImageLabel", base(U(1, 18, 1, 20), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
-                                        Image=img("HexRing"), ScaleType="Fit", ImageColor3=PREMIUM, Visible=False, ZIndex=2)),
-        icon("Icon", "Upgrade", 44, U(0.5, 0, 0.5, -6), (0.5, 0.5), ZIndex=5),
-        icon("Lock", "Lock", 34, U(0.5, 0, 0.5, -8), (0.5, 0.5), ZIndex=6, Visible=False),
-        text("Question", "?", U(1, 0, 1, 0), ts=40, display=True, stroke=3, ZIndex=6, Visible=False),
-        frame("Level", U(0, 50, 0, 20), U(0.5, 0, 1, -10), (0.5, 1), bg=INK, ZIndex=6, children=[
-            text("Label", "0/10", U(1, 0, 1, 0), ts=14, display=True, ZIndex=7),
+                                                       ImageColor3="#2A3142", Visible=False, ZIndex=3), [
+        node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.55, WHITE], [1, "#B9C0CE"]]}, "Rotation": 90}),
+        node("Glow", "ImageLabel", base(U(1, 14, 1, 16), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
+                                        Image=img("HexRing"), ScaleType="Fit", ImageColor3=SUCCESS, Visible=False, ZIndex=2)),
+        text("Level", "0/10", U(0, 70, 0, 18), U(0.5, 0, 0, 14), (0.5, 0), ts=14, color="#E3E8F2", display=True, stroke=2,
+             ZIndex=6),
+        icon("Icon", "Upgrade", 54, U(0.5, 0, 0, 30), (0.5, 0), ZIndex=5),
+        text("Name", "Upgrade", U(1, -22, 0, 24), U(0.5, 0, 0, 84), (0.5, 0), ts=19, display=True, stroke=2.5, ZIndex=6,
+             TextScaled=True, children=[fit(19)]),
+        frame("Price", U(1, -26, 0, 24), U(0.5, 0, 0, 108), (0.5, 0), ZIndex=6, children=[
+            hlist(4, "Center", "Center"),
+            icon("Coin", "Cash", 22, ZIndex=6, LayoutOrder=1),
+            text("Label", "$0", U(0, 0, 1, 0), ts=19, color=WHITE, display=True, stroke=2.5, ZIndex=7, LayoutOrder=2,
+                 AutomaticSize="X", TextWrapped=False),
+        ]),
+        icon("Lock", "Lock", 52, U(0.5, 0, 0.5, -10), (0.5, 0.5), ZIndex=6, Visible=False),
+        text("Question", "?", U(1, 0, 1, 0), ts=72, display=True, stroke=4, ZIndex=6, Visible=False),
+    ])
+    board = frame("Board", U(1, 0, 1, 0), children=[
+        frame("Scaler", U(0, 0, 0, 0), U(0.5, 0, 0.5, -10), (0.5, 0.5), children=[
+            autoscale(),
+            frame("Canvas", U(0, 0, 0, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), children=[
+                node("Zoom", "UIScale", {"Scale": 1}),
+                node_t,
+            ]),
         ]),
     ])
-    link_t = frame("LinkTemplate", U(0, 60, 0, 10), anchor=(0.5, 0.5), bg=MUTED, Visible=False, ZIndex=1, children=[
-        border(INK, 2),
+    top = frame("Top", U(0, 900, 0, 84), U(0.5, 0, 0, 6), (0.5, 0), children=[
+        autoscale(),
+        text("Title", "Upgrades!", U(1, 0, 1, 0), ts=54, display=True, stroke=4),
     ])
-    canvas = frame("Canvas", U(0, 0, 0, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), children=[
-        node("Zoom", "UIScale", {"Scale": 0.8}),
-        frame("Links", U(0, 0, 0, 0)),
-        frame("Nodes", U(0, 0, 0, 0)),
-        link_t,
-        node_t,
+    bottom = frame("Bottom", U(0, 900, 0, 196), U(0.5, 0, 1, -8), (0.5, 1), children=[
+        autoscale(),
+        frame("Tip", U(0, 640, 0, 82), U(0.5, 0, 0, 0), (0.5, 0), bg="#0B0E1E", BackgroundTransparency=0.25, ZIndex=4,
+              children=[
+                  border(INK, 3),
+                  text("Name", "", U(1, -20, 0, 28), U(0.5, 0, 0, 6), (0.5, 0), ts=24, display=True, stroke=2.5, ZIndex=5),
+                  text("Info", "", U(1, -20, 0, 22), U(0.5, 0, 0, 34), (0.5, 0), ts=17, color="#7CF58A", display=True,
+                       stroke=2, ZIndex=5),
+                  text("Desc", "", U(1, -20, 0, 20), U(0.5, 0, 0, 56), (0.5, 0), ts=15, color="#C8D0E8", heavy=True, ZIndex=5),
+              ]),
+        button("Close", U(0, 250, 0, 88), U(0.5, 0, 1, 0), (0.5, 1), color=DANGER, label="CLOSE", ts=46, ZIndex=5),
+        button("Back", U(0, 170, 0, 72), U(0.5, -140, 1, -8), (1, 1), color=HEADER, label="BACK", ts=32, ZIndex=5,
+               Visible=False),
+        button("ZoomOut", U(0, 64, 0, 64), U(0.5, 140, 1, -12), (0, 1), color=HEADER, label="-", ts=40, ZIndex=5),
+        button("ZoomIn", U(0, 64, 0, 64), U(0.5, 214, 1, -12), (0, 1), color=HEADER, label="+", ts=40, ZIndex=5),
     ])
-    zoom_btn = lambda name, label, y: button(name, U(0, 48, 0, 48), U(0, 10, 1, y), (0, 1), color=HEADER, label=label,
-                                             ts=30, ZIndex=8)
-    tree = frame("Tree", U(0, 530, 0, 430), U(0, 14, 0, 76), bg=TREE_BG, ClipsDescendants=True, Active=True, children=[
-        border(INK, STROKE),
-        node("Pattern", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("Stud"), ScaleType="Tile",
-                                           TileSize=U(0, 64, 0, 64), ImageColor3="#3A4150", ImageTransparency=0.7, ZIndex=0)),
-        canvas,
-        zoom_btn("ZoomIn", "+", -116),
-        zoom_btn("ZoomOut", "-", -63),
-        button("Home", U(0, 48, 0, 48), U(0, 10, 1, -10), (0, 1), color=PILL_BASE, ZIndex=8, children=[
-            icon("Icon", "Base", 34, U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=9),
-        ]),
-        frame("HintPlate", U(0, 250, 0, 28), U(1, -8, 0, 8), (1, 0), bg="#0B0E1E", BackgroundTransparency=0.35, ZIndex=8,
-              children=[text("Hint", "Drag to look around", U(1, -12, 1, 0), U(0, 6, 0, 0), ts=14, heavy=True, ZIndex=9)]),
-    ])
-    detail = plate("Detail", U(0, 252, 0, 430), U(1, -14, 0, 76), (1, 0), tint=WHITE, children=[
-        icon("Icon", "Upgrade", 78, U(0.5, 0, 0, 10), (0.5, 0)),
-        text("Name", "Sweep Power", U(1, -16, 0, 30), U(0.5, 0, 0, 92), (0.5, 0), ts=22, color=INK, display=True,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 12})]),
-        text("Level", "Level 0 / 10", U(1, -16, 0, 20), U(0.5, 0, 0, 122), (0.5, 0), ts=15, color=SUB, heavy=True),
-        text("Desc", "", U(1, -20, 0, 40), U(0.5, 0, 0, 144), (0.5, 0), ts=15, color=SUB),
-        frame("EffectBox", U(1, -20, 0, 60), U(0.5, 0, 0, 190), (0.5, 0), bg="#EEF1F6", children=[
-            border(INK, 2),
-            text("Effect", "+0% > +15%", U(1, -10, 0, 32), U(0.5, 0, 0, 4), (0.5, 0), ts=22, color="#1E9E3A", display=True),
-            text("Total", "", U(1, -10, 0, 20), U(0.5, 0, 0, 36), (0.5, 0), ts=13, color=SUB, heavy=True),
-        ]),
-        text("Status", "", U(1, -20, 0, 40), U(0.5, 0, 0, 256), (0.5, 0), ts=15, color=DANGER, heavy=True),
-        text("Cost", "", U(1, -20, 0, 26), U(0.5, 0, 0, 298), (0.5, 0), ts=19, color=INK, display=True),
-        button("Buy", U(1, -20, 0, 52), U(0.5, 0, 0, 328), (0.5, 0), color=SUCCESS, label="Buy", ts=24),
-        button("Max", U(1, -20, 0, 38), U(0.5, 0, 0, 384), (0.5, 0), color=HEADER, label="Buy Max", ts=19),
-    ])
-    write("Upgrades", screen([dim(), window(WIN_W, WIN_H, "Upgrade Tree", "Upgrade", [tree, detail], header="#FF9A3C")],
-                             order=10, enabled=False))
+    d = dim()
+    d["className"] = "Frame"
+    for k in ("Text", "AutoButtonColor"):
+        d["properties"].pop(k, None)
+    d["properties"]["BackgroundTransparency"] = 0.45
+    write("Upgrades", screen([d, board, top, bottom], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Loading

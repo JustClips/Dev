@@ -68,6 +68,9 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 	end
 	S.StateService:Mark(player)
 	local level = data.Upgrades[def.Id]
+	if def.Opens then
+		return true, `{def.Name} unlocked! Tap it to go inside`
+	end
 	if level == 1 and #Upgrades.Children[def.Id] > 0 then
 		return true, `{def.Name} unlocked! New upgrades opened`
 	end

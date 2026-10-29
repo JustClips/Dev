@@ -37,7 +37,9 @@ export type VehicleDef = {
 
 export type UpgradeDef = {
 	Id: string,
-	Hex: { q: number, r: number }, -- axial position in the upgrade tree
+	Tree: string, -- which board it is on (Config/Upgrades Trees)
+	Opens: string?, -- lab hexes: the sub-tree they open
+	Hex: { q: number, r: number }, -- axial position on its board
 	Parent: string?, -- must have level 1+ before this node can be bought
 	Stat: string, -- what it raises (Config/Upgrades Stats)
 	Name: string,

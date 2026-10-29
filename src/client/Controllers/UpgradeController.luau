@@ -1,10 +1,12 @@
 --!strict
--- Upgrade Tree window (Upgrade Station on the south plaza, or the rail button), Slime RNG
--- style: a dark board of hexagon nodes you drag around (pinch / mouse wheel / +- to zoom)
--- and a detail card on the right for the selected node. Buying a node opens its neighbours;
--- nodes further out show as "?" until you get next to them, rebirth-gated ones show a lock.
--- Also keeps the rail button's badge (how many nodes you can buy right now) and bobs the
--- floating arrow over the station.
+-- Upgrade Tree (Upgrade Station on the south plaza, or the rail button), Slime RNG style:
+-- full screen over the dimmed world, a honeycomb of hexagons with icon, name and price
+-- inside. Tap a hex to buy a level. Hexes next to what you own show as "?" until you get
+-- next to them; rebirth-gated ones show a lock. Lab hexes (Egg Lab, Lucky Lab, Pet Lab)
+-- cost cash once, then tapping them flies into that lab's own honeycomb; BACK returns.
+-- Drag to look around, pinch / mouse wheel / +- to zoom. Hovering (or tapping) a hex shows
+-- what it does above CLOSE. Also keeps the rail button's badge (how many hexes you can buy)
+-- and bobs the floating arrow over the station.
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -25,46 +27,43 @@ local Types = require(Shared.Types)
 
 type UpgradeDef = Types.UpgradeDef
 
-local GREEN = Color3.fromRGB(61, 220, 90)
-local GREY = Color3.fromRGB(166, 174, 194)
-local GOLD = Color3.fromRGB(255, 200, 60)
-local PURPLE = Color3.fromRGB(155, 107, 255)
-local INK_TEXT = Color3.fromRGB(23, 25, 30)
 local WHITE = Color3.new(1, 1, 1)
+local RED = Color3.fromRGB(255, 77, 94)
+local GOLD_TEXT = Color3.fromRGB(255, 214, 90)
+local INFO_GREEN = Color3.fromRGB(124, 245, 138)
 
--- Node tile colours by state.
+-- Hex colours by state (the tile image is white with a dark outline; this tints it).
 local TILE = {
-	Open = Color3.fromRGB(247, 248, 250),
-	Owned = Color3.fromRGB(139, 224, 78),
-	Max = Color3.fromRGB(255, 200, 60),
-	Rebirth = Color3.fromRGB(122, 96, 196),
-	Mystery = Color3.fromRGB(74, 80, 96),
+	Open = Color3.fromRGB(42, 49, 66),
+	Owned = Color3.fromRGB(47, 155, 255),
+	Max = Color3.fromRGB(255, 190, 50),
+	Lab = Color3.fromRGB(61, 200, 90),
+	Rebirth = Color3.fromRGB(91, 74, 143),
+	Mystery = Color3.fromRGB(58, 63, 75),
 }
-local LINK_ON = Color3.fromRGB(139, 224, 78)
-local LINK_OPEN = Color3.fromRGB(216, 220, 230)
-local LINK_OFF = Color3.fromRGB(74, 80, 96)
 
-local SPACING = 66 -- hex grid size (centre to corner) in canvas pixels
-local LINK_TRIM = 70 -- link length hidden under the two hexes it joins
-local ZOOM_MIN, ZOOM_MAX, ZOOM_START = 0.45, 1.4, 0.8
-local DRAG_THRESHOLD = 8 -- screen pixels before a press becomes a drag
+local SPACING = 79 -- hex grid size (centre to corner) in board pixels; hexes are 150 tall
+local ZOOM_MIN, ZOOM_MAX = 0.5, 1.5
+local DRAG_THRESHOLD = 10 -- screen pixels before a press becomes a drag
 
 local UpgradeController = {}
 
 local C: any
 local gui: ScreenGui
-local tree: Frame
 local canvas: Frame
 local zoom: UIScale
-local detail: Frame
+local title: TextLabel
+local tip: Frame
+local backButton: TextButton
 
+local boards: { [string]: Frame } = {}
 local nodes: { [string]: ImageButton } = {}
-local nodeSize = UDim2.fromOffset(80, 92)
-local railBadge: GuiObject? = nil
-local links: { [string]: Frame } = {} -- keyed by the child node id
-local selected = Upgrades.Root
+local nodeSize = UDim2.fromOffset(130, 150)
+local extents: { [string]: Vector2 } = {}
+local current = "Main"
+local hovered: string? = nil
 local pan = Vector2.zero
-local extent = Vector2.new(400, 400) -- half size of the whole tree in canvas pixels
+local railBadge: GuiObject? = nil
 
 local function hexToPixel(q: number, r: number): Vector2
 	return Vector2.new(SPACING * math.sqrt(3) * (q + r / 2), SPACING * 1.5 * r)
@@ -74,18 +73,20 @@ end
 
 -- "Open" (buy level 1), "Owned" (1+), "Max", "Rebirth" (needs more rebirths),
 -- "Mystery" ("?" next to something you can see), "Hidden" (not drawn yet).
+-- A lab's sub-tree root is open as soon as you can enter the lab.
 local function computeStates(data): { [string]: string }
 	local levels = data.Upgrades
 	local states = {}
 	for _, def in Upgrades.List do -- parents always come before their children
 		local level = levels[def.Id] or 0
+		local need = def.Parent
 		local state
 		if level >= def.MaxLevel then
 			state = "Max"
 		elseif level > 0 then
 			state = "Owned"
-		elseif def.Parent and (levels[def.Parent] or 0) < 1 then
-			local parentState = states[def.Parent]
+		elseif need and (levels[need] or 0) < 1 then
+			local parentState = states[need]
 			state = if parentState == "Open" or parentState == "Rebirth" then "Mystery" else "Hidden"
 		elseif (data.Rebirths or 0) < def.RequiredRebirths then
 			state = "Rebirth"
@@ -97,34 +98,35 @@ local function computeStates(data): { [string]: string }
 	return states
 end
 
+local function price(def: UpgradeDef, data): number
+	return Upgrades.cost(def, data.Upgrades[def.Id] or 0)
+end
+
+-- Can be bought right now (sub-tree roots also need their lab).
 local function canBuy(def: UpgradeDef, data, state: string): boolean
 	if state ~= "Open" and state ~= "Owned" then
 		return false
 	end
-	return BigNum.gte(data.Cash, Upgrades.cost(def, data.Upgrades[def.Id] or 0))
-end
-
--- How many levels you can afford right now (for the Buy Max button).
-local function affordableLevels(def: UpgradeDef, data): number
-	local level = data.Upgrades[def.Id] or 0
-	local total = 0
-	local count = 0
-	while level + count < def.MaxLevel do
-		total += Upgrades.cost(def, level + count)
-		if not BigNum.gte(data.Cash, total) then
-			break
-		end
-		count += 1
+	local need = Upgrades.requires(def)
+	if need and (data.Upgrades[need] or 0) < 1 then
+		return false
 	end
-	return count
+	return BigNum.gte(data.Cash, price(def, data))
 end
 
 -- ---------------------------------------------------------------- pan and zoom
 
+local function viewSize(): Vector2
+	local camera = Workspace.CurrentCamera
+	local view = if camera then camera.ViewportSize else Vector2.new(1456, 820)
+	return view / math.max(Ui.scale(), 0.01)
+end
+
 local function clampPan()
 	local k = zoom.Scale
-	local size = tree.AbsoluteSize / math.max(Ui.windowScale(), 0.01)
-	local limit = Vector2.new(math.max(0, extent.X * k - size.X / 2 + 60), math.max(0, extent.Y * k - size.Y / 2 + 60))
+	local extent = extents[current] or Vector2.new(300, 300)
+	local size = viewSize()
+	local limit = Vector2.new(math.max(0, extent.X * k - size.X / 2 + 120), math.max(0, extent.Y * k - size.Y / 2 + 160))
 	pan = Vector2.new(math.clamp(pan.X, -limit.X, limit.X), math.clamp(pan.Y, -limit.Y, limit.Y))
 	canvas.Position = UDim2.new(0.5, pan.X, 0.5, pan.Y)
 end
@@ -132,30 +134,17 @@ end
 local function setZoom(value: number)
 	local old = zoom.Scale
 	local new = math.clamp(value, ZOOM_MIN, ZOOM_MAX)
-	-- Keep the middle of the board where it is.
-	pan *= new / old
+	pan *= new / old -- keep the middle of the board where it is
 	zoom.Scale = new
 	clampPan()
 end
 
--- Centres the board on a node (or the root).
-local function focus(id: string, instant: boolean?)
-	local def = Upgrades.ById[id]
-	local p = hexToPixel(def.Hex.q, def.Hex.r) * zoom.Scale
-	pan = -p
-	local before = canvas.Position
-	clampPan()
-	if not instant and not Ui.reducedMotion() then
-		local target = canvas.Position
-		canvas.Position = before
-		TweenService:Create(canvas, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Position = target }):Play()
-	end
-end
-
-local function overTree(position: any): boolean
-	local p = Vector2.new(position.X, position.Y)
-	local a, s = tree.AbsolutePosition, tree.AbsoluteSize
-	return p.X >= a.X and p.Y >= a.Y and p.X <= a.X + s.X and p.Y <= a.Y + s.Y
+-- Zoom that fits a whole board on screen between the title and CLOSE (never above 1).
+local function fitZoom(): number
+	local extent = extents[current] or Vector2.new(300, 300)
+	local size = viewSize()
+	local k = math.min((size.X - 120) / (extent.X * 2), (size.Y - 330) / (extent.Y * 2), 1)
+	return math.clamp(k, ZOOM_MIN, 1)
 end
 
 local dragInput: InputObject? = nil
@@ -170,7 +159,7 @@ local function setupDragging()
 			return
 		end
 		local kind = input.UserInputType
-		if (kind == Enum.UserInputType.MouseButton1 or kind == Enum.UserInputType.Touch) and overTree(input.Position) then
+		if kind == Enum.UserInputType.MouseButton1 or kind == Enum.UserInputType.Touch then
 			dragInput = input
 			dragFrom = Vector2.new(input.Position.X, input.Position.Y)
 			panFrom = pan
@@ -181,7 +170,7 @@ local function setupDragging()
 		if not gui.Enabled then
 			return
 		end
-		if input.UserInputType == Enum.UserInputType.MouseWheel and overTree(input.Position) then
+		if input.UserInputType == Enum.UserInputType.MouseWheel then
 			setZoom(zoom.Scale * (if input.Position.Z > 0 then 1.12 else 1 / 1.12))
 			return
 		end
@@ -200,7 +189,7 @@ local function setupDragging()
 			return
 		end
 		dragged = true
-		pan = panFrom + delta / math.max(Ui.windowScale(), 0.01)
+		pan = panFrom + delta / math.max(Ui.scale(), 0.01)
 		clampPan()
 	end)
 	UserInputService.InputEnded:Connect(function(input)
@@ -208,14 +197,17 @@ local function setupDragging()
 		if not active then
 			return
 		end
-		if input == active or (active.UserInputType == Enum.UserInputType.MouseButton1 and input.UserInputType == Enum.UserInputType.MouseButton1) then
+		if
+			input == active
+			or (active.UserInputType == Enum.UserInputType.MouseButton1 and input.UserInputType == Enum.UserInputType.MouseButton1)
+		then
 			dragInput = nil
 			if dragged then
 				draggedAt = os.clock()
 			end
 		end
 	end)
-	local pinchFrom = ZOOM_START
+	local pinchFrom = 1
 	UserInputService.TouchPinch:Connect(function(positions, scale, _velocity, state)
 		if not gui.Enabled or #positions < 2 then
 			return
@@ -223,227 +215,216 @@ local function setupDragging()
 		if state == Enum.UserInputState.Begin then
 			pinchFrom = zoom.Scale
 			dragInput = nil
-		elseif state == Enum.UserInputState.Change and overTree((positions[1] + positions[2]) / 2) then
+			dragged = true
+			draggedAt = os.clock()
+		elseif state == Enum.UserInputState.Change then
 			setZoom(pinchFrom * scale)
+			draggedAt = os.clock()
 		end
 	end)
 end
 
 -- ---------------------------------------------------------------- drawing
 
-local function setLevelText(node: ImageButton, value: string?)
-	local plate = node:FindFirstChild("Level") :: Frame
-	plate.Visible = value ~= nil
-	if value then
-		(plate:FindFirstChild("Label") :: TextLabel).Text = value
+local function setTip(id: string?)
+	local data = State.data
+	local nameLabel = tip:FindFirstChild("Name") :: TextLabel
+	local info = tip:FindFirstChild("Info") :: TextLabel
+	local desc = tip:FindFirstChild("Desc") :: TextLabel
+	info.TextColor3 = INFO_GREEN
+	if not data or not id then
+		nameLabel.Text = Upgrades.Trees[current].Name
+		info.Text = "Tap a hexagon to buy it"
+		desc.Text = if current == "Main" then "Labs open their own upgrade trees" else "BACK returns to the main tree"
+		return
+	end
+	local def = Upgrades.ById[id]
+	local state = computeStates(data)[id]
+	local level = data.Upgrades[id] or 0
+	if state == "Mystery" then
+		nameLabel.Text = "???"
+		info.Text = "Buy the upgrade next to it to find out"
+		desc.Text = ""
+		return
+	end
+	nameLabel.Text = def.Name
+	desc.Text = def.Description
+	if def.Opens then
+		info.Text = if level > 0 then "Tap to go inside" else `Unlock for {Format.cash(price(def, data))}`
+	elseif state == "Rebirth" then
+		info.TextColor3 = RED
+		info.Text = `Rebirth {def.RequiredRebirths} time{if def.RequiredRebirths == 1 then "" else "s"} to open this`
+	elseif state == "Max" then
+		info.TextColor3 = GOLD_TEXT
+		info.Text = `MAX  {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
+	else
+		local stat = Upgrades.Stats[def.Stat]
+		info.Text = `Level {level}/{def.MaxLevel}  ·  {Upgrades.describe(def, level)} > {Upgrades.describe(def, level + 1)} {stat.Name}`
 	end
 end
 
-local renderDetail: () -> ()
-
-local function renderNodes(data, states: { [string]: string })
-	for _, def in Upgrades.List do
-		local node = nodes[def.Id]
-		local state = states[def.Id]
-		local level = data.Upgrades[def.Id] or 0
-		node.Visible = state ~= "Hidden"
-		node.ImageColor3 = TILE[state] or TILE.Mystery
-		local icon = node:FindFirstChild("Icon") :: ImageLabel
-		local lock = node:FindFirstChild("Lock") :: ImageLabel
-		local question = node:FindFirstChild("Question") :: TextLabel
-		icon.Visible = state == "Open" or state == "Owned" or state == "Max"
-		icon.ImageTransparency = if state == "Open" and not canBuy(def, data, state) then 0.35 else 0
-		lock.Visible = state == "Rebirth"
-		question.Visible = state == "Mystery"
-		if state == "Max" then
-			setLevelText(node, "MAX")
-		elseif state == "Rebirth" then
-			setLevelText(node, `R{def.RequiredRebirths}`)
-		elseif state == "Mystery" then
-			setLevelText(node, nil)
-		else
-			setLevelText(node, `{level}/{def.MaxLevel}`)
-		end
-		local glow = node:FindFirstChild("Glow") :: ImageLabel
-		if def.Id == selected and state ~= "Hidden" then
-			glow.Visible = true
-			glow.ImageColor3 = WHITE
-		elseif canBuy(def, data, state) then
-			glow.Visible = true
-			glow.ImageColor3 = GREEN
-		else
-			glow.Visible = false
-		end
-
-		local link = links[def.Id]
-		if link then
-			local parentState = states[def.Parent :: string]
-			link.Visible = state ~= "Hidden" and parentState ~= "Hidden"
-			link.BackgroundColor3 = if state == "Owned" or state == "Max"
-				then LINK_ON
-				elseif state == "Open" then LINK_OPEN
-				else LINK_OFF
-		end
-	end
-end
-
-local function render()
+local function renderBoard()
 	local data = State.data
 	if not data or not gui.Enabled then
 		return
 	end
 	local states = computeStates(data)
-	if states[selected] == "Hidden" then
-		selected = Upgrades.Root
+	for _, def in Upgrades.List do
+		if def.Tree ~= current then
+			continue
+		end
+		local node = nodes[def.Id]
+		local state = states[def.Id]
+		local level = data.Upgrades[def.Id] or 0
+		local isLab = def.Opens ~= nil
+		node.Visible = state ~= "Hidden"
+		node.ImageColor3 = if isLab and level > 0 then TILE.Lab else TILE[state] or TILE.Mystery
+
+		local known = state == "Open" or state == "Owned" or state == "Max" or state == "Rebirth"
+		local icon = node:FindFirstChild("Icon") :: ImageLabel
+		local nameLabel = node:FindFirstChild("Name") :: TextLabel
+		local priceRow = node:FindFirstChild("Price") :: Frame
+		local priceLabel = priceRow:FindFirstChild("Label") :: TextLabel
+		local coin = priceRow:FindFirstChild("Coin") :: ImageLabel
+		local levelLabel = node:FindFirstChild("Level") :: TextLabel
+		icon.Visible = known and state ~= "Rebirth"
+		nameLabel.Visible = known
+		priceRow.Visible = known
+		levelLabel.Visible = known and not isLab and state ~= "Rebirth"
+		levelLabel.Text = `{level}/{def.MaxLevel}`
+		;(node:FindFirstChild("Lock") :: ImageLabel).Visible = state == "Rebirth"
+		;(node:FindFirstChild("Question") :: TextLabel).Visible = state == "Mystery"
+
+		coin.Visible = false
+		priceLabel.TextColor3 = WHITE
+		if isLab and level > 0 then
+			priceLabel.Text = "ENTER"
+		elseif state == "Max" then
+			priceLabel.Text = "MAX"
+		elseif state == "Rebirth" then
+			priceLabel.Text = `Rebirth {def.RequiredRebirths}`
+		else
+			local cost = price(def, data)
+			coin.Visible = true
+			priceLabel.Text = Format.big(cost)
+			priceLabel.TextColor3 = if BigNum.gte(data.Cash, cost) then WHITE else RED
+		end
+		;(node:FindFirstChild("Glow") :: ImageLabel).Visible = canBuy(def, data, state)
 	end
-	renderNodes(data, states)
-	renderDetail()
+	setTip(hovered)
 end
 
-renderDetail = function()
+local function popNode(node: ImageButton)
+	if Ui.reducedMotion() then
+		return
+	end
+	node.Size = nodeSize
+	local big = UDim2.fromOffset(nodeSize.X.Offset * 1.15, nodeSize.Y.Offset * 1.15)
+	TweenService:Create(node, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true), { Size = big }):Play()
+end
+
+-- Shows one board (Main or a lab) and frames it on screen.
+local function showBoard(treeId: string, flyIn: boolean?)
+	current = treeId
+	for id, board in boards do
+		board.Visible = id == treeId
+	end
+	backButton.Visible = treeId ~= "Main"
+	title.Text = if treeId == "Main" then "Upgrades!" else `{Upgrades.Trees[treeId].Name}!`
+	hovered = nil
+	local target = fitZoom()
+	zoom.Scale = target
+	pan = Vector2.zero
+	clampPan()
+	renderBoard()
+	if flyIn and not Ui.reducedMotion() then
+		-- The new board grows out of the middle of the screen.
+		zoom.Scale = target * 0.4
+		TweenService:Create(zoom, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = target }):Play()
+	end
+end
+
+local function onNodeTapped(def: UpgradeDef)
 	local data = State.data
 	if not data then
 		return
 	end
-	local def = Upgrades.ById[selected]
-	local states = computeStates(data)
-	local state = states[def.Id]
+	hovered = def.Id
+	local state = computeStates(data)[def.Id]
 	local level = data.Upgrades[def.Id] or 0
-	local statDef = Upgrades.Stats[def.Stat]
-	local mystery = state == "Mystery"
-
-	local icon = detail:FindFirstChild("Icon") :: ImageLabel
-	icon.Image = AssetLibrary.image(if mystery then "Icon_Lock" else def.Icon)
-	;(detail:FindFirstChild("Name") :: TextLabel).Text = if mystery then "???" else def.Name
-	;(detail:FindFirstChild("Level") :: TextLabel).Text = if mystery then "Not found yet" else `Level {level} / {def.MaxLevel}`
-	;(detail:FindFirstChild("Desc") :: TextLabel).Text = if mystery
-		then "Buy the upgrade next to it to see what this is."
-		else def.Description
-
-	local box = detail:FindFirstChild("EffectBox") :: Frame
-	local effect = box:FindFirstChild("Effect") :: TextLabel
-	local total = box:FindFirstChild("Total") :: TextLabel
-	box.Visible = not mystery
-	if level >= def.MaxLevel then
-		effect.Text = Upgrades.describe(def, level)
-	else
-		effect.Text = `{Upgrades.describe(def, level)} > {Upgrades.describe(def, level + 1)}`
+	if def.Opens and level > 0 then
+		Ui.sound("Open")
+		showBoard(def.Opens, true)
+		return
 	end
-	total.Text = `{statDef.Name} total: {Upgrades.describeStat(def.Stat, Upgrades.stat(data.Upgrades, def.Stat))}`
-
-	local status = detail:FindFirstChild("Status") :: TextLabel
-	local cost = detail:FindFirstChild("Cost") :: TextLabel
-	local buy = detail:FindFirstChild("Buy") :: TextButton
-	local max = detail:FindFirstChild("Max") :: TextButton
-	status.Text = ""
-	status.TextColor3 = Color3.fromRGB(255, 77, 94)
-	cost.Text = ""
-	max.Visible = false
-	if state == "Max" then
-		Ui.setText(buy, "MAXED")
-		buy.BackgroundColor3 = GOLD
-		status.TextColor3 = Color3.fromRGB(30, 158, 58)
-		status.Text = "Fully upgraded!"
-	elseif mystery then
-		Ui.setText(buy, "Locked")
-		buy.BackgroundColor3 = GREY
-	elseif state == "Rebirth" then
-		Ui.setText(buy, `Rebirth {def.RequiredRebirths}`)
-		buy.BackgroundColor3 = PURPLE
-		status.Text = `Rebirth {def.RequiredRebirths} time{if def.RequiredRebirths == 1 then "" else "s"} to open this`
-		cost.Text = `Cost: {Format.cash(Upgrades.cost(def, level))}`
-	else
-		local price = Upgrades.cost(def, level)
-		local affordable = BigNum.gte(data.Cash, price)
-		cost.Text = `Cost: {Format.cash(price)}`
-		Ui.setText(buy, if level == 0 then "Unlock" else "Buy")
-		buy.BackgroundColor3 = if affordable then GREEN else GREY
-		if not affordable then
-			status.Text = `Need {Format.cash(BigNum.sub(price, data.Cash))} more`
-		end
-		local count = affordableLevels(def, data)
-		if count >= 2 then
-			max.Visible = true
-			Ui.setText(max, `Buy Max (x{count})`)
-		end
+	if state == "Mystery" or state == "Rebirth" or state == "Max" then
+		Ui.sound("Error")
+		setTip(def.Id)
+		return
 	end
-	cost.TextColor3 = INK_TEXT
-end
-
-local function selectNode(id: string)
-	selected = id
-	render()
-end
-
-local function buy(count: number)
-	local def = Upgrades.ById[selected]
-	local ok, message = Net.func("BuyUpgrade"):InvokeServer(def.Id, count)
-	if message and message ~= "" then
-		C.HudController:Toast(message, if ok then "Good" else "Bad")
-	end
+	local ok, message = Net.func("BuyUpgrade"):InvokeServer(def.Id, 1)
 	if ok then
 		Ui.sound("Coin")
-		local node = nodes[def.Id]
-		if node and not Ui.reducedMotion() then
-			local grow = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true)
-			node.Size = nodeSize
-			local big = UDim2.fromOffset(nodeSize.X.Offset * 1.18, nodeSize.Y.Offset * 1.18)
-			TweenService:Create(node, grow, { Size = big }):Play()
+		popNode(nodes[def.Id])
+	else
+		Ui.sound("Error")
+		if message and message ~= "" then
+			C.HudController:Toast(message, "Bad")
 		end
 	end
+	setTip(def.Id)
 end
 
--- Builds every node and link once from Config/Upgrades.
+-- Builds every board and hex once from Config/Upgrades.
 local function build()
-	local nodeTemplate = canvas:FindFirstChild("NodeTemplate") :: ImageButton
-	local linkTemplate = canvas:FindFirstChild("LinkTemplate") :: Frame
-	nodeSize = nodeTemplate.Size
-	local nodeFolder = canvas:FindFirstChild("Nodes") :: Frame
-	local linkFolder = canvas:FindFirstChild("Links") :: Frame
-	local maxX, maxY = 0, 0
+	local template = canvas:FindFirstChild("NodeTemplate") :: ImageButton
+	nodeSize = template.Size
+	for treeId in Upgrades.Trees do
+		local board = Instance.new("Frame")
+		board.Name = treeId
+		board.BackgroundTransparency = 1
+		board.Size = UDim2.fromOffset(0, 0)
+		board.Visible = false
+		board.Parent = canvas
+		boards[treeId] = board
+		extents[treeId] = Vector2.new(100, 100)
+	end
 	for i, def in Upgrades.List do
 		local p = hexToPixel(def.Hex.q, def.Hex.r)
-		maxX, maxY = math.max(maxX, math.abs(p.X)), math.max(maxY, math.abs(p.Y))
-		local node = nodeTemplate:Clone()
+		local e = extents[def.Tree]
+		extents[def.Tree] = Vector2.new(math.max(e.X, math.abs(p.X) + 70), math.max(e.Y, math.abs(p.Y) + 80))
+		local node = template:Clone()
 		node.Name = def.Id
 		node.Position = UDim2.fromOffset(p.X, p.Y)
 		node.LayoutOrder = i
 		node.Visible = false
 		;(node:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.image(def.Icon)
-		node.Parent = nodeFolder
+		;(node:FindFirstChild("Name") :: TextLabel).Text = def.Name
+		node.Parent = boards[def.Tree]
 		nodes[def.Id] = node
 		node.Activated:Connect(function()
-			-- A drag that started on a node shouldn't select it.
-			if dragged and os.clock() - draggedAt < 0.2 then
+			-- A drag or pinch that ended on a hex shouldn't buy it.
+			if dragged and os.clock() - draggedAt < 0.25 then
 				return
 			end
-			Ui.sound("Click")
-			selectNode(def.Id)
+			onNodeTapped(def)
 		end)
-
-		if def.Parent then
-			local parent = Upgrades.ById[def.Parent]
-			local a = hexToPixel(parent.Hex.q, parent.Hex.r)
-			local mid = (a + p) / 2
-			local d = p - a
-			local link = linkTemplate:Clone()
-			link.Name = def.Id
-			link.Position = UDim2.fromOffset(mid.X, mid.Y)
-			link.Size = UDim2.fromOffset(math.max(10, d.Magnitude - LINK_TRIM), linkTemplate.Size.Y.Offset)
-			link.Rotation = math.deg(math.atan2(d.Y, d.X))
-			link.Visible = false
-			link.Parent = linkFolder
-			links[def.Id] = link
-		end
+		node.MouseEnter:Connect(function()
+			hovered = def.Id
+			setTip(def.Id)
+		end)
+		node.MouseLeave:Connect(function()
+			if hovered == def.Id then
+				hovered = nil
+				setTip(nil)
+			end
+		end)
 	end
-	extent = Vector2.new(maxX + 50, maxY + 56)
-
-	-- Affordable nodes breathe so the board shows what you can buy.
+	-- Hexes you can afford breathe so the board shows what to buy.
 	if not Ui.reducedMotion() then
 		local pulse = TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
 		for _, node in nodes do
-			local glow = node:FindFirstChild("Glow") :: ImageLabel
-			TweenService:Create(glow, pulse, { ImageTransparency = 0.45 }):Play()
+			TweenService:Create(node:FindFirstChild("Glow") :: ImageLabel, pulse, { ImageTransparency = 0.5 }):Play()
 		end
 	end
 end
@@ -452,12 +433,14 @@ end
 
 function UpgradeController:Toggle()
 	Ui.toggle("Upgrades")
-	render()
+	if gui.Enabled then
+		showBoard("Main")
+	end
 end
 
 function UpgradeController:Open()
 	Ui.open("Upgrades")
-	render()
+	showBoard("Main")
 end
 
 local function updateBadge(data)
@@ -490,39 +473,35 @@ end
 function UpgradeController:Init(controllers)
 	C = controllers
 	gui = Ui.screen("Upgrades")
-	tree = Ui.find(gui, "Window.Tree")
-	canvas = Ui.find(gui, "Window.Tree.Canvas")
-	zoom = Ui.find(gui, "Window.Tree.Canvas.Zoom")
-	detail = Ui.find(gui, "Window.Detail")
+	canvas = Ui.find(gui, "Board.Scaler.Canvas")
+	zoom = Ui.find(canvas, "Zoom")
+	title = Ui.find(gui, "Top.Title")
+	tip = Ui.find(gui, "Bottom.Tip")
+	backButton = Ui.find(gui, "Bottom.Back")
 end
 
 function UpgradeController:Start()
 	build()
-	zoom.Scale = ZOOM_START
-	focus(Upgrades.Root, true)
 	setupDragging()
 
-	Ui.button(Ui.find(gui, "Window.Close"), function()
+	Ui.button(Ui.find(gui, "Bottom.Close"), function()
 		Ui.close("Upgrades")
 	end)
-	Ui.button(Ui.find(gui, "Dim"), function()
-		Ui.close("Upgrades")
+	Ui.button(backButton, function()
+		local lab = Upgrades.Trees[current].Portal
+		showBoard("Main")
+		if lab then
+			-- Land on the lab hex you came out of.
+			local def = Upgrades.ById[lab]
+			pan = -hexToPixel(def.Hex.q, def.Hex.r) * zoom.Scale
+			clampPan()
+		end
 	end)
-	Ui.button(Ui.find(tree, "ZoomIn"), function()
+	Ui.button(Ui.find(gui, "Bottom.ZoomIn"), function()
 		setZoom(zoom.Scale + 0.15)
 	end)
-	Ui.button(Ui.find(tree, "ZoomOut"), function()
+	Ui.button(Ui.find(gui, "Bottom.ZoomOut"), function()
 		setZoom(zoom.Scale - 0.15)
-	end)
-	Ui.button(Ui.find(tree, "Home"), function()
-		zoom.Scale = ZOOM_START
-		focus(Upgrades.Root)
-	end)
-	Ui.button(Ui.find(detail, "Buy"), function()
-		buy(1)
-	end)
-	Ui.button(Ui.find(detail, "Max"), function()
-		buy(100)
 	end)
 	ProximityPromptService.PromptTriggered:Connect(function(prompt)
 		if prompt:GetAttribute("Opens") == "Upgrades" then
@@ -540,18 +519,16 @@ function UpgradeController:Start()
 	-- Redraw when levels, rebirths or what you can afford change (not on every cash tick).
 	local lastSignature = ""
 	State.Changed:Connect(function(data)
-		local parts = { tostring(data.Rebirths or 0), selected }
+		local parts = { tostring(data.Rebirths or 0) }
 		for _, def in Upgrades.List do
 			local level = data.Upgrades[def.Id] or 0
 			table.insert(parts, `{level}:{BigNum.gte(data.Cash, Upgrades.cost(def, level))}`)
 		end
-		local def = Upgrades.ById[selected]
-		table.insert(parts, tostring(affordableLevels(def, data)))
 		local signature = table.concat(parts, "|")
 		if signature ~= lastSignature then
 			lastSignature = signature
 			updateBadge(data)
-			render()
+			renderBoard()
 		end
 	end)
 end
