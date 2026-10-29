@@ -5,6 +5,10 @@
   python3 tools/upload_assets.py --creator 123  # upload as another Roblox user
 
   python3 tools/upload_assets.py --write-lua    # only rewrite Assets.luau from the locks
+  python3 tools/upload_assets.py --grant-all    # re-grant every asset in the lock (see GRANTS)
+
+Every new upload is granted to the game (with the meshes/textures inside it), the alt
+account and the group in GRANTS right away.
 
 Needs env ROBLOXAPIKEY (Open Cloud key with asset write, belonging to the creator).
 The key is never printed. Uploads are cached by file hash per creator in
@@ -105,6 +109,26 @@ def upload(path, asset_type, name):
     return int(resp["assetId"])
 
 
+# Who may use every upload, granted right after it finishes (Dev, 2026-10-29). The game
+# (universe) also gets the meshes and textures inside each model (grantToDependencies; the
+# API only allows that for a universe), or Studio shows "not authorized" for those inner ids
+# and the model draws as nothing. The alt account and the group get the asset itself.
+GRANTS = [("Universe", "10773346969", True), ("User", "347852675", False), ("Group", "351097046", False)]
+
+
+def grant(ids):
+    ids = [int(i) for i in ids]
+    for subject, sid, deps in GRANTS:
+        for i in range(0, len(ids), 50):
+            body = {"subjectType": subject, "subjectId": sid, "action": "Use",
+                    "requests": [{"assetId": a, "grantToDependencies": deps} for a in ids[i:i + 50]]}
+            code, r = request("PATCH", "https://apis.roblox.com/asset-permissions-api/v1/assets/permissions",
+                              json.dumps(body).encode(), {"Content-Type": "application/json-patch+json"})
+            errs = r.get("errors") if isinstance(r, dict) else None
+            if code >= 300 or errs:
+                print(f"  grant to {subject} {sid}: {code} {errs or r}", flush=True)
+
+
 def sha(path):
     return hashlib.sha256(open(path, "rb").read()).hexdigest()
 
@@ -196,6 +220,11 @@ def main():
         print("wrote", os.path.relpath(LUA, ROOT))
         return
     lock = read_lock(CREATOR_USER_ID)
+    if "--grant-all" in sys.argv:
+        ids = [v["id"] for bucket in ("models", "anims", "images") for v in lock[bucket].values()]
+        grant(ids)
+        print(f"granted {len(ids)} assets")
+        return
     jobs = []
     for f in sorted(os.listdir(OUT)):
         if f.endswith(".glb") and f[:-4] in meta:
@@ -220,6 +249,7 @@ def main():
         if ONLY and ONLY != name:
             continue
         aid = upload(path, kind, name)
+        grant([aid])
         lock[bucket][name] = {"id": aid, "sha": h}
         changed += 1
         print(f"uploaded {name} -> {aid}", flush=True)
