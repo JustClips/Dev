@@ -16,11 +16,11 @@
     "Size": [
      [
       0,
-      640
+      420
      ],
      [
       0,
-      250
+      168
      ]
     ],
     "Position": [
@@ -54,7 +54,7 @@
      "className": "UIStroke",
      "properties": {
       "Color": "#17191E",
-      "Thickness": 4,
+      "Thickness": 3,
       "ApplyStrokeMode": "Border",
       "LineJoinMode": "Round"
      }
@@ -66,21 +66,21 @@
       "Size": [
        [
         0,
-        240
+        150
        ],
        [
         0,
-        40
+        28
        ]
       ],
       "Position": [
        [
         0,
-        16
+        12
        ],
        [
         0,
-        -26
+        -18
        ]
       ],
       "AnchorPoint": [
@@ -98,7 +98,7 @@
        "className": "UIStroke",
        "properties": {
         "Color": "#17191E",
-        "Thickness": 3,
+        "Thickness": 2.5,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Round"
        }
@@ -110,7 +110,7 @@
         "Size": [
          [
           1,
-          -12
+          -10
          ],
          [
           1,
@@ -120,7 +120,7 @@
         "Position": [
          [
           0,
-          6
+          5
          ],
          [
           0,
@@ -135,7 +135,7 @@
         "BackgroundTransparency": 1,
         "Text": "Pet Trader",
         "TextColor3": "#17191E",
-        "TextSize": 22,
+        "TextSize": 16,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -156,21 +156,21 @@
       "Size": [
        [
         1,
-        -40
+        -28
        ],
        [
         0,
-        82
+        52
        ]
       ],
       "Position": [
        [
         0,
-        20
+        14
        ],
        [
         0,
-        24
+        16
        ]
       ],
       "AnchorPoint": [
@@ -181,7 +181,7 @@
       "BackgroundTransparency": 1,
       "Text": "",
       "TextColor3": "#17191E",
-      "TextSize": 24,
+      "TextSize": 16,
       "TextXAlignment": "Left",
       "TextYAlignment": "Top",
       "TextWrapped": true,
@@ -198,8 +198,8 @@
        "name": "Fit",
        "className": "UITextSizeConstraint",
        "properties": {
-        "MaxTextSize": 24,
-        "MinTextSize": 12
+        "MaxTextSize": 16,
+        "MinTextSize": 10
        }
       }
      ]
@@ -215,7 +215,7 @@
        ],
        [
         0,
-        110
+        72
        ]
       ],
       "Position": [
@@ -245,21 +245,21 @@
       "Size": [
        [
         1,
-        -32
+        -20
        ],
        [
         0,
-        118
+        80
        ]
       ],
       "Position": [
        [
         0,
-        16
+        10
        ],
        [
         1,
-        -14
+        -10
        ]
       ],
       "AnchorPoint": [
@@ -277,21 +277,21 @@
         "CellSize": [
          [
           0.5,
-          -5
+          -4
          ],
          [
           0,
-          54
+          36
          ]
         ],
         "CellPadding": [
          [
           0,
-          10
+          8
          ],
          [
           0,
-          10
+          8
          ]
         ],
         "SortOrder": "LayoutOrder"
@@ -338,7 +338,7 @@
          "className": "UIStroke",
          "properties": {
           "Color": "#17191E",
-          "Thickness": 4,
+          "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Round"
          }
@@ -492,7 +492,7 @@
           "BackgroundTransparency": 1,
           "Text": "",
           "TextColor3": "#FFFFFF",
-          "TextSize": 21,
+          "TextSize": 15,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,

@@ -195,8 +195,9 @@ function InventoryService:HoldPet(player: Player, uid: string): (boolean, string
 	local mult = Weights.incomeMult(def and def.Rarity or "Common", pet.Weight)
 	model:ScaleTo(HELD_SCALE * (if pet.Huge then Aliens.HugeScale * 0.6 else 1) * Weights.visualScale(mult))
 	local _, size = model:GetBoundingBox()
-	-- Held up in front of the chest, facing the same way as the player.
-	model:PivotTo(root.CFrame * CFrame.new(0, 0.6, -(root.Size.Z / 2 + size.Z / 2 + 0.6)))
+	-- Carried in both arms in front of the chest, facing the same way as the player (the
+	-- clients pose the arms, see HoldPoseController).
+	model:PivotTo(root.CFrame * CFrame.new(0, -0.1, -(root.Size.Z / 2 + size.Z / 2 + 0.35)))
 	for _, part in model:GetDescendants() do
 		if part:IsA("BasePart") then
 			part.Anchored = false

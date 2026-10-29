@@ -19,9 +19,11 @@ local KEY = Color3.fromRGB(247, 248, 250)
 local FILL = Color3.fromRGB(61, 220, 90)
 local SUB = Color3.fromRGB(181, 186, 198)
 local POP = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+-- Dev: too big on PC. The billboard is drawn in screen pixels, so it gets a fixed scale.
+local SCALE = if game:GetService("UserInputService").TouchEnabled then 0.8 else 0.62
 
 local folder: ScreenGui
-type Shown = { gui: BillboardGui, fill: Frame, scale: UIScale, holdStart: number?, conns: { RBXScriptConnection } }
+type Shown = { gui: BillboardGui, fill: Frame, scale: UIScale, holdStart: number?, conns: { RBXScriptConnection }, outline: Highlight? }
 local shown: { [ProximityPrompt]: Shown } = {}
 
 local function keyText(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInputType): string
@@ -70,13 +72,13 @@ local function build(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInp
 	gui.AlwaysOnTop = true
 	gui.LightInfluence = 0
 	gui.Size = UDim2.fromOffset(250, 64)
-	gui.SizeOffset = Vector2.new(0, 0.5)
-	gui.StudsOffset = Vector3.new(prompt.UIOffset.X / 50, 1.5 + prompt.UIOffset.Y / 50, 0)
+	-- Centred on the object, like Roblox's own prompt (was floating too high).
+	gui.StudsOffset = Vector3.new(prompt.UIOffset.X / 50, prompt.UIOffset.Y / 50, 0)
 	gui.Adornee = prompt.Parent :: Instance
 	gui.ResetOnSpawn = false
 	gui.Active = true -- so taps on it reach the button
 	local scale = Instance.new("UIScale")
-	scale.Scale = 0.6
+	scale.Scale = SCALE * 0.6
 	scale.Parent = gui
 
 	local holder = Instance.new("TextButton")
@@ -162,12 +164,37 @@ local function build(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInp
 		fill.Size = UDim2.fromScale(1, 0)
 	end))
 	table.insert(entry.conns, prompt.Triggered:Connect(function()
-		scale.Scale = 1.15
-		TweenService:Create(scale, POP, { Scale = 1 }):Play()
+		scale.Scale = SCALE * 1.15
+		TweenService:Create(scale, POP, { Scale = SCALE }):Play()
 	end))
 	gui.Parent = folder
-	TweenService:Create(scale, POP, { Scale = 1 }):Play()
+	TweenService:Create(scale, POP, { Scale = SCALE }):Play()
 	return entry
+end
+
+-- A white outline on the thing the prompt is for (e.g. which of two eggs side by side).
+-- Only small things: a prompt on a big building doesn't outline the building.
+local function outlineFor(prompt: ProximityPrompt): Highlight?
+	local parent = prompt.Parent
+	local target: Instance? = nil
+	local model = parent and parent:FindFirstAncestorOfClass("Model")
+	if model and model ~= Workspace and model:GetExtentsSize().Magnitude < 22 and not model:FindFirstChildOfClass("Humanoid") then
+		target = model
+	elseif parent and parent:IsA("BasePart") and parent.Size.Magnitude < 22 and parent.Transparency < 1 then
+		target = parent
+	end
+	if not target then
+		return nil
+	end
+	local h = Instance.new("Highlight")
+	h.Name = "PromptOutline"
+	h.FillTransparency = 1
+	h.OutlineColor = Color3.new(1, 1, 1)
+	h.OutlineTransparency = 0.15
+	h.DepthMode = Enum.HighlightDepthMode.Occluded
+	h.Adornee = target
+	h.Parent = target -- a Highlight draws when it sits in the world
+	return h
 end
 
 local function hide(prompt: ProximityPrompt)
@@ -178,6 +205,9 @@ local function hide(prompt: ProximityPrompt)
 	shown[prompt] = nil
 	for _, c in entry.conns do
 		c:Disconnect()
+	end
+	if entry.outline then
+		entry.outline:Destroy()
 	end
 	entry.gui:Destroy()
 end
@@ -206,6 +236,7 @@ function PromptController:Start()
 		local ok, entry = pcall(build, prompt, inputType)
 		if ok then
 			shown[prompt] = entry
+			entry.outline = outlineFor(prompt)
 		else
 			-- Never leave a prompt invisible: fall back to Roblox's own look.
 			warn("[PromptController]", entry)

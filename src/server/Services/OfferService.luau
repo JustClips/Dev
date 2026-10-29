@@ -31,7 +31,7 @@ local function isLive(productKey: string): boolean
 end
 
 -- Shows an offer if every rule allows it. ignoreGlobal is for the one-time Starter Pack.
-local function show(player: Player, key: string, productKey: string, title: string, text: string, ignoreGlobal: boolean?): boolean
+local function show(player: Player, key: string, productKey: string, title: string, text: string, ignoreGlobal: boolean?, target: string?): boolean
 	local session = S.DataService:GetSession(player)
 	if not session or session.Data.Stats.Hatches < 1 or not isLive(productKey) then
 		return false
@@ -47,7 +47,8 @@ local function show(player: Player, key: string, productKey: string, title: stri
 	state.lastAny = now
 	state.lastByKey[key] = now
 	local def = Products.ProductByKey[productKey] or Products.PassByKey[productKey]
-	Net.fire("ShowOffer", player, { Key = key, Product = productKey, Title = title, Text = text, Price = def.Price })
+	-- Target: the egg a Skip Hatch offer is for, so buying it skips that egg and no other.
+	Net.fire("ShowOffer", player, { Key = key, Product = productKey, Title = title, Text = text, Price = def.Price, Target = target })
 	S.AnalyticsService:Custom(player, "OfferShown", 1, { Offer = key })
 	return true
 end
@@ -83,8 +84,8 @@ function OfferService:OnBackpackFull(player: Player)
 	end
 end
 
-function OfferService:OnRareHatchStarted(player: Player, rarity: string)
-	show(player, "SkipHatch", "SkipHatch" .. rarity, `{rarity} egg hatching!`, "Can't wait? Hatch it right now.")
+function OfferService:OnRareHatchStarted(player: Player, rarity: string, uid: string?)
+	show(player, "SkipHatch", "SkipHatch" .. rarity, `{rarity} egg hatching!`, "Can't wait? Hatch it right now.", nil, uid)
 end
 
 function OfferService:OnToolBought(player: Player)

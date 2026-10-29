@@ -344,7 +344,13 @@ function OfferController:Start()
 	Ui.button(Ui.find(offerGui, "Window.Buy"), function()
 		local offer = current
 		hideOffer(true)
-		if offer then
+		if offer and offer.Target and string.find(offer.Product, "^SkipHatch") then
+			-- Skip the egg this offer was shown for (not just any egg of that rarity).
+			local ok, message = Net.func("Inventory"):InvokeServer("SkipHatch", offer.Target)
+			if not ok and message then
+				C.HudController:Toast(message, "Bad")
+			end
+		elseif offer then
 			prompt(offer.Product)
 		end
 	end)

@@ -340,7 +340,15 @@ end
 function ShopService:Init(services)
 	S = services
 	MarketplaceService.ProcessReceipt = processReceipt
-	Net.onInvoke("PromptPurchase", promptPurchase)
+	Net.onInvoke("PromptPurchase", function(player: Player, key: any, giftToUserId: any)
+		-- A Skip Hatch bought straight from the shop isn't for an egg picked earlier (a
+		-- cancelled Skip Hatch prompt would otherwise still point at that egg).
+		local session = S.DataService:GetSession(player)
+		if session and type(key) == "string" and string.find(key, "^SkipHatch") then
+			session.Runtime.SkipTarget = nil
+		end
+		return promptPurchase(player, key, giftToUserId)
+	end)
 	S.DataService.ProfileLoaded:Connect(function(player)
 		checkPasses(player)
 	end)

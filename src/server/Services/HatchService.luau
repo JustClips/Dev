@@ -143,7 +143,7 @@ function HatchService:PlaceEgg(player: Player, uid: string, position: Vector3?):
 	})
 	changed(player)
 	if Eggs.order(egg.Rarity) >= Eggs.order("Rare") and seconds > 0 then
-		S.OfferService:OnRareHatchStarted(player, egg.Rarity)
+		S.OfferService:OnRareHatchStarted(player, egg.Rarity, uid)
 	end
 	return true, nil
 end
@@ -344,24 +344,33 @@ end
 
 -- The player holds an egg out in front of them while choosing where to put it (others see
 -- it too). The client shows the ghost egg and sends PlaceEggAt.
+local HELD_MAX = 3.2 -- studs: big eggs are shrunk to this when carried in your arms
+
 function HatchService:Hold(player: Player, uid: string): (boolean, string?)
 	local session = S.DataService:GetSession(player)
 	local egg = session and session.Data.Eggs[uid]
 	local character = player.Character
-	local hand = character and (character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")) :: BasePart?
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	if not session or not egg then
 		return false, "That egg is gone"
 	end
 	HatchService:StopHolding(player)
 	session.Runtime.HeldEgg = uid
-	if not hand or not character then
+	if not root or not character then
 		return true, nil
 	end
 	local model = AssetLibrary.egg(egg.Rarity)
 	model.Name = "HeldEgg"
 	model:ScaleTo(Weights.visualScale(Weights.eggMult(egg.Rarity, egg.Weight)) * 0.8)
 	local _, size = model:GetBoundingBox()
-	model:PivotTo(hand.CFrame * CFrame.new(0, -hand.Size.Y / 2 - size.Y * 0.2, -size.Z * 0.6))
+	local biggest = math.max(size.X, size.Y, size.Z)
+	if biggest > HELD_MAX then
+		model:ScaleTo(model:GetScale() * HELD_MAX / biggest)
+		_, size = model:GetBoundingBox()
+	end
+	-- Carried in both arms in front of the chest (the clients pose the arms, see
+	-- HoldPoseController). Welded to the root, not the hand, so it doesn't bob as you walk.
+	model:PivotTo(root.CFrame * CFrame.new(0, -0.15, -(root.Size.Z / 2 + size.Z / 2 + 0.35)))
 	for _, part in model:GetDescendants() do
 		if part:IsA("BasePart") then
 			part.Anchored = false
@@ -370,7 +379,7 @@ function HatchService:Hold(player: Player, uid: string): (boolean, string?)
 			part.CanTouch = false
 			part.Massless = true
 			local weld = Instance.new("WeldConstraint")
-			weld.Part0 = hand
+			weld.Part0 = root
 			weld.Part1 = part
 			weld.Parent = part
 		end
