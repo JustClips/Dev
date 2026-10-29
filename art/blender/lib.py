@@ -62,8 +62,8 @@ class Asset:
             loop.uv = (u, v)
 
     # ---------- parts ----------
-    def part(self, name, pieces, parent=None, joint=None, glow=None, material=None, collide=False):
-        """Join pieces into one mesh object called `name`."""
+    def part(self, name, pieces, parent=None, joint=None, glow=None, material=None, collide=False, plain=False):
+        """Join pieces into one mesh object called `name`. plain=True exports it untextured."""
         obj = join(pieces, name)
         if obj is None:
             return None
@@ -74,26 +74,28 @@ class Asset:
             "glow": glow,
             "material": material,
             "collide": collide,
+            "plain": plain,
         }
         return obj
 
     def export(self, out_dir):
         os.makedirs(out_dir, exist_ok=True)
-        if getattr(self, "plain", False):
-            # No texture at all (light grey), so the game can tint it with MeshPart.Color.
-            mat = bpy.data.materials.new(f"{self.name}_mat")
-            mat.use_nodes = True
-            bsdf = mat.node_tree.nodes["Principled BSDF"]
-            bsdf.inputs["Base Color"].default_value = (0.9, 0.9, 0.9, 1)
-            bsdf.inputs["Roughness"].default_value = 0.7
-        else:
+        # Untextured light grey (whole asset with .plain, or single parts with plain=True), so
+        # the game can tint it with MeshPart.Color.
+        plain = bpy.data.materials.new(f"{self.name}_plain")
+        plain.use_nodes = True
+        bsdf = plain.node_tree.nodes["Principled BSDF"]
+        bsdf.inputs["Base Color"].default_value = (0.9, 0.9, 0.9, 1)
+        bsdf.inputs["Roughness"].default_value = 0.7
+        mat = plain
+        if not getattr(self, "plain", False):
             img = build_palette_image(self.name, self.colors)
             mat = palette_material(self.name, img)
         # parent objects in Blender (keeps world transforms) so the hierarchy is visible to Dev
         for name, p in self.parts.items():
             o = p["obj"]
             o.data.materials.clear()
-            o.data.materials.append(mat)
+            o.data.materials.append(plain if p.get("plain") else mat)
         for name, p in self.parts.items():
             if p["parent"]:
                 o = p["obj"]

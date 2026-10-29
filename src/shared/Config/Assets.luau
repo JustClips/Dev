@@ -2306,6 +2306,23 @@ Assets.Models = {
 			},
 		},
 	},
+	Backpack = {
+		bounds = {
+			max = Vector3.new(1.3, 1.56, 1.55),
+			min = Vector3.new(-1.3, -1.3, -0.7),
+		},
+		id = 92653997117932,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			Fill = {
+				collide = false,
+				joint = Vector3.new(0.0, -1.18, 0.6),
+			},
+		},
+	},
 	BaseArch = {
 		bounds = {
 			max = Vector3.new(9.25, 13.25, 1.0),
