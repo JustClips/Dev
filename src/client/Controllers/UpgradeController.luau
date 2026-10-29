@@ -625,10 +625,32 @@ function UpgradeController:Start()
 			hovered = nil
 		end
 	end)
+	-- Tutorial "Upgrade" step: a line under the title and the Sweep Power hex pulses.
+	local tutorialHint = Ui.find(gui, "Top.Hint") :: TextLabel
+	local wasTeaching = false
 	RunService.RenderStepped:Connect(function()
-		if gui.Enabled and tip.Visible then
+		if not gui.Enabled then
+			return
+		end
+		if tip.Visible then
 			placeTip()
 		end
+		local data = State.data
+		local teaching = data ~= nil and State.tutorialStep(data) == "Upgrade" and current == "Main"
+		tutorialHint.Visible = teaching
+		local root = nodes[Upgrades.Root]
+		if teaching and root then
+			local touch = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+			tutorialHint.Text = if selected == Upgrades.Root
+				then (if touch then "Tap it again to buy!" else "Click it again to buy!")
+				else (if touch then "Double-tap Sweep Power to buy it!" else "Double-click Sweep Power to buy it!")
+			local k = 1 + math.abs(math.sin(os.clock() * 4)) * 0.08
+			root.Size = UDim2.fromOffset(nodeSize.X.Offset * k, nodeSize.Y.Offset * k)
+			;(root:FindFirstChild("Glow") :: Frame).Visible = true
+		elseif root and wasTeaching then
+			root.Size = nodeSize
+		end
+		wasTeaching = teaching
 	end)
 	Ui.button(backButton, function()
 		local lab = Upgrades.Trees[current].Portal
