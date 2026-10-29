@@ -73,6 +73,20 @@ local List: { AlienDef } = {
 		Passive = { Name = "Show Off", Stat = "Cash", Value = 0.12 } },
 	{ Id = "Griffin", Name = "Griffin", Rarity = "Mythic", Zone = "Crater", Income = 40_000, Color = Color3.fromRGB(217, 164, 90), Size = 4,
 		Passive = { Name = "Sky Hunter", Stat = "Luck", Value = 0.35 } },
+
+	-- Beach (zone DarkSide): income x15.
+	{ Id = "Crab", Name = "Crab", Rarity = "Common", Zone = "DarkSide", Income = 22, Color = Color3.fromRGB(226, 72, 58), Size = 1.6,
+		Passive = { Name = "Pinch", Stat = "Crit", Value = 0.03 } },
+	{ Id = "Seagull", Name = "Seagull", Rarity = "Uncommon", Zone = "DarkSide", Income = 120, Color = Color3.fromRGB(247, 247, 244), Size = 1.9,
+		Passive = { Name = "Scavenger", Stat = "DustValue", Value = 0.15 } },
+	{ Id = "Seal", Name = "Seal", Rarity = "Rare", Zone = "DarkSide", Income = 600, Color = Color3.fromRGB(154, 163, 174), Size = 2,
+		Passive = { Name = "Belly Slide", Stat = "ComboTime", Value = 0.8 } },
+	{ Id = "Dolphin", Name = "Dolphin", Rarity = "Epic", Zone = "DarkSide", Income = 3_450, Color = Color3.fromRGB(106, 154, 216), Size = 2.6,
+		Passive = { Name = "Echo Finder", Stat = "Luck", Value = 0.2 } },
+	{ Id = "Shark", Name = "Shark", Rarity = "Legendary", Zone = "DarkSide", Income = 21_000, Color = Color3.fromRGB(110, 126, 142), Size = 3.4,
+		Passive = { Name = "Feeding Frenzy", Stat = "Power", Value = 0.25 } },
+	{ Id = "SeaSerpent", Name = "Sea Serpent", Rarity = "Mythic", Zone = "DarkSide", Income = 150_000, Color = Color3.fromRGB(31, 165, 154), Size = 4.5,
+		Passive = { Name = "Tidal Wave", Stat = "Radius", Value = 0.3 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new
