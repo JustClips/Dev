@@ -400,7 +400,7 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	if label then
 		label.Text = shown
 	end
-	badge.Size = UDim2.fromOffset(BADGE_PX + math.max(0, #shown - 1) * 10, BADGE_PX)
+	badge.Size = UDim2.fromOffset(BADGE_PX + math.max(0, #shown - 1) * 8, BADGE_PX)
 	local before = badgeCounts[badge]
 	badgeCounts[badge] = shown
 	badge.Visible = true
