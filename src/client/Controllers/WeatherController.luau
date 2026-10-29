@@ -147,28 +147,28 @@ local PRESETS: { [string]: Preset } = {
 		Atmosphere = { Density = 0.45, Color = rgb(120, 20, 30), Decay = rgb(60, 0, 10), Haze = 1.5, Glare = 0.3 },
 		Grade = { Saturation = 0.1, TintColor = rgb(255, 165, 165), Contrast = 0.15 },
 		Clouds = { Color = rgb(90, 20, 25), Cover = 0.5 },
-		Sky = { MoonAngularSize = 0, StarCount = 1500 },
+		Sky = { MoonAngularSize = 0, CelestialBodiesShown = false, StarCount = 1500 },
 	},
 	GoldMoon = {
 		Lighting = { Brightness = 1.4, Ambient = rgb(110, 95, 60), OutdoorAmbient = rgb(140, 120, 70), ColorShift_Top = rgb(255, 210, 110) },
 		Atmosphere = { Density = 0.32, Color = rgb(120, 100, 50), Decay = rgb(60, 45, 20), Haze = 1.2, Glare = 0.4 },
 		Grade = { Saturation = 0.15, TintColor = rgb(255, 235, 190) },
 		Clouds = { Color = rgb(120, 100, 60), Cover = 0.4 },
-		Sky = { MoonAngularSize = 0, StarCount = 2500 },
+		Sky = { MoonAngularSize = 0, CelestialBodiesShown = false, StarCount = 2500 },
 	},
 	RainbowMoon = {
 		Lighting = { Brightness = 1.4, Ambient = rgb(110, 80, 120), OutdoorAmbient = rgb(130, 100, 150), ColorShift_Top = rgb(255, 170, 240) },
 		Atmosphere = { Density = 0.3, Color = rgb(110, 70, 130), Decay = rgb(50, 30, 80), Haze = 1 },
 		Grade = { Saturation = 0.35, TintColor = rgb(250, 230, 255) },
 		Clouds = { Color = rgb(130, 90, 150), Cover = 0.35 },
-		Sky = { MoonAngularSize = 0, StarCount = 3000 },
+		Sky = { MoonAngularSize = 0, CelestialBodiesShown = false, StarCount = 3000 },
 	},
 	MegaMoon = {
 		Lighting = { Brightness = 1.6, Ambient = rgb(80, 95, 130), OutdoorAmbient = rgb(110, 125, 165), ColorShift_Top = rgb(200, 225, 255) },
 		Atmosphere = { Density = 0.28, Color = rgb(80, 100, 150), Decay = rgb(30, 45, 90), Haze = 1 },
 		Grade = { TintColor = rgb(225, 235, 255) },
 		Clouds = { Color = rgb(100, 115, 160), Cover = 0.3 },
-		Sky = { MoonAngularSize = 0, StarCount = 3000 },
+		Sky = { MoonAngularSize = 0, CelestialBodiesShown = false, StarCount = 3000 },
 	},
 }
 
@@ -179,7 +179,7 @@ local PROPS: { [string]: { string } } = {
 	Clouds = { "Cover", "Density", "Color" },
 	Bloom = { "Intensity", "Threshold", "Size" },
 	SunRays = { "Intensity", "Spread" },
-	Sky = { "MoonTextureId", "MoonAngularSize", "StarCount" },
+	Sky = { "MoonTextureId", "MoonAngularSize", "StarCount", "CelestialBodiesShown" },
 }
 
 local targets: { [string]: any } = {}
@@ -200,7 +200,7 @@ local function find(group: string): Instance?
 	elseif group == "SunRays" then
 		return Lighting:FindFirstChildOfClass("SunRaysEffect")
 	end
-	return Lighting:FindFirstChildOfClass("Sky")
+	return Lighting:FindFirstChild("WorldSky") or Lighting:FindFirstChildOfClass("Sky")
 end
 
 -- Finds the sky objects and remembers the map's own values. Safe to call again: anything
@@ -246,7 +246,13 @@ local function applySky(preset: Preset?)
 				if prop == "MoonTextureId" and preset and preset.Sky and preset.Sky.MoonTextureId then
 					value = img(value)
 				end
-				target[prop] = value
+				-- Every Sky in Lighting, in case the place has its own besides WorldSky.
+				for _, sky in Lighting:GetChildren() do
+					if sky:IsA("Sky") then
+						local anySky = sky :: any
+						anySky[prop] = value
+					end
+				end
 			end
 			continue
 		end
