@@ -311,6 +311,16 @@ local function takeMesh(name: string): BasePart?
 		found.CastShadow = false
 		found.Name = name
 		found:SetAttribute("BaseSize", found.Size)
+		-- Every pile of a zone shares that zone's one texture atlas.
+		local meta = Assets.Models[name] :: any
+		local atlas = meta and meta.atlas and Assets.Images[meta.atlas]
+		if atlas and found:IsA("MeshPart") then
+			found.TextureID = atlas
+		end
+		local partMeta = meta and meta.parts and meta.parts.Clump
+		if partMeta and partMeta.material == "Foil" then
+			found.Material = Enum.Material.Foil -- the gold pile shines
+		end
 		meshTemplates[name] = found
 		t = found
 	end
@@ -398,12 +408,16 @@ local function buildProps(tile: Tile)
 		return
 	end
 	local look = LeafMeshes.lookOf(id)
-	local s = zg.Zone.TileSize / 4
-	local spread = s * (0.92 + Grid.hash(id, 16) * 0.2)
-	local height = s * (0.8 + Grid.hash(id, 17) * 0.5)
+	-- The piles are modelled for a 5-stud grid (about 5.8 across, so neighbours overlap)
+	-- and close into one carpet when turned in 90° steps; free turns leave corner gaps.
+	local s = zg.Zone.TileSize / 5
+	local spread = s * (0.98 + Grid.hash(id, 16) * 0.08)
+	local height = s * (0.85 + Grid.hash(id, 17) * 0.4)
 	local name = if golden[id] then GOLD_CLUMP else clumpName(id, look)
-	local yaw = CFrame.Angles(0, Grid.hash(id, 18) * math.pi * 2, 0)
-	if addProp(tile, name, Vector3.new(spread, height, spread), yaw, true) then
+	-- Turned in 90° steps on the grid (tile.part itself is turned at random).
+	local centre = tile.base.Position
+	local square = CFrame.new(centre) * CFrame.Angles(0, math.floor(Grid.hash(id, 18) * 4) * math.pi / 2, 0)
+	if addProp(tile, name, Vector3.new(spread, height, spread), tile.part.CFrame:ToObjectSpace(square), true) then
 		tile.decal.Transparency = 1
 	end
 	local edge = tile.edge
@@ -411,10 +425,9 @@ local function buildProps(tile: Tile)
 	if edge and Grid.hash(id, 14) < DRIFT_CHANCE then
 		local name2 = `Drift_{if DRIFTS[look.name] then look.name else "Autumn"}{math.floor(Grid.hash(id, 19) * drifts) + 1}`
 		-- High side (+Z) against the edge, sloping down toward the open ground.
-		local centre = tile.base.Position
 		local at = centre + edge * zg.Zone.TileSize * 0.3
 		local world = CFrame.lookAt(at, at - edge)
-		addProp(tile, name2, Vector3.new(s, s * (0.85 + Grid.hash(id, 20) * 0.4), s), tile.part.CFrame:ToObjectSpace(world), false)
+		addProp(tile, name2, Vector3.new(s, s * (0.7 + Grid.hash(id, 20) * 0.25), s), tile.part.CFrame:ToObjectSpace(world), false)
 	end
 	placeProps(tile, 1)
 end
@@ -519,7 +532,7 @@ local function addLeaves(tile: Tile)
 	local groundY = zg.Zone.GroundY + 0.07
 	local edge = tile.edge
 	local n = if tile.trash then 2 else LEAVES_PER_TILE + (if edge then EDGE_LEAVES else 0)
-	local pile = if tile.props then 0.28 * size / 4 else 0 -- leaves lie on top of a 3D pile
+	local pile = if tile.props then 0.38 * size / 5 else 0 -- leaves lie on top of a 3D pile
 	local leaves = {}
 	for k = 1, n do
 		local r = size * 0.55 * math.sqrt(Grid.hash(id, 20 + k))
