@@ -145,7 +145,7 @@ function BackpackService:Init(services)
 	S = services
 end
 
--- Selling is a distance check around the Rocket instead of Touched: Touched on a
+-- Selling is a distance check around the market hall (and the drive-thru pads) instead of Touched: Touched on a
 -- non-colliding pad was unreliable in playtests, and this also works from vehicles.
 local CHECK_EVERY = 0.2
 local SELL_HEIGHT = 14
@@ -157,7 +157,17 @@ local function inSellZone(player: Player): boolean
 		return false
 	end
 	local offset = root.Position - World.RocketPosition
-	return Vector2.new(offset.X, offset.Z).Magnitude <= World.SellRadius and math.abs(offset.Y) <= SELL_HEIGHT
+	if Vector2.new(offset.X, offset.Z).Magnitude <= World.SellRadius and math.abs(offset.Y) <= SELL_HEIGHT then
+		return true
+	end
+	-- Drive-thru pads beside the hall (the car's driver is checked, so any car fits).
+	for _, spot in World.DriveSellSpots do
+		local d = root.Position - spot
+		if Vector2.new(d.X, d.Z).Magnitude <= World.DriveSellRadius and math.abs(d.Y) <= SELL_HEIGHT then
+			return true
+		end
+	end
+	return false
 end
 
 function BackpackService:Start()

@@ -25,6 +25,10 @@ World.RocketPosition = Vector3.new(0, 0, 0)
 World.SellRadius = 15
 World.RocketClearRadius = 20
 World.LaunchPadRadius = 18
+-- Drive-thru selling: a big round pad on each side of the market hall. Driving (or walking)
+-- onto one sells your leaves, so cars don't have to squeeze up to the hall.
+World.DriveSellSpots = { Vector3.new(-36, 0, 0), Vector3.new(36, 0, 0) }
+World.DriveSellRadius = 13
 World.Walkway = 6 -- paved strip between the dust field and the bases
 
 -- South plaza (between the field and the hub's south wall).

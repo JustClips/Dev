@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Zones = require(Shared.Config.Zones)
 local Signal = require(Shared.Signal)
+local Avatar = require(script.Parent.Parent.Lib.Avatar)
 
 local BaseService = {
 	CharacterReady = Signal.new() :: Signal.Signal<Player, Model>,
@@ -34,6 +35,7 @@ function BaseService:GetOwner(index: number): Player?
 end
 
 local function onCharacter(player: Player, character: Model)
+	Avatar.setGroup(character, Avatar.PlayerGroup)
 	local index = BaseService:GetBaseIndex(player)
 	local root = character:WaitForChild("HumanoidRootPart", 10) :: BasePart?
 	if index and root then
@@ -46,7 +48,7 @@ local function onCharacter(player: Player, character: Model)
 		humanoid.Died:Connect(function()
 			task.wait(Players.RespawnTime)
 			if player.Parent and S.DataService:GetSession(player) then
-				player:LoadCharacter()
+				Avatar.loadCharacter(player)
 			end
 		end)
 	end
@@ -55,6 +57,7 @@ end
 
 function BaseService:Init(services)
 	S = services
+	Avatar.setupGroups()
 	S.DataService.ProfileLoaded:Connect(function(player: Player, session)
 		local index = freeIndex()
 		if not index then
@@ -70,7 +73,7 @@ function BaseService:Init(services)
 		player.CharacterAdded:Connect(function(character)
 			onCharacter(player, character)
 		end)
-		player:LoadCharacter()
+		Avatar.loadCharacter(player)
 	end)
 	S.DataService.ProfileReleasing:Connect(function(player: Player, session)
 		local index = session.Runtime.BaseIndex

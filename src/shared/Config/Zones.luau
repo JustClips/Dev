@@ -12,6 +12,9 @@ local World = require(script.Parent.World)
 local landingExclusions: { Types.Exclusion } = {
 	{ Center = Vector2.new(World.RocketPosition.X, World.RocketPosition.Z), Radius = World.RocketClearRadius },
 }
+for _, spot in World.DriveSellSpots do
+	table.insert(landingExclusions, { Center = Vector2.new(spot.X, spot.Z), Radius = World.DriveSellRadius + 2 })
+end
 
 local List: { ZoneDef } = {
 	{

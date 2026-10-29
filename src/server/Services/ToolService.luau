@@ -15,6 +15,7 @@ local ToolGrips = require(Shared.Config.ToolGrips)
 local Tools = require(Shared.Config.Tools)
 local Upgrades = require(Shared.Config.Upgrades)
 local World = require(Shared.Config.World)
+local Avatar = require(script.Parent.Parent.Lib.Avatar)
 
 local ToolService = {}
 
@@ -359,12 +360,14 @@ local function buildVehicle(player: Player, def): Model
 				seatWeld.Enabled = false
 			end
 			-- meta.seat is the top of the seat cushion; the driver sits on the VehicleSeat's top face.
-			seat.CFrame = base * CFrame.new(meta.seat * k - Vector3.new(0, seat.Size.Y / 2 + 0.05 * k, 0))
+			-- Cab vehicles sit the driver lower (SeatDrop) so a default-size head fits under the cab roof.
+			seat.CFrame = base * CFrame.new(meta.seat * k - Vector3.new(0, seat.Size.Y / 2 + 0.05 * k + (def.SeatDrop or 0), 0))
 			if seatWeld then
 				seatWeld.Enabled = true
 			end
 		end
 	end
+	Avatar.setGroup(model, Avatar.VehicleGroup)
 	return model
 end
 

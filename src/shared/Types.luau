@@ -45,6 +45,7 @@ export type VehicleDef = {
 	Speed: number,
 	RentKey: string, -- Robux "this run" rental product
 	UnlockKey: string, -- Robux unlock product (until rebirth, like cash)
+	SeatDrop: number?, -- studs the driver sits below the seat cushion (inside a cab, so the head fits under its roof)
 }
 
 export type UpgradeDef = {

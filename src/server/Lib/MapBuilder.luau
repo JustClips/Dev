@@ -405,6 +405,23 @@ local function launchPad()
 	end
 end
 
+-- Drive-thru sell pads: a flat ring on the ground beside the hall (nothing to bump into),
+-- painted text in the middle and a sign at the outer edge facing the hall.
+local function driveThruPads()
+	local model = make("Model", { Name = "DriveThru" }, structures)
+	local up = CFrame.Angles(0, 0, math.rad(90))
+	local r = World.DriveSellRadius
+	for _, spot in World.DriveSellSpots do
+		local flat = { CanCollide = false, CanQuery = false, CanTouch = false }
+		glow(model, "SellRing", Vector3.new(0.14, r * 2 + 1.2, r * 2 + 1.2), CFrame.new(spot + Vector3.new(0, 0.08, 0)) * up, Color3.fromRGB(92, 200, 92))
+		block(model, "DriveFloor", Vector3.new(0.16, r * 2 - 0.4, r * 2 - 0.4), CFrame.new(spot + Vector3.new(0, 0.1, 0)) * up, Color3.fromRGB(84, 88, 96), M.Asphalt, flat)
+		local facing = CFrame.lookAt(spot, Vector3.new(World.RocketPosition.X, 0, World.RocketPosition.Z))
+		floorText(model, facing * CFrame.new(0, 0.2, 0) * CFrame.Angles(0, math.rad(90), 0), r * 1.5, 5, "DRIVE-THRU SELL", WHITE)
+		local edge = spot + (spot - World.RocketPosition).Unit * (r + 3)
+		signOnPosts(model, "DriveSellSign", CFrame.lookAt(edge, Vector3.new(spot.X, 0, spot.Z)), 13, 3.6, MINT, "DRIVE-THRU SELL", "Drive onto the ring")
+	end
+end
+
 local function fieldEdges()
 	local model = make("Model", { Name = "FieldEdges" }, structures)
 	local f = World.Field
@@ -671,6 +688,7 @@ function MapBuilder.buildStructures()
 	structures.Name = "Structures"
 	structures.Parent = Workspace
 	launchPad()
+	driveThruPads()
 	fieldEdges()
 	corridorRamps()
 	garage()
