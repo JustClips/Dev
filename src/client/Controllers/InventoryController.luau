@@ -22,6 +22,7 @@ local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
+local Upgrades = require(Shared.Config.Upgrades)
 local Weights = require(Shared.Config.Weights)
 local Zones = require(Shared.Config.Zones)
 
@@ -206,7 +207,7 @@ local function renderDetail()
 		local rarity = Eggs.ByName[def.Rarity]
 		nameLabel.Text = petName(pet)
 		setChip(chip, def.Rarity, rarity.Color)
-		local income = Aliens.income(pet) * (data.CashMultiplier or 1)
+		local income = Aliens.income(pet) * (data.CashMultiplier or 1) * Upgrades.multiplier(data.Upgrades, "PetIncome")
 		local class = Weights.classFor(Weights.incomeMult(def.Rarity, pet.Weight))
 		info.Text = `{Weights.format(petWeight(pet))} ({class.Name}) · +{Format.cash(income)}/s\nFrom {zoneName(def.Zone)}`
 		if pet.Placed then

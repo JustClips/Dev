@@ -27,7 +27,7 @@ local TEMPLATE: Types.ProfileData = {
 	ToolTier = 1,
 	OwnedTools = { true },
 	Vehicles = {},
-	Upgrades = { Backpack = 0, Power = 0, Speed = 0, Luck = 0 },
+	Upgrades = {}, -- upgrade tree node id -> level (Config/Upgrades)
 	ZonesUnlocked = { Landing = true },
 	Pets = {},
 	Eggs = {},

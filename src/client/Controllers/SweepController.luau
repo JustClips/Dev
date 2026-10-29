@@ -255,6 +255,11 @@ local function onSweepResult(result)
 		floatNumber("GOLDEN!", root.Position + Vector3.new(0, 5, 0))
 		Ui.sound("Coin")
 	end
+	-- Lucky Sweep from the upgrade tree.
+	if result.Crit and result.Crit > 0 then
+		floatNumber(`LUCKY x{result.CritMult or 5}!`, root.Position + Vector3.new(0, 6.5, 0), Color3.fromRGB(120, 255, 140))
+		Ui.sound("Coin", 1.25)
+	end
 	if result.Combo then
 		C.HudController:SetCombo(result.Combo)
 	end

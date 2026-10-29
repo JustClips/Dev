@@ -37,14 +37,18 @@ export type VehicleDef = {
 
 export type UpgradeDef = {
 	Id: string,
+	Hex: { q: number, r: number }, -- axial position in the upgrade tree
+	Parent: string?, -- must have level 1+ before this node can be bought
+	Stat: string, -- what it raises (Config/Upgrades Stats)
 	Name: string,
 	Icon: string,
 	MaxLevel: number,
 	BaseCost: number,
 	CostGrowth: number,
 	PerLevel: number, -- effect per level (see Config/Upgrades)
-	Format: string, -- how the effect is shown: "percent" or "plus"
+	Format: string, -- how the effect is shown: "percent", "plus", "x" or "seconds"
 	Description: string,
+	RequiredRebirths: number,
 }
 
 export type Exclusion = { Center: Vector2, Radius: number }

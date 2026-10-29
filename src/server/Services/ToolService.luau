@@ -70,15 +70,17 @@ end
 -- The stats used for sweeping right now: { Radius, Power }.
 function ToolService:GetSweepTool(player: Player): { Radius: number, Power: number }
 	local session = S.DataService:GetSession(player)
-	local mult = Upgrades.multiplier(session and session.Data.Upgrades, "Power")
+	local levels = session and session.Data.Upgrades
+	local mult = Upgrades.multiplier(levels, "Power")
+	local size = Upgrades.multiplier(levels, "Radius")
 	if session and ToolService:IsInVehicle(player) then
 		local car = Tools.vehicle(session.Runtime.VehicleId or "")
 		if car then
-			return { Radius = car.Radius, Power = car.Power * mult }
+			return { Radius = car.Radius * size, Power = car.Power * mult }
 		end
 	end
 	local def = Tools.get(ToolService:GetEffectiveTier(player))
-	return { Radius = def.Radius, Power = def.Power * mult }
+	return { Radius = def.Radius * size, Power = def.Power * mult }
 end
 
 -- Grip for the Blender tools (business end at -Z). Each tool has its own hold and use

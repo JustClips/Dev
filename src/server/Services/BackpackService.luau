@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Upgrades = require(Shared.Config.Upgrades)
 local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
 local Net = require(Shared.Net)
@@ -104,7 +105,7 @@ function BackpackService:AddDust(player: Player, zone, power: number, mult: numb
 		return 0, 0
 	end
 	local units = math.min(room, zone.DustPerTile * power)
-	local value = units * zone.CashMult * (mult or 1)
+	local value = units * zone.CashMult * (mult or 1) * Upgrades.multiplier(data.Upgrades, "DustValue")
 	data.Backpack += units
 	data.BackpackValue += value
 	if data.Backpack >= capacity and not session.Runtime.WasFull then

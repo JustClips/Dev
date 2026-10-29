@@ -1,7 +1,7 @@
 --!strict
--- Cash upgrades (Config/Upgrades): Bigger Backpack, Sweep Power, Moon Boots, Egg Luck.
--- Other services read the levels through Upgrades.multiplier; this service sells levels,
--- applies walk speed to the character and resets everything on rebirth.
+-- The upgrade tree (Config/Upgrades). Other services read stats through
+-- Upgrades.multiplier / Upgrades.stat; this service sells levels, applies walk speed to the
+-- character and clears the tree on rebirth.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -32,26 +32,46 @@ function UpgradeService:GetLevel(player: Player, id: string): number
 	return if data then data.Upgrades[id] or 0 else 0
 end
 
-function UpgradeService:Buy(player: Player, id: string): (boolean, string)
+-- Buys up to `count` levels of a tree node (count > 1 = the "Max" button: as many as you
+-- can afford, up to that many). Returns ok and a message for the toast.
+function UpgradeService:Buy(player: Player, id: string, count: number?): (boolean, string)
 	local data = S.DataService:GetData(player)
 	local def = if type(id) == "string" then Upgrades.ById[id] else nil
 	if not data or not def then
 		return false, "Unknown upgrade"
 	end
-	local level = data.Upgrades[def.Id] or 0
-	if level >= def.MaxLevel then
-		return false, `{def.Name} is maxed!`
+	local want = if type(count) == "number" and count == count then math.clamp(math.floor(count), 1, 100) else 1
+	local bought = 0
+	for _ = 1, want do
+		local level = data.Upgrades[def.Id] or 0
+		local blocked = Upgrades.blocked(def, data.Upgrades, data.Rebirths)
+		if blocked then
+			if bought == 0 then
+				return false, if blocked == "Maxed" then `{def.Name} is maxed!` else blocked
+			end
+			break
+		end
+		local cost = Upgrades.cost(def, level)
+		if not S.BackpackService:TrySpend(player, cost, "Upgrade_" .. def.Id, bought > 0) then
+			if bought == 0 then
+				return false, `Need {Format.cash(cost)}`
+			end
+			break
+		end
+		data.Upgrades[def.Id] = level + 1
+		bought += 1
 	end
-	local cost = Upgrades.cost(def, level)
-	if not S.BackpackService:TrySpend(player, cost, "Upgrade_" .. def.Id) then
-		return false, `Need {Format.cash(cost)}`
-	end
-	data.Upgrades[def.Id] = level + 1
-	if def.Id == "Speed" then
+	if def.Stat == "Speed" then
 		applyWalkSpeed(player)
+	elseif def.Stat == "Incubators" or def.Stat == "PetIncome" then
+		S.AlienService:RefreshBase(player)
 	end
 	S.StateService:Mark(player)
-	return true, `{def.Name} level {level + 1}: {Upgrades.describe(def, level + 1)}`
+	local level = data.Upgrades[def.Id]
+	if level == 1 and #Upgrades.Children[def.Id] > 0 then
+		return true, `{def.Name} unlocked! New upgrades opened`
+	end
+	return true, `{def.Name} level {level}: {Upgrades.describe(def, level)}`
 end
 
 function UpgradeService:ResetForRebirth(player: Player)
@@ -59,17 +79,15 @@ function UpgradeService:ResetForRebirth(player: Player)
 	if not data then
 		return
 	end
-	for _, def in Upgrades.List do
-		data.Upgrades[def.Id] = 0
-	end
+	table.clear(data.Upgrades)
 	applyWalkSpeed(player)
 	S.StateService:Mark(player)
 end
 
 function UpgradeService:Init(services)
 	S = services
-	Net.onInvoke("BuyUpgrade", function(player, id)
-		return UpgradeService:Buy(player, id)
+	Net.onInvoke("BuyUpgrade", function(player, id, count)
+		return UpgradeService:Buy(player, id, count)
 	end)
 	S.BaseService.CharacterReady:Connect(function(player: Player, character: Model)
 		character:WaitForChild("Humanoid", 10)

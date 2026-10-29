@@ -8,8 +8,10 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local Grid = require(Shared.Grid)
 local Net = require(Shared.Net)
+local Upgrades = require(Shared.Config.Upgrades)
 
 local BURST = 3
+local rng = Random.new()
 
 local SweepService = {}
 
@@ -74,21 +76,32 @@ local function onSweep(player: Player, position: any)
 		return
 	end
 
-	-- Combo: keep clearing dust without a break to push the cash multiplier up to x3.
+	-- Combo: keep clearing dust without a break to push the cash multiplier up to x3
+	-- (higher and longer with the upgrade tree).
+	local levels = session.Data.Upgrades
 	local combo = Economy.Combo
-	if now - (runtime.ComboAt or 0) > combo.Timeout then
+	if now - (runtime.ComboAt or 0) > combo.Timeout + Upgrades.stat(levels, "ComboTime") then
 		runtime.Combo = 1
 	end
-	runtime.Combo = math.min(combo.Max, (runtime.Combo or 1) + combo.Step)
+	runtime.Combo = math.min(combo.Max + Upgrades.stat(levels, "ComboMax"), (runtime.Combo or 1) + combo.Step)
 	runtime.ComboAt = now
 
-	local totalDust, totalValue, goldenHits = 0, 0, 0
+	-- Lucky Sweep (upgrade tree): each tile has a small chance to pay several times over.
+	local critChance = Upgrades.stat(levels, "Crit")
+	local critMult = Upgrades.CritBaseMult + Upgrades.stat(levels, "CritMult")
+	local goldenMult = Economy.Golden.Mult * Upgrades.multiplier(levels, "Golden")
+
+	local totalDust, totalValue, goldenHits, critHits = 0, 0, 0, 0
 	for _, id in cleared do
 		local tileZone = S.DustService:GetZone(id)
 		local mult = runtime.Combo
 		if S.DustService:TakeGolden(id) then
-			mult *= Economy.Golden.Mult
+			mult *= goldenMult
 			goldenHits += 1
+		end
+		if critChance > 0 and rng:NextNumber() < critChance then
+			mult *= critMult
+			critHits += 1
 		end
 		local units, value = S.BackpackService:AddDust(player, tileZone, tool.Power, mult)
 		totalDust += units
@@ -104,6 +117,8 @@ local function onSweep(player: Player, position: any)
 		Tiles = #cleared,
 		Combo = runtime.Combo,
 		Golden = goldenHits,
+		Crit = critHits,
+		CritMult = critMult,
 	})
 end
 

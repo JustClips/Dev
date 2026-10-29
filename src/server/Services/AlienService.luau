@@ -12,6 +12,7 @@ local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
+local Upgrades = require(Shared.Config.Upgrades)
 local Weights = require(Shared.Config.Weights)
 local World = require(Shared.Config.World)
 
@@ -48,7 +49,7 @@ function AlienService:PlacedCount(player: Player): number
 	return count
 end
 
--- Base income of the placed pets, before multipliers.
+-- Base income of the placed pets (with the tree's Pet Income), before cash multipliers.
 function AlienService:GetBaseIncome(player: Player): number
 	local data = S.DataService:GetData(player)
 	if not data then
@@ -60,7 +61,7 @@ function AlienService:GetBaseIncome(player: Player): number
 			total += alienIncome(pet)
 		end
 	end
-	return total
+	return total * Upgrades.multiplier(data.Upgrades, "PetIncome")
 end
 
 function AlienService:GetIncomePerSec(player: Player): number
@@ -133,7 +134,7 @@ function AlienService:RefreshBase(player: Player)
 	end
 
 	local data = session.Data
-	local mult = S.BoostService:GetCashMultiplier(player)
+	local mult = S.BoostService:GetCashMultiplier(player) * Upgrades.multiplier(data.Upgrades, "PetIncome")
 	local aliens = Instance.new("Folder")
 	aliens.Name = "Aliens"
 	local placed = {}
@@ -237,6 +238,7 @@ local function grantOffline(player: Player, session)
 		return
 	end
 	local amount = base * S.BoostService:GetBaseCashMultiplier(player) * seconds * Economy.OfflineIncomeRate
+		* Upgrades.multiplier(data.Upgrades, "Offline")
 	S.BackpackService:GiveCash(player, amount, "OfflineIncome")
 	session.Runtime.OfflineReward = amount
 	task.delay(4, function()

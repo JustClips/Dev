@@ -11,6 +11,7 @@ local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
+local Upgrades = require(Shared.Config.Upgrades)
 local Zones = require(Shared.Config.Zones)
 
 local STEP = 0.1
@@ -184,7 +185,9 @@ local function reward(player: Player, bunny: Bunny)
 		return
 	end
 	local earnings = S.AlienService:GetIncomePerSec(player) + S.BackpackService:GetEarnRate(player)
+	local data = S.DataService:GetData(player)
 	local cash = math.max(zone.CashMult * cfg.MinCashPerZoneMult, earnings * cfg.CashSeconds)
+		* Upgrades.multiplier(data and data.Upgrades, "Bunny")
 	S.BackpackService:GiveCash(player, cash, "DustBunny")
 	Net.fire("Notify", player, `You caught a Dust Bunny! +{Format.cash(cash)}`, "Good")
 end

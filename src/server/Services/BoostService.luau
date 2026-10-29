@@ -5,6 +5,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Upgrades = require(Shared.Config.Upgrades)
 local Economy = require(Shared.Config.Economy)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
@@ -82,13 +83,13 @@ function BoostService:HasPass(player: Player, key: string): boolean
 	return data ~= nil and data.Gamepasses[key] == true
 end
 
--- rebirths x 2x pass x VIP x timed 2x
+-- rebirths x upgrade tree x 2x pass x VIP x timed 2x
 function BoostService:GetCashMultiplier(player: Player): number
 	local data = S.DataService:GetData(player)
 	if not data then
 		return 1
 	end
-	local mult = 1 + data.Rebirths * Economy.RebirthCashBonus
+	local mult = (1 + data.Rebirths * Economy.RebirthCashBonus) * Upgrades.multiplier(data.Upgrades, "Cash")
 	if data.Gamepasses.Cash2x then
 		mult *= Economy.Cash2xPassMult
 	end
@@ -107,7 +108,7 @@ function BoostService:GetBaseCashMultiplier(player: Player): number
 	if not data then
 		return 1
 	end
-	local mult = 1 + data.Rebirths * Economy.RebirthCashBonus
+	local mult = (1 + data.Rebirths * Economy.RebirthCashBonus) * Upgrades.multiplier(data.Upgrades, "Cash")
 	if data.Gamepasses.Cash2x then
 		mult *= Economy.Cash2xPassMult
 	end

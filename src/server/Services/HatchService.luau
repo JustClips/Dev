@@ -14,6 +14,7 @@ local Aliens = require(Shared.Config.Aliens)
 local Economy = require(Shared.Config.Economy)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
+local Upgrades = require(Shared.Config.Upgrades)
 local Weights = require(Shared.Config.Weights)
 local World = require(Shared.Config.World)
 
@@ -33,8 +34,9 @@ function HatchService:GetIncubatorCount(player: Player): number
 	if not data then
 		return Economy.Incubators
 	end
-	local count = Economy.Incubators + math.floor(data.Rebirths / Economy.RebirthsPerIncubator)
-	return math.min(count, Economy.MaxIncubators)
+	local count = math.min(Economy.Incubators + math.floor(data.Rebirths / Economy.RebirthsPerIncubator), Economy.MaxIncubators)
+	-- Upgrade tree nests go on top of the rebirth cap.
+	return count + Upgrades.stat(data.Upgrades, "Incubators")
 end
 
 local function freeSpot(player: Player, data): number?
@@ -45,7 +47,7 @@ local function freeSpot(player: Player, data): number?
 	for _, entry in data.Hatching do
 		used[entry.Spot] = true
 	end
-	for spot = 1, Economy.MaxIncubators do
+	for spot = 1, HatchService:GetIncubatorCount(player) do
 		if not used[spot] then
 			return spot
 		end
@@ -72,6 +74,7 @@ local function hatchSeconds(data, rarity: string): number
 	if data.Gamepasses.FasterHatch then
 		seconds *= Eggs.FasterHatchMult
 	end
+	seconds /= Upgrades.multiplier(data.Upgrades, "HatchSpeed")
 	return math.ceil(seconds)
 end
 
