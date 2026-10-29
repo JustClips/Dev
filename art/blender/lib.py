@@ -79,8 +79,16 @@ class Asset:
 
     def export(self, out_dir):
         os.makedirs(out_dir, exist_ok=True)
-        img = build_palette_image(self.name, self.colors)
-        mat = palette_material(self.name, img)
+        if getattr(self, "plain", False):
+            # No texture at all (light grey), so the game can tint it with MeshPart.Color.
+            mat = bpy.data.materials.new(f"{self.name}_mat")
+            mat.use_nodes = True
+            bsdf = mat.node_tree.nodes["Principled BSDF"]
+            bsdf.inputs["Base Color"].default_value = (0.9, 0.9, 0.9, 1)
+            bsdf.inputs["Roughness"].default_value = 0.7
+        else:
+            img = build_palette_image(self.name, self.colors)
+            mat = palette_material(self.name, img)
         # parent objects in Blender (keeps world transforms) so the hierarchy is visible to Dev
         for name, p in self.parts.items():
             o = p["obj"]
