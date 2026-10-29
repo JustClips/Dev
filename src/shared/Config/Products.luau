@@ -86,6 +86,7 @@ local Products: { ProductDef } = {
 	{ Key = "GiftCarry3", Id = 3723394082, Price = 129, Name = "Gift: Carry 3 Eggs", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "Carry3" },
 	{ Key = "GiftVIP", Id = 3723394088, Price = 249, Name = "Gift: VIP", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "VIP" },
 	{ Key = "GiftFasterHatch", Id = 3723394096, Price = 229, Name = "Gift: Faster Hatch", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "FasterHatch" },
+	{ Key = "GiftSellAnywhere", Id = 3723696966, Price = 199, Name = "Gift: Sell Anywhere", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "SellAnywhere" },
 }
 
 local Config = {
