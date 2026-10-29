@@ -63,8 +63,8 @@ Rewards.Stay = {
 }
 
 Rewards.Group = {
-	Id = 0, -- set the Roblox group id to turn the group reward on
-	Name = "our group",
+	Id = 351097046, -- the Roblox group (0 turns the group reward off)
+	Name = "Eclipse Technologies",
 	Rewards = {
 		{ Kind = "Item", Item = "LuckPotion", Amount = 2 },
 		{ Kind = "Cash", Seconds = 600, Floor = 0.5 },
