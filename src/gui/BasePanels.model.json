@@ -332,21 +332,21 @@
         "Size": [
          [
           0,
-          30
+          24
          ],
          [
           0,
-          30
+          24
          ]
         ],
         "Position": [
          [
           1,
-          9
+          2
          ],
          [
           0,
-          -9
+          -7
          ]
         ],
         "AnchorPoint": [
@@ -402,7 +402,7 @@
           "BackgroundTransparency": 1,
           "Text": "1",
           "TextColor3": "#FFFFFF",
-          "TextSize": 19,
+          "TextSize": 15,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -700,21 +700,21 @@
         "Size": [
          [
           0,
-          30
+          24
          ],
          [
           0,
-          30
+          24
          ]
         ],
         "Position": [
          [
           1,
-          9
+          2
          ],
          [
           0,
-          -9
+          -7
          ]
         ],
         "AnchorPoint": [
@@ -770,7 +770,7 @@
           "BackgroundTransparency": 1,
           "Text": "1",
           "TextColor3": "#FFFFFF",
-          "TextSize": 19,
+          "TextSize": 15,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,

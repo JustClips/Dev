@@ -324,7 +324,7 @@ end
 -- (nil/0 hides it, a string such as "!" shows as is), widens the badge for 2-3 digits and
 -- pops it when the count goes up. Every few seconds visible badges give a little wiggle
 -- so they catch the eye.
-local BADGE_PX = 30
+local BADGE_PX = 24
 local badgeCounts: { [GuiObject]: string } = setmetatable({}, { __mode = "k" }) :: any
 local wiggleStarted = false
 
