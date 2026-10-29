@@ -192,22 +192,31 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 				return
 			end
 			real:PivotTo(visual:GetPivot())
+			for _, d in real:GetDescendants() do
+				if d:IsA("Light") then
+					d:Destroy()
+				end
+			end
 			real.Parent = egg
 			visual:Destroy()
 		end)
 	end
-	local light = Instance.new("PointLight")
-	light.Color = def.Color
-	light.Range = 10
-	light.Brightness = 2
-	light.Parent = egg
+	-- No lights on eggs lying around (Dev: a field full of them was far too bright).
+	for _, d in visual:GetDescendants() do
+		if d:IsA("Light") then
+			d:Destroy()
+		end
+	end
 	egg:SetAttribute("Rarity", rarity)
 	egg:SetAttribute("Zone", zoneId)
 
 	local billboard = Instance.new("BillboardGui")
-	billboard.Size = UDim2.fromOffset(160, 44)
+	billboard.Name = "Label"
+	billboard.Size = UDim2.fromOffset(130, 36)
 	billboard.StudsOffset = Vector3.new(0, 2.6, 0)
 	billboard.MaxDistance = 90
+	-- Clients only show the labels of the few eggs nearest to them (EggLabelController).
+	billboard.Enabled = false
 	billboard.AlwaysOnTop = true
 	billboard.LightInfluence = 0
 	local label = Instance.new("TextLabel")
