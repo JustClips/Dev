@@ -281,9 +281,56 @@ local function render(force: boolean?)
 		else `Pets: {petCount}/{data.PetBagSize}   Eggs: {eggCount}/{data.EggBagSize}`
 end
 
+-- "New in your bag" for the hotbar badge: what's in the bag now that wasn't there the
+-- last time you opened it (eggs, pets not on your base, more of a potion). Whatever you
+-- already had when you joined counts as seen.
+local seen: { [string]: number }? = nil
+
+local function bagKeys(data): { [string]: number }
+	local keys = {}
+	for uid in data.Eggs or {} do
+		keys["E" .. uid] = 1
+	end
+	for uid, pet in data.Pets or {} do
+		if not pet.Placed then
+			keys["P" .. uid] = 1
+		end
+	end
+	for id, n in data.Items or {} do
+		if n > 0 then
+			keys["I" .. id] = n
+		end
+	end
+	return keys
+end
+
+function InventoryController:NewCount(): number
+	local data = State.data
+	if not data then
+		return 0
+	end
+	local now = bagKeys(data)
+	if not seen then
+		seen = now
+		return 0
+	end
+	local count = 0
+	for key, n in now do
+		count += math.max(0, n - ((seen :: any)[key] or 0))
+	end
+	return count
+end
+
+local function markSeen()
+	if State.data then
+		seen = bagKeys(State.data)
+	end
+end
+
 function InventoryController:Open(tab: string?)
 	currentTab = tab or currentTab
 	Ui.open("Inventory")
+	markSeen()
 	render(true)
 end
 
@@ -335,6 +382,9 @@ function InventoryController:Start()
 	end)
 	State.Changed:Connect(function()
 		render(false)
+		if gui.Enabled then
+			markSeen() -- you're looking at it, so nothing in it is new
+		end
 	end)
 end
 
