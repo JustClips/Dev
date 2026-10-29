@@ -888,6 +888,22 @@
    "id": 120325796292947,
    "sha": "a96e059fdc85f5616c7abeaf1af13aa7293b6d5bfe82fa7d619844b916d171a8"
   },
+  "VfxDrop": {
+   "id": 121835284606705,
+   "sha": "898d7fd597d46471189d5e1e4384b22b6ecfa31b31722ff52ddccdb5226e7076"
+  },
+  "VfxRipple": {
+   "id": 102018190575419,
+   "sha": "957eb7d5089a5f0c091c6a58128d5d7cdcea19bbb82094f2e1cd6c957a25fa23"
+  },
+  "VfxSplashCrown": {
+   "id": 136614210914854,
+   "sha": "91242cbdab3e2cd7e5a6b242d7edc1da0ada2cbce906e578ccd9659a670adebc"
+  },
+  "VfxSplashSheet": {
+   "id": 137008525760784,
+   "sha": "50e3604ba247b574464787c7aeaf58e9b415b01d45d83fc768e01bb75fd64540"
+  },
   "ZoneGate": {
    "id": 120653370862097,
    "sha": "5e17288509323cbc8f9ad3894e2e20d9c74ce3f52a65db6fda026f141cc317c2"

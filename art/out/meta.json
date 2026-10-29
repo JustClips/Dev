@@ -6460,5 +6460,105 @@
    -1.8
   ],
   "tris": 1960
+ },
+ "VfxDrop": {
+  "kind": "vfx",
+  "name": "VfxDrop",
+  "parts": {
+   "VfxDrop": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "bounds": {
+   "min": [
+    0,
+    0,
+    0
+   ],
+   "max": [
+    0,
+    0,
+    0
+   ]
+  }
+ },
+ "VfxRipple": {
+  "kind": "vfx",
+  "name": "VfxRipple",
+  "parts": {
+   "VfxRipple": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "bounds": {
+   "min": [
+    0,
+    0,
+    0
+   ],
+   "max": [
+    0,
+    0,
+    0
+   ]
+  }
+ },
+ "VfxSplashCrown": {
+  "kind": "vfx",
+  "name": "VfxSplashCrown",
+  "parts": {
+   "VfxSplashCrown": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "bounds": {
+   "min": [
+    0,
+    0,
+    0
+   ],
+   "max": [
+    0,
+    0,
+    0
+   ]
+  }
+ },
+ "VfxSplashSheet": {
+  "kind": "vfx",
+  "name": "VfxSplashSheet",
+  "parts": {
+   "VfxSplashSheet": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "bounds": {
+   "min": [
+    0,
+    0,
+    0
+   ],
+   "max": [
+    0,
+    0,
+    0
+   ]
+  }
  }
 }

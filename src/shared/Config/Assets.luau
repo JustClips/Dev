@@ -3201,6 +3201,58 @@ Assets.Models = {
 		},
 		seat = Vector3.new(0.0, 1.75, 0.3),
 	},
+	VfxDrop = {
+		bounds = {
+			max = Vector3.new(0.0, 0.0, 0.0),
+			min = Vector3.new(0.0, 0.0, 0.0),
+		},
+		id = 121835284606705,
+		kind = "vfx",
+		parts = {
+			VfxDrop = {
+				collide = false,
+			},
+		},
+	},
+	VfxRipple = {
+		bounds = {
+			max = Vector3.new(0.0, 0.0, 0.0),
+			min = Vector3.new(0.0, 0.0, 0.0),
+		},
+		id = 102018190575419,
+		kind = "vfx",
+		parts = {
+			VfxRipple = {
+				collide = false,
+			},
+		},
+	},
+	VfxSplashCrown = {
+		bounds = {
+			max = Vector3.new(0.0, 0.0, 0.0),
+			min = Vector3.new(0.0, 0.0, 0.0),
+		},
+		id = 136614210914854,
+		kind = "vfx",
+		parts = {
+			VfxSplashCrown = {
+				collide = false,
+			},
+		},
+	},
+	VfxSplashSheet = {
+		bounds = {
+			max = Vector3.new(0.0, 0.0, 0.0),
+			min = Vector3.new(0.0, 0.0, 0.0),
+		},
+		id = 137008525760784,
+		kind = "vfx",
+		parts = {
+			VfxSplashSheet = {
+				collide = false,
+			},
+		},
+	},
 	ZoneGate = {
 		bounds = {
 			max = Vector3.new(16.0, 17.05, 2.3),

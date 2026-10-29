@@ -727,16 +727,26 @@ end
 -- Mesh splashes: real 3D water crowns and ripples (art/blender/vfx_meshes.py) popping up
 -- where raindrops hit whatever is under them (ground, roofs, paths), pooled.
 local function meshSplashes(scene: Scene, perSecond: number)
-	local crownSrc = AssetLibrary.get("VfxSplashCrown")
-	local rippleSrc = AssetLibrary.get("VfxRipple")
-	local sheetSrc = AssetLibrary.get("VfxSplashSheet")
-	if not crownSrc or not rippleSrc then
-		return
-	end
-	local function meshOf(model: Model?): MeshPart?
+	-- The meshes load with the other models; until they're in, only particles splash.
+	local function meshOf(name: string): MeshPart?
+		local model = AssetLibrary.get(name)
 		return if model then model:FindFirstChildWhichIsA("MeshPart") else nil
 	end
-	local sources = { crown = meshOf(crownSrc), ripple = meshOf(rippleSrc), sheet = meshOf(sheetSrc) }
+	local sources: { [string]: MeshPart? } = {}
+	local nextLook = 0
+	local function ready(): boolean
+		if sources.crown and sources.ripple then
+			return true
+		end
+		if os.clock() < nextLook then
+			return false
+		end
+		nextLook = os.clock() + 2
+		sources.crown = sources.crown or meshOf("VfxSplashCrown")
+		sources.ripple = sources.ripple or meshOf("VfxRipple")
+		sources.sheet = sources.sheet or meshOf("VfxSplashSheet")
+		return sources.crown ~= nil and sources.ripple ~= nil
+	end
 	local pools: { [string]: { MeshPart } } = { crown = {}, ripple = {}, sheet = {} }
 	local function take(kind: string): MeshPart?
 		local pool = pools[kind]
@@ -783,6 +793,9 @@ local function meshSplashes(scene: Scene, perSecond: number)
 	end
 	local carry = 0
 	addUpdate(scene, function(dt)
+		if not ready() then
+			return
+		end
 		carry += perSecond * dt
 		local eye = cameraPosition()
 		while carry >= 1 do
