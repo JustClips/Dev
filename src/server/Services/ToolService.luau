@@ -358,7 +358,8 @@ local function buildVehicle(player: Player, def): Model
 			if seatWeld then
 				seatWeld.Enabled = false
 			end
-			seat.CFrame = base * CFrame.new(meta.seat * k)
+			-- meta.seat is the top of the seat cushion; the driver sits on the VehicleSeat's top face.
+			seat.CFrame = base * CFrame.new(meta.seat * k - Vector3.new(0, seat.Size.Y / 2 + 0.05 * k, 0))
 			if seatWeld then
 				seatWeld.Enabled = true
 			end
