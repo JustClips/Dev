@@ -432,13 +432,21 @@ end
 
 layout = function(s: number, compact: boolean)
 	local top = 6
+	-- The pills row is as wide as the pills showing (the Free pill comes and goes).
+	local shown = 0
+	for _, child in el.Pills:GetChildren() do
+		if child:IsA("GuiButton") and child.Visible then
+			shown += 1
+		end
+	end
+	el.Pills.Size = UDim2.fromOffset(math.max(1, shown) * 136 + math.max(0, shown - 1) * 12, el.Pills.Size.Y.Offset)
 	local pillsH = math.ceil(52 * s)
 	-- Pills go up into Roblox's top bar row when they fit between its buttons (and our
 	-- settings gear, which sits right after them).
 	local inset = GuiService.TopbarInset
 	local camera = Workspace.CurrentCamera
 	if camera and inset.Height >= pillsH then
-		local half = math.ceil(432 * s / 2)
+		local half = math.ceil(el.Pills.Size.X.Offset * s / 2)
 		local mid = camera.ViewportSize.X / 2
 		local freeLeft = math.max(inset.Min.X, 104) + math.ceil(inset.Height) + 8
 		if mid - half >= freeLeft and mid + half <= inset.Max.X - 8 then
@@ -617,6 +625,11 @@ function HudController:SetCombo(combo: number)
 			comboShown = 1
 		end
 	end)
+end
+
+-- Lays the HUD out again (after a HUD piece shows or hides).
+function HudController:Relayout()
+	layout(Ui.scale(), Ui.compact())
 end
 
 function HudController:GetSweepButton(): GuiButton

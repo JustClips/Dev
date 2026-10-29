@@ -168,7 +168,8 @@ end
 
 local function renderBottom(info)
 	local group = Ui.find(gui, "Window.Group") :: Frame
-	group.Visible = info.GroupId ~= 0
+	-- The group reward has its own window now (GroupRewardController).
+	group.Visible = false
 	if group.Visible then
 		local claim = Ui.find(group, "Claim") :: GuiButton
 		if info.GroupClaimed then

@@ -34,6 +34,7 @@ local ORDER = {
 	"TutorialController",
 	"BasePanelsController",
 	"RewardsController",
+	"GroupRewardController",
 	"RebirthController",
 	"OfferController",
 	"FollowerController",

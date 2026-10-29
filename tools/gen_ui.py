@@ -411,6 +411,9 @@ def hud():
         pill("BaseButton", "Base", "Base", PILL_BASE, 1),
         pill("SellButton", "Sell", "Sell", PILL_SELL, 2),
         pill("ZonesButton", "Zones", "Zones", PILL_ZONES, 3),
+        # Free group reward (GroupRewardController shows it until it's claimed).
+        button("FreeButton", U(0, 136, 0, 52), color="#FFB020", label="Free", ts=21, ico="Gift", ico_px=40, LayoutOrder=4,
+               Visible=False, children=[badge()]),
     ])
     # Fixed height: a UIListLayout directly in a plate would also stack the Studs image.
     picker = plate("ZonePicker", U(0, 330, 0, 348), U(0.5, 0, 0, 66), (0.5, 0), SURFACE, Visible=False, ZIndex=6,
@@ -1192,6 +1195,45 @@ def settings():
     write("Settings", screen([dim(), window(520, 310, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
 
 
+# ---------------------------------------------------------------- Group reward
+def group_reward():
+    """Free reward window (screen "GroupReward"), opened from the Free pill at the top: join
+    the group (prompted in-game) and claim. Under it, a separate ask to like and favorite
+    the game. Only group membership is rewarded (Roblox doesn't allow rewards for likes or
+    favorites, or wording that hints at one)."""
+    join = plate("Join", U(1, -28, 0, 236), U(0, 14, 0, 78), tint=WHITE, stud=0.2, children=[
+        icon("Icon", "Group", 132, U(0, 18, 0.5, 0), (0, 0.5)),
+        text("Title", "JOIN OUR GROUP", U(1, -180, 0, 40), U(0, 166, 0, 14), ts=32, color=INK, display=True, xa="Left"),
+        text("Text", "Get free stuff right now:", U(1, -180, 0, 26), U(0, 166, 0, 56), ts=20, color=SUB, heavy=True, xa="Left"),
+        frame("Rewards", U(1, -180, 0, 60), U(0, 166, 0, 86), children=[
+            hlist(10, "Left", "Center"),
+            frame("Potions", U(0, 190, 0, 56), bg="#EEF1F7", LayoutOrder=1, children=[
+                border(INK, 2),
+                icon("Icon", "PotionLuck", 46, U(0, 6, 0.5, 0), (0, 0.5)),
+                text("Label", "2 Luck Potions", U(1, -60, 1, 0), U(0, 56, 0, 0), ts=18, color=INK, display=True, xa="Left"),
+            ]),
+            frame("Cash", U(0, 190, 0, 56), bg="#EEF1F7", LayoutOrder=2, children=[
+                border(INK, 2),
+                icon("Icon", "Cash", 46, U(0, 6, 0.5, 0), (0, 0.5)),
+                text("Label", "Free Cash", U(1, -60, 1, 0), U(0, 56, 0, 0), ts=18, color=INK, display=True, xa="Left"),
+            ]),
+        ]),
+        button("JoinButton", U(0, 210, 0, 56), U(0, 166, 1, -14), (0, 1), color="#4C8DFF", label="Join Group", ts=22,
+               ico="Group", ico_px=38),
+        button("Claim", U(0, 200, 0, 56), U(0, 388, 1, -14), (0, 1), color=SUCCESS, label="Claim", ts=24),
+    ])
+    support = plate("Support", U(1, -28, 0, 96), U(0, 14, 0, 328), tint="#FFF6DD", stud=0.2, children=[
+        icon("Icon", "Star", 62, U(0, 16, 0.5, 0), (0, 0.5)),
+        text("Text", "Like and favorite the game to support us! It helps more players find it.", U(1, -300, 1, -12),
+             U(0, 92, 0.5, 0), (0, 0.5), ts=19, color=INK, heavy=True, xa="Left"),
+        button("Favorite", U(0, 180, 0, 52), U(1, -14, 0.5, 0), (1, 0.5), color=PREMIUM, label="Favorite", ts=21,
+               label_color=INK, ico="Star", ico_px=34),
+    ])
+    note = text("Note", "", U(1, -28, 0, 30), U(0, 14, 1, -14), (0, 1), ts=16, color=SUB, heavy=True, xa="Left")
+    write("GroupReward", screen([dim(), window(WIN_W, WIN_H, "Free Reward", "Gift", [join, support, note], header="#FFB020")],
+                               order=10, enabled=False))
+
+
 # ---------------------------------------------------------------- Garage
 def garage():
     """Tools window (screen "Garage"): a Tools tab (the tool ladder: buy the next one with
@@ -1373,6 +1415,7 @@ def main():
     settings()
     tutorial_done()
     garage()
+    group_reward()
     upgrades()
     loading()
     print("ui written to", OUT)

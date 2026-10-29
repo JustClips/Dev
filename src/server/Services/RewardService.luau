@@ -4,6 +4,7 @@
 --   ClaimDaily, ClaimPlaytime(index), StartStay, ClaimGroup, SignUp(eventId).
 -- Session playtime is counted by this service's 1 s loop (not wall time), so it pauses
 -- while a profile is still loading and resets when the player rejoins.
+local GroupService = game:GetService("GroupService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -164,7 +165,22 @@ local function inGroup(player: Player): boolean
 	local ok, result = pcall(function()
 		return player:IsInGroup(Rewards.Group.Id)
 	end)
-	return ok and result == true
+	if ok and result == true then
+		return true
+	end
+	-- IsInGroup is cached for the session, so someone who just joined from the in-game
+	-- prompt reads as "not in": ask the groups web API instead.
+	local fresh, groups = pcall(function()
+		return GroupService:GetGroupsAsync(player.UserId)
+	end)
+	if fresh and type(groups) == "table" then
+		for _, g in groups do
+			if g.Id == Rewards.Group.Id then
+				return true
+			end
+		end
+	end
+	return false
 end
 
 local function claimGroup(player: Player): (boolean, string?)
@@ -176,7 +192,7 @@ local function claimGroup(player: Player): (boolean, string?)
 		return false, "You already got the group reward"
 	end
 	if not inGroup(player) then
-		return false, `Join {Rewards.Group.Name} first, then rejoin the game and claim!`
+		return false, `Join {Rewards.Group.Name} first (press Join Group), then claim!`
 	end
 	data.Flags.GroupRewardClaimed = true
 	local got = {}
