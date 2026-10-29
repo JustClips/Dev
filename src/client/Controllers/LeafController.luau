@@ -1446,11 +1446,16 @@ end
 
 local lastClearSound = 0
 
-local function onCleared(packed: buffer)
+local function onCleared(packed: buffer, byUserId: number?)
 	local at = focus()
-	-- Everyone sweeping nearby: their cleared leaves get sucked into their tool or car.
+	-- The leaves go to whoever swept them: their tool, car or backpack.
 	local sweepers: { Sweeper } = {}
-	if at then
+	local owner: Sweeper? = nil
+	local sweeperPlayer = if type(byUserId) == "number" and byUserId ~= 0 then Players:GetPlayerByUserId(byUserId) else nil
+	if sweeperPlayer and sweeperPlayer.Character then
+		owner = sweeperOf(sweeperPlayer.Character)
+	end
+	if at and not owner then
 		for _, player in Players:GetPlayers() do
 			local character = player.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -1470,7 +1475,8 @@ local function onCleared(packed: buffer)
 			local p = tile.base.Position
 			local near = at ~= nil and (p - at).Magnitude < FLY_DISTANCE
 			if near and #flying < MAX_FLYING then
-				local best, bestD = nil, SUCK_RANGE
+				-- The sweeper the server named; if none (older server), the nearest one.
+				local best, bestD = owner, SUCK_RANGE
 				for _, sw in sweepers do
 					local d = (sw.root - p).Magnitude
 					if d < bestD then
@@ -1619,13 +1625,13 @@ end
 
 function LeafController:Start()
 	-- Events that arrive before the snapshot wait for it.
-	local function later(fn: (buffer) -> ()): (buffer) -> ()
-		return function(packed: buffer)
+	local function later(fn: (buffer, number?) -> ()): (buffer, number?) -> ()
+		return function(packed: buffer, by: number?)
 			if ready then
-				fn(packed)
+				fn(packed, by)
 			else
 				table.insert(queued, function()
-					fn(packed)
+					fn(packed, by)
 				end)
 			end
 		end

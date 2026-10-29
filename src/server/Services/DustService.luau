@@ -23,6 +23,9 @@ local zoneTiles: { [string]: { number } } = {}
 local golden: { [number]: boolean } = {}
 local goldenCount: { [string]: number } = {}
 local clearedBatch: { number } = {}
+-- Cleared tiles by who swept them (UserId), so each client flies the leaves to the right
+-- player's tool or backpack. 0: nobody in particular.
+local clearedBy: { [number]: { number } } = {}
 local restoredBatch: { number } = {}
 local goldenBatch: { number } = {}
 -- One FIFO per zone (same regrow delay per zone, so entries come out in order).
@@ -123,8 +126,8 @@ function DustService:IsCleared(id: number): boolean
 	return (hp[id] or 0) <= 0
 end
 
--- Applies damage. Returns true if this hit cleared the tile.
-function DustService:Damage(id: number, power: number): boolean
+-- Applies damage. Returns true if this hit cleared the tile. by: the sweeping player.
+function DustService:Damage(id: number, power: number, by: Player?): boolean
 	local current = hp[id]
 	if not current or current <= 0 then
 		return false
@@ -135,6 +138,13 @@ function DustService:Damage(id: number, power: number): boolean
 		return false
 	end
 	hp[id] = 0
+	local who = if by then by.UserId else 0
+	local list = clearedBy[who]
+	if not list then
+		list = {}
+		clearedBy[who] = list
+	end
+	table.insert(list, id)
 	table.insert(clearedBatch, id)
 
 	local zone = zoneOf[id]
@@ -214,9 +224,12 @@ function DustService:Start()
 		while true do
 			task.wait(Economy.TileBatchInterval)
 			if #clearedBatch > 0 then
-				local batch = clearedBatch
+				local byPlayer = clearedBy
 				clearedBatch = {}
-				Net.fireAll("TilesCleared", Grid.pack(batch))
+				clearedBy = {}
+				for userId, ids in byPlayer do
+					Net.fireAll("TilesCleared", Grid.pack(ids), userId)
+				end
 			end
 			if #restoredBatch > 0 then
 				local batch = restoredBatch

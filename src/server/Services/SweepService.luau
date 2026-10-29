@@ -68,7 +68,7 @@ local function onSweep(player: Player, position: any)
 	S.DustBunnyService:TryCatch(player, position, tool.Radius)
 	local cleared = {}
 	Grid.forEachInRadius(position, tool.Radius, function(id)
-		if S.DustService:Damage(id, tool.Power) then
+		if S.DustService:Damage(id, tool.Power, player) then
 			table.insert(cleared, id)
 		end
 	end)
