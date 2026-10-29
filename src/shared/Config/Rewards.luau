@@ -5,8 +5,8 @@
 --     players get something right away).
 --   Stay: when a player opens the Roblox menu (about to leave), offer a potion for 5 more minutes.
 --   Group: join the group for potions + cash. Hidden while Group.Id is 0.
---   Events: sign up on the board in the plaza. Everyone gets the event's luck while it runs,
---     and signed-up players get the event reward when they join during it.
+--   Events: sign up in the Daily window. Everyone gets the event's luck while it runs,
+--     and signed-up players get the event reward when they join during it. None scheduled.
 -- Cash rewards scale like cash packs: Seconds of the player's earnings, and at least
 -- Floor x the price of the next thing they're saving for.
 
@@ -72,17 +72,9 @@ Rewards.Group = {
 	} :: { Reward },
 }
 
-Rewards.Events = {
-	{
-		Id = "MeteorWeekend1",
-		Name = "Egg Rain Weekend",
-		Description = "2x egg luck for all! Sign up for 3 free Hatch Potions.",
-		StartsAt = 1793462400, -- Sat 31 Oct 2026 16:00 UTC
-		EndsAt = 1793635200, -- Mon 2 Nov 2026 16:00 UTC
-		LuckMult = 2,
-		Reward = { Kind = "Item", Item = "HatchPotion", Amount = 3 },
-	},
-} :: { EventDef }
+-- No events scheduled (Dev removed the sign-up event, 2026-10-29). Add one here to bring
+-- back the Daily window panel, the HUD chip and the luck boost.
+Rewards.Events = {} :: { EventDef }
 
 -- The event that is running at `now`, if any.
 function Rewards.activeEvent(now: number): EventDef?

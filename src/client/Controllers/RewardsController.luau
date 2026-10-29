@@ -6,10 +6,7 @@
 --   the event board in the plaza (its prompt signs you up),
 --   the badge on the rail button when something can be claimed.
 local GuiService = game:GetService("GuiService")
-local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
 local State = require(Client.State)
@@ -252,18 +249,6 @@ local function offerStay()
 	Ui.popFrame(Ui.find(popup, "Window"))
 end
 
-local function bobBoard()
-	local structures = Workspace:WaitForChild("Structures", 60)
-	local board = structures and structures:WaitForChild("EventBoard", 30)
-	local holo = board and board:WaitForChild("Hologram", 30)
-	local billboard = holo and holo:FindFirstChildOfClass("BillboardGui")
-	if not billboard or Ui.reducedMotion() then
-		return
-	end
-	local info = TweenInfo.new(1.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
-	TweenService:Create(billboard, info, { StudsOffset = Vector3.new(0, 0.8, 0) }):Play()
-end
-
 -------------------------------------------------------------------------- public
 
 function RewardsController:Toggle()
@@ -333,19 +318,6 @@ function RewardsController:Start()
 		act("StartStay")
 	end)
 	GuiService.MenuOpened:Connect(offerStay)
-
-	ProximityPromptService.PromptTriggered:Connect(function(prompt)
-		if prompt:GetAttribute("Opens") == "Event" then
-			local event = Rewards.currentOrNextEvent(State.now())
-			local info = State.data and State.data.Rewards
-			if event and info and not info.EventSignedUp then
-				act("SignUp", event.Id)
-			else
-				RewardsController:Toggle()
-			end
-		end
-	end)
-	task.spawn(bobBoard)
 
 	State.Changed:Connect(function(data)
 		local info = data.Rewards

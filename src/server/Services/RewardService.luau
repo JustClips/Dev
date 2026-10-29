@@ -14,7 +14,6 @@ local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
 local Zones = require(Shared.Config.Zones)
-local MapBuilder = require(script.Parent.Parent.Lib.MapBuilder)
 
 local SIGNED = 1
 local REWARDED = 2
@@ -316,35 +315,10 @@ function RewardService:Init(services)
 	end)
 end
 
--- The plaza board: event name and how long until it starts / ends.
-local function updateBoard()
-	local sign = MapBuilder.getEventSign()
-	if not sign then
-		return
-	end
-	local t = now()
-	local event = Rewards.currentOrNextEvent(t)
-	local title, sub = "EVENTS", "No event right now. Check back soon!"
-	if event then
-		title = string.upper(event.Name)
-		sub = if t >= event.StartsAt
-			then `LIVE! {event.LuckMult}x luck. Ends in {Format.countdown(event.EndsAt - t)}`
-			else `Starts in {Format.countdown(event.StartsAt - t)}. Sign up below!`
-	end
-	for _, label in sign.Titles do
-		label.Text = title
-	end
-	for _, label in sign.Subs do
-		label.Text = sub
-		label.Visible = true
-	end
-end
-
 function RewardService:Start()
 	task.spawn(function()
 		while true do
 			task.wait(1)
-			updateBoard()
 			for player, session in S.DataService:GetSessions() do
 				local rt = session.Runtime
 				if rt.Playtime then

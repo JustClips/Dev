@@ -328,15 +328,6 @@ local function sign(parent: Instance, name: string, cf: CFrame, width: number, h
 	return result
 end
 
--- A sign on two posts, standing on the ground at cf (sign faces cf.LookVector).
-local function signOnPosts(parent: Instance, name: string, cf: CFrame, width: number, height: number, accent: Color3, title: string, sub: string?): Sign
-	local postHeight = 4 + height
-	for _, x in { -width / 2 + 1, width / 2 - 1 } do
-		block(parent, name .. "Post", Vector3.new(0.7, postHeight, 0.7), cf * CFrame.new(x, postHeight / 2, 0.4), WOOD_DARK, M.Wood)
-	end
-	return sign(parent, name, cf * CFrame.new(0, 4 + height / 2, 0), width, height, accent, title, sub)
-end
-
 -- Flat text on the floor (thin invisible slab with a top SurfaceGui).
 local function floorText(parent: Instance, cf: CFrame, width: number, depth: number, text: string, color: Color3)
 	local p = block(parent, "FloorText", Vector3.new(width, 0.05, depth), cf, WHITE, nil, {
@@ -685,36 +676,6 @@ local function plazaScreen()
 	}, gui)
 end
 
--- Event board in the plaza: a big sign (RewardService writes the event name and the
--- countdown on it), a sign-up kiosk with a prompt, and a floating event icon.
-local eventSign: Sign? = nil
-
-local function eventBoard()
-	local cf = World.EventBoard
-	local model = make("Model", { Name = "EventBoard" }, structures)
-	local pink = Color3.fromRGB(255, 120, 230)
-	block(model, "Floor", Vector3.new(20, 0.6, 10), cf * CFrame.new(0, 0.3, 0), WOOD, M.WoodPlanks)
-	glow(model, "FloorTrim", Vector3.new(20.4, 0.2, 0.4), cf * CFrame.new(0, 0.62, -5), pink)
-	eventSign = signOnPosts(model, "EventSign", cf * CFrame.new(0, 0, 3), 18, 7, GOLD, "EVENTS", "Sign up here!")
-	local kiosk = block(model, "Kiosk", Vector3.new(4, 3.6, 2), cf * CFrame.new(0, 2.4, -1.5), SURFACE)
-	studs(kiosk, SURFACE, 3)
-	glow(model, "KioskTop", Vector3.new(4.4, 0.4, 2.4), cf * CFrame.new(0, 4.4, -1.5), pink)
-	prompt(kiosk, "Event", "Sign up", "Event")
-	local holo = block(model, "Hologram", Vector3.new(1, 1, 1), cf * CFrame.new(0, 7.2, -1.5), WHITE, nil, {
-		Transparency = 1,
-		CanCollide = false,
-		CanQuery = false,
-		CanTouch = false,
-	})
-	local bb = make("BillboardGui", { Size = UDim2.fromScale(4, 4), LightInfluence = 0, MaxDistance = 160 }, holo)
-	make("ImageLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = AssetLibrary.image("Icon_Event") }, bb)
-	holo:SetAttribute("Bob", true)
-end
-
-function MapBuilder.getEventSign(): Sign?
-	return eventSign
-end
-
 -- Ramps where a corridor changes height (terrain under them is carved by buildTerrain).
 local function corridorRamps()
 	local model = make("Model", { Name = "Ramps" }, structures)
@@ -765,7 +726,6 @@ function MapBuilder.buildStructures()
 	garage()
 	upgradeStation()
 	plazaScreen()
-	eventBoard()
 	for i = 1, World.BaseCount do
 		MapBuilder.buildBaseStructure(i)
 	end
