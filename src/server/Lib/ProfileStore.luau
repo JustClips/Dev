@@ -6,6 +6,7 @@
 -- * Save and Release only write while we still hold the lock (same Token). If someone stole
 --   it, the profile is "lost" and the owner should kick the player.
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 
 local MAX_LOAD_ATTEMPTS = 8
 local LOCKED_RETRY_SECONDS = 5
@@ -79,7 +80,10 @@ function ProfileStore:LoadAsync(key: string, isActive: () -> boolean): (Profile?
 				local stale = now - (record.Meta.LastUpdate or 0) >= self._stale
 				-- Same JobId but not one of our live sessions: a dead Studio run. Safe to take.
 				local deadLocal = session.JobId == game.JobId and not activeTokens[session.Token]
-				if not stale and not deadLocal then
+				-- Studio test runs always take the save: a stopped run often can't release
+				-- its lock, and waiting on it left the loading screen stuck on "Loading
+				-- your save" (Dev, 2026-10-29).
+				if not stale and not deadLocal and not RunService:IsStudio() then
 					locked = true
 					return nil -- cancel the write
 				end
@@ -108,6 +112,7 @@ function ProfileStore:LoadAsync(key: string, isActive: () -> boolean): (Profile?
 		end
 		if locked then
 			-- Usually the player's previous server is still saving. Give it a moment.
+			warn(`[ProfileStore] {key} is still locked by another server, retrying in {LOCKED_RETRY_SECONDS}s`)
 			task.wait(LOCKED_RETRY_SECONDS)
 		end
 	end
