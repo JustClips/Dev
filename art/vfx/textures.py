@@ -32,18 +32,19 @@ def alpha_from(mask, color=(255, 255, 255)):
     return img
 
 
-# Rain streak: thin, bright in the middle, fading at both ends.
+# Rain streak: a square image with one bold vertical streak through the full height (the
+# emitter stretches it with Squash, so it must be wide enough to still read from afar).
 def rain():
-    w, h = 16, 128
-    m = Image.new("L", (w * SS, h * SS), 0)
+    s = 64
+    m = Image.new("L", (s * SS, s * SS), 0)
     px = m.load()
-    for y in range(h * SS):
-        t = y / (h * SS)
-        a = math.sin(t * math.pi) ** 0.7 * (0.35 + 0.65 * t)
-        for x in range(w * SS):
-            d = abs(x - w * SS / 2) / (w * SS * 0.18)
-            px[x, y] = int(255 * a * max(0, 1 - d * d))
-    save(alpha_from(m.filter(ImageFilter.GaussianBlur(2))), "Rain", (w, h))
+    for y in range(s * SS):
+        t = y / (s * SS)
+        a = min(1, t * 1.6) * min(1, (1 - t) * 6)  # faint tail at the top, bright head
+        for x in range(s * SS):
+            d = abs(x - s * SS / 2 + 0.5) / (s * SS * 0.22)
+            px[x, y] = int(255 * a * max(0, 1 - d * d) ** 0.6)
+    save(alpha_from(m.filter(ImageFilter.GaussianBlur(SS))), "Rain", (s, s))
 
 
 # Snowflake: six arms with little branches and a soft glow.
