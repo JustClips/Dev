@@ -1197,20 +1197,39 @@ def garage():
     """Tools window (screen "Garage"): a Tools tab (the tool ladder: buy the next one with
     cash or skip with Robux) and a Cars tab (buy, spawn, Robux unlock / rent, and a button
     that teleports you to the Garage). Opened from the Tools button on the right."""
-    row = plate("Template", U(1, -12, 0, 92), tint=WHITE, stud=0.2, Visible=False, children=[
-        icon("Icon", "Vehicle", 74, U(0, 6, 0.5, 0), (0, 0.5)),
-        text("Name", "Car", U(1, -270, 0, 30), U(0, 86, 0, 8), ts=24, color=INK, display=True, xa="Left"),
-        text("Stats", "", U(1, -270, 0, 22), U(0, 86, 0, 40), ts=15, color=SUB, xa="Left"),
-        text("Price", "", U(1, -270, 0, 20), U(0, 86, 0, 62), ts=15, color="#1E9E3A", heavy=True, xa="Left"),
-        button("Main", U(0, 160, 0, 44), U(1, -12, 0, 6), (1, 0), color=SUCCESS, label="Buy", ts=22),
-        button("Robux", U(0, 160, 0, 32), U(1, -12, 0, 56), (1, 0), color=PREMIUM, label="", ts=16, label_color=INK, Visible=False),
+    # A shop card per tool / car (Dev: the price hid in small text under the name). The
+    # price is on the big button itself ("Buy $1.2B"), a pill on the corner says where you
+    # stand (Equipped / Owned / Next / Locked), and the three stats sit in a little table.
+    def stat(name, label, y):
+        return frame(name, U(1, -16, 0, 20), U(0, 8, 0, y), children=[
+            text("Label", label, U(0.5, 0, 1, 0), ts=16, color=SUB, heavy=True, xa="Left"),
+            text("Value", "", U(0.5, 0, 1, 0), U(1, 0, 0, 0), (1, 0), ts=16, color=INK, display=True, xa="Right"),
+        ])
+    row = plate("Template", U(0, 0, 0, 0), tint=WHITE, stud=0.2, Visible=False, children=[
+        icon("Icon", "Vehicle", 70, U(0.5, 0, 0, 26), (0.5, 0)),
+        frame("Status", U(0, 92, 0, 24), U(0, 6, 0, 6), bg=SUCCESS, Visible=False, ZIndex=4, children=[
+            border(INK, 2),
+            text("Label", "OWNED", U(1, -6, 1, 0), U(0.5, 0, 0, 0), (0.5, 0), ts=16, display=True, stroke=2, ZIndex=5,
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+        ]),
+        text("Name", "Car", U(1, -12, 0, 26), U(0.5, 0, 0, 96), (0.5, 0), ts=21, color=INK, display=True,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 21, "MinTextSize": 10})]),
+        stat("Width", "Width", 122),
+        stat("Leaves", "Leaves", 142),
+        stat("Holds", "Holds", 162),
+        button("Main", U(1, -14, 0, 46), U(0.5, 0, 0, 190), (0.5, 0), color=SUCCESS, label="Buy", ts=21),
+        button("Robux", U(1, -14, 0, 30), U(0.5, 0, 0, 242), (0.5, 0), color=PREMIUM, label="", ts=16, label_color=INK,
+               Visible=False),
     ])
     tabs = frame("Tabs", U(1, -28, 0, 50), U(0, 14, 0, 76), children=[
         hlist(10, "Left", "Center"),
         button("TabTools", U(0, 170, 0, 46), color="#4C8DFF", label="Tools", ts=22, ico="Tool", ico_px=34, LayoutOrder=1),
         button("TabCars", U(0, 170, 0, 46), color="#FF9A3C", label="Cars", ts=22, ico="Vehicle", ico_px=34, LayoutOrder=2),
     ])
-    lst = scroller("List", U(1, -28, 1, -206), U(0, 14, 0, 134), [vlist(10), padding(2, 2, 4, 4), row])
+    lst = scroller("List", U(1, -28, 1, -206), U(0, 14, 0, 134), [
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 182, 0, 282), "CellPadding": U(0, 10, 0, 10), "SortOrder": "LayoutOrder",
+                                        "HorizontalAlignment": "Left"}),
+        padding(4, 4, 4, 6), row])
     hint = text("Hint", "", U(1, -260, 0, 44), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True, xa="Left")
     go = button("GoGarage", U(0, 230, 0, 48), U(1, -14, 1, -10), (1, 1), color=SUCCESS, label="Go to Garage", ts=20,
                 ico="Base", ico_px=32)

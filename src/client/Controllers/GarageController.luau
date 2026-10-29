@@ -23,6 +23,8 @@ local Tools = require(Shared.Config.Tools)
 local GREEN = Color3.fromRGB(61, 220, 90)
 local BLUE = Color3.fromRGB(76, 141, 255)
 local GREY = Color3.fromRGB(166, 174, 194)
+local GOLD = Color3.fromRGB(255, 176, 32)
+local ORANGE = Color3.fromRGB(255, 140, 60)
 
 local GarageController = {}
 
@@ -62,52 +64,77 @@ local function newRow(order: number, name: string): Frame
 	return row
 end
 
+-- Card details shared by tools and cars.
+local function setStats(row: Frame, width: number, power: number, holds: number)
+	local stats = { Width = tostring(width), Leaves = `x{Format.number(power)}`, Holds = Format.number(holds) }
+	for name, value in stats do
+		local cell = row:FindFirstChild(name)
+		local label = cell and cell:FindFirstChild("Value") :: TextLabel?
+		if label then
+			label.Text = value
+		end
+	end
+end
+
+-- The corner pill: where you stand with this one (nil hides it).
+local function setStatus(row: Frame, text: string?, color: Color3?)
+	local pill = row:FindFirstChild("Status") :: Frame
+	pill.Visible = text ~= nil
+	if text then
+		pill.BackgroundColor3 = color or GREEN
+		Ui.setText(pill, text)
+	end
+end
+
+local function setMain(row: Frame, text: string, color: Color3, fn: () -> ())
+	local main = row:FindFirstChild("Main") :: TextButton
+	Ui.setText(main, text)
+	main.BackgroundColor3 = color
+	Ui.button(main, fn)
+end
+
+local function setRobux(row: Frame, product: any, verb: string)
+	local robux = row:FindFirstChild("Robux") :: TextButton
+	robux.Visible = product ~= nil
+	if product then
+		Ui.setText(robux, `{verb} {Ui.ROBUX}{product.Price}`)
+		Ui.button(robux, function()
+			promptRobux(product.Key)
+		end)
+	end
+end
+
 local function toolRows(data)
 	local current = data.EffectiveTier or data.ToolTier
 	for _, tool in Tools.List do
 		local row = newRow(tool.Tier, tool.Id)
 		local owned = tool.Tier <= data.ToolTier
 		local isNext = tool.Tier == data.ToolTier + 1
+		local afford = BigNum.gte(data.Cash, tool.Price)
 		;(row:FindFirstChild("Name") :: TextLabel).Text = tool.Name
-		;(row:FindFirstChild("Stats") :: TextLabel).Text =
-			`Width {tool.Radius} · Leaves x{tool.Power} · Holds {Format.number(tool.Capacity)}`
-		;(row:FindFirstChild("Price") :: TextLabel).Text = if tool.Tier == current
-			then "In your hands"
-			elseif owned then "Owned"
-			else Format.cash(tool.Price)
 		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.toolIcon(tool.Id)
-		local main = row:FindFirstChild("Main") :: TextButton
+		setStats(row, tool.Radius, tool.Power, tool.Capacity)
 		if owned then
 			local equipped = tool.Tier == current
-			Ui.setText(main, if equipped then "Equipped" else "Equip")
-			main.BackgroundColor3 = if equipped then GREY else BLUE
-			Ui.button(main, function()
+			setStatus(row, if equipped then "EQUIPPED" else "OWNED", if equipped then BLUE else GREEN)
+			setMain(row, if equipped then "Equipped" else "Equip", if equipped then GREY else BLUE, function()
 				if tool.Tier ~= (State.data and State.data.EffectiveTier or data.ToolTier) then
 					toast(Net.func("EquipTool"):InvokeServer(tool.Tier))
 				end
 			end)
 		elseif isNext then
-			Ui.setText(main, `Buy {Format.cash(tool.Price)}`)
-			main.BackgroundColor3 = if BigNum.gte(data.Cash, tool.Price) then GREEN else GREY
-			Ui.button(main, function()
+			setStatus(row, "NEXT", GOLD)
+			-- The price is on the button (Dev: it was easy to miss under the name).
+			setMain(row, `Buy {Format.cash(tool.Price)}`, if afford then GREEN else GREY, function()
 				toast(Net.func("BuyNextTool"):InvokeServer())
 			end)
 		else
-			Ui.setText(main, "Locked")
-			main.BackgroundColor3 = GREY
-			Ui.button(main, function()
+			setStatus(row, "LOCKED", GREY)
+			setMain(row, Format.cash(tool.Price), GREY, function()
 				toast(false, `Get the {Tools.get(tool.Tier - 1).Name} first`)
 			end)
 		end
-		local robux = row:FindFirstChild("Robux") :: TextButton
-		local product = if isNext then liveProduct("ToolSkip" .. tool.Tier) else nil
-		robux.Visible = product ~= nil
-		if product then
-			Ui.setText(robux, `Get now {Ui.ROBUX}{product.Price}`)
-			Ui.button(robux, function()
-				promptRobux(product.Key)
-			end)
-		end
+		setRobux(row, if isNext then liveProduct("ToolSkip" .. tool.Tier) else nil, "Get now")
 		row.Parent = list
 	end
 end
@@ -119,20 +146,11 @@ local function carRows(data)
 		local rented = data.RentedVehicle == car.Id
 		local locked = not owned and not rented and data.Rebirths < car.RequiredRebirths
 		;(row:FindFirstChild("Name") :: TextLabel).Text = car.Name
-		;(row:FindFirstChild("Stats") :: TextLabel).Text =
-			`Width {car.Radius} · Leaves x{car.Power} · Holds {Format.number(car.Capacity)}`
-		;(row:FindFirstChild("Price") :: TextLabel).Text = if owned
-			then "Owned"
-			elseif rented then "Rented for this run"
-			elseif locked then `Needs Rebirth {car.RequiredRebirths} · {Format.cash(car.Price)}`
-			else Format.cash(car.Price)
 		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.carIcon(car.Id)
-
-		local main = row:FindFirstChild("Main") :: TextButton
+		setStats(row, car.Radius, car.Power, car.Capacity)
 		if owned or rented then
-			Ui.setText(main, "Spawn")
-			main.BackgroundColor3 = BLUE
-			Ui.button(main, function()
+			setStatus(row, if owned then "OWNED" else "RENTED", if owned then GREEN else ORANGE)
+			setMain(row, "Spawn", BLUE, function()
 				local ok, message = Net.func("SpawnVehicle"):InvokeServer(car.Id)
 				if ok then
 					Ui.close("Garage")
@@ -141,30 +159,19 @@ local function carRows(data)
 				end
 			end)
 		elseif locked then
-			Ui.setText(main, "Locked")
-			main.BackgroundColor3 = GREY
-			Ui.button(main, function()
+			setStatus(row, `REBIRTH {car.RequiredRebirths}`, GREY)
+			setMain(row, Format.cash(car.Price), GREY, function()
 				toast(false, `Reach Rebirth {car.RequiredRebirths} to unlock the {car.Name}`)
 			end)
 		else
-			Ui.setText(main, "Buy")
-			main.BackgroundColor3 = if BigNum.gte(data.Cash, car.Price) then GREEN else GREY
-			Ui.button(main, function()
+			setStatus(row, nil)
+			setMain(row, `Buy {Format.cash(car.Price)}`, if BigNum.gte(data.Cash, car.Price) then GREEN else GREY, function()
 				toast(Net.func("BuyVehicle"):InvokeServer(car.Id))
 			end)
 		end
-
 		-- Robux: unlock (until rebirth), or rent for this run if unlock isn't on sale.
-		local robux = row:FindFirstChild("Robux") :: TextButton
 		local product = if owned or rented or locked then nil else (liveProduct(car.UnlockKey) or liveProduct(car.RentKey))
-		robux.Visible = product ~= nil
-		if product then
-			local verb = if product.Kind == "VehicleRental" then "Rent" else "Get"
-			Ui.setText(robux, `{verb} {Ui.ROBUX}{product.Price}`)
-			Ui.button(robux, function()
-				promptRobux(product.Key)
-			end)
-		end
+		setRobux(row, product, if product and product.Kind == "VehicleRental" then "Rent" else "Get")
 		row.Parent = list
 	end
 end
@@ -200,6 +207,24 @@ local function render(keepScroll: boolean?)
 		end)
 	else
 		list.CanvasPosition = Vector2.zero
+		-- Tools open on the row with the next tool to buy (or the one in your hands).
+		if tab == "Tools" then
+			local focus = math.min(data.ToolTier + 1, Tools.MaxTier)
+			task.defer(function()
+				local layout = list:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout?
+				if not layout then
+					return
+				end
+				-- Count cards per row in screen pixels (UIScale-proof), scroll in layout units.
+				local cell = layout.CellSize.X.Offset
+				local k = layout.AbsoluteCellSize.X / math.max(1, cell)
+				local gap = layout.CellPadding.X.Offset
+				local perRow = math.max(1, math.floor((list.AbsoluteSize.X / math.max(k, 0.01) + gap) / (cell + gap)))
+				local rowIndex = math.floor((focus - 1) / perRow)
+				local rowHeight = layout.CellSize.Y.Offset + layout.CellPadding.Y.Offset
+				list.CanvasPosition = Vector2.new(0, rowIndex * rowHeight)
+			end)
+		end
 	end
 end
 
