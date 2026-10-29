@@ -18,19 +18,19 @@ local Grid = require(Shared.Grid)
 
 local BackpackController = {}
 
+local C: any
+
 local LEAVES = 30 -- leaves in a full bag
 local EASE = 6 -- how fast the shown fill follows the real one
 local DROP_TIME = 0.28 -- a new leaf falling in
 local DROP_HEIGHT = 1.6 -- from this far above its spot (in bag sizes)
-local OUT_TIME = 0.16 -- a leaf leaving when you dump
 local RANGE = 140 -- studs from the camera to draw the leaves
 local BED_COLOR = Color3.fromRGB(122, 70, 32)
 
 type Slot = {
 	offset: CFrame, -- where it rests, in the bag body's space
 	leaf: BasePart?,
-	t: number, -- 0..1 drop-in progress (or out, while leaving)
-	leaving: boolean,
+	t: number, -- 0..1 drop-in progress
 	spin: number,
 }
 type Bag = {
@@ -61,7 +61,7 @@ local function makeSlots(full: Vector3, bottom: Vector3, centre: Vector3, rng: R
 		local z = centre.Z + rng:NextNumber(-0.42, 0.42) * full.Z * narrow
 		local y = bottom.Y + (top - bottom.Y) * h
 		local tilt = CFrame.Angles(rng:NextNumber(-0.9, 0.9), rng:NextNumber(0, math.pi * 2), rng:NextNumber(-0.9, 0.9))
-		table.insert(slots, { offset = CFrame.new(x, y, z) * tilt, leaf = nil, t = 0, leaving = false, spin = rng:NextNumber(-8, 8) })
+		table.insert(slots, { offset = CFrame.new(x, y, z) * tilt, leaf = nil, t = 0, spin = rng:NextNumber(-8, 8) })
 	end
 	return slots
 end
@@ -72,7 +72,6 @@ local function release(slot: Slot)
 		slot.leaf = nil
 	end
 	slot.t = 0
-	slot.leaving = false
 end
 
 local function clear(bag: Bag)
@@ -145,6 +144,9 @@ local function lookFor(player: Player): LeafMeshes.Look
 	return LeafMeshes.lookFor(zone and (zone :: any).Ground)
 end
 
+-- The leaves going into each player's bag right now (for the dump's pour colours).
+local looks: { [Player]: LeafMeshes.Look } = {}
+
 local function updateLeaves(bag: Bag, player: Player, dt: number, near: boolean)
 	if not near or not LeafMeshes.ready() then
 		clear(bag)
@@ -155,42 +157,33 @@ local function updateLeaves(bag: Bag, player: Player, dt: number, near: boolean)
 	local bodyCf = bag.body.CFrame
 	for i, slot in bag.slots do
 		if i <= want then
-			if not slot.leaf or slot.leaving then
-				if not slot.leaf then
-					look = look or lookFor(player)
-					local leaf = LeafMeshes.random(look :: LeafMeshes.Look, bag.size * 0.5)
-					if leaf then
-						leaf.Parent = folder
-						slot.leaf = leaf
-						slot.t = 0
-					end
+			if not slot.leaf then
+				look = look or lookFor(player)
+				looks[player] = look :: LeafMeshes.Look
+				local leaf = LeafMeshes.random(look :: LeafMeshes.Look, bag.size * 0.5)
+				if leaf then
+					leaf.Parent = folder
+					slot.leaf = leaf
+					slot.t = 0
 				end
-				if slot.leaving and slot.leaf then
-					-- Filled again mid-dump: back to full size where it is.
-					slot.leaf.Size = LeafMeshes.baseSize(slot.leaf) * bag.size * 0.5
-					slot.t = 1
-				end
-				slot.leaving = false
 			end
 			slot.t = math.min(1, slot.t + dt / DROP_TIME)
 		elseif slot.leaf then
-			-- Dumping: leaves go from the top down.
-			if not slot.leaving then
-				slot.leaving = true
-				slot.t = 1
-			end
-			slot.t -= dt / OUT_TIME
-			if slot.t <= 0 then
-				release(slot)
+			-- Selling: the bag's own leaves fly out, top down, into the dump you're at (or
+			-- up and away with Sell Anywhere).
+			local leaf = slot.leaf :: BasePart
+			slot.leaf = nil
+			slot.t = 0
+			if not leaf.Parent then
+				LeafMeshes.give(leaf)
+			else
+				C.DumpController:Throw(player, leaf)
 			end
 		end
 		local leaf = slot.leaf
 		if leaf then
 			local cf = bodyCf * slot.offset
-			if slot.leaving then
-				leaf.Size = LeafMeshes.baseSize(leaf) * bag.size * 0.5 * math.max(0.05, slot.t)
-				leaf.CFrame = cf
-			elseif slot.t < 1 then
+			if slot.t < 1 then
 				-- Falls in from above the rim, turning, and lands with a tiny settle.
 				local e = 1 - (1 - slot.t) ^ 2
 				local lift = (1 - e) * DROP_HEIGHT * bag.size
@@ -200,6 +193,15 @@ local function updateLeaves(bag: Bag, player: Player, dt: number, near: boolean)
 			end
 		end
 	end
+end
+
+-- The leaf colours in this player's bag (nil: the default autumn leaves).
+function BackpackController:LookOf(player: Player): LeafMeshes.Look?
+	return looks[player]
+end
+
+function BackpackController:Init(controllers)
+	C = controllers
 end
 
 function BackpackController:Start()
@@ -212,6 +214,7 @@ function BackpackController:Start()
 			clear(bag)
 		end
 		bags[player] = nil
+		looks[player] = nil
 	end)
 	RunService.RenderStepped:Connect(function(dt)
 		local camera = Workspace.CurrentCamera

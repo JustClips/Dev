@@ -21,6 +21,8 @@ local Net = require(Shared.Net)
 
 local DumpController = {}
 
+local C: any
+
 local VIEW_DISTANCE = 220
 local POUR_EVERY = 0.05 -- seconds between leaves per dumping player
 local FLIGHT = 0.55
@@ -77,12 +79,13 @@ local function takeLeaf(): BasePart
 	return part
 end
 
-local function launch(from: Vector3, to: () -> Vector3, time: number, rise: number)
+local function launch(from: Vector3, to: () -> Vector3, time: number, rise: number, look: LeafMeshes.Look?)
 	if #leaves >= MAX_LEAVES then
 		return
 	end
-	-- 3D leaves (LeafMeshes) once loaded, flat leaf images until then.
-	local mesh = if LeafMeshes.ready() then LeafMeshes.random(LeafMeshes.lookFor(nil), 1 + math.random() * 0.6) else nil
+	-- 3D leaves (LeafMeshes) once loaded, in the colours of what's in the bag; flat leaf
+	-- images until then.
+	local mesh = if LeafMeshes.ready() then LeafMeshes.random(look or LeafMeshes.lookFor(nil), 1 + math.random() * 0.6) else nil
 	local part: BasePart
 	if mesh then
 		part = mesh
@@ -231,7 +234,7 @@ local function stepDumps(now: number, dt: number)
 		v.busyUntil = now + 0.4
 		if now >= (nextPour[player] or 0) then
 			nextPour[player] = now + POUR_EVERY
-			launch(from, mouthOf(v), FLIGHT, 5 + math.random() * 2)
+			launch(from, mouthOf(v), FLIGHT, 5 + math.random() * 2, C.BackpackController:LookOf(player))
 		end
 	end
 	-- Rollers spin and the pile rises while busy, then settle.
@@ -312,6 +315,43 @@ local function onDumpTick(cash: number, _left: number)
 	end)
 end
 
+-- A leaf that was in someone's backpack flies out: into the dump they're standing at, or
+-- up and away (Sell Anywhere). The part is ours from here and goes back to LeafMeshes when
+-- it lands.
+function DumpController:Throw(player: Player, part: BasePart)
+	if #leaves >= MAX_LEAVES then
+		LeafMeshes.give(part)
+		return
+	end
+	local from = part.Position
+	local index = player:GetAttribute("Dumping")
+	local v = if type(index) == "number" then visual(index) else nil
+	local to: () -> Vector3
+	local rise: number
+	if v then
+		to = mouthOf(v)
+		rise = 5 + math.random() * 2
+	else
+		local a = math.random() * math.pi * 2
+		local spot = from + Vector3.new(math.cos(a) * 5, 8 + math.random() * 4, math.sin(a) * 5)
+		to = function()
+			return spot
+		end
+		rise = 2
+	end
+	part.Parent = folder
+	table.insert(leaves, {
+		part = part,
+		from = from,
+		to = to,
+		start = os.clock(),
+		spin = Vector3.new(math.random() * 8 - 4, math.random() * 10 - 5, math.random() * 8 - 4),
+		time = FLIGHT + math.random() * 0.15,
+		rise = rise,
+		mesh = true,
+	})
+end
+
 -- Sell Anywhere: the bag bursts out of you in a puff of leaves.
 function DumpController:SellBurst()
 	local from = source(Players.LocalPlayer)
@@ -324,11 +364,12 @@ function DumpController:SellBurst()
 		local to = from + Vector3.new(math.cos(a) * 6, 10 + math.random() * 4, math.sin(a) * 6)
 		launch(from, function()
 			return to
-		end, 0.6 + math.random() * 0.3, 2)
+		end, 0.6 + math.random() * 0.3, 2, C.BackpackController:LookOf(Players.LocalPlayer))
 	end
 end
 
-function DumpController:Init()
+function DumpController:Init(controllers)
+	C = controllers
 	folder = Instance.new("Folder")
 	folder.Name = "DumpFx"
 	folder.Parent = Workspace
