@@ -412,6 +412,15 @@ end
 -- bottom-right, so the wallet goes top-left with the rail under it, the Eggs/Pets
 -- buttons go top-right (BasePanelsController) with the boost chips under them, and the
 -- round SWEEP button sits left of the jump button.
+-- The left rail and the right-hand stack (Eggs/Pets buttons, then Next Tool + Auto) are
+-- centred on the same line, RAIL_CENTRE px from the screen's middle.
+local RAIL_CENTRE = -30
+local STACK_BUTTONS, STACK_GAP, STACK_RIGHT = 216, 16, 236
+
+function HudController.rightStackTop(s: number): number
+	return RAIL_CENTRE - math.ceil((STACK_BUTTONS + STACK_GAP + STACK_RIGHT) * s / 2)
+end
+
 local function layout(s: number, compact: boolean)
 	local top = 6
 	local pillsH = math.ceil(52 * s)
@@ -458,7 +467,7 @@ local function layout(s: number, compact: boolean)
 			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
 		el.Rail.AnchorPoint = Vector2.new(0, 0.5)
-		el.Rail.Position = UDim2.new(0, 14, 0.5, -30)
+		el.Rail.Position = UDim2.new(0, 14, 0.5, RAIL_CENTRE)
 		boosts.AnchorPoint = Vector2.new(1, 1)
 		boosts.Position = UDim2.new(1, -14, 1, -14)
 		if boostLayout then
@@ -467,12 +476,28 @@ local function layout(s: number, compact: boolean)
 		el.SweepButton.Position = UDim2.new(1, -196, 1, -28)
 	end
 	el.SweepButton.Visible = UserInputService.TouchEnabled
+	local right = el.Right :: Frame
+	local rightList = right:FindFirstChildOfClass("UIListLayout")
+	if compact then
+		right.AnchorPoint = Vector2.new(1, 0.5)
+		right.Position = UDim2.new(1, -14, 0.5, 0)
+		if rightList then
+			rightList.VerticalAlignment = Enum.VerticalAlignment.Center
+		end
+	else
+		right.AnchorPoint = Vector2.new(1, 0)
+		right.Position = UDim2.new(1, -14, 0.5, HudController.rightStackTop(s) + math.ceil((STACK_BUTTONS + STACK_GAP) * s))
+		if rightList then
+			rightList.VerticalAlignment = Enum.VerticalAlignment.Top
+		end
+	end
 end
 
 function HudController:Init(controllers)
 	C = controllers
 	hud = Ui.screen("Hud")
 	el.Rail = Ui.find(hud, "Rail")
+	el.Right = Ui.find(hud, "Right")
 	el.Wallet = Ui.find(hud, "Wallet")
 	el.Cash = Ui.find(hud, "Wallet.CashPanel.Cash")
 	el.Income = Ui.find(hud, "Wallet.CashPanel.Income")

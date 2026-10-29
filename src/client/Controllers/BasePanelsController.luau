@@ -300,8 +300,10 @@ local function layoutButtons(_scale: number, compact: boolean)
 		eggsButton.Position = UDim2.fromOffset(40, 40)
 		petsButton.Position = UDim2.fromOffset(136, 40)
 	else
-		buttons.AnchorPoint = Vector2.new(1, 1)
-		buttons.Position = UDim2.new(1, -14, 0.5, -130)
+		-- Top of the right-hand stack (Eggs, Pets, Next Tool, Auto), centred on the same
+		-- line as the left rail (HudController.rightStackTop).
+		buttons.AnchorPoint = Vector2.new(1, 0)
+		buttons.Position = UDim2.new(1, -14, 0.5, C.HudController.rightStackTop(_scale))
 		buttons.Size = UDim2.fromOffset(80, 216)
 		eggsButton.Position = UDim2.fromOffset(40, 68)
 		petsButton.Position = UDim2.fromOffset(40, 176)

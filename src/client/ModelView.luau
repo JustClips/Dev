@@ -18,7 +18,7 @@ function ModelView.frame(viewport: ViewportFrame, model: Model, metaName: string
 		viewport.CurrentCamera = c
 		camera = c
 	end
-	local meta = metaName and AssetLibrary.meta(metaName)
+	local meta = if model:GetAttribute("PartEgg") then nil else metaName and AssetLibrary.meta(metaName)
 	local minY, maxY, width = 0, 2, 2
 	if meta then
 		local scale = model:GetScale()

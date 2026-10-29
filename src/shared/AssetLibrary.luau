@@ -8,7 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Assets = require(script.Parent.Config.Assets)
 local AlienModel = require(script.Parent.AlienModel)
-local Eggs = require(script.Parent.Config.Eggs)
+local EggModel = require(script.Parent.EggModel)
 
 local AssetLibrary = {}
 
@@ -210,33 +210,10 @@ function AssetLibrary.alien(alienId: string, mutation: string?): Model
 	return model
 end
 
--- An egg model with its pivot at the bottom. Anchored, no collisions.
+-- An egg model with its pivot at the bottom. Anchored, no collisions. Eggs are built from
+-- parts with Roblox stud surfaces (EggModel), not uploaded meshes, for the exact stud look.
 function AssetLibrary.egg(rarity: string): Model
-	local model = AssetLibrary.get("Egg_" .. rarity)
-	if model then
-		model.Name = rarity .. "Egg"
-		return model
-	end
-	local def = Eggs.ByName[rarity] or Eggs.Rarities[1]
-	model = Instance.new("Model")
-	model.Name = rarity .. "Egg"
-	local egg = Instance.new("Part")
-	egg.Name = "Body"
-	egg.Size = Vector3.new(2.2, 2.9, 2.2)
-	egg.CFrame = CFrame.new(0, 1.45, 0)
-	egg.Anchored = true
-	egg.CanCollide = false
-	egg.CanQuery = false
-	egg.CanTouch = false
-	egg.Material = Enum.Material.SmoothPlastic
-	egg.Color = def.Color
-	local mesh = Instance.new("SpecialMesh")
-	mesh.MeshType = Enum.MeshType.Sphere
-	mesh.Parent = egg
-	egg.Parent = model
-	model.PrimaryPart = egg
-	egg.PivotOffset = CFrame.new(0, -1.45, 0)
-	return model :: Model
+	return EggModel.build(rarity)
 end
 
 -- Animations -------------------------------------------------------------------
