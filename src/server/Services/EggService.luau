@@ -128,6 +128,10 @@ local function pickup(player: Player, egg: BasePart)
 	if not session or not egg.Parent then
 		return
 	end
+	-- An egg you just dropped stays put for a moment, so you don't grab it straight back.
+	if egg:GetAttribute("DroppedBy") == player.UserId and os.clock() < (egg:GetAttribute("NoPickupUntil") or 0) then
+		return
+	end
 	local owner = egg:GetAttribute("OwnerUserId")
 	local freeAt = egg:GetAttribute("FreeAt") or 0
 	if owner and owner ~= player.UserId and os.time() < freeAt then
@@ -219,6 +223,22 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 	return egg
 end
 
+-- Before the first hatch, the tutorial arrow points at the player's egg on the ground.
+local function trackTutorialEgg(player: Player, session, egg: BasePart)
+	if session.Data.Stats.Hatches > 0 or #session.Data.Hatching > 0 or session.Runtime.TutorialEgg then
+		return
+	end
+	session.Runtime.TutorialEgg = egg
+	session.Runtime.TutorialEggPosition = egg.Position
+	egg.Destroying:Connect(function()
+		if session.Runtime.TutorialEgg == egg then
+			session.Runtime.TutorialEgg = nil
+			session.Runtime.TutorialEggPosition = nil
+			S.StateService:Mark(player)
+		end
+	end)
+end
+
 local function foundEgg(player: Player, position: Vector3, rarity: string, zone: string?)
 	local session = S.DataService:GetSession(player)
 	if not session then
@@ -227,17 +247,7 @@ local function foundEgg(player: Player, position: Vector3, rarity: string, zone:
 	local egg = EggService:SpawnEgg(position, rarity, player, zone)
 	session.Data.Stats.EggsFound += 1
 	session.Runtime.TutorialEggSpawned = true
-	if session.Data.Stats.Hatches == 0 and #session.Data.Hatching == 0 and not session.Runtime.TutorialEgg then
-		session.Runtime.TutorialEgg = egg
-		session.Runtime.TutorialEggPosition = egg.Position
-		egg.Destroying:Connect(function()
-			if session.Runtime.TutorialEgg == egg then
-				session.Runtime.TutorialEgg = nil
-				session.Runtime.TutorialEggPosition = nil
-				S.StateService:Mark(player)
-			end
-		end)
-	end
+	trackTutorialEgg(player, session, egg)
 	S.AnalyticsService:Funnel(player, "FirstEgg")
 	S.StateService:Mark(player)
 	Net.fire("Notify", player, `You found a {rarity} egg!`, "Egg")
@@ -264,6 +274,41 @@ function EggService:OnTileCleared(player: Player, zone, position: Vector3)
 		runtime.TilesSinceEgg = 0
 		foundEgg(player, position, EggService:RollRarity(zone.MaxRarity, luck), zone.Id)
 	end
+end
+
+-- Puts the top egg you're carrying down on the ground in front of you. It stays yours for
+-- a while (like a found egg), and you can walk over it again to pick it back up.
+local DROP_AHEAD = 4 -- studs in front of you
+local DROP_HOLD = 1.5 -- seconds before you can pick it back up
+
+function EggService:DropCarried(player: Player): (boolean, string?)
+	local session = S.DataService:GetSession(player)
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not session or not character or not root then
+		return false, "Still loading"
+	end
+	local carried = table.clone(session.Runtime.Carried or {})
+	local entry = table.remove(carried)
+	if not entry then
+		return false, "You're not carrying an egg"
+	end
+	local ahead = root.CFrame.LookVector * Vector3.new(1, 0, 1)
+	if ahead.Magnitude < 0.1 then
+		ahead = Vector3.new(0, 0, -1)
+	end
+	local spot = root.Position + ahead.Unit * DROP_AHEAD
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = { character, eggFolder }
+	local hit = Workspace:Raycast(spot + Vector3.new(0, 4, 0), Vector3.new(0, -60, 0), params)
+	local ground = if hit then hit.Position else root.Position - Vector3.new(0, 3, 0)
+	local egg = EggService:SpawnEgg(ground, entry.Rarity, player, entry.Zone)
+	egg:SetAttribute("DroppedBy", player.UserId)
+	egg:SetAttribute("NoPickupUntil", os.clock() + DROP_HOLD)
+	trackTutorialEgg(player, session, egg)
+	setCarried(player, carried)
+	return true, `Dropped your {entry.Rarity} egg`
 end
 
 -- Gives an egg without a pickup: straight into the inventory (ignores the bag limit).

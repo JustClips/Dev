@@ -270,22 +270,6 @@ type Scene = {
 	fx: Folder?,
 }
 
-local function makeNest(scene: Scene, scale: number): BasePart
-	local nest = Instance.new("Part")
-	nest.Name = "Nest"
-	nest.Shape = Enum.PartType.Cylinder
-	nest.Size = Vector3.new(0.5, 3.4 * scale, 3.4 * scale)
-	nest.CFrame = scene.origin * CFrame.new(0, -0.1, 0) * CFrame.Angles(0, 0, math.rad(90))
-	nest.Color = Color3.fromRGB(245, 210, 110)
-	nest.Material = Enum.Material.Fabric
-	nest.Anchored = true
-	nest.CanCollide = false
-	nest.CanQuery = false
-	nest.CanTouch = false
-	nest.Parent = scene.parent
-	return nest
-end
-
 -- A flat glowing ring that races outwards along the ground.
 local function shockwave(scene: Scene, color: Color3, radius: number)
 	local ring = Instance.new("Part")
@@ -411,7 +395,7 @@ local function play(info)
 			world = true,
 			parent = fx,
 			camera = camera,
-			origin = (spot :: CFrame) * CFrame.new(0, 0.35, 0),
+			origin = spot :: CFrame,
 			eggScale = eggScale,
 			fx = fx,
 		}
@@ -436,7 +420,7 @@ local function play(info)
 	card.Visible = false
 	gui.Enabled = true
 
-	-- 1. The egg (a local copy where the real one sat), on its nest. Hide the real one if
+	-- 1. The egg (a local copy where the real one sat). Hide the real one if
 	-- it's still there for a moment.
 	if info.EggUid and State.data and State.data.BaseIndex then
 		local moon = Workspace:FindFirstChild("Moon")
@@ -460,7 +444,6 @@ local function play(info)
 	egg:ScaleTo(scene.eggScale)
 	egg:PivotTo(scene.origin)
 	egg.Parent = scene.parent
-	local nest = if scene.world then makeNest(scene, scene.eggScale / 1.25) else nil
 	local _, eggSize = egg:GetBoundingBox()
 	local eggHeight = math.max(eggSize.Y, 1.5)
 	local focus = scene.origin.Position + Vector3.new(0, eggHeight * 0.55, 0)
@@ -537,9 +520,6 @@ local function play(info)
 	end
 	burstConfetti(screenPoint, rarity.Color, if big then 30 else 18)
 	egg:Destroy()
-	if nest then
-		TweenService:Create(nest, TweenInfo.new(0.6), { Transparency = 1 }):Play()
-	end
 
 	-- 5. The pet pops out, faces you and dances.
 	local model = AssetLibrary.alien(info.AlienId, info.Mutation)

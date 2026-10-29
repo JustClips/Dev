@@ -156,7 +156,7 @@ function AlienService:RefreshBase(player: Player)
 	aliens:SetAttribute("OwnerUserId", player.UserId)
 	aliens.Parent = base
 
-	-- Growing eggs where the player put them in the park, each on a little straw nest. The
+	-- Growing eggs where the player put them in the park, right on the grass. The
 	-- owner's client adds Skip / Open prompts; every client shows the hover info.
 	S.HatchService:EnsureSpots(data)
 	local hatching = Instance.new("Folder")
@@ -173,7 +173,7 @@ function AlienService:RefreshBase(player: Player)
 		-- Built at its current size; every client keeps growing it (HatchController).
 		local fullScale = scale * 1.25
 		egg:ScaleTo(fullScale * Eggs.growScale(Eggs.progress(entry.StartsAt, entry.EndsAt, os.time())))
-		egg:PivotTo(spot * CFrame.new(0, 0.35, 0))
+		egg:PivotTo(spot) -- sits right on the grass (pivot is the egg's bottom)
 		egg:SetAttribute("FullScale", fullScale)
 		egg:SetAttribute("StartsAt", entry.StartsAt or entry.EndsAt)
 		egg:SetAttribute("Uid", entry.Uid)
@@ -189,18 +189,6 @@ function AlienService:RefreshBase(player: Player)
 				part.CanQuery = true -- hover card
 			end
 		end
-		local nest = Instance.new("Part")
-		nest.Name = "Nest"
-		nest.Shape = Enum.PartType.Cylinder
-		nest.Size = Vector3.new(0.5, 3.4 * scale, 3.4 * scale)
-		nest.CFrame = spot * CFrame.new(0, 0.25, 0) * CFrame.Angles(0, 0, math.rad(90))
-		nest.Color = Color3.fromRGB(245, 210, 110)
-		nest.Material = Enum.Material.Fabric
-		nest.Anchored = true
-		nest.CanCollide = false
-		nest.CanQuery = false
-		nest.CanTouch = false
-		nest.Parent = egg
 		local primary = egg.PrimaryPart or egg:FindFirstChildWhichIsA("BasePart")
 		if primary then
 			label(primary, "", rarity.Color, 3.4 * scale, "HatchTimer", entry.EndsAt)

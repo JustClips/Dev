@@ -3,6 +3,7 @@
 --   1 = your sweeping tool (equip / put away)
 --   2 = your car (spawn under you / put away). With no car it points you to the Garage.
 --   3 = your bag (inventory). A badge shows eggs ready to open / waiting to be placed.
+--   4 (or G) = drop the egg on your head. Only shown while you carry one.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
@@ -28,6 +29,8 @@ local player = Players.LocalPlayer
 local toolSlot: TextButton
 local carSlot: TextButton
 local bagSlot: TextButton
+local dropSlot: TextButton
+local dropping = false
 
 local function humanoid(): Humanoid?
 	local character = player.Character
@@ -73,6 +76,19 @@ local function toggleCar()
 	end
 end
 
+local function dropEgg()
+	local data = State.data
+	if dropping or not data or #(data.CarriedEggs or {}) == 0 then
+		return
+	end
+	dropping = true
+	local ok, message = Net.func("Inventory"):InvokeServer("DropEgg")
+	dropping = false
+	if message then
+		C.HudController:Toast(message, if ok then "Info" else "Bad")
+	end
+end
+
 -- The selected slot gets a thick mint outline instead of the navy one.
 local function setSelected(slot: TextButton, on: boolean)
 	local stroke = slot:FindFirstChild("Stroke") :: UIStroke?
@@ -111,6 +127,9 @@ local function render(_: any?)
 	end
 	Ui.setBadge(bagSlot:FindFirstChild("Badge") :: Frame, if ready > 0 then ready else waiting)
 	setSelected(toolSlot, not data.InVehicle and sweepTool(player.Character) ~= nil)
+	local carrying = #(data.CarriedEggs or {})
+	dropSlot.Visible = carrying > 0
+	;(dropSlot:FindFirstChild("Name") :: TextLabel).Text = if carrying > 1 then `Drop 1 of {carrying}` else "Drop egg"
 end
 
 local function hideDefaultBackpack()
@@ -131,6 +150,7 @@ function HotbarController:Init(controllers)
 	toolSlot = Ui.find(hud, "Hotbar.ToolSlot")
 	carSlot = Ui.find(hud, "Hotbar.CarSlot")
 	bagSlot = Ui.find(hud, "Hotbar.BagSlot")
+	dropSlot = Ui.find(hud, "Hotbar.DropSlot")
 end
 
 function HotbarController:Start()
@@ -139,6 +159,9 @@ function HotbarController:Start()
 	Ui.button(carSlot, toggleCar)
 	Ui.button(bagSlot, function()
 		C.InventoryController:Toggle()
+	end)
+	Ui.button(dropSlot, function()
+		task.spawn(dropEgg)
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if processed then
@@ -150,6 +173,8 @@ function HotbarController:Start()
 			toggleCar()
 		elseif input.KeyCode == Enum.KeyCode.Three then
 			C.InventoryController:Toggle()
+		elseif input.KeyCode == Enum.KeyCode.Four or input.KeyCode == Enum.KeyCode.G then
+			task.spawn(dropEgg)
 		end
 	end)
 	State.observe(render)

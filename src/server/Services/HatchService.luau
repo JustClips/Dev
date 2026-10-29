@@ -17,7 +17,7 @@ local Net = require(Shared.Net)
 local Weights = require(Shared.Config.Weights)
 local World = require(Shared.Config.World)
 
-local PLACE_REACH = 60 -- how far from the spot the player may stand
+local PLACE_REACH = 90 -- how far from the park centre the player may stand (client asks at 80)
 
 local HatchService = {}
 
@@ -101,10 +101,12 @@ function HatchService:PlaceEgg(player: Player, uid: string, position: Vector3?):
 			return false, "You don't have a base yet"
 		end
 		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
-		if not root or (root.Position - position).Magnitude > PLACE_REACH then
+		local baseCf = World.baseCFrame(index)
+		local centre = (World.Base.ParkMin + World.Base.ParkMax) / 2
+		if not root or (root.Position - baseCf * Vector3.new(centre.X, 0, centre.Y)).Magnitude > PLACE_REACH then
 			return false, "Walk closer to your pet park"
 		end
-		local localPos = World.baseCFrame(index):PointToObjectSpace(position)
+		local localPos = baseCf:PointToObjectSpace(position)
 		x, z = localPos.X, localPos.Z
 		local problem = EggSpots.problem(data.Hatching, x, z)
 		if problem then

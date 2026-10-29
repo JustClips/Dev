@@ -74,17 +74,18 @@ World.Base = {
 	ParkMin = Vector2.new(-42, -14),
 	ParkMax = Vector2.new(42, 42),
 	ParkGateWidth = 12,
-	-- Props inside the park. Radius keeps wandering pets out of them.
+	-- Props inside the park. Radius keeps wandering pets out of them; Size is the footprint
+	-- (X by Z before Yaw) that eggs can't be placed on (trees: just the trunk).
 	ParkProps = {
-		{ Asset = "Habitat", Position = Vector3.new(-29, 0, 31), Yaw = 200, Radius = 10 },
-		{ Asset = "Pond", Position = Vector3.new(19, 0, 22), Yaw = 0, Radius = 7 },
-		{ Asset = "Tree_Bulb", Position = Vector3.new(36, 0, -6), Yaw = 30, Radius = 3 },
-		{ Asset = "Tree_Puff", Position = Vector3.new(-37, 0, 2), Yaw = 80, Radius = 3 },
-		{ Asset = "Tree_Tall", Position = Vector3.new(4, 0, 37), Yaw = 140, Radius = 3 },
-		{ Asset = "Mushroom_Glow", Position = Vector3.new(-12, 0, 12), Yaw = 0, Radius = 3 },
-		{ Asset = "Rock_Moon1", Position = Vector3.new(34, 0, 36), Yaw = 60, Radius = 3 },
-		{ Asset = "Crystal_Blue", Position = Vector3.new(-40, 0, 38), Yaw = 10, Radius = 2 },
-		{ Asset = "Rock_Moon3", Position = Vector3.new(28, 0, 8), Yaw = 0, Radius = 1.5 },
+		{ Asset = "Habitat", Position = Vector3.new(-29, 0, 31), Yaw = 200, Radius = 10, Size = Vector2.new(14.5, 13) },
+		{ Asset = "Pond", Position = Vector3.new(19, 0, 22), Yaw = 0, Radius = 7, Size = Vector2.new(16.4, 11.8) },
+		{ Asset = "Tree_Bulb", Position = Vector3.new(36, 0, -6), Yaw = 30, Radius = 3, Size = Vector2.new(3, 3) },
+		{ Asset = "Tree_Puff", Position = Vector3.new(-37, 0, 2), Yaw = 80, Radius = 3, Size = Vector2.new(3, 3) },
+		{ Asset = "Tree_Tall", Position = Vector3.new(4, 0, 37), Yaw = 140, Radius = 3, Size = Vector2.new(3, 3) },
+		{ Asset = "Mushroom_Glow", Position = Vector3.new(-12, 0, 12), Yaw = 0, Radius = 3, Size = Vector2.new(3.6, 3.6) },
+		{ Asset = "Rock_Moon1", Position = Vector3.new(34, 0, 36), Yaw = 60, Radius = 3, Size = Vector2.new(6.8, 5.2) },
+		{ Asset = "Crystal_Blue", Position = Vector3.new(-40, 0, 38), Yaw = 10, Radius = 2, Size = Vector2.new(2.6, 3.1) },
+		{ Asset = "Rock_Moon3", Position = Vector3.new(28, 0, 8), Yaw = 0, Radius = 1.5, Size = Vector2.new(3.1, 2.7) },
 	},
 }
 

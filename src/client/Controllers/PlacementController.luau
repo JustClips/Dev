@@ -26,7 +26,9 @@ local World = require(Shared.Config.World)
 local GOOD = Color3.fromRGB(61, 220, 90)
 local BAD = Color3.fromRGB(255, 77, 94)
 local NEAR_BASE = 80 -- studs from the park centre to place by clicking
-local PARK_TOP = 0.2
+local PARK_TOP = 0.2 -- the park floor's top, base local
+local SNAP_REACH = 5 -- studs a click may be nudged to the nearest free spot
+local SNAP_PAD = 0.1 -- a little stricter than the server, so it always agrees
 
 local PlacementController = {}
 
@@ -43,9 +45,12 @@ local ring: BasePart? = nil
 local ghostOffset = 0
 local spotOk = false
 local spotWorld: Vector3? = nil
+local spotProblem: string? = nil
 local stepConn: RBXScriptConnection? = nil
 local busy = false
 local pointer: Vector2? = nil -- last touch position (touch screens)
+local touchStart: Vector2? = nil -- where the current touch began (drags move the camera)
+local TAP_SLOP = 14 -- pixels a tap may move and still place
 
 local function toast(text: string, kind: string)
 	C.HudController:Toast(text, kind)
@@ -137,30 +142,27 @@ local function update()
 		titleLabel.Text = if UserInputService.TouchEnabled then "Tap a spot in your pet park" else "Click a spot in your pet park"
 	end
 
+	-- Where the pointer meets the park floor. A flat plane instead of a raycast, so props,
+	-- fences, pets and other eggs in front never turn a good spot red.
 	local point = screenPoint()
 	local ray = camera:ViewportPointToRay(point.X, point.Y)
-	local params = RaycastParams.new()
-	params.FilterType = Enum.RaycastFilterType.Exclude
-	local exclude: { Instance } = { ghost :: Model, ring :: BasePart }
-	if character then
-		table.insert(exclude, character)
-	end
-	local parks = Workspace:FindFirstChild("PetParks")
-	if parks then
-		table.insert(exclude, parks)
-	end
-	params.FilterDescendantsInstances = exclude
-	local hit = Workspace:Raycast(ray.Origin, ray.Direction * 500, params)
-	if not hit then
+	local origin = cf:PointToObjectSpace(ray.Origin)
+	local direction = cf:VectorToObjectSpace(ray.Direction)
+	if direction.Y > -0.02 then
 		spotOk, spotWorld = false, nil
 		ring.Transparency = 1
 		return
 	end
-	local localPos = cf:PointToObjectSpace(hit.Position)
-	local problem = EggSpots.problem(data.Hatching, localPos.X, localPos.Z)
-	local snapped = cf * CFrame.new(localPos.X, PARK_TOP, localPos.Z)
-	spotOk = problem == nil and not far
-	spotWorld = snapped.Position
+	local t = (PARK_TOP - origin.Y) / direction.Y
+	local aim = origin + direction * t
+	-- Snap to the closest free spot near the pointer (a click by an egg or a rock still
+	-- lands right next to it).
+	local x, z, why = EggSpots.nearest(data.Hatching, aim.X, aim.Z, SNAP_REACH, SNAP_PAD)
+	spotOk = x ~= nil and not far
+	spotProblem = if far then "Go to your base first!" else why
+	local lx, lz = x or aim.X, z or aim.Z
+	local snapped = cf * CFrame.new(lx, PARK_TOP, lz)
+	spotWorld = if x then snapped.Position else nil
 	ring.Transparency = 0.35
 	ring.Color = if spotOk then GOOD else BAD
 	ring.CFrame = snapped * CFrame.new(0, 0.1, 0) * CFrame.Angles(0, 0, math.rad(90))
@@ -251,7 +253,7 @@ local function place()
 		return
 	end
 	if not spotOk or not spotWorld then
-		toast("You can't put it there. Find a green spot in your pet park!", "Bad")
+		toast(spotProblem or "Tap a green spot in your pet park!", "Bad")
 		return
 	end
 	busy = true
@@ -314,13 +316,20 @@ function PlacementController:Start()
 			place()
 		elseif input.UserInputType == Enum.UserInputType.Touch then
 			pointer = Vector2.new(input.Position.X, input.Position.Y)
+			touchStart = pointer
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input, processed)
 		if holding and not processed and input.UserInputType == Enum.UserInputType.Touch and pointer then
-			-- Tap: the ghost has moved under the finger; place there.
-			update()
-			place()
+			-- A tap places where the finger is; a drag only turned the camera.
+			local now = Vector2.new(input.Position.X, input.Position.Y)
+			local start = touchStart
+			touchStart = nil
+			if start and (now - start).Magnitude <= TAP_SLOP then
+				pointer = now
+				update()
+				place()
+			end
 		end
 	end)
 	-- Equipping a tool or respawning puts the egg away.

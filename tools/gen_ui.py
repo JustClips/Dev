@@ -465,14 +465,20 @@ def hud():
         icon("Icon", "Tool", 64, U(0.5, 0, 0, 6), (0.5, 0)),
         text("Label", "SWEEP", U(1, 0, 0, 28), U(0.5, 0, 1, -8), (0.5, 1), ts=22, display=True, stroke=2.5),
     ])
-    # Own hotbar (the default Roblox backpack is hidden): slot 1 = tool, slot 2 = car.
+    # Own hotbar (the default Roblox backpack is hidden): slot 1 = tool, slot 2 = car,
+    # 3 = bag, 4 = drop the egg on your head (only shown while you carry one).
     bag = hot_slot("BagSlot", "3", "Backpack", "Bag", 3)
     bag["children"].append(badge())
-    hotbar = frame("Hotbar", U(0, 290, 0, 88), U(0.5, 0, 1, -12), (0.5, 1), children=[
+    drop = hot_slot("DropSlot", "4", "Egg", "Drop egg", 4)
+    drop["properties"]["BackgroundColor3"] = DANGER
+    drop["properties"]["BackgroundTransparency"] = 0.15
+    drop["properties"]["Visible"] = False
+    hotbar = frame("Hotbar", U(0, 382, 0, 88), U(0.5, 0, 1, -12), (0.5, 1), children=[
         autoscale(), hlist(8, "Center", "Bottom"),
         hot_slot("ToolSlot", "1", "Tool", "Toothbrush", 1),
         hot_slot("CarSlot", "2", "Vehicle", "No car", 2),
         bag,
+        drop,
     ])
     # Tutorial step card above the hotbar: "STEP 3/9", what to do, a progress bar. After the
     # tutorial the same card shows nudges ("An egg is ready!") without the step and bar.

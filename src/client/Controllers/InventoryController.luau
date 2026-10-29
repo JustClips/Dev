@@ -304,6 +304,21 @@ local function cardFor(entry: Entry, data): Frame
 	local select = card:FindFirstChild("Select") :: TextButton
 	select.Activated:Connect(function()
 		Ui.sound("Click")
+		if entry.kind == "Egg" then
+			-- Eggs go straight into your hands: click anywhere in your pet park to put it down.
+			local now = State.data
+			if not now or not now.Eggs[entry.key] then
+				return
+			end
+			if #now.Hatching >= now.Incubators then
+				C.HudController:Toast(`Only {now.Incubators} eggs can grow at once. Open one first!`, "Bad")
+				return
+			end
+			selected = nil
+			Ui.close("Inventory")
+			C.PlacementController:Hold(entry.key)
+			return
+		end
 		if selected and selected.key == entry.key then
 			selected = nil
 		else

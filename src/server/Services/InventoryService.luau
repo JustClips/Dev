@@ -200,6 +200,10 @@ local ACTIONS: { [string]: (Player, any, Vector3?) -> (boolean, string?) } = {
 	HoldEgg = function(player, uid)
 		return S.HatchService:Hold(player, uid)
 	end,
+	-- Put down the egg carried on your head (EggService).
+	DropEgg = function(player)
+		return S.EggService:DropCarried(player)
+	end,
 	StopHolding = function(player)
 		S.HatchService:StopHolding(player)
 		return true, nil
