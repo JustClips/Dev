@@ -10,35 +10,17 @@ local Weights = require(script.Parent.Weights)
 
 type AlienDef = Types.AlienDef
 
+-- Dev is remaking every pet from scratch in the voxel style (art/blender/voxpets.py,
+-- 2026-10-29). For now only the Cat and Dog exist, both Common. Eggs of other rarities
+-- fall back to the Common pool (Aliens.pool). Saves holding removed pets are converted
+-- to these on load (DataService).
 local List: { AlienDef } = {
-	{ Id = "Blip", Name = "Blip", Rarity = "Common", Income = 1, Color = Color3.fromRGB(170, 230, 170), Size = 1.6 },
-	{ Id = "MoonMite", Name = "Moon Mite", Rarity = "Common", Income = 1.5, Color = Color3.fromRGB(200, 200, 215), Size = 1.5 },
-	{ Id = "Dusty", Name = "Dusty", Rarity = "Common", Income = 2, Color = Color3.fromRGB(220, 200, 160), Size = 1.7 },
-
-	{ Id = "Glorp", Name = "Glorp", Rarity = "Uncommon", Income = 6, Color = Color3.fromRGB(110, 230, 90), Size = 1.9 },
-	{ Id = "Zib", Name = "Zib", Rarity = "Uncommon", Income = 8, Color = Color3.fromRGB(90, 220, 200), Size = 1.8 },
-	{ Id = "CraterCrab", Name = "Crater Crab", Rarity = "Uncommon", Income = 10, Color = Color3.fromRGB(240, 120, 90), Size = 2 },
-
-	{ Id = "Nebby", Name = "Nebby", Rarity = "Rare", Income = 30, Color = Color3.fromRGB(120, 140, 255), Size = 2.1 },
-	{ Id = "Orbo", Name = "Orbo", Rarity = "Rare", Income = 40, Color = Color3.fromRGB(80, 190, 255), Size = 2.2 },
-	{ Id = "LunarSlug", Name = "Lunar Slug", Rarity = "Rare", Income = 50, Color = Color3.fromRGB(180, 220, 255), Size = 2.3 },
-
-	{ Id = "Zorblax", Name = "Zorblax", Rarity = "Epic", Income = 180, Color = Color3.fromRGB(170, 90, 255), Size = 2.5 },
-	{ Id = "CometCat", Name = "Comet Cat", Rarity = "Epic", Income = 230, Color = Color3.fromRGB(255, 150, 220), Size = 2.4 },
-	{ Id = "QuasarPup", Name = "Quasar Pup", Rarity = "Epic", Income = 290, Color = Color3.fromRGB(140, 120, 255), Size = 2.6 },
-
-	{ Id = "StarWhale", Name = "Star Whale", Rarity = "Legendary", Income = 1_100, Color = Color3.fromRGB(60, 120, 255), Size = 3 },
-	{ Id = "GalaxyGus", Name = "Galaxy Gus", Rarity = "Legendary", Income = 1_400, Color = Color3.fromRGB(255, 200, 60), Size = 2.8 },
-	{ Id = "AstroAxolotl", Name = "Astro Axolotl", Rarity = "Legendary", Income = 1_800, Color = Color3.fromRGB(255, 160, 200), Size = 2.9 },
-
-	{ Id = "VoidKing", Name = "Void King", Rarity = "Mythic", Income = 8_000, Color = Color3.fromRGB(40, 20, 60), Size = 3.3 },
-	{ Id = "EclipseDragon", Name = "Eclipse Dragon", Rarity = "Mythic", Income = 10_000, Color = Color3.fromRGB(255, 80, 40), Size = 3.5 },
-	{ Id = "NovaQueen", Name = "Nova Queen", Rarity = "Mythic", Income = 12_500, Color = Color3.fromRGB(255, 240, 150), Size = 3.4 },
-
-	{ Id = "Cosmo", Name = "Cosmo the Infinite", Rarity = "Cosmic", Income = 60_000, Color = Color3.fromRGB(255, 120, 230), Size = 3.8 },
+	{ Id = "Cat", Name = "Cat", Rarity = "Common", Income = 1, Color = Color3.fromRGB(242, 138, 46), Size = 1.8 },
+	{ Id = "Dog", Name = "Dog", Rarity = "Common", Income = 1.5, Color = Color3.fromRGB(217, 140, 69), Size = 2 },
 }
 
--- Zone sets: each entry is a Landing alien the variant is based on. The variant keeps the
+-- Zone sets: each entry is a Landing alien the variant is based on (empty until the new
+-- voxel pets get zone variants). The variant keeps the
 -- base's rarity and multiplies its income. Models: art/blender/aliens.py VARIANTS.
 local ZONE_SETS = {
 	{
@@ -46,28 +28,28 @@ local ZONE_SETS = {
 		Prefix = "Crystal",
 		IncomeMult = 4,
 		Color = Color3.fromRGB(120, 220, 255),
-		Bases = { "Blip", "MoonMite", "Glorp", "CraterCrab", "Orbo", "LunarSlug", "CometCat" },
+		Bases = {} :: { string },
 	},
 	{
 		Zone = "DarkSide",
 		Prefix = "Shadow",
 		IncomeMult = 15,
 		Color = Color3.fromRGB(150, 90, 230),
-		Bases = { "Dusty", "Zib", "Nebby", "Zorblax", "QuasarPup", "StarWhale", "GalaxyGus" },
+		Bases = {} :: { string },
 	},
 	{
 		Zone = "Mars",
 		Prefix = "Magma",
 		IncomeMult = 60,
 		Color = Color3.fromRGB(255, 110, 50),
-		Bases = { "Blip", "CraterCrab", "LunarSlug", "CometCat", "AstroAxolotl", "EclipseDragon", "VoidKing" },
+		Bases = {} :: { string },
 	},
 	{
 		Zone = "Europa",
 		Prefix = "Frost",
 		IncomeMult = 250,
 		Color = Color3.fromRGB(190, 235, 255),
-		Bases = { "MoonMite", "Glorp", "Orbo", "QuasarPup", "StarWhale", "NovaQueen", "EclipseDragon" },
+		Bases = {} :: { string },
 	},
 }
 

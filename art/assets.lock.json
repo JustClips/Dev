@@ -592,6 +592,10 @@
    "id": 84675890297461,
    "sha": "083a72aa3b713caf6ef39fc36c5a95332c8e51576c98a27b927f5caa04bf567a"
   },
+  "Alien_Cat": {
+   "id": 98115194406864,
+   "sha": "54b4f8a5207d598288612aea08f95240647e5e72bc5ee29edada61eda4e2469b"
+  },
   "Alien_CometCat": {
    "id": 125292055407746,
    "sha": "1b470b5a37dbca18834706bb57614ec7b3b7426ac355fbff8a1872827e6f074f"
@@ -631,6 +635,10 @@
   "Alien_CrystalOrbo": {
    "id": 112365460068347,
    "sha": "6cf5a26206824e6a1aeb8c8fd6fdbd0a151512052b1f4c7632e2c781cd416b9a"
+  },
+  "Alien_Dog": {
+   "id": 134555901794284,
+   "sha": "ec583db829abcc3fbfadc04be86c8df97718a60b3382834a564bf4164cfa993f"
   },
   "Alien_Dusty": {
    "id": 91580234759228,
@@ -855,14 +863,6 @@
   "Mushroom_Mars": {
    "id": 94155925522557,
    "sha": "8c688707110760d1ed184202276609dda81798ae92a7c1f7ca7893f985c16ad9"
-  },
-  "Pet_Cat": {
-   "id": 118628499454351,
-   "sha": "a86a9c23560ef1a4d837751b05ed9b0fd97f215ad43a5bba527edb607b8f099d"
-  },
-  "Pet_Dog": {
-   "id": 83009951898197,
-   "sha": "31e695c3e64504bda87f34cf765dfe0e8b32298d974062307c5684fdcc543da0"
   },
   "Pond": {
    "id": 120446619890790,

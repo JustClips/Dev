@@ -11,7 +11,7 @@ scrub or tweak them) and sampled into Roblox KeyframeSequences.
 
 Usage (repo root, headless or inside Blender):
   python art/blender/voxpets.py [Cat Dog]
-    -> art/out/Pet_<Name>.glb, art/out/Pet_<Name>.blend, art/out/anims/Pet_<Name>_Idle/_Walk.rbxmx,
+    -> art/out/Alien_<Name>.glb, art/out/Alien_<Name>.blend, art/out/anims/Pet_<Name>_Idle/_Walk.rbxmx,
        merged into art/out/meta.json
 
 Grid coordinates: x is the pet's left (+X), y runs front (-Y) to back, z is up.
@@ -124,7 +124,9 @@ def mesh_part(a, p):
     return o
 
 
-def assemble(name, parts):
+def assemble(key, parts):
+    """The asset is Alien_<key> (the game's pet model name); its anims are Pet_<key>_Idle/_Walk."""
+    name = f"Alien_{key}"
     a = Asset(name, "alien")
     for p in parts:
         o = mesh_part(a, p)
@@ -132,7 +134,7 @@ def assemble(name, parts):
         a.parts[p.name] = {"obj": o, "parent": p.parent, "joint": [x * U for x in j] if p.parent else None,
                            "glow": None, "material": None, "collide": False}
     a.extra["voxel"] = True
-    a.extra["anims"] = {"idle": f"{name}_Idle", "walk": f"{name}_Walk"}
+    a.extra["anims"] = {"idle": f"Pet_{key}_Idle", "walk": f"Pet_{key}_Walk"}
     return a
 
 
@@ -202,7 +204,7 @@ def cat():
     tail2.box(-1, 1, 7, 9, 11, 15, lambda i, j, k: S if k in (12, 14) else O)
     tail2.box(-1, 1, 6, 8, 15, 16, S)
     parts += [tail, tail2]
-    return assemble("Pet_Cat", parts)
+    return assemble("Cat", parts)
 
 
 # ------------------------------------------------------------------------------ dog
@@ -245,7 +247,7 @@ def dog():
     tail2 = Part("Tail2", "Tail", joint=(0, 8, 13))
     tail2.box(-1, 1, 6, 9, 13, 15, lambda i, j, k: C if j == 6 else T)
     parts += [tail, tail2]
-    return assemble("Pet_Dog", parts)
+    return assemble("Dog", parts)
 
 
 PETS = {"Cat": cat, "Dog": dog}
@@ -411,7 +413,7 @@ def build(key, out_dir=OUT):
     anim_dir = os.path.join(out_dir, "anims")
     os.makedirs(anim_dir, exist_ok=True)
     for kind, frames, prio in (("Idle", IDLE, 0), ("Walk", WALK, 1)):
-        nm = f"{a.name}_{kind}"
+        nm = f"Pet_{key}_{kind}"
         with open(os.path.join(anim_dir, f"{nm}.rbxmx"), "w") as fh:
             fh.write(sample(a, empties, nm, frames, prio))
     blend = os.path.abspath(os.path.join(out_dir, f"{a.name}.blend"))
