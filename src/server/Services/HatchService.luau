@@ -5,6 +5,7 @@
 -- with its spot and a unix EndsAt, so the timer keeps running while you're offline. When
 -- it's ready you open it and the pet goes to your inventory. Pet weight, mutations and
 -- Huge roll at opening and scale with luck.
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -241,7 +242,12 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	end
 	if huge or mutation or Eggs.order(def.Rarity) >= Eggs.order("Mythic") then
 		local label = (if huge then "HUGE " else "") .. (if mutation then Eggs.MutationByName[mutation].Label .. " " else "")
-		Net.fireAll("Announce", `{player.DisplayName} hatched a {label}{def.Name} ({def.Rarity})!`, "Hatch")
+		-- Everyone else hears about it; the hatcher already sees their own reveal.
+		for _, other in Players:GetPlayers() do
+			if other ~= player then
+				Net.fire("Announce", other, `{player.DisplayName} hatched a {label}{def.Name} ({def.Rarity})!`, "Hatch")
+			end
+		end
 	end
 	S.OfferService:OnHatch(player)
 	return true, nil
