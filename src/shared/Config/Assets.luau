@@ -2274,19 +2274,14 @@ Assets.Models = {
 	},
 	Egg_Cosmic = {
 		bounds = {
-			max = Vector3.new(1.26, 3.84, 1.26),
-			min = Vector3.new(-1.26, 0.0, -1.26),
+			max = Vector3.new(1.32, 3.168, 1.32),
+			min = Vector3.new(-1.32, 0.0, -1.32),
 		},
-		id = 102246222999174,
+		id = 111615975034729,
 		kind = "egg",
 		parts = {
 			Body = {
 				collide = false,
-			},
-			Body_Glow = {
-				collide = false,
-				glow = "FFF2A0",
-				parent = "Body",
 			},
 		},
 	},

@@ -428,16 +428,132 @@ def mythic():
     ], glow="FF7A3C", topper="horns", accent="F0E2C8")
 
 
+# ----------------------------------------------------------------- brick eggs
+# An egg-shaped mosaic of small Lego bricks: the shell is voxelised into little cubes and
+# only their outside faces are kept, so the outline steps like a brick build. Every face
+# shows a brick tile with a stud (painted, so the mesh stays light).
+
+TILE = 64          # px per brick tile in the atlas
+TILES_X = TW // TILE
+
+
+def brick_tile(hexcol):
+    """A TILE x TILE brick face: soft bevel and a round stud lit from the top-left."""
+    base = np.array(hex_rgb(hexcol))
+    n = TILE
+    y, x = np.mgrid[0:n, 0:n]
+    u, v = (x + 0.5) / n, (y + 0.5) / n          # v up (image rows go bottom to top)
+    img = np.tile(base, (n, n, 1)).astype(float)
+    light, dark = np.minimum(1, base * 0.55 + 0.45), base * 0.62
+    e = 0.07
+    img[(v > 1 - e)] = light                      # top edge
+    img[(u < e) & (v > e)] = light * 0.5 + base * 0.5
+    img[(v < e)] = dark                           # bottom edge
+    img[(u > 1 - e) & (v < 1 - e)] = dark * 0.5 + base * 0.5
+    # stud: shadow, then the stud, then a light crescent
+    cx, cy, r = 0.5, 0.5, 0.27
+    d_sh = np.hypot(u - cx - 0.05, v - cy + 0.06)
+    img[d_sh < r] = base * 0.72
+    d = np.hypot(u - cx, v - cy)
+    img[d < r] = base * 1.0
+    img[(d < r) & (np.hypot(u - cx + 0.06, v - cy - 0.07) > r * 0.92)] = np.minimum(1, base * 0.8 + 0.2)
+    img[(d < r) & (np.hypot(u - cx - 0.03, v - cy + 0.035) > r)] = base * 0.85
+    img[(d < r * 0.42) & (np.hypot(u - cx + 0.09, v - cy - 0.09) < r * 0.2)] = np.minimum(1, base * 0.6 + 0.4)
+    return img
+
+
+def brick_shell(a, size, colour_of):
+    """Voxel egg mesh. colour_of(Vector centre, (i, j, k)) -> hex. Returns (obj, atlas rgb)."""
+    colors = []
+    cells = {}
+    nz = int(round(H / size))
+    nxy = int(math.ceil(R / size)) + 1
+    for k in range(nz):
+        z = (k + 0.5) * size
+        rr = radius_at(z / H)
+        for i in range(-nxy, nxy):
+            for j in range(-nxy, nxy):
+                x, y = (i + 0.5) * size, (j + 0.5) * size
+                if x * x + y * y <= rr * rr:
+                    cells[(i, j, k)] = None
+    for c in cells:
+        i, j, k = c
+        col = colour_of(Vector(((i + 0.5) * size, (j + 0.5) * size, (k + 0.5) * size)), c).upper()
+        if col not in colors:
+            colors.append(col)
+        cells[c] = colors.index(col)
+
+    dirs = [((1, 0, 0)), ((-1, 0, 0)), ((0, 1, 0)), ((0, -1, 0)), ((0, 0, 1)), ((0, 0, -1))]
+    bm = bmesh.new()
+    uvl = bm.loops.layers.uv.new("UVMap")
+    sh = TH / IMG_H
+    pad = 1.5 / TILE
+    for (i, j, k), ci in cells.items():
+        centre = Vector(((i + 0.5) * size, (j + 0.5) * size, (k + 0.5) * size))
+        for d in dirs:
+            if (i + d[0], j + d[1], k + d[2]) in cells:
+                continue
+            n = Vector(d)
+            vdir = Vector((0, 0, 1)) if d[2] == 0 else Vector((0, 1, 0))
+            udir = vdir.cross(n)
+            fc = centre + n * size / 2
+            corners = [(-1, -1), (1, -1), (1, 1), (-1, 1)]
+            verts = [bm.verts.new(fc + (udir * cu + vdir * cv) * size / 2) for cu, cv in corners]
+            f = bm.faces.new(verts)
+            tx, ty = ci % TILES_X, ci // TILES_X
+            for loop, (cu, cv) in zip(f.loops, corners):
+                uu = (tx + (pad if cu < 0 else 1 - pad)) * TILE / TW
+                vv = (ty + (pad if cv < 0 else 1 - pad)) * TILE / TH
+                loop[uvl].uv = (uu, PAL / IMG_H + vv * sh)
+    mesh = bpy.data.meshes.new("Body")
+    bm.to_mesh(mesh)
+    bm.free()
+    for poly in mesh.polygons:
+        poly.use_smooth = False
+    o = bpy.data.objects.new("Body", mesh)
+    bpy.context.collection.objects.link(o)
+
+    atlas = np.ones((TH, TW, 3))
+    for ci, col in enumerate(colors):
+        tx, ty = ci % TILES_X, ci // TILES_X
+        atlas[ty * TILE:(ty + 1) * TILE, tx * TILE:(tx + 1) * TILE] = brick_tile(col)
+    return o, atlas
+
+
+def brick_egg(name, size, colour_of):
+    a = EggAsset(f"Egg_{name}")
+    use(a)
+    body, atlas = brick_shell(a, size, colour_of)
+    a.shell_rgb = atlas
+    a.swatch("FFFFFF")  # palette strip needs one colour
+    a.part("Body", [body])
+    return a
+
+
 def cosmic():
-    base = "2A2876"
-    pts = [(0.3, -110, 0.13), (0.55, -60, 0.1), (0.68, -150, 0.09), (0.4, 20, 0.12), (0.62, 80, 0.11),
-           (0.25, 150, 0.1), (0.5, 200, 0.13), (0.78, 260, 0.08), (0.2, -30, 0.08), (0.82, -80, 0.07),
-           (0.45, -175, 0.08)]
-    return egg("Cosmic", base, [
-        ("3D33A6", swirl(3, 0.25, twist=0.8)),
-        ("C8C2FF", spots(scatter("cosmic", 18, 0.02, 0.035))),
-        ("FFF2A0", stars(pts)),
-    ], glow="FFF2A0", topper="star", accent="FF8AE6")
+    """Blue brick mosaic with patches of light blue and sprinkles of pink, lilac and white."""
+    import mathutils.noise as N
+    rnd = random.Random("cosmic-bricks")
+    blues = ["2F5FD8", "3B72EA", "4A84F2"]
+
+    def colour_of(p, cell):
+        t = p.z / H
+        nv = N.noise(p * 1.6 + Vector((3.1, 7.7, 1.3)))
+        r = rnd.random()
+        if r < 0.05:
+            return "F4F7FF"            # white
+        if r < 0.10:
+            return "E7A8F2"            # pink
+        if r < 0.14:
+            return "B49CF6"            # lilac
+        if nv > 0.32:
+            return "8FB8FF"            # light blue patches
+        if nv < -0.35:
+            return "2448B8"            # deep blue patches
+        b = blues[min(2, int(rnd.random() * 2 + t * 1.4))]
+        return b
+
+    return brick_egg("Cosmic", 0.11, colour_of)
 
 
 EGGS = {

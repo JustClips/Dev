@@ -4533,14 +4533,14 @@
  "Egg_Cosmic": {
   "bounds": {
    "max": [
-    1.26,
-    3.84,
-    1.26
+    1.32,
+    3.168,
+    1.32
    ],
    "min": [
-    -1.26,
+    -1.32,
     0.0,
-    -1.26
+    -1.32
    ]
   },
   "kind": "egg",
@@ -4552,16 +4552,9 @@
     "joint": null,
     "material": null,
     "parent": null
-   },
-   "Body_Glow": {
-    "collide": false,
-    "glow": "FFF2A0",
-    "joint": null,
-    "material": null,
-    "parent": "Body"
    }
   },
-  "tris": 3960
+  "tris": 3856
  },
  "Egg_Epic": {
   "bounds": {
@@ -6430,6 +6423,106 @@
   ],
   "tris": 9376
  },
+ "VfxDrop": {
+  "bounds": {
+   "max": [
+    0,
+    0,
+    0
+   ],
+   "min": [
+    0,
+    0,
+    0
+   ]
+  },
+  "kind": "vfx",
+  "name": "VfxDrop",
+  "parts": {
+   "VfxDrop": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  }
+ },
+ "VfxRipple": {
+  "bounds": {
+   "max": [
+    0,
+    0,
+    0
+   ],
+   "min": [
+    0,
+    0,
+    0
+   ]
+  },
+  "kind": "vfx",
+  "name": "VfxRipple",
+  "parts": {
+   "VfxRipple": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  }
+ },
+ "VfxSplashCrown": {
+  "bounds": {
+   "max": [
+    0,
+    0,
+    0
+   ],
+   "min": [
+    0,
+    0,
+    0
+   ]
+  },
+  "kind": "vfx",
+  "name": "VfxSplashCrown",
+  "parts": {
+   "VfxSplashCrown": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  }
+ },
+ "VfxSplashSheet": {
+  "bounds": {
+   "max": [
+    0,
+    0,
+    0
+   ],
+   "min": [
+    0,
+    0,
+    0
+   ]
+  },
+  "kind": "vfx",
+  "name": "VfxSplashSheet",
+  "parts": {
+   "VfxSplashSheet": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  }
+ },
  "ZoneGate": {
   "bounds": {
    "max": [
@@ -6460,105 +6553,5 @@
    -1.8
   ],
   "tris": 1960
- },
- "VfxDrop": {
-  "kind": "vfx",
-  "name": "VfxDrop",
-  "parts": {
-   "VfxDrop": {
-    "collide": false,
-    "glow": null,
-    "joint": null,
-    "material": null,
-    "parent": null
-   }
-  },
-  "bounds": {
-   "min": [
-    0,
-    0,
-    0
-   ],
-   "max": [
-    0,
-    0,
-    0
-   ]
-  }
- },
- "VfxRipple": {
-  "kind": "vfx",
-  "name": "VfxRipple",
-  "parts": {
-   "VfxRipple": {
-    "collide": false,
-    "glow": null,
-    "joint": null,
-    "material": null,
-    "parent": null
-   }
-  },
-  "bounds": {
-   "min": [
-    0,
-    0,
-    0
-   ],
-   "max": [
-    0,
-    0,
-    0
-   ]
-  }
- },
- "VfxSplashCrown": {
-  "kind": "vfx",
-  "name": "VfxSplashCrown",
-  "parts": {
-   "VfxSplashCrown": {
-    "collide": false,
-    "glow": null,
-    "joint": null,
-    "material": null,
-    "parent": null
-   }
-  },
-  "bounds": {
-   "min": [
-    0,
-    0,
-    0
-   ],
-   "max": [
-    0,
-    0,
-    0
-   ]
-  }
- },
- "VfxSplashSheet": {
-  "kind": "vfx",
-  "name": "VfxSplashSheet",
-  "parts": {
-   "VfxSplashSheet": {
-    "collide": false,
-    "glow": null,
-    "joint": null,
-    "material": null,
-    "parent": null
-   }
-  },
-  "bounds": {
-   "min": [
-    0,
-    0,
-    0
-   ],
-   "max": [
-    0,
-    0,
-    0
-   ]
-  }
  }
 }
