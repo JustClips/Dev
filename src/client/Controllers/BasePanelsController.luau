@@ -282,26 +282,29 @@ end
 
 -- Phones: the two buttons sit in a row at the top right (HudController puts the boost
 -- chips under them); PC: stacked on the right edge above the next-tool card.
+-- Each button is placed by its centre instead of by a list layout, so a button growing on
+-- hover or press doesn't push the other one around.
 local function layoutButtons(_scale: number, compact: boolean)
 	local list = buttons:FindFirstChildOfClass("UIListLayout")
+	if list then
+		list:Destroy()
+	end
+	local eggsButton = buttons:FindFirstChild("EggsButton") :: GuiObject
+	local petsButton = buttons:FindFirstChild("PetsButton") :: GuiObject
+	eggsButton.AnchorPoint = Vector2.new(0.5, 0.5)
+	petsButton.AnchorPoint = Vector2.new(0.5, 0.5)
 	if compact then
 		buttons.AnchorPoint = Vector2.new(1, 0)
 		buttons.Position = UDim2.new(1, -14, 0, 8)
-		buttons.Size = UDim2.fromOffset(188, 80)
-		if list then
-			list.FillDirection = Enum.FillDirection.Horizontal
-			list.Padding = UDim.new(0, 16)
-			list.VerticalAlignment = Enum.VerticalAlignment.Top
-		end
+		buttons.Size = UDim2.fromOffset(176, 80)
+		eggsButton.Position = UDim2.fromOffset(40, 40)
+		petsButton.Position = UDim2.fromOffset(136, 40)
 	else
 		buttons.AnchorPoint = Vector2.new(1, 1)
 		buttons.Position = UDim2.new(1, -14, 0.5, -130)
 		buttons.Size = UDim2.fromOffset(80, 216)
-		if list then
-			list.FillDirection = Enum.FillDirection.Vertical
-			list.Padding = UDim.new(0, 28)
-			list.VerticalAlignment = Enum.VerticalAlignment.Bottom
-		end
+		eggsButton.Position = UDim2.fromOffset(40, 68)
+		petsButton.Position = UDim2.fromOffset(40, 176)
 	end
 end
 
