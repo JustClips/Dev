@@ -262,6 +262,57 @@ def leaf_dump():
     return a
 
 
+# ------------------------------------------------------------------------- backpack
+
+def backpack():
+    """Leaf backpack in the blocky pet style: an open-top bag (2.2 wide, 2.6 tall, 1.2 deep)
+    with straps, a front pocket with a leaf badge and side pockets. "Fill" is the untextured
+    leaf heap inside (pivot at its bottom, see meta parts.Fill.joint); the game scales its
+    height from empty to full, and at full height it bulges over the rim.
+    Pivot at the centre of the face that touches the player's back; the bag sticks out
+    toward Blender +Y = Roblox +Z."""
+    a = Asset("Backpack", "prop")
+    use(a)
+    green, dark, trim, strap = "5BB04A", "3E7F33", "F2C14E", "4A3A2C"
+    W, D, H, T = 2.2, 1.2, 2.6, 0.12          # outer size and wall thickness
+    z0, z1 = -H / 2, H / 2
+    p = []
+    p.append(box(green, loc=(0, D / 2, z0 + T / 2), size=(W, D, T)))                 # bottom
+    p.append(box(green, loc=(0, T / 2, 0), size=(W, T, H)))                          # back
+    p.append(box(green, loc=(0, D - T / 2, 0), size=(W, T, H)))                      # front
+    for sx in (-1, 1):
+        p.append(box(green, loc=(sx * (W / 2 - T / 2), D / 2, 0), size=(T, D, H)))   # sides
+    # rim and corner trims
+    for y in (T / 2, D - T / 2):
+        p.append(box(trim, loc=(0, y, z1 - 0.06), size=(W + 0.06, T + 0.06, 0.14)))
+    for sx in (-1, 1):
+        p.append(box(trim, loc=(sx * (W / 2 - T / 2), D / 2, z1 - 0.06), size=(T + 0.06, D + 0.06, 0.14)))
+    p.append(box(dark, loc=(0, D / 2, z0 + 0.06), size=(W + 0.04, D + 0.04, 0.12)))            # base band
+    # front pocket with a flap, buckle and leaf badge
+    p.append(box(dark, loc=(0, D + 0.15, -0.45), size=(1.5, 0.3, 1.0)))
+    p.append(box(green, loc=(0, D + 0.17, -0.02), size=(1.56, 0.34, 0.24)))
+    p.append(box(trim, loc=(0, D + 0.33, -0.2), size=(0.22, 0.04, 0.26)))
+    p.append(box("8BE04E", loc=(0, D + 0.31, -0.6), size=(0.42, 0.04, 0.26), rot=(0, 35, 0)))
+    p.append(box("8BE04E", loc=(0, D + 0.31, -0.6), size=(0.26, 0.04, 0.42), rot=(0, 35, 0)))
+    # side pockets
+    for sx in (-1, 1):
+        p.append(box(dark, loc=(sx * (W / 2 + 0.1), D / 2, -0.55), size=(0.2, 0.8, 0.9)))
+    # straps: down the back face and over the shoulders (toward -Y, over the player)
+    for sx in (-1, 1):
+        x = sx * 0.55
+        p.append(box(strap, loc=(x, -0.04, -0.05), size=(0.26, 0.08, 2.3)))
+        p.append(box(strap, loc=(x, -0.35, z1 - 0.02), size=(0.26, 0.7, 0.08)))
+        p.append(box(trim, loc=(x, -0.05, -0.8), size=(0.3, 0.1, 0.12)))
+    a.part("Body", p)
+    # leaf heap: fills the inside up to a little dome over the rim
+    iw, idp = W - 2 * T - 0.04, D - 2 * T - 0.04
+    bottom = z0 + T
+    heap = [box("FFFFFF", loc=(0, D / 2, bottom + (H - T - 0.1) / 2), size=(iw, idp, H - T - 0.1))]
+    heap.append(sphere("FFFFFF", loc=(0, D / 2, z1 - 0.12), scale=(iw / 2 * 1.02, idp / 2 * 1.02, 0.38), seg=12, rings=6))
+    fill = a.part("Fill", heap, joint=(0, D / 2, bottom), plain=True)
+    return a
+
+
 ALL = {
     "Leaf_Maple": maple,
     "Leaf_Oak": oak,
@@ -279,4 +330,5 @@ ALL = {
     "Trash_PizzaBox": trash("Trash_PizzaBox", pizza_box),
     "Trash_Cup": trash("Trash_Cup", cup),
     "LeafDump": leaf_dump,
+    "Backpack": backpack,
 }
