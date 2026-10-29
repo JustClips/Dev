@@ -61,6 +61,13 @@ Sounds.Weather = {
 	Disco = { Id = id(9038367768), Volume = 0.5, Music = true }, -- Funky Disco Beats (APM)
 	Starfall = { Id = id(9112835862), Volume = 0.25 }, -- Night Ambience 1
 	MegaMoon = { Id = id(9112836038), Volume = 0.25 }, -- Night Ambience 2
+	-- Leaves underfoot (LeafController plays them where the leaves are, cut short)
+	Rustle = { Id = id(9114515722), Volume = 0.35 }, -- Foliage Crunchy Rustle 10
+	RustleBig = { Id = id(9114576220), Volume = 0.4 }, -- Giant Leaves 1
+	RustleSeaweed = { Id = id(9116146385), Volume = 0.35 }, -- Kelp Movement 101
+	RustlePaper = { Id = id(9117076285), Volume = 0.3 }, -- Newspaper Flutter 20
+	RustleSnow = { Id = id(9113480004), Volume = 0.3 }, -- Body Fall Snow 2
+	Gust = { Id = id(9114057128), Volume = 0.22 }, -- Desert Wind Whistley Light Gusts 2
 } :: { [string]: { Id: string, Volume: number, Music: boolean? } }
 
 -- Background music, shuffled. Cute and calm so it never gets annoying.
