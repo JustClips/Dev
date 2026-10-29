@@ -20,6 +20,20 @@ function State.now(): number
 	return os.time() + State.serverOffset
 end
 
+-- The tutorial step, with "Hatching" turned into "Open" as soon as an egg is ready
+-- (the server only sends the step when something else changes).
+function State.tutorialStep(data): string
+	local step = data.TutorialStep
+	if step == "Hatching" then
+		for _, entry in data.Hatching do
+			if entry.EndsAt <= State.now() then
+				return "Open"
+			end
+		end
+	end
+	return step
+end
+
 function State.server(name: string): any
 	return State.serverState:GetAttribute(name)
 end

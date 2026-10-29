@@ -225,6 +225,15 @@ local function renderStay()
 	chip.Visible = left ~= nil and left > 0
 	if left and left > 0 then
 		Ui.setText(chip, `Free potion in {Format.time(left)}`)
+		-- A small chip right next to the cash counter, out of the way of the game.
+		local hud = Ui.screen("Hud")
+		local wallet = hud:FindFirstChild("Wallet") :: GuiObject?
+		local first = wallet and wallet:FindFirstChild("CashPanel") :: GuiObject?
+		if wallet and first then
+			local at = first.AbsolutePosition - hud.AbsolutePosition
+			chip.AnchorPoint = Vector2.new(0, 0.5)
+			chip.Position = UDim2.fromOffset(at.X + first.AbsoluteSize.X + math.ceil(10 * Ui.scale()), at.Y + first.AbsoluteSize.Y / 2)
+		end
 	end
 end
 

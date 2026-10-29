@@ -1,6 +1,7 @@
 --!strict
--- Guide path (tutorial and helpful nudges): a glowing chevron path from your feet to the
--- target and a big bouncing arrow over it, with the distance. Steps come from the server
+-- Guide path (tutorial and helpful nudges): a trail of flat arrows on the ground from your
+-- feet toward the target, sliding forward, and a big bouncing arrow over it, with the
+-- distance. Steps come from the server
 -- (State.data.TutorialStep): dust -> egg -> home -> plant the egg in your pet park -> open
 -- it -> rocket. After the tutorial it still points home when you carry an egg, at a
 -- ready egg in your park, and at the Rocket when your backpack is full.
@@ -19,13 +20,19 @@ local World = require(Shared.Config.World)
 local DUST_AHEAD = 30 -- studs from your base toward the Rocket
 local REACHED = 9 -- hide the guide this close to the target
 local COLOR = Color3.fromRGB(255, 226, 92)
+local TRAIL_ARROWS = 12 -- arrows on the ground
+local TRAIL_GAP = 5 -- studs between them
+local TRAIL_START = 4 -- studs in front of you to the first one
+local TRAIL_SPEED = 4 -- studs per second they slide toward the target
+local ARROW_SIZE = 2.6
 
 local ArrowController = {}
 
 local C: any
 local player = Players.LocalPlayer
 local targetPart: Part
-local beam: Beam
+local trail: Folder
+local arrows: { BasePart } = {}
 local board: BillboardGui
 local distanceLabel: TextLabel
 local moon: Instance
@@ -61,7 +68,7 @@ local function eggSpot(data, readyOnly: boolean): Vector3?
 end
 
 local function targetFor(data): Vector3?
-	local step = data.TutorialStep
+	local step = State.tutorialStep(data)
 	local hasBase = data.BaseIndex and data.BaseIndex ~= 0
 	local pad = if hasBase then basePad(data.BaseIndex) else nil
 	local rocketModel = moon:FindFirstChild("Rocket")
@@ -104,7 +111,6 @@ local function update()
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	if not data or not root then
-		beam.Enabled = false
 		board.Enabled = false
 		current = nil
 		return
@@ -112,24 +118,102 @@ local function update()
 	C.HudController:Highlight(if data.TutorialStep == "Shop" then "NextTool" else nil)
 	local target = targetFor(data)
 	if not target or (target - root.Position).Magnitude < REACHED then
-		beam.Enabled = false
 		board.Enabled = false
 		current = nil
 		return
 	end
 	current = target
 	targetPart.Position = target + Vector3.new(0, 0.6, 0)
-	local attachment = root:FindFirstChild("ArrowAttachment") :: Attachment?
-	if not attachment then
-		local a = Instance.new("Attachment")
-		a.Name = "ArrowAttachment"
-		a.Position = Vector3.new(0, -2.6, 0)
-		a.Parent = root
-		attachment = a
-	end
-	beam.Attachment0 = attachment
-	beam.Enabled = true
 	board.Enabled = true
+end
+
+-- One flat arrow: an invisible thin part lying down with the arrow image on its front
+-- face (which faces the sky). Its UpVector is where the arrow points.
+local function makeArrow(): BasePart
+	local part = Instance.new("Part")
+	part.Name = "PathArrow"
+	part.Size = Vector3.new(ARROW_SIZE, ARROW_SIZE, 0.05)
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanQuery = false
+	part.CanTouch = false
+	part.CastShadow = false
+	part.Transparency = 1
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = Enum.NormalId.Front
+	gui.LightInfluence = 0
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = 40
+	gui.Parent = part
+	local image = Instance.new("ImageLabel")
+	image.Name = "Arrow"
+	image.BackgroundTransparency = 1
+	image.Size = UDim2.fromScale(1, 1)
+	image.Image = AssetLibrary.image("ArrowDown")
+	image.Rotation = 180 -- the image points down; turn it to point ahead
+	image.ImageColor3 = COLOR
+	image.Parent = gui
+	part.Parent = trail
+	return part
+end
+
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+local function groundAt(position: Vector3, fallback: number): number
+	local hit = Workspace:Raycast(position + Vector3.new(0, 6, 0), Vector3.new(0, -24, 0), rayParams)
+	return if hit then hit.Position.Y else fallback
+end
+
+-- Lays the arrows from your feet toward the target, sliding forward.
+local function drawTrail()
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local target = current
+	if not root or not target or not board.Enabled then
+		for _, arrow in arrows do
+			arrow.Parent = nil
+		end
+		return
+	end
+	local flat = (target - root.Position) * Vector3.new(1, 0, 1)
+	local length = flat.Magnitude
+	if length < 1 then
+		return
+	end
+	local dir = flat / length
+	local exclude: { Instance } = { trail }
+	for _, other in Players:GetPlayers() do
+		if other.Character then
+			table.insert(exclude, other.Character)
+		end
+	end
+	rayParams.FilterDescendantsInstances = exclude
+	local feet = root.Position.Y - 3
+	local slide = (os.clock() * TRAIL_SPEED) % TRAIL_GAP
+	-- Lying flat: front face (LookVector) up, UpVector along the path.
+	local right = dir:Cross(Vector3.new(0, -1, 0))
+	for i = 1, TRAIL_ARROWS do
+		local arrow = arrows[i]
+		if not arrow then
+			arrow = makeArrow()
+			arrows[i] = arrow
+		end
+		local along = TRAIL_START + (i - 1) * TRAIL_GAP + slide
+		if along > length - 3 then
+			arrow.Parent = nil
+			continue
+		end
+		local spot = root.Position + dir * along
+		local y = groundAt(spot, feet) + 0.12
+		arrow.CFrame = CFrame.fromMatrix(Vector3.new(spot.X, y, spot.Z), right, dir, Vector3.new(0, -1, 0))
+		-- Fade in near you and out at the far end of the trail.
+		local reach = TRAIL_START + (TRAIL_ARROWS - 1) * TRAIL_GAP
+		local fade = math.max(1 - (along - TRAIL_START) / 2, (along - reach) / TRAIL_GAP, 0)
+		local image = (arrow:FindFirstChildOfClass("SurfaceGui") :: SurfaceGui):FindFirstChild("Arrow") :: ImageLabel
+		image.ImageTransparency = math.clamp(0.1 + fade, 0.1, 1)
+		arrow.Parent = trail
+	end
 end
 
 function ArrowController:Init(controllers)
@@ -143,30 +227,10 @@ function ArrowController:Init(controllers)
 	targetPart.Transparency = 1
 	targetPart.Size = Vector3.new(1, 1, 1)
 	targetPart.Parent = Workspace
-	local endAttachment = Instance.new("Attachment")
-	endAttachment.Parent = targetPart
 
-	beam = Instance.new("Beam")
-	beam.Attachment1 = endAttachment
-	beam.Color = ColorSequence.new(COLOR)
-	beam.Width0 = 2
-	beam.Width1 = 2
-	beam.FaceCamera = true
-	beam.LightEmission = 0.6
-	beam.LightInfluence = 0
-	beam.Texture = AssetLibrary.image("Chevron")
-	beam.TextureMode = Enum.TextureMode.Static
-	beam.TextureLength = 3
-	beam.TextureSpeed = 1.2
-	beam.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 1),
-		NumberSequenceKeypoint.new(0.08, 0.15),
-		NumberSequenceKeypoint.new(0.92, 0.15),
-		NumberSequenceKeypoint.new(1, 0.6),
-	})
-	beam.Segments = 2
-	beam.Enabled = false
-	beam.Parent = targetPart
+	trail = Instance.new("Folder")
+	trail.Name = "GuideTrail"
+	trail.Parent = Workspace
 
 	-- Big bouncing arrow over the target, with how far it is.
 	board = Instance.new("BillboardGui")
@@ -206,6 +270,7 @@ function ArrowController:Start()
 	moon = Workspace:WaitForChild("Moon")
 	State.Changed:Connect(update)
 	RunService.RenderStepped:Connect(function()
+		drawTrail()
 		if not board.Enabled or not current then
 			return
 		end

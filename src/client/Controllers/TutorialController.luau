@@ -158,8 +158,9 @@ local function layoutSpot(target: GuiObject)
 	local scale = Ui.scale()
 	local pad = 8 * scale
 	local pos, size = target.AbsolutePosition, target.AbsoluteSize
-	local x0, y0 = pos.X - pad, pos.Y - pad
-	local x1, y1 = pos.X + size.X + pad, pos.Y + size.Y + pad
+	-- Whole pixels: half-pixel edges left a thin bright seam across the dimmed screen.
+	local x0, y0 = math.floor(pos.X - pad), math.floor(pos.Y - pad)
+	local x1, y1 = math.ceil(pos.X + size.X + pad), math.ceil(pos.Y + size.Y + pad)
 	local w, h = hud.AbsoluteSize.X, hud.AbsoluteSize.Y
 	local big = 3000
 	local function put(name: string, x: number, y: number, sw: number, sh: number)
@@ -178,7 +179,7 @@ end
 
 -- The thing in the world this step is about (outlined through walls).
 local function worldTarget(data): Instance?
-	local key = data.TutorialStep
+	local key = State.tutorialStep(data)
 	local moon = Workspace:FindFirstChild("Moon")
 	local bases = moon and moon:FindFirstChild("Bases")
 	local base = bases and data.BaseIndex and bases:FindFirstChild("Base" .. data.BaseIndex)
@@ -253,12 +254,11 @@ local function update()
 		return
 	end
 	checkReadyEggs(data)
-	local key = data.TutorialStep
+	local key = State.tutorialStep(data)
 	local step = STEPS[STEP_INDEX[key] or 0]
 	-- The step card steps aside while a hatch show or an offer popup is on screen.
 	local holding = C.PlacementController:IsHolding()
 		or C.HatchController:IsBusy()
-		or Ui.isOpen(Ui.screen("Offer"))
 		or Ui.isOpen(Ui.screen("WelcomeBack"))
 
 	if step then

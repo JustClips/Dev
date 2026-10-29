@@ -46,9 +46,8 @@ local function tutorialStep(player: Player, session: any): string
 		return "Base"
 	end
 	if data.Stats.Hatches == 0 then
-		if runtime.TutorialEggPosition then
-			return "Egg"
-		end
+		-- An egg already in your park or bag comes first: a second egg found on the way
+		-- home mustn't send you back to "pick up the egg".
 		if #data.Hatching > 0 then
 			for _, entry in data.Hatching do
 				if entry.EndsAt <= os.time() then
@@ -59,6 +58,9 @@ local function tutorialStep(player: Player, session: any): string
 		end
 		if next(data.Eggs) ~= nil then
 			return "Place"
+		end
+		if runtime.TutorialEggPosition then
+			return "Egg"
 		end
 		return "Sweep"
 	end

@@ -7,7 +7,10 @@ local Client = script.Parent.Parent
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
+local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
+local Tools = require(Shared.Config.Tools)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 
@@ -25,12 +28,94 @@ local current: { Key: string, Product: string }? = nil
 local showToken = 0
 local specials: { [string]: any } = {}
 
+-- What the offer gives, as big icons with a short caption each (kids read pictures).
+type Item = { icon: string, caption: string }
+
+local function itemsFor(product: string): { Item }
+	if product == "StarterPack" then
+		local pack = Economy.StarterPack
+		return {
+			{ icon = AssetLibrary.image("Icon_Cash"), caption = Format.cash(pack.Cash) },
+			{ icon = AssetLibrary.image("Icon_Egg"), caption = `{pack.EggRarity} Egg` },
+			{ icon = AssetLibrary.image("Icon_PotionCash"), caption = `2x Cash {pack.Cash2xMinutes}m` },
+		}
+	end
+	local tier = tonumber(string.match(product, "^ToolSkip(%d+)$"))
+	if tier then
+		local tool = Tools.get(tier)
+		return { { icon = AssetLibrary.toolIcon(tool.Id), caption = tool.Name } }
+	end
+	if string.find(product, "^SkipHatch") then
+		return {
+			{ icon = AssetLibrary.image("Icon_Egg"), caption = "Your egg" },
+			{ icon = AssetLibrary.image("Icon_Timer"), caption = "Hatch now!" },
+		}
+	end
+	if string.find(product, "^ServerLuck") then
+		return { { icon = AssetLibrary.image("Icon_Luck"), caption = "Server Luck" } }
+	end
+	local icons = { AutoSweep = "Icon_Auto", Carry3 = "Icon_Egg", Cash2x = "Icon_Cash", VIP = "Icon_Star" }
+	return { { icon = AssetLibrary.image(icons[product] or "Icon_Star"), caption = "" } }
+end
+
+local TAG_TEXT = { StarterPack = "BEST DEAL!" }
+
+-- The card slides in next to the left rail (on phones the rail sits under the wallet).
+local function placeCard(window: GuiObject)
+	local hud = Ui.screen("Hud")
+	local rail = hud:FindFirstChild("Rail") :: GuiObject?
+	local s = Ui.scale()
+	local height = 222 * s
+	local view = offerGui.AbsoluteSize
+	local x, y = 210 * s, view.Y / 2
+	if rail then
+		local at = rail.AbsolutePosition - hud.AbsolutePosition
+		x = at.X + rail.AbsoluteSize.X + math.ceil(12 * s)
+		y = at.Y + rail.AbsoluteSize.Y / 2
+	end
+	y = math.clamp(y, height / 2 + 8, math.max(height / 2 + 8, view.Y - height / 2 - 8))
+	window.AnchorPoint = Vector2.new(0, 0.5)
+	window.Position = UDim2.fromOffset(x, y)
+end
+
+local cardMotion = 0
+
+local function showCard()
+	local window = Ui.find(offerGui, "Window") :: GuiObject
+	local scale = window:FindFirstChild("AutoScale") :: UIScale
+	cardMotion += 1
+	placeCard(window)
+	local home = window.Position
+	offerGui.Enabled = true
+	scale.Scale = Ui.scale()
+	-- Slide in from the left with a little bounce.
+	window.Position = home - UDim2.fromOffset(window.AbsolutePosition.X + window.AbsoluteSize.X + 20, 0)
+	TweenService:Create(window, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Position = home }):Play()
+	Ui.sound("Notify")
+end
+
+local function hideCard()
+	if not offerGui.Enabled then
+		return
+	end
+	cardMotion += 1
+	local token = cardMotion
+	local window = Ui.find(offerGui, "Window") :: GuiObject
+	local away = window.Position - UDim2.fromOffset(window.AbsolutePosition.X + window.AbsoluteSize.X + 20, 0)
+	TweenService:Create(window, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Position = away }):Play()
+	task.delay(0.26, function()
+		if token == cardMotion then
+			offerGui.Enabled = false
+		end
+	end)
+end
+
 local function hideOffer(clicked: boolean)
 	if current then
 		Net.event("OfferResponse"):FireServer(current.Key, clicked)
 		current = nil
 	end
-	Ui.hide(offerGui)
+	hideCard()
 end
 
 local function prompt(productKey: string)
@@ -79,7 +164,24 @@ local function showOffer(offer)
 	Ui.find(offerGui, "Window.Header.Title").Text = offer.Title
 	Ui.find(offerGui, "Window.Text").Text = offer.Text
 	Ui.setText(Ui.find(offerGui, "Window.Buy"), `{Ui.ROBUX} {offer.Price}`)
-	Ui.show(offerGui)
+	Ui.find(offerGui, "Window.Tag.Label").Text = TAG_TEXT[offer.Product] or "LIMITED!"
+	local items = Ui.find(offerGui, "Window.Items") :: Frame
+	local template = items:FindFirstChild("Template") :: Frame
+	for _, child in items:GetChildren() do
+		if child:IsA("Frame") and child ~= template then
+			child:Destroy()
+		end
+	end
+	for i, item in itemsFor(offer.Product) do
+		local tile = template:Clone()
+		tile.Name = "Item" .. i
+		tile.LayoutOrder = i
+		tile.Visible = true
+		;(tile:FindFirstChild("Icon") :: ImageLabel).Image = item.icon
+		;(tile:FindFirstChild("Caption") :: TextLabel).Text = item.caption
+		tile.Parent = items
+	end
+	showCard()
 	-- Auto-hides after a while. If a hatch show starts meanwhile, the offer steps aside
 	-- and comes back after it.
 	task.spawn(function()
@@ -87,7 +189,8 @@ local function showOffer(offer)
 		while token == showToken and Ui.isOpen(offerGui) do
 			if C.HatchController:IsBusy() then
 				current = nil
-				Ui.hide(offerGui, true)
+				cardMotion += 1
+				offerGui.Enabled = false
 				pendingOffer = offer
 				return
 			end
@@ -210,10 +313,27 @@ function OfferController:Init(controllers)
 end
 
 function OfferController:Start()
-	-- Sit above the hotbar (same lift as the HUD hint), on PC and phones.
+	-- The card lives next to the left rail; keep it there when the screen changes size.
 	local window = Ui.find(offerGui, "Window") :: GuiObject
 	Ui.onScale(function(s: number)
-		window.Position = UDim2.new(0.5, 0, 1, -(12 + math.ceil(88 * s) + math.ceil(12 * s)))
+		if offerGui.Enabled then
+			placeCard(window)
+			local autoScale = window:FindFirstChild("AutoScale") :: UIScale
+			autoScale.Scale = s
+		end
+	end)
+	-- Spinning rays behind the prize and a breathing Buy button.
+	local rays = Ui.find(offerGui, "Window.Rays") :: ImageLabel
+	local buy = Ui.find(offerGui, "Window.Buy") :: GuiObject
+	local buySize = buy.Size
+	game:GetService("RunService").RenderStepped:Connect(function()
+		if not offerGui.Enabled then
+			return
+		end
+		local t = os.clock()
+		rays.Rotation = (t * 30) % 360
+		local pulse = 1 + math.abs(math.sin(t * 3)) * 0.05
+		buy.Size = UDim2.new(buySize.X.Scale, buySize.X.Offset * pulse, buySize.Y.Scale, buySize.Y.Offset * pulse)
 	end)
 	Ui.button(Ui.find(offerGui, "Window.Close"), function()
 		hideOffer(false)
