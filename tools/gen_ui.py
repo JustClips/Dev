@@ -1137,6 +1137,9 @@ def upgrades():
     top = frame("Top", U(0, 900, 0, 84), U(0.5, 0, 0, 6), (0.5, 0), children=[
         autoscale(),
         text("Title", "Upgrades!", U(1, 0, 1, 0), ts=54, display=True, stroke=4),
+        # Tutorial line under the title ("Double-tap Sweep Power to buy it!").
+        text("Hint", "", U(1, 0, 0, 30), U(0.5, 0, 1, 2), (0.5, 0), ts=26, color="#FFD65A", display=True, stroke=3,
+             Visible=False),
     ])
     bottom = frame("Bottom", U(0, 900, 0, 196), U(0.5, 0, 1, -8), (0.5, 1), children=[
         autoscale(),
