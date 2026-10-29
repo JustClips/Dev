@@ -2826,10 +2826,10 @@ Assets.Models = {
 	},
 	Vehicle_DustTruck = {
 		bounds = {
-			max = Vector3.new(4.61, 6.777, 6.885),
+			max = Vector3.new(4.61, 6.777, 6.514),
 			min = Vector3.new(-4.61, -0.027, -8.302),
 		},
-		id = 106372080359347,
+		id = 128629547909411,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2859,10 +2859,10 @@ Assets.Models = {
 	},
 	Vehicle_HoverSweeper = {
 		bounds = {
-			max = Vector3.new(5.25, 5.987, 7.65),
+			max = Vector3.new(5.25, 5.987, 7.238),
 			min = Vector3.new(-5.25, 0.0, -9.225),
 		},
-		id = 74461445246561,
+		id = 129174920528472,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2892,10 +2892,10 @@ Assets.Models = {
 	},
 	Vehicle_MoonBuggy = {
 		bounds = {
-			max = Vector3.new(3.92, 6.21, 5.865),
+			max = Vector3.new(3.92, 6.21, 5.549),
 			min = Vector3.new(-3.92, -0.023, -7.073),
 		},
-		id = 115866889900635,
+		id = 81540515583447,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2925,10 +2925,10 @@ Assets.Models = {
 	},
 	Vehicle_MoonCrawler = {
 		bounds = {
-			max = Vector3.new(6.28, 11.34, 9.18),
+			max = Vector3.new(6.28, 11.34, 8.685),
 			min = Vector3.new(-6.28, -0.036, -11.07),
 		},
-		id = 116291400771910,
+		id = 83747894972189,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2961,7 +2961,7 @@ Assets.Models = {
 			max = Vector3.new(10.956, 9.13, 14.08),
 			min = Vector3.new(-10.956, -0.044, -13.53),
 		},
-		id = 128684971372566,
+		id = 77522696877242,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -2991,10 +2991,10 @@ Assets.Models = {
 	},
 	Vehicle_SolarRover = {
 		bounds = {
-			max = Vector3.new(12.2, 11.6, 10.2),
+			max = Vector3.new(12.2, 11.6, 9.65),
 			min = Vector3.new(-12.2, -0.04, -12.3),
 		},
-		id = 99227199847194,
+		id = 100093124659569,
 		kind = "vehicle",
 		parts = {
 			Body = {
@@ -3024,10 +3024,10 @@ Assets.Models = {
 	},
 	Vehicle_SweeperCart = {
 		bounds = {
-			max = Vector3.new(3.402, 5.425, 5.1),
+			max = Vector3.new(3.402, 5.425, 4.825),
 			min = Vector3.new(-3.402, -0.02, -6.15),
 		},
-		id = 118672620046467,
+		id = 103724576316063,
 		kind = "vehicle",
 		parts = {
 			Body = {
