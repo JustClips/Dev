@@ -24,6 +24,22 @@
    "id": 77677946832650,
    "sha": "9edcbaa0872fbde377f35c41a07006b44299f676357c958657ce01dec22fc381"
   },
+  "Pet_Cat_Idle": {
+   "id": 116879062487754,
+   "sha": "da74738af5fb3ae0354b47cc86c22fbda98ac69a8ea9b4839087298d359e8fd0"
+  },
+  "Pet_Cat_Walk": {
+   "id": 107848775286331,
+   "sha": "28c9c0c28acd5f7086f4eef07c935a7866ec16846dd639fa1504067ec30fd5c2"
+  },
+  "Pet_Dog_Idle": {
+   "id": 137526014819773,
+   "sha": "6e39a1821b12c861318b013ad0f8efd1a8dc8e1f15fc408c7c95c82cb3e0d426"
+  },
+  "Pet_Dog_Walk": {
+   "id": 135950191965326,
+   "sha": "1660d895ca0bcc58901231051dab2d8686ff13afb5d222635dd51bcfbff63362"
+  },
   "Pet_Happy": {
    "id": 104759341584430,
    "sha": "a40b382a682d5bbe2a05a20293135b58a33f9b5b32f5201c252f27f3cb3f9e0c"
@@ -839,6 +855,14 @@
   "Mushroom_Mars": {
    "id": 94155925522557,
    "sha": "8c688707110760d1ed184202276609dda81798ae92a7c1f7ca7893f985c16ad9"
+  },
+  "Pet_Cat": {
+   "id": 118628499454351,
+   "sha": "a86a9c23560ef1a4d837751b05ed9b0fd97f215ad43a5bba527edb607b8f099d"
+  },
+  "Pet_Dog": {
+   "id": 83009951898197,
+   "sha": "31e695c3e64504bda87f34cf765dfe0e8b32298d974062307c5684fdcc543da0"
   },
   "Pond": {
    "id": 120446619890790,

@@ -2561,6 +2561,132 @@ Assets.Models = {
 			},
 		},
 	},
+	Pet_Cat = {
+		anims = {
+			idle = "Pet_Cat_Idle",
+			walk = "Pet_Cat_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.52, 2.21, 1.17),
+			min = Vector3.new(-0.52, 0.0, -1.56),
+		},
+		id = 118628499454351,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.325, 1.82, -1.04),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.325, 1.82, -1.04),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.04, -0.78),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.52, 0.52),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.52, 0.52),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.52, -0.52),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.52, -0.52),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.04, 0.78),
+				parent = "Body",
+			},
+			Tail2 = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.43, 1.04),
+				parent = "Tail",
+			},
+		},
+		voxel = true,
+	},
+	Pet_Dog = {
+		anims = {
+			idle = "Pet_Dog_Idle",
+			walk = "Pet_Dog_Walk",
+		},
+		bounds = {
+			max = Vector3.new(0.65, 2.08, 1.17),
+			min = Vector3.new(-0.65, 0.0, -1.95),
+		},
+		id = 83009951898197,
+		kind = "alien",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.52, 1.95, -1.17),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.52, 1.95, -1.17),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.17, -0.91),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.65, 0.65),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.65, 0.65),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.26, 0.65, -0.65),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.26, 0.65, -0.65),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.17, 0.91),
+				parent = "Body",
+			},
+			Tail2 = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.69, 1.04),
+				parent = "Tail",
+			},
+		},
+		voxel = true,
+	},
 	Pond = {
 		bounds = {
 			max = Vector3.new(8.099, 1.8, 5.908),
@@ -3352,6 +3478,10 @@ Assets.Animations = {
 	Egg_MythicIdle = 101861978498535,
 	Egg_RareIdle = 75646233175758,
 	Egg_UncommonIdle = 77677946832650,
+	Pet_Cat_Idle = 116879062487754,
+	Pet_Cat_Walk = 107848775286331,
+	Pet_Dog_Idle = 137526014819773,
+	Pet_Dog_Walk = 135950191965326,
 	Pet_Happy = 104759341584430,
 	Pet_Idle = 90304779560671,
 	Pet_Walk = 140251033269648,
