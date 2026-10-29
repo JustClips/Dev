@@ -7413,5 +7413,491 @@
    -1.8
   ],
   "tris": 1960
+ },
+ "Clump_Autumn1": {
+  "atlas": "PileAtlas_Autumn",
+  "bounds": {
+   "max": [
+    3.004,
+    0.452,
+    2.92
+   ],
+   "min": [
+    -3.101,
+    -0.03,
+    -3.046
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Autumn1",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 214
+ },
+ "Clump_Autumn2": {
+  "atlas": "PileAtlas_Autumn",
+  "bounds": {
+   "max": [
+    3.07,
+    0.511,
+    3.101
+   ],
+   "min": [
+    -3.03,
+    -0.055,
+    -3.029
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Autumn2",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 234
+ },
+ "Clump_Autumn3": {
+  "atlas": "PileAtlas_Autumn",
+  "bounds": {
+   "max": [
+    3.083,
+    0.479,
+    2.892
+   ],
+   "min": [
+    -3.116,
+    -0.032,
+    -2.93
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Autumn3",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 206
+ },
+ "Clump_Autumn4": {
+  "atlas": "PileAtlas_Autumn",
+  "bounds": {
+   "max": [
+    3.026,
+    0.402,
+    3.09
+   ],
+   "min": [
+    -2.836,
+    -0.068,
+    -3.216
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Autumn4",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 222
+ },
+ "Clump_Gold1": {
+  "atlas": "PileAtlas_Gold",
+  "bounds": {
+   "max": [
+    3.159,
+    0.371,
+    3.059
+   ],
+   "min": [
+    -3.003,
+    -0.079,
+    -3.027
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Gold1",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": "Foil",
+    "parent": null
+   }
+  },
+  "tris": 234
+ },
+ "Clump_Paper1": {
+  "atlas": "PileAtlas_Paper",
+  "bounds": {
+   "max": [
+    3.202,
+    0.411,
+    3.082
+   ],
+   "min": [
+    -3.108,
+    -0.03,
+    -2.93
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Paper1",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 166
+ },
+ "Clump_Paper2": {
+  "atlas": "PileAtlas_Paper",
+  "bounds": {
+   "max": [
+    3.005,
+    0.417,
+    2.973
+   ],
+   "min": [
+    -3.082,
+    -0.03,
+    -2.979
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Paper2",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 170
+ },
+ "Clump_Park1": {
+  "atlas": "PileAtlas_Park",
+  "bounds": {
+   "max": [
+    3.159,
+    0.769,
+    2.963
+   ],
+   "min": [
+    -3.114,
+    -0.03,
+    -3.09
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Park1",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 218
+ },
+ "Clump_Park2": {
+  "atlas": "PileAtlas_Park",
+  "bounds": {
+   "max": [
+    2.902,
+    0.772,
+    3.186
+   ],
+   "min": [
+    -3.041,
+    -0.03,
+    -2.992
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Park2",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 218
+ },
+ "Clump_Park3": {
+  "atlas": "PileAtlas_Park",
+  "bounds": {
+   "max": [
+    2.962,
+    0.785,
+    3.016
+   ],
+   "min": [
+    -2.941,
+    -0.065,
+    -2.923
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Park3",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 230
+ },
+ "Clump_Seaweed1": {
+  "atlas": "PileAtlas_Seaweed",
+  "bounds": {
+   "max": [
+    2.918,
+    0.363,
+    3.127
+   ],
+   "min": [
+    -3.138,
+    -0.03,
+    -3.111
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Seaweed1",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 184
+ },
+ "Clump_Seaweed2": {
+  "atlas": "PileAtlas_Seaweed",
+  "bounds": {
+   "max": [
+    3.119,
+    0.362,
+    2.937
+   ],
+   "min": [
+    -3.031,
+    -0.03,
+    -2.998
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Seaweed2",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 176
+ },
+ "Clump_Snow1": {
+  "atlas": "PileAtlas_Snow",
+  "bounds": {
+   "max": [
+    3.036,
+    0.699,
+    2.897
+   ],
+   "min": [
+    -3.076,
+    -0.03,
+    -3.095
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Snow1",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 194
+ },
+ "Clump_Snow2": {
+  "atlas": "PileAtlas_Snow",
+  "bounds": {
+   "max": [
+    2.96,
+    0.884,
+    3.113
+   ],
+   "min": [
+    -2.972,
+    -0.058,
+    -3.091
+   ]
+  },
+  "kind": "prop",
+  "name": "Clump_Snow2",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 210
+ },
+ "Drift_Autumn1": {
+  "atlas": "PileAtlas_Autumn",
+  "bounds": {
+   "max": [
+    3.802,
+    1.278,
+    1.564
+   ],
+   "min": [
+    -3.887,
+    -0.14,
+    -1.835
+   ]
+  },
+  "kind": "prop",
+  "name": "Drift_Autumn1",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 220
+ },
+ "Drift_Autumn2": {
+  "atlas": "PileAtlas_Autumn",
+  "bounds": {
+   "max": [
+    3.868,
+    1.278,
+    1.559
+   ],
+   "min": [
+    -3.833,
+    -0.091,
+    -1.661
+   ]
+  },
+  "kind": "prop",
+  "name": "Drift_Autumn2",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 220
+ },
+ "Drift_Park1": {
+  "atlas": "PileAtlas_Park",
+  "bounds": {
+   "max": [
+    3.823,
+    0.972,
+    1.577
+   ],
+   "min": [
+    -3.785,
+    -0.057,
+    -1.668
+   ]
+  },
+  "kind": "prop",
+  "name": "Drift_Park1",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 206
+ },
+ "Drift_Snow1": {
+  "atlas": "PileAtlas_Snow",
+  "bounds": {
+   "max": [
+    3.907,
+    0.946,
+    1.559
+   ],
+   "min": [
+    -3.788,
+    -0.228,
+    -1.752
+   ]
+  },
+  "kind": "prop",
+  "name": "Drift_Snow1",
+  "parts": {
+   "Clump": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 156
  }
 }

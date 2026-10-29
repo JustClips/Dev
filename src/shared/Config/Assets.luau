@@ -2337,6 +2337,203 @@ Assets.Models = {
 		},
 		sign = Vector3.new(0.0, 11.4, -0.3),
 	},
+	Clump_Autumn1 = {
+		atlas = "PileAtlas_Autumn",
+		bounds = {
+			max = Vector3.new(3.004, 0.452, 2.92),
+			min = Vector3.new(-3.101, -0.03, -3.046),
+		},
+		id = 88433982042188,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Autumn2 = {
+		atlas = "PileAtlas_Autumn",
+		bounds = {
+			max = Vector3.new(3.07, 0.511, 3.101),
+			min = Vector3.new(-3.03, -0.055, -3.029),
+		},
+		id = 130791518544444,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Autumn3 = {
+		atlas = "PileAtlas_Autumn",
+		bounds = {
+			max = Vector3.new(3.083, 0.479, 2.892),
+			min = Vector3.new(-3.116, -0.032, -2.93),
+		},
+		id = 70761449958580,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Autumn4 = {
+		atlas = "PileAtlas_Autumn",
+		bounds = {
+			max = Vector3.new(3.026, 0.402, 3.09),
+			min = Vector3.new(-2.836, -0.068, -3.216),
+		},
+		id = 94283032567633,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Gold1 = {
+		atlas = "PileAtlas_Gold",
+		bounds = {
+			max = Vector3.new(3.159, 0.371, 3.059),
+			min = Vector3.new(-3.003, -0.079, -3.027),
+		},
+		id = 71019483390271,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+				material = "Foil",
+			},
+		},
+	},
+	Clump_Paper1 = {
+		atlas = "PileAtlas_Paper",
+		bounds = {
+			max = Vector3.new(3.202, 0.411, 3.082),
+			min = Vector3.new(-3.108, -0.03, -2.93),
+		},
+		id = 97829418854786,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Paper2 = {
+		atlas = "PileAtlas_Paper",
+		bounds = {
+			max = Vector3.new(3.005, 0.417, 2.973),
+			min = Vector3.new(-3.082, -0.03, -2.979),
+		},
+		id = 101277373069288,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Park1 = {
+		atlas = "PileAtlas_Park",
+		bounds = {
+			max = Vector3.new(3.159, 0.769, 2.963),
+			min = Vector3.new(-3.114, -0.03, -3.09),
+		},
+		id = 85382809147536,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Park2 = {
+		atlas = "PileAtlas_Park",
+		bounds = {
+			max = Vector3.new(2.902, 0.772, 3.186),
+			min = Vector3.new(-3.041, -0.03, -2.992),
+		},
+		id = 135302758416193,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Park3 = {
+		atlas = "PileAtlas_Park",
+		bounds = {
+			max = Vector3.new(2.962, 0.785, 3.016),
+			min = Vector3.new(-2.941, -0.065, -2.923),
+		},
+		id = 80626160075613,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Seaweed1 = {
+		atlas = "PileAtlas_Seaweed",
+		bounds = {
+			max = Vector3.new(2.918, 0.363, 3.127),
+			min = Vector3.new(-3.138, -0.03, -3.111),
+		},
+		id = 89555433951980,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Seaweed2 = {
+		atlas = "PileAtlas_Seaweed",
+		bounds = {
+			max = Vector3.new(3.119, 0.362, 2.937),
+			min = Vector3.new(-3.031, -0.03, -2.998),
+		},
+		id = 105497524773466,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Snow1 = {
+		atlas = "PileAtlas_Snow",
+		bounds = {
+			max = Vector3.new(3.036, 0.699, 2.897),
+			min = Vector3.new(-3.076, -0.03, -3.095),
+		},
+		id = 100835839282236,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Clump_Snow2 = {
+		atlas = "PileAtlas_Snow",
+		bounds = {
+			max = Vector3.new(2.96, 0.884, 3.113),
+			min = Vector3.new(-2.972, -0.058, -3.091),
+		},
+		id = 117756873641768,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
 	Crystal_Blue = {
 		bounds = {
 			max = Vector3.new(1.7, 1.309, 1.7),
@@ -2386,6 +2583,62 @@ Assets.Models = {
 		parts = {
 			Body = {
 				collide = true,
+			},
+		},
+	},
+	Drift_Autumn1 = {
+		atlas = "PileAtlas_Autumn",
+		bounds = {
+			max = Vector3.new(3.802, 1.278, 1.564),
+			min = Vector3.new(-3.887, -0.14, -1.835),
+		},
+		id = 137344730681783,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Drift_Autumn2 = {
+		atlas = "PileAtlas_Autumn",
+		bounds = {
+			max = Vector3.new(3.868, 1.278, 1.559),
+			min = Vector3.new(-3.833, -0.091, -1.661),
+		},
+		id = 134024628848922,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Drift_Park1 = {
+		atlas = "PileAtlas_Park",
+		bounds = {
+			max = Vector3.new(3.823, 0.972, 1.577),
+			min = Vector3.new(-3.785, -0.057, -1.668),
+		},
+		id = 121169562085959,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Drift_Snow1 = {
+		atlas = "PileAtlas_Snow",
+		bounds = {
+			max = Vector3.new(3.907, 0.946, 1.559),
+			min = Vector3.new(-3.788, -0.228, -1.752),
+		},
+		id = 99919509794164,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
 			},
 		},
 	},
@@ -3818,6 +4071,12 @@ Assets.Images = {
 	Icon_Zones = "rbxassetid://122184194125026",
 	Logo = "rbxassetid://92781049153174",
 	Music = "rbxassetid://140114126139572",
+	PileAtlas_Autumn = "rbxassetid://108729282718069",
+	PileAtlas_Gold = "rbxassetid://127801925399399",
+	PileAtlas_Paper = "rbxassetid://100254966548598",
+	PileAtlas_Park = "rbxassetid://102491616065877",
+	PileAtlas_Seaweed = "rbxassetid://83171103996615",
+	PileAtlas_Snow = "rbxassetid://94343873814219",
 	Rays = "rbxassetid://85886508223515",
 	Ring = "rbxassetid://89968559820433",
 	Sky_Stars = "rbxassetid://110670005454524",

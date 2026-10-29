@@ -88,7 +88,12 @@ class Asset:
         bsdf.inputs["Base Color"].default_value = (0.9, 0.9, 0.9, 1)
         bsdf.inputs["Roughness"].default_value = 0.7
         mat = plain
-        if not getattr(self, "plain", False):
+        if getattr(self, "texture", None):
+            # a painted texture (PNG path) instead of the colour palette, smooth filtering
+            img = bpy.data.images.load(self.texture)
+            img.pack()
+            mat = palette_material(self.name, img, "Linear")
+        elif not getattr(self, "plain", False):
             img = build_palette_image(self.name, self.colors)
             mat = palette_material(self.name, img)
         # parent objects in Blender (keeps world transforms) so the hierarchy is visible to Dev
@@ -160,7 +165,7 @@ def build_palette_image(name, colors):
     return img
 
 
-def palette_material(name, img):
+def palette_material(name, img, interpolation="Closest"):
     m = bpy.data.materials.new(f"{name}_mat")
     m.use_nodes = True
     nodes = m.node_tree.nodes
@@ -168,7 +173,7 @@ def palette_material(name, img):
     bsdf.inputs["Roughness"].default_value = 0.6
     t = nodes.new("ShaderNodeTexImage")
     t.image = img
-    t.interpolation = "Closest"
+    t.interpolation = interpolation
     m.node_tree.links.new(t.outputs[0], bsdf.inputs["Base Color"])
     return m
 

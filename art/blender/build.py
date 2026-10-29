@@ -14,6 +14,7 @@ sys.path.insert(0, HERE)
 import aliens  # noqa: E402
 import props  # noqa: E402
 import litter  # noqa: E402
+import piles  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "out")
 
@@ -26,6 +27,8 @@ def builders():
     for k, fn in props.ALL.items():
         yield k, fn
     for k, fn in litter.ALL.items():
+        yield k, fn
+    for k, fn in piles.ALL.items():
         yield k, fn
 
 
