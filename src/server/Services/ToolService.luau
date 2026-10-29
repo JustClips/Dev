@@ -540,6 +540,11 @@ function ToolService:Init(services)
 		if not data then
 			return false, "Still loading"
 		end
+		if tier == nil then
+			-- No tier: just put your current tool back in your hands.
+			giveTool(player, true)
+			return true, nil
+		end
 		if type(tier) ~= "number" or tier ~= math.floor(tier) or tier < 1 or tier > data.ToolTier then
 			return false, "You don't own that tool"
 		end
@@ -566,10 +571,6 @@ function ToolService:Init(services)
 		return spawnVehicle(player, id, atGarage)
 	end)
 	Net.onInvoke("BuyVehicle", buyVehicle)
-	Net.onInvoke("EquipTool", function(player)
-		giveTool(player, true)
-		return true
-	end)
 	S.BaseService.CharacterReady:Connect(function(player: Player, character: Model)
 		destroyVehicle(player)
 		character:WaitForChild("Humanoid", 10)
