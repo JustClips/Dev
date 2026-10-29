@@ -278,14 +278,9 @@ def turbo_vacuum(a):
            + [torus(g, loc=(0, -1.9, -0.15), R=0.4, r=0.04, rot=(90, 0, 0), seg=20, mseg=6)], parent="Handle", glow=g)
 
 
-TOOLS = {
-    "Toothbrush": (toothbrush, (0, 0.85, 0)),
-    "Broom": (broom, (0, 1.4, 0)),
-    "Mop": (mop, (0, 1.4, 0)),
-    "LeafBlower": (leaf_blower, (0, 0.7, 0.45)),
-    "ShopVac": (shop_vac, (0, 0.9, 0.35)),
-    "TurboVacuum": (turbo_vacuum, (0, 0.75, 0.42)),
-}
+# The hand tools live in handtools.py now (real sizes, grip2 and tip meta points).
+# The older builders above are kept only for reference; toothbrush() is still used.
+from handtools import TOOLS  # noqa: E402
 
 
 # ------------------------------------------------------------------------- vehicles
@@ -502,15 +497,9 @@ def car_details(s, W, L, wr, color, kind):
     return p
 
 
-VEHICLES = {
-    "SweeperCart": lambda: vehicle("SweeperCart", 1.0, "50C878", "cart"),
-    "DustTruck": lambda: vehicle("DustTruck", 1.35, "FFB428", "truck"),
-    "MoonBuggy": lambda: vehicle("MoonBuggy", 1.15, "FF8C3C", "buggy"),
-    "HoverSweeper": lambda: vehicle("HoverSweeper", 1.5, "B478FF", "hover"),
-    "MoonCrawler": lambda: vehicle("MoonCrawler", 1.8, "5AA0FF", "crawler"),
-    "SolarRover": lambda: vehicle("SolarRover", 2.0, "F0F0F5", "rover"),
-    "RocketSweeper": lambda: vehicle("RocketSweeper", 2.2, "FF4A5A", "rocket"),
-}
+# The Garage cars live in cars.py now (real-world low-poly cars with separate wheels).
+# The old vehicle()/car_details() above are kept only for reference.
+from cars import VEHICLES  # noqa: E402
 
 
 # ------------------------------------------------------------------------- world props
