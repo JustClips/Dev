@@ -67,6 +67,25 @@ local function rect(terrain: Terrain, x0: number, z0: number, x1: number, z1: nu
 	slab(terrain, CFrame.new((x0 + x1) / 2, 0, (z0 + z1) / 2), math.abs(x1 - x0), math.abs(z1 - z0), surfaceY, material, depth)
 end
 
+-- The ground stops a little past the front of the cliff walls, under their back row, so
+-- it never runs on to the horizon (Dev, 2026-10-29). Hub and zones are two boxes.
+local EDGE = 24
+local GROUND_BOXES = {
+	{ -(HUB_WALL + EDGE), -232, HUB_WALL + EDGE, HUB_BACK + EDGE },
+	{ -(ZONE_WALL + EDGE), ZONE_BACK - EDGE, ZONE_WALL + EDGE, -214 },
+}
+
+-- rect, cut to the ground boxes.
+local function ground(terrain: Terrain, x0: number, z0: number, x1: number, z1: number, surfaceY: number, material: Enum.Material, depth: number?)
+	for _, b in GROUND_BOXES do
+		local ax0, az0 = math.max(math.min(x0, x1), b[1]), math.max(math.min(z0, z1), b[2])
+		local ax1, az1 = math.min(math.max(x0, x1), b[3]), math.min(math.max(z0, z1), b[4])
+		if ax1 > ax0 and az1 > az0 then
+			rect(terrain, ax0, az0, ax1, az1, surfaceY, material, depth)
+		end
+	end
+end
+
 function MapBuilder.buildTerrain()
 	local terrain = Workspace.Terrain
 	-- No animated grass blades: they grew over the leaf tiles (Dev, 2026-10-28).
@@ -77,11 +96,11 @@ function MapBuilder.buildTerrain()
 		terrain:SetMaterialColor((M :: any)[name], color)
 	end
 	-- Grass everywhere (surface y = 0), with a ground band per zone.
-	slab(terrain, CFrame.new(0, 0, -410), 1000, 1860, 0, M.Grass, 36)
-	rect(terrain, -500, -1340, 500, -976, 0, M.Snow) -- Snowy Peaks and beyond
-	rect(terrain, -500, -976, 500, -720, 0, M.Asphalt) -- City band
-	rect(terrain, -500, -720, 500, -472, 0, M.Sand) -- Beach band
-	rect(terrain, -500, -472, 500, -212, 0, M.LeafyGrass) -- Park band
+	ground(terrain, -500, -1340, 500, 520, 0, M.Grass, 36)
+	ground(terrain, -500, -1340, 500, -976, 0, M.Snow) -- Snowy Peaks
+	ground(terrain, -500, -976, 500, -720, 0, M.Asphalt) -- City band
+	ground(terrain, -500, -720, 500, -472, 0, M.Sand) -- Beach band
+	ground(terrain, -500, -472, 500, -212, 0, M.LeafyGrass) -- Park band
 
 	-- Park dip (zone id Crater): floor 8 studs down, raised banks on both sides.
 	local crater = Zones.ById.Crater
@@ -769,6 +788,22 @@ local function place(name: string, cf: CFrame, scale: number?, parent: Instance?
 	return model
 end
 
+-- Tags a windmill's "Sails" part for SpinController (client), which turns it about the hub
+-- (meta joint) on the model's front axis. speed in turns per second.
+local function spinSails(model: Model?, speed: number)
+	local sails = model and model:FindFirstChild("Sails") :: BasePart?
+	local meta = AssetLibrary.meta("Satellite")
+	local joint = meta and meta.parts.Sails and meta.parts.Sails.joint
+	if not model or not sails or not joint then
+		return
+	end
+	local hub = model:GetPivot() * CFrame.new(joint * model:GetScale())
+	sails:SetAttribute("SpinHub", hub)
+	sails:SetAttribute("SpinBase", sails.CFrame)
+	sails:SetAttribute("SpinSpeed", speed * math.pi * 2)
+	sails:AddTag("SpinPart")
+end
+
 local function yaw(deg: number): CFrame
 	return CFrame.Angles(0, math.rad(deg), 0)
 end
@@ -950,8 +985,11 @@ function MapBuilder.buildProps()
 	end
 	place("Flag", CFrame.new(-10, 0, 186) * yaw(20))
 	place("Flag", CFrame.new(10, 0, 186) * yaw(-20))
-	place("Satellite", CFrame.new(-56, 0, 194) * yaw(150), 1.4)
-	place("Satellite", CFrame.new(56, 0, 194) * yaw(210), 1.4)
+	-- Windmills face the hub (front = -Z, sails on that side), and their sails turn.
+	for i, x in { -56, 56 } do
+		local pos = Vector3.new(x, 0, 194)
+		spinSails(place("Satellite", CFrame.lookAt(pos, Vector3.new(0, 0, 0)), 1.4), 0.45 + 0.1 * i)
+	end
 	-- a car on display in the garage
 	place("Vehicle_SweeperCart", World.Garage * CFrame.new(3, 0.6, 2) * yaw(-25))
 	-- zone gates (sign faces the hub)

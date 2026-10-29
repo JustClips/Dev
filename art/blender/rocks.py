@@ -1,9 +1,9 @@
 """Cartoon rocks for the map edge: chunky cliff wall segments and boulders.
 
 Built from chamfered, slightly jittered blocks with flat faces. Each face takes a colour
-from its slope (light tops, mid sides, dark undersides), which gives a simple painted, toon
-look without a texture. Tall blocks wear a thick grass cap with a few drips hanging over the
-front edge.
+band from a baked light direction, which gives a simple painted, toon look without a
+texture. Grass caps are shaped to the rock's real top outline and sit inside it, with turf
+tongues hanging down the front face, so nothing hovers.
 - Cliff_1..3: wall segments about 24 long (Blender X), 12 deep and 13-17 tall. The stepped
   front faces -Y (Roblox -Z, the model's LookVector), which is the side to turn toward the
   play area. Overlap neighbours by 2-4 studs and mix the three for an unbroken wall.
@@ -17,6 +17,7 @@ import random
 import bmesh
 import bpy
 from mathutils import Vector, Matrix
+from mathutils.geometry import convex_hull_2d
 
 from lib import Asset, use, join
 
@@ -50,20 +51,69 @@ def chunk(size, loc, yaw=0.0, taper=0.85, jitter=0.08, bevel=0.28, rnd=None):
     return o
 
 
-def cap(size, top, loc, yaw, rnd, drips=2):
-    """Grass cap on a block whose top is size (x, y) at height top: a thick chamfered slab
-    a little wider than the block, plus rounded drips hanging over the front (-Y) edge."""
-    sx, sy = size
-    pieces = [chunk((sx * 1.06, sy * 1.06, 0.9), (0, 0, -0.55), 0, taper=0.92, jitter=0.03, bevel=0.6, rnd=rnd)]
-    for k in range(drips):
-        # rounded tongues of turf hanging over the front edge
-        x = (k + 0.5) / drips * sx * 0.8 - sx * 0.4 + rnd.uniform(-0.6, 0.6)
-        w = rnd.uniform(2.4, 3.4)
-        hang = rnd.uniform(1.4, 2.4)
-        pieces.append(chunk((w, 0.55, hang), (x, -sy * 0.52, -0.2 - hang), 0, taper=1.25, jitter=0.05, bevel=0.9, rnd=rnd))
+def cap_on(rocks, rnd, drips=2, thick=0.55):
+    """Grass cap shaped to the actual top of the given rock blocks: it follows their top
+    outline (a slight lip past the edge), its bottom sits 0.3 inside the rock so nothing
+    hovers, and rounded turf tongues hang down the front (-Y) face with their backs inside
+    the rock."""
+    pts, zs = [], []
+    for r in rocks:
+        top = max(v.co.z for v in r.data.vertices)
+        for v in r.data.vertices:
+            if v.co.z > top - 0.45:
+                pts.append(Vector((v.co.x, v.co.y)))
+                zs.append(v.co.z)
+    hull = [pts[i] for i in convex_hull_2d(pts)]
+    area = sum(a.x * b.y - b.x * a.y for a, b in zip(hull, hull[1:] + hull[:1]))
+    if area < 0:
+        hull.reverse()
+    c = sum(hull, Vector((0, 0))) / len(hull)
+    bottom, top = min(zs) - 0.3, max(zs) + thick
+
+    def out(p, d):            # push a point d studs away from the centre
+        v = p - c
+        return p + v.normalized() * d if v.length > 1e-6 else p
+
+    rings = [[out(p, -0.15) for p in hull], [out(p, 0.18) for p in hull], [c + (p - c) * 0.86 for p in hull]]
+    heights = [bottom, top - 0.3, top]
+    verts = []
+    for ring, z in zip(rings, heights):
+        verts += [(p.x, p.y, z) for p in ring]
+    n = len(hull)
+    faces = []
+    for r in range(2):
+        for i in range(n):
+            j = (i + 1) % n
+            faces.append((r * n + i, r * n + j, (r + 1) * n + j, (r + 1) * n + i))
+    verts.append((c.x, c.y, top + 0.05))
+    faces += [(2 * n + i, 2 * n + (i + 1) % n, 3 * n) for i in range(n)]
+    me = bpy.data.meshes.new("cap")
+    me.from_pydata(verts, [], faces)
+    me.update()
+    o = bpy.data.objects.new("cap", me)
+    bpy.context.collection.objects.link(o)
+    pieces = [o]
+    # tongues along the front-facing edges of the outline
+    edges = []
+    for i in range(n):
+        a, b = hull[i], hull[(i + 1) % n]
+        d = b - a
+        nrm = Vector((d.y, -d.x)).normalized()       # outward for a counter-clockwise ring
+        if nrm.y < -0.6 and d.length > 1.5:
+            edges.append((a, b, nrm))
+    edges.sort(key=lambda e: -(e[1] - e[0]).length)
+    for k in range(min(drips, len(edges) * 3)):
+        a, b, nrm = edges[k % len(edges)]
+        t = (k // len(edges) + 0.5) / max(1, math.ceil(drips / len(edges))) if len(edges) < drips else 0.5
+        t = min(max(t + rnd.uniform(-0.15, 0.15), 0.15), 0.85)
+        p = a + (b - a) * t - nrm * 0.12
+        w = min(rnd.uniform(2.2, 3.2), (b - a).length * 0.6)
+        hang = rnd.uniform(1.2, 2.0)
+        ang = math.atan2((b - a).y, (b - a).x)
+        tongue = chunk((w, 0.5, hang + 0.4), (0, 0, 0), ang, taper=1.2, jitter=0.04, bevel=0.9, rnd=rnd)
+        tongue.data.transform(Matrix.Translation((p.x, p.y, bottom + 0.4 - hang)))
+        pieces.append(tongue)
     o = join(pieces, "cap")
-    o.data.transform(Matrix.Rotation(yaw, 4, "Z"))
-    o.data.transform(Matrix.Translation(Vector(loc) + Vector((0, 0, top))))
     o["kind"] = "grass"
     return o
 
@@ -104,20 +154,22 @@ def cliff(name, seed, length=24.0, depth=12.0, height=15.0):
         pieces = []
         # three big overlapping blocks make one continuous wall, all topped at the same height
         n = 3
+        wall = []
         for k in range(n):
             x = -length / 2 + length * (k + 0.5) / n + rnd.uniform(-0.6, 0.6)
             w = length / n * rnd.uniform(1.3, 1.45)
             d = depth * rnd.uniform(0.8, 0.92)
             yaw = math.radians(rnd.uniform(-5, 5))
-            pieces.append(chunk((w, d, height + 1), (x, depth * 0.05, -1), yaw, taper=0.88, jitter=0.07, rnd=rnd))
+            wall.append(chunk((w, d, height + 1), (x, depth * 0.05, -1), yaw, taper=0.88, jitter=0.07, rnd=rnd))
+        pieces += wall
         # bulges on the front face: mid-height blocks and rocks at the foot
         for k in range(2):
             x = -length / 2 + length * (k + 0.5) / 2 + rnd.uniform(-2.5, 2.5)
             w, d = rnd.uniform(6.5, 9), rnd.uniform(4.5, 6)
             h = height * rnd.uniform(0.4, 0.62)
             yaw = math.radians(rnd.uniform(-12, 12))
-            pieces.append(chunk((w, d, h + 1), (x, -depth * 0.36, -1), yaw, taper=0.8, jitter=0.1, rnd=rnd))
-            pieces.append(cap((w * 0.8, d * 0.8), h, (x, -depth * 0.36, 0), yaw, rnd, drips=1))
+            block = chunk((w, d, h + 1), (x, -depth * 0.36, -1), yaw, taper=0.8, jitter=0.1, rnd=rnd)
+            pieces += [block, cap_on([block], rnd, drips=1)]
         for k in range(3):
             x = -length / 2 + length * (k + 0.5) / 3 + rnd.uniform(-2.5, 2.5)
             sz = rnd.uniform(2.4, 3.6)
@@ -125,7 +177,7 @@ def cliff(name, seed, length=24.0, depth=12.0, height=15.0):
                                 math.radians(rnd.uniform(0, 90)), taper=0.75, jitter=0.12, rnd=rnd))
         # one long turf top over the whole segment (a little past each end so neighbours join),
         # with rounded tongues hanging down the front
-        pieces.append(cap((length + 0.8, depth * 0.86), height, (0, depth * 0.05, 0), 0, rnd, drips=5))
+        pieces.append(cap_on(wall, rnd, drips=5))
         a.extra["segment"] = {"length": length, "depth": depth, "height": height}
         return finish(a, pieces)
     return make
@@ -140,7 +192,7 @@ def boulder(name, seed, size, capped=True, extra=0):
         yaw = math.radians(rnd.uniform(-10, 10))
         pieces = [chunk((sx, sy, sz + 0.6), (0, 0, -0.6), yaw, taper=0.78, jitter=0.1, bevel=0.35, rnd=rnd)]
         if capped:
-            pieces.append(cap((sx * 0.78, sy * 0.78), sz, (0, 0, 0), yaw, rnd, drips=1 if sx < 9 else 2))
+            pieces.append(cap_on([pieces[0]], rnd, drips=1 if sx < 9 else 2))
         for k in range(extra):
             ang = rnd.uniform(0, math.tau)
             s = min(sx, sy) * rnd.uniform(0.35, 0.5)

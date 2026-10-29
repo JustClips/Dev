@@ -5009,10 +5009,10 @@ Assets.Models = {
 	},
 	Boulder_1 = {
 		bounds = {
-			max = Vector3.new(4.667, 5.857, 3.851),
-			min = Vector3.new(-3.807, -0.642, -3.544),
+			max = Vector3.new(4.036, 6.118, 4.448),
+			min = Vector3.new(-4.486, -0.642, -3.544),
 		},
-		id = 127571926205123,
+		id = 118443054468686,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -5035,10 +5035,10 @@ Assets.Models = {
 	},
 	Boulder_3 = {
 		bounds = {
-			max = Vector3.new(8.623, 8.353, 7.401),
-			min = Vector3.new(-6.449, -0.707, -4.982),
+			max = Vector3.new(8.818, 8.559, 4.84),
+			min = Vector3.new(-6.449, -0.707, -6.763),
 		},
-		id = 77328908792006,
+		id = 135534727501991,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -5048,10 +5048,10 @@ Assets.Models = {
 	},
 	Cliff_1 = {
 		bounds = {
-			max = Vector3.new(14.055, 15.357, 6.118),
-			min = Vector3.new(-13.429, -1.21, -9.392),
+			max = Vector3.new(14.055, 15.898, 5.982),
+			min = Vector3.new(-13.064, -1.21, -8.99),
 		},
-		id = 77669831700684,
+		id = 90675216105843,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -5066,10 +5066,10 @@ Assets.Models = {
 	},
 	Cliff_2 = {
 		bounds = {
-			max = Vector3.new(13.339, 16.358, 6.178),
-			min = Vector3.new(-13.335, -1.284, -8.969),
+			max = Vector3.new(13.339, 16.833, 6.082),
+			min = Vector3.new(-13.171, -1.284, -8.848),
 		},
-		id = 113263945993045,
+		id = 98124358176068,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -5084,10 +5084,10 @@ Assets.Models = {
 	},
 	Cliff_3 = {
 		bounds = {
-			max = Vector3.new(13.778, 14.355, 6.342),
-			min = Vector3.new(-13.832, -1.274, -9.64),
+			max = Vector3.new(13.778, 14.843, 6.342),
+			min = Vector3.new(-13.832, -1.274, -9.417),
 		},
-		id = 82868844287581,
+		id = 87909619625118,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -6109,10 +6109,10 @@ Assets.Models = {
 	},
 	Rocket = {
 		bounds = {
-			max = Vector3.new(11.244, 19.75, 11.244),
-			min = Vector3.new(-11.244, 0.0, -11.244),
+			max = Vector3.new(11.3, 19.75, 11.3),
+			min = Vector3.new(-11.3, 0.0, -11.3),
 		},
-		id = 70586933996083,
+		id = 76087038398985,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -6129,13 +6129,17 @@ Assets.Models = {
 	Satellite = {
 		bounds = {
 			max = Vector3.new(3.605, 10.205, 2.0),
-			min = Vector3.new(-3.605, 0.0, -2.36),
+			min = Vector3.new(-3.605, 0.0, -2.45),
 		},
-		id = 113425834162483,
+		id = 115408671743505,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Sails = {
+				collide = false,
+				joint = Vector3.new(0.0, 6.6, -2.3),
 			},
 		},
 	},

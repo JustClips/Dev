@@ -288,12 +288,15 @@ def windmill(name):
          cone("C0504A", loc=(0, 0, 7.8), r=1.8, h=1.8, verts=8, smooth=False),
          box(WOOD_DARK, loc=(0, -1.85, 1.0), size=(1.0, 0.3, 2.0)),
          cyl(WOOD_DARK, loc=(0, -1.85, 6.6), r=0.25, h=0.8, rot=(90, 0, 0), verts=8)]
+    a.part("Body", p, collide=True)
+    # the sails are their own part so the game can spin them about the hub (meta joint)
+    sails = [cyl(WOOD_DARK, loc=(0, -2.3, 6.6), r=0.35, h=0.3, rot=(90, 0, 0), verts=8)]
     for k in range(4):
         ang = k * 90 + 20
         c, s = math.cos(math.radians(ang)), math.sin(math.radians(ang))
-        p.append(box(WOOD_DARK, loc=(c * 1.9, -2.3, 6.6 + s * 1.9), size=(3.8, 0.12, 0.2), rot=(0, -ang, 0)))
-        p.append(box("F4EEDC", loc=(c * 2.2, -2.32, 6.6 + s * 2.2), size=(2.8, 0.06, 0.9), rot=(0, -ang, 0)))
-    a.part("Body", p, collide=True)
+        sails.append(box(WOOD_DARK, loc=(c * 1.9, -2.3, 6.6 + s * 1.9), size=(3.8, 0.12, 0.2), rot=(0, -ang, 0)))
+        sails.append(box("F4EEDC", loc=(c * 2.2, -2.32, 6.6 + s * 2.2), size=(2.8, 0.06, 0.9), rot=(0, -ang, 0)))
+    a.part("Sails", sails, joint=(0, -2.3, 6.6))
     return a
 
 

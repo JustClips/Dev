@@ -815,7 +815,7 @@ def rocket():
     post_h = 8.0
     p = []
     # stone base with a step all round
-    p.append(box(stone_dark, loc=(0, 0, 0.3), size=(2 * S + 5, 2 * S + 5, 0.6), bevel=0.2))
+    p.append(box(stone_dark, loc=(0, 0, 0.3), size=(2 * S + 6.6, 2 * S + 6.6, 0.6), bevel=0.2))  # wide enough for the bins
     p.append(box(stone, loc=(0, 0, 0.8), size=(2 * S + 3, 2 * S + 3, 0.5), bevel=0.15))
     for i in range(-3, 4):
         for j in range(-3, 4):
@@ -908,12 +908,14 @@ def rocket():
         p.append(cyl(WOOD, loc=(x, y, base + 1.0), r=0.8, h=2.0, verts=14))
         for z in (0.35, 1.65):
             p.append(torus("6E6E78", loc=(x, y, base + z), R=0.8, r=0.06, seg=16, mseg=4))
-    # recycling bins at the four outer corners
+    # recycling bins at the four outer corners, standing on the lower step (top at 0.6)
     bins = ("3E8EDE", "4CAF50", "F2C230", "E8463C")
-    for k, (x, y) in enumerate(((-S - 1.8, -S - 1.8), (S + 1.8, -S - 1.8), (S + 1.8, S + 1.8), (-S - 1.8, S + 1.8))):
-        p.append(box(bins[k], loc=(x, y, base + 1.1), size=(1.6, 1.6, 2.2), bevel=0.15))
-        p.append(box(bins[k], loc=(x, y, base + 2.35), size=(1.8, 1.8, 0.3), bevel=0.1))
-        p.append(box(cream, loc=(x, y - 0.81, base + 1.3), size=(0.8, 0.05, 0.8)))
+    low = 0.6
+    d = S + 2.4
+    for k, (x, y) in enumerate(((-d, -d), (d, -d), (d, d), (-d, d))):
+        p.append(box(bins[k], loc=(x, y, low + 1.1), size=(1.6, 1.6, 2.2), bevel=0.15))
+        p.append(box(bins[k], loc=(x, y, low + 2.35), size=(1.8, 1.8, 0.3), bevel=0.1))
+        p.append(box(cream, loc=(x, y - 0.81, low + 1.3), size=(0.8, 0.05, 0.8)))
     # blank sign board over the front, on two short posts above the beam
     for x in (-3.5, 3.5):
         p.append(box(WOOD_DARK, loc=(x, -S - 1.0, top + 0.75), size=(0.4, 1.1, 0.4), bevel=0.05))
