@@ -60,9 +60,12 @@ end
 local function nameTag(head: BasePart)
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "NameTag"
-	gui.Size = UDim2.fromOffset(200, 50)
-	gui.StudsOffsetWorldSpace = Vector3.new(0, 2.4, 0)
-	gui.MaxDistance = 80
+	-- Sized in studs so it shrinks with distance like a real sign (a fixed pixel size was
+	-- huge up close), and drawn on top so the stall roof doesn't cut through it.
+	gui.Size = UDim2.fromScale(4.6, 1.25)
+	gui.StudsOffsetWorldSpace = Vector3.new(0, 1.9, 0)
+	gui.MaxDistance = 45
+	gui.AlwaysOnTop = true
 	gui.LightInfluence = 0
 	gui.Parent = head
 	local title = Instance.new("TextLabel")
@@ -74,7 +77,7 @@ local function nameTag(head: BasePart)
 	title.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
 	title.Parent = gui
 	local stroke = Instance.new("UIStroke")
-	stroke.Thickness = 2.5
+	stroke.Thickness = 2
 	stroke.Color = Color3.fromRGB(23, 25, 30)
 	stroke.Parent = title
 	local sub = title:Clone()

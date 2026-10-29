@@ -333,6 +333,11 @@ local function onChat(player: Player, message: string)
 	end
 end
 
+-- The admin panel runs the same commands as admin chat ("/weather rain", "/night"...).
+function WeatherService:RunCommand(player: Player, message: string)
+	onChat(player, message)
+end
+
 function WeatherService:Init(services)
 	S = services
 end

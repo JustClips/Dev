@@ -29,6 +29,9 @@ local EVENTS: { [string]: number } = {
 	SetAutoSell = 4, -- client: toggle auto sell (Sell Anywhere pass)
 	DumpTick = 0, -- server -> owner: (cash, bagLeft 0-1) a bit of the bag poured into a leaf dump
 	SetSetting = 6, -- client: ("Music" | "Sfx", 0-1) volume sliders, saved
+	Broadcast = 0, -- server -> all: admin announcement { Text, From, Seconds }
+	Poll = 0, -- server -> all: the running admin poll (or nil when it's gone)
+	PollVote = 4, -- client: (option index) vote in the running poll
 }
 
 local FUNCTIONS: { [string]: number } = {
@@ -46,6 +49,7 @@ local FUNCTIONS: { [string]: number } = {
 	Teleport = 2, -- ("Base" | "Rocket" | zoneId) -> ok, message
 	Inventory = 10, -- (action, arg?) -> ok, message: see InventoryService ACTIONS
 	Rewards = 6, -- (action, arg?) -> ok, message: see RewardService ACTIONS
+	Admin = 8, -- (action, payload) -> ok, message: admins only, see AdminService
 }
 
 local FOLDER_NAME = "Remotes"

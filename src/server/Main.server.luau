@@ -35,6 +35,7 @@ local ORDER = {
 	"LeaderboardService",
 	"DustBunnyService",
 	"SweepService",
+	"AdminService",
 }
 
 local folder = script.Parent:WaitForChild("Services")
