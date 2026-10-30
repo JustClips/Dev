@@ -196,7 +196,9 @@ local function makeNumberPool()
 		attachment.Name = "Number" .. i
 		attachment.Parent = holder
 		local gui = Instance.new("BillboardGui")
-		gui.Size = UDim2.fromOffset(140, 36)
+		Ui.onScale(function(_, compact)
+			gui.Size = if compact then UDim2.fromOffset(96, 24) else UDim2.fromOffset(140, 36)
+		end)
 		gui.AlwaysOnTop = true
 		gui.LightInfluence = 0
 		gui.Enabled = false

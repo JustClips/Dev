@@ -258,19 +258,59 @@ local function sweepTool(container: Instance?): Tool?
 	return nil
 end
 
-local function toggleTool()
-	local h = humanoid()
-	if not h or h.SeatPart then
+-- Asks the server for a fresh tool in your hands (the same fix as equipping another tool
+-- in Gear and back, which Dev found).
+local rebuilding = false
+local function rebuildTool()
+	if rebuilding then
 		return
 	end
-	if sweepTool(player.Character) then
-		h:UnequipTools()
-	else
-		local tool = sweepTool(player:FindFirstChildOfClass("Backpack"))
-		if tool then
-			h:EquipTool(tool)
-		end
+	rebuilding = true
+	task.spawn(function()
+		pcall(function()
+			Net.func("EquipTool"):InvokeServer()
+		end)
+		rebuilding = false
+	end)
+end
+
+local function usable(tool: Tool?): boolean
+	return tool ~= nil and tool:FindFirstChild("Handle") ~= nil
+end
+
+local function toggleTool()
+	local h = humanoid()
+	local character = player.Character
+	if not h or not character or h.SeatPart or h.Health <= 0 then
+		return
 	end
+	local held = sweepTool(character)
+	if held then
+		if usable(held) then
+			h:UnequipTools()
+		else
+			rebuildTool() -- in your hands but broken (no Handle)
+		end
+		return
+	end
+	local tool = sweepTool(player:FindFirstChildOfClass("Backpack"))
+	if not usable(tool) then
+		rebuildTool() -- missing or broken
+		return
+	end
+	h:EquipTool(tool :: Tool)
+	-- If it didn't make it into your hands (the server swapped the tool at the same moment),
+	-- get a fresh one.
+	task.delay(0.6, function()
+		if player.Character == character and not sweepTool(character) and not h.SeatPart and h.Health > 0 then
+			local again = sweepTool(player:FindFirstChildOfClass("Backpack"))
+			if again ~= tool or not usable(again) then
+				rebuildTool()
+			elseif again then
+				h:EquipTool(again)
+			end
+		end
+	end)
 end
 
 local function toggleCar()

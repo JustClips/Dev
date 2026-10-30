@@ -238,7 +238,10 @@ local fadeTweens: { Tween } = {}
 local function makeCounter()
 	counter = Instance.new("BillboardGui")
 	counter.Name = "CoinCounter"
-	counter.Size = UDim2.fromOffset(240, 64)
+	-- Pixel-sized, so phones get a smaller one (Dev: it was huge on a phone screen).
+	Ui.onScale(function(_, compact)
+		counter.Size = if compact then UDim2.fromOffset(120, 30) else UDim2.fromOffset(200, 52)
+	end)
 	counter.StudsOffset = Vector3.new(0, 4.2, 0)
 	counter.AlwaysOnTop = true
 	counter.LightInfluence = 0

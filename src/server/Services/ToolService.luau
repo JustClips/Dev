@@ -215,7 +215,27 @@ local function buildTool(def): Tool
 	return tool
 end
 
-local function giveTool(player: Player, equip: boolean)
+local giveTool: (Player, boolean) -> ()
+
+-- A tool whose Handle is gone can't be held again (RequiresHandle), and pressing 1 then
+-- does nothing until another tool is equipped (Dev, 2026-10-30). That happens when the
+-- grip wasn't made yet (equipped while the avatar was still loading) and the loose tool
+-- falls out of the world. Rebuild it as soon as the Handle goes.
+local function watchHandle(player: Player, tool: Tool)
+	local handle = tool:FindFirstChild("Handle")
+	if not handle then
+		return
+	end
+	handle.AncestryChanged:Connect(function()
+		if handle:IsDescendantOf(tool) or tool:GetAttribute("Retired") or not tool.Parent or not player.Parent then
+			return
+		end
+		local wasHeld = player.Character ~= nil and tool.Parent == player.Character
+		task.defer(giveTool, player, wasHeld)
+	end)
+end
+
+function giveTool(player: Player, equip: boolean)
 	local character = player.Character
 	local backpack = player:FindFirstChildOfClass("Backpack")
 	if not character or not backpack then
@@ -224,6 +244,7 @@ local function giveTool(player: Player, equip: boolean)
 	for _, container in { backpack, character } do
 		for _, child in container:GetChildren() do
 			if child:IsA("Tool") and child:GetAttribute("SweepTool") then
+				child:SetAttribute("Retired", true)
 				child:Destroy()
 			end
 		end
@@ -231,10 +252,26 @@ local function giveTool(player: Player, equip: boolean)
 	local def = Tools.get(ToolService:GetEffectiveTier(player))
 	local tool = buildTool(def)
 	tool.Parent = backpack
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if equip and humanoid then
-		humanoid:EquipTool(tool)
+	watchHandle(player, tool)
+	if not equip then
+		return
 	end
+	-- Equip once the body is in the world with its right hand, so the grip weld gets made.
+	task.spawn(function()
+		local deadline = os.clock() + 10
+		while os.clock() < deadline do
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			local hand = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
+			if humanoid and hand and character:IsDescendantOf(Workspace) then
+				break
+			end
+			task.wait(0.1)
+		end
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid and humanoid.Health > 0 and tool.Parent == backpack and player.Character == character then
+			humanoid:EquipTool(tool)
+		end
+	end)
 end
 
 local function destroyVehicle(player: Player)
