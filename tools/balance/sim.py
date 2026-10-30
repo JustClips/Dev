@@ -159,7 +159,13 @@ def _rarities():
     muts = [r for r in _entries("Eggs.luau", "Chance") if r.get("Chance", 0) > 0 and not r.get("WeatherOnly")]
     text = (CFG / "Eggs.luau").read_text()
     fh = float(re.search(r"FasterHatchMult\s*=\s*([\d.]+)", text).group(1))
-    return rar, muts, fh
+    odds = {}
+    for key in ("Up", "Down"):
+        m = re.search(key + r"\s*=\s*\{([^}]*)\}", text)
+        odds[key] = [float(x) for x in re.findall(r"[\d.]+", m.group(1))] if m else []
+    m = re.search(r"UpCap\s*=\s*([\d.]+)", text)
+    odds["UpCap"] = float(m.group(1)) if m else 100.0
+    return rar, muts, fh, odds
 
 
 def _products():
@@ -204,7 +210,7 @@ class Config:
         self.upgrades = _upgrades()
         self.up_by_id = {u["Id"]: u for u in self.upgrades}
         self.trees = {u["Opens"]: u["Id"] for u in self.upgrades if u.get("Opens")}
-        self.rarities, self.mutations, self.faster_hatch = _rarities()
+        self.rarities, self.mutations, self.faster_hatch, self.hatch_odds = _rarities()
         self.rorder = {r["Name"]: r["Order"] for r in self.rarities}
         self.rhatch = {r["Name"]: r["HatchSeconds"] for r in self.rarities}
         self.aliens, self.huge_chance, self.huge_mult = _aliens()
@@ -298,6 +304,7 @@ class Player:
         for p in self.passes:
             self.robux += {"Cash2x": 99, "AutoSweep": 149, "ExtraSlots": 199, "Carry3": 129, "VIP": 249,
                            "FasterHatch": 229, "SellAnywhere": 199}[p]
+        self.paid_cosmic = sp.cosmic_eggs  # Robux eggs always hatch their own rarity
         if sp.cosmic_eggs:
             for _ in range(sp.cosmic_eggs):
                 self.queue.append((7, "Cosmic", "Landing"))
@@ -432,8 +439,39 @@ class Player:
                 return name
         return opts[-1][0]
 
+    def pet_rarity(self, egg: str) -> str:
+        """Any egg can hatch any rarity (Eggs.hatchOdds / rollPetRarity in Config/Eggs)."""
+        c, odds = self.c, self.c.hatch_odds
+        if egg == "Cosmic" and self.paid_cosmic > 0:
+            self.paid_cosmic -= 1
+            return egg
+        names = [r["Name"] for r in sorted(c.rarities, key=lambda r: r["Order"])]
+        e = int(c.rorder[egg])  # 1-based
+        hatch_luck = self.sp.server_luck * (2 if self.boost("Luck2x") else 1)
+        boost = max(1.0, hatch_luck) ** 0.5
+        p = [0.0] * len(names)
+        for k in range(1, len(names) - e + 1):
+            p[e - 1 + k] = (odds["Up"][k - 1] if k - 1 < len(odds["Up"]) else 0) * boost
+        up = sum(p)
+        if up > odds["UpCap"]:
+            p = [x * odds["UpCap"] / up for x in p]
+            up = odds["UpCap"]
+        down = 0.0
+        for k in range(1, min(e - 1, len(odds["Down"])) + 1):
+            p[e - 1 - k] = odds["Down"][k - 1]
+            down += p[e - 1 - k]
+        p[e - 1] = 100 - up - down
+        roll = self.rng.random() * 100
+        for name, chance in zip(names, p):
+            roll -= chance
+            if roll < 0:
+                return name
+        return egg
+
     def hatch(self, rarity: str, zone: str):
         c, rng = self.c, self.rng
+        if c.hatch_odds["Up"]:
+            rarity = self.pet_rarity(rarity)
         pool = c.pools.get(zone, {}).get(rarity) or c.pools["Landing"].get(rarity) or c.pools["Landing"]["Common"]
         d = rng.choice(pool)
         luck = self.luck()

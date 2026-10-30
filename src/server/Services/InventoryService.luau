@@ -57,7 +57,8 @@ function InventoryService:EggCount(player: Player): number
 end
 
 -- Adds an egg to the inventory. force = true ignores the bag limit (purchases).
-function InventoryService:AddEgg(player: Player, rarity: string, zone: string?, force: boolean?): boolean
+-- paid: bought with Robux, so it always hatches its own rarity (Eggs.rollPetRarity is skipped).
+function InventoryService:AddEgg(player: Player, rarity: string, zone: string?, force: boolean?, paid: boolean?): boolean
 	local data = S.DataService:GetData(player)
 	if not data or not Eggs.ByName[rarity] then
 		return false
@@ -67,7 +68,7 @@ function InventoryService:AddEgg(player: Player, rarity: string, zone: string?, 
 	end
 	local luck = S.BoostService:GetServerLuck() * S.BoostService:GetPersonalLuck(player)
 	local size, weight = Weights.rollEgg(rng, rarity, luck)
-	data.Eggs[S.DataService:NewUid(data, "e")] = { Rarity = rarity, Zone = zone or "Landing", Weight = weight, Size = size }
+	data.Eggs[S.DataService:NewUid(data, "e")] = { Rarity = rarity, Zone = zone or "Landing", Weight = weight, Size = size, Paid = if paid then true else nil }
 	InventoryService:Touch(player)
 	return true
 end

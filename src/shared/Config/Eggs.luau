@@ -54,6 +54,61 @@ function Eggs.order(rarity: string): number
 	return if def then def.Order else 0
 end
 
+-- Any egg can hatch any rarity (Dev, 2026-10-30). The egg's rarity is the most likely
+-- result; it can step up (rarer the further) or drop up to 3 tiers. Chances are % per
+-- tiers moved. A Common egg hatches a Cosmic 1 in 1,000,000 times.
+Eggs.HatchOdds = {
+	Up = { 5, 0.5, 0.06, 0.006, 0.0008, 0.0001 }, -- 1, 2, ... 6 tiers up
+	Down = { 10, 3, 1 }, -- 1, 2, 3 tiers down (never further)
+	UpCap = 40, -- with luck, step-ups never take more than this %
+}
+
+-- Chance (%) of each pet rarity from an egg, by rarity order. Luck (1 = none) multiplies
+-- every step-up by sqrt(luck): luck already counted once when the egg was found.
+-- noDrop removes the drops (used after a drop on Mythic and Cosmic eggs).
+function Eggs.hatchOdds(eggRarity: string, luck: number?, noDrop: boolean?): { number }
+	local e = Eggs.order(eggRarity)
+	local odds = table.create(#Rarities, 0)
+	if e == 0 then
+		odds[1] = 100
+		return odds
+	end
+	local boost = math.sqrt(math.max(1, luck or 1))
+	local up = 0
+	for k = 1, #Rarities - e do
+		odds[e + k] = (Eggs.HatchOdds.Up[k] or 0) * boost
+		up += odds[e + k]
+	end
+	if up > Eggs.HatchOdds.UpCap then
+		for k = e + 1, #Rarities do
+			odds[k] *= Eggs.HatchOdds.UpCap / up
+		end
+		up = Eggs.HatchOdds.UpCap
+	end
+	local down = 0
+	if not noDrop then
+		for k = 1, math.min(e - 1, #Eggs.HatchOdds.Down) do
+			odds[e - k] = Eggs.HatchOdds.Down[k]
+			down += odds[e - k]
+		end
+	end
+	odds[e] = 100 - up - down
+	return odds
+end
+
+-- Rolls the pet rarity inside an egg.
+function Eggs.rollPetRarity(rng: Random, eggRarity: string, luck: number?, noDrop: boolean?): string
+	local odds = Eggs.hatchOdds(eggRarity, luck, noDrop)
+	local roll = rng:NextNumber() * 100
+	for i, chance in odds do
+		roll -= chance
+		if roll < 0 then
+			return Rarities[i].Name
+		end
+	end
+	return if Eggs.ByName[eggRarity] then eggRarity else "Common"
+end
+
 -- Growing eggs start small and grow until they're ready to open.
 Eggs.StartScale = 0.4
 

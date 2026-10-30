@@ -139,6 +139,7 @@ function HatchService:PlaceEgg(player: Player, uid: string, position: Vector3?):
 		Z = z,
 		Weight = egg.Weight,
 		Size = egg.Size,
+		Paid = egg.Paid,
 		StartsAt = os.time(),
 		EndsAt = os.time() + seconds,
 	})
@@ -208,9 +209,19 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	end
 	table.remove(data.Hatching, index)
 
-	local pool = Aliens.pool(entry.Zone, entry.Rarity)
-	local def = pool[rng:NextInteger(1, #pool)]
 	local luck = S.BoostService:GetServerLuck() * S.BoostService:GetPersonalLuck(player)
+	-- Any egg can hatch any rarity (Eggs.hatchOdds), rolled now so luck at opening counts.
+	-- Robux eggs always hatch their own rarity. Mythic and Cosmic eggs never drop twice in a row.
+	local high = Eggs.order(entry.Rarity) >= Eggs.order("Mythic")
+	local petRarity = if entry.Paid
+		then entry.Rarity
+		else Eggs.rollPetRarity(rng, entry.Rarity, luck, high and data.Flags.HighEggDropped == true)
+	local dropped = Eggs.order(petRarity) < Eggs.order(entry.Rarity)
+	if high then
+		data.Flags.HighEggDropped = if dropped then true else nil
+	end
+	local pool = Aliens.pool(entry.Zone, petRarity)
+	local def = pool[rng:NextInteger(1, #pool)]
 	-- An egg the weather upgraded while it grew hatches with that mutation.
 	local mutation = entry.Mutation or rollMutation(luck)
 	local huge = rng:NextNumber() < math.min(1, Aliens.HugeChance * luck * S.WeatherService:GetHugeMult() * S.AdminService:Mult("Huge"))
@@ -218,6 +229,11 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	data.Index[def.Id] = true
 	local petUid = S.DataService:NewUid(data, "p")
 	local weight = Weights.rollPet(rng, def.Rarity, entry.Rarity, entry.Weight)
+	if dropped then
+		-- A pet that dropped below its egg is at least Big.
+		local kg = Weights.petKg(def.Rarity)
+		weight = math.max(weight, math.floor(kg * rng:NextNumber(1.2, 1.5) * 100 + 0.5) / 100)
+	end
 	local pet = { Id = def.Id, Mutation = mutation, Huge = if huge then true else nil, Weight = weight }
 	data.Pets[petUid] = pet
 	data.Stats.Hatches += 1
@@ -264,7 +280,11 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 			end
 		end
 	end
-	if huge or mutation or Eggs.order(def.Rarity) >= Eggs.order("Mythic") then
+	-- 3+ tiers above the egg: the whole server hears about it, the hatcher included.
+	local jackpot = Eggs.order(def.Rarity) - Eggs.order(entry.Rarity) >= 3
+	if jackpot then
+		Net.fireAll("Announce", `{player.DisplayName} hatched a {string.upper(def.Rarity)} {def.Name} from a {entry.Rarity} egg!`, "Hatch")
+	elseif huge or mutation or Eggs.order(def.Rarity) >= Eggs.order("Mythic") then
 		local label = (if huge then "HUGE " else "") .. (if mutation then Eggs.MutationByName[mutation].Label .. " " else "")
 		-- Everyone else hears about it; the hatcher already sees their own reveal.
 		for _, other in Players:GetPlayers() do

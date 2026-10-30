@@ -194,6 +194,7 @@ export type EggInstance = {
 	Zone: string, -- where it was found: decides which pets it can hatch
 	Weight: number?, -- kg; bigger eggs hatch heavier pets (Config/Weights)
 	Size: string?, -- size class: Normal, Big, Heavy, Giant, Colossal
+	Paid: boolean?, -- bought with Robux: always hatches its own rarity
 }
 
 -- An egg placed in an incubator on your base. Ready to open once EndsAt has passed.
@@ -209,6 +210,7 @@ export type HatchEntry = {
 	StartsAt: number?, -- when it was put down (the egg grows from then until EndsAt)
 	EndsAt: number,
 	Mutation: Mutation?, -- picked up from the weather while growing; the pet keeps it
+	Paid: boolean?, -- bought with Robux: always hatches its own rarity
 }
 
 export type ProfileData = {

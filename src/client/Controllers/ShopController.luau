@@ -218,7 +218,7 @@ end
 local function eggItems(data): { Item }
 	local items: { Item } = {}
 	for _, key in { "CosmicEgg1", "CosmicEgg3" } do
-		local item = robuxItem(key, "Hatches Cosmo the Infinite, the event pet!", "Icon_Egg")
+		local item = robuxItem(key, "Guaranteed Cosmic pet from your best zone!", "Icon_Egg")
 		if item then
 			table.insert(items, item)
 		end

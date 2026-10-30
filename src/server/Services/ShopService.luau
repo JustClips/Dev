@@ -110,7 +110,7 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 		data.Flags.StarterPackBought = true
 		S.BackpackService:GiveCash(recipient, pack.Cash, "StarterPack", Enum.AnalyticsEconomyTransactionType.IAP)
 		S.BoostService:AddPersonalBoost(recipient, "Cash2x", pack.Cash2xMinutes)
-		S.InventoryService:AddEgg(recipient, pack.EggRarity, "Landing", true)
+		S.InventoryService:AddEgg(recipient, pack.EggRarity, "Landing", true, true)
 		notify(recipient, `Starter Pack: cash, an {pack.EggRarity} egg (in your bag) and {pack.Cash2xMinutes} min of 2x cash!`)
 	end,
 	ServerLuck = function(product, buyer)
@@ -138,7 +138,7 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 			end
 		end
 		for _ = 1, product.Count or 1 do
-			S.InventoryService:AddEgg(recipient, product.Rarity, zone, true)
+			S.InventoryService:AddEgg(recipient, product.Rarity, zone, true, true)
 		end
 		notify(recipient, `{product.Name} added to your bag!`)
 	end,
