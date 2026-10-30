@@ -135,10 +135,8 @@ local function pickup(player: Player, egg: BasePart)
 		return
 	end
 	local owner = egg:GetAttribute("OwnerUserId")
-	local freeAt = egg:GetAttribute("FreeAt") or 0
-	if owner and owner ~= player.UserId and os.time() < freeAt then
-		Net.fire("Notify", player, `Not yours yet! Free in {math.max(1, freeAt - os.time())}s.`, "Bad")
-		return
+	if owner and owner ~= player.UserId then
+		return -- someone else's find (their client is the only one that shows it)
 	end
 	local carried = table.clone(session.Runtime.Carried or {})
 	if #carried >= EggService:GetCarryLimit(player) then
@@ -160,9 +158,78 @@ local function pickup(player: Player, egg: BasePart)
 	Net.fire("Notify", player, `Picked up a {rarity} egg! Bring it to your base.`, "Egg")
 end
 
--- Spawns a physical egg. owner gets it exclusively for EggOwnerSeconds. zone decides which
--- pet set it hatches from (defaults to the zone under the egg).
+-- Eggs on the ground, oldest first, so there's a cap on how many lie around (Dev: an Egg
+-- Rain littered the whole field).
+local ground: { { egg: BasePart, owner: number? } } = {}
+
+local function makeRoom(owner: Player?)
+	local function removeAt(i: number)
+		local entry = table.remove(ground, i)
+		if entry and entry.egg.Parent then
+			entry.egg:Destroy()
+		end
+	end
+	if owner then
+		local mine = 0
+		for _, entry in ground do
+			if entry.owner == owner.UserId then
+				mine += 1
+			end
+		end
+		if mine >= Economy.MaxGroundEggsPerPlayer then
+			for i, entry in ground do
+				if entry.owner == owner.UserId then
+					removeAt(i)
+					break
+				end
+			end
+		end
+	end
+	while #ground >= Economy.MaxGroundEggs do
+		-- Oldest Egg Rain egg first, then the oldest of all.
+		local pick = 1
+		for i, entry in ground do
+			if entry.owner == nil then
+				pick = i
+				break
+			end
+		end
+		removeAt(pick)
+	end
+end
+
+-- Rare and better eggs get a beam of light in their colour, taller for rarer eggs, so you
+-- can tell what's lying around from far away. One neon part each: cheap on phones.
+local BEAM_FROM = Eggs.order("Rare")
+
+local function addBeam(egg: BasePart, base: Vector3, def)
+	if def.Order < BEAM_FROM then
+		return
+	end
+	local step = def.Order - BEAM_FROM
+	local height = 14 + step * 8
+	local width = 0.6 + step * 0.18
+	local beam = Instance.new("Part")
+	beam.Name = "Beam"
+	beam.Shape = Enum.PartType.Cylinder
+	beam.Size = Vector3.new(height, width, width)
+	beam.CFrame = CFrame.new(base + Vector3.new(0, height / 2, 0)) * CFrame.Angles(0, 0, math.pi / 2)
+	beam.Material = Enum.Material.Neon
+	beam.Color = def.Color
+	beam.Transparency = 0.45
+	beam.Anchored = true
+	beam.CanCollide = false
+	beam.CanQuery = false
+	beam.CanTouch = false
+	beam.CastShadow = false
+	beam.Parent = egg
+end
+
+-- Spawns a physical egg. With an owner it's their find: only they see it and can pick it
+-- up (EggLabelController hides it for everyone else). zone decides which pet set it
+-- hatches from (defaults to the zone under the egg).
 function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, zone: string?): BasePart
+	makeRoom(owner)
 	local def = Eggs.ByName[rarity]
 	local zoneDef = Zones.ById[zone or ""] or Grid.zoneAt(position)
 	local zoneId = if zoneDef then zoneDef.Id else "Landing"
@@ -226,18 +293,13 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 	label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
 	label.TextColor3 = def.Color
 	label.TextStrokeTransparency = 0.2
-	label.Text = if owner then `{title}\n{owner.DisplayName}'s` else title
+	label.Text = title
 	label.Parent = billboard
 	billboard.Parent = egg
+	addBeam(egg, position, def)
 
 	if owner then
 		egg:SetAttribute("OwnerUserId", owner.UserId)
-		egg:SetAttribute("FreeAt", os.time() + Economy.EggOwnerSeconds)
-		task.delay(Economy.EggOwnerSeconds, function()
-			if egg.Parent then
-				label.Text = `{title}\nFree!`
-			end
-		end)
 	end
 
 	-- Picked up on purpose: walk up to it and hold the prompt (E, or press and hold on touch).
@@ -254,7 +316,15 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 		pickup(player, egg)
 	end)
 	egg.Parent = eggFolder
-	task.delay(Economy.EggDespawnSeconds, function()
+	local entry = { egg = egg, owner = if owner then owner.UserId else nil }
+	table.insert(ground, entry)
+	egg.Destroying:Connect(function()
+		local i = table.find(ground, entry)
+		if i then
+			table.remove(ground, i)
+		end
+	end)
+	task.delay(if owner then Economy.EggDespawnSeconds else Economy.EggRainDespawnSeconds, function()
 		if egg.Parent then
 			egg:Destroy()
 		end

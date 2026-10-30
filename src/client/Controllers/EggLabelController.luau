@@ -3,6 +3,8 @@
 -- every label at once was a wall of text (Dev), so only a few show: the eggs closest to
 -- you, plus rare ones (Epic and up) a bit further out. The server makes every label
 -- hidden; this turns the chosen ones on, four times a second.
+-- Eggs other players found are theirs alone (like the leaves): they're taken out of this
+-- client's world, so you only see your own finds and the shared Egg Rain eggs.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -68,6 +70,20 @@ function EggLabelController:Start()
 		if not folder then
 			return
 		end
+		local me = Players.LocalPlayer.UserId
+		local function hideOthers(egg: Instance)
+			local owner = egg:GetAttribute("OwnerUserId")
+			if type(owner) == "number" and owner ~= me then
+				-- Local only: the server still owns it and removes it as usual.
+				egg.Parent = nil
+			end
+		end
+		for _, egg in folder:GetChildren() do
+			hideOthers(egg)
+		end
+		folder.ChildAdded:Connect(function(egg)
+			task.defer(hideOthers, egg)
+		end)
 		while true do
 			update(folder)
 			task.wait(0.25)
