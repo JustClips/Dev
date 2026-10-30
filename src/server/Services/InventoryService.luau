@@ -96,6 +96,7 @@ function InventoryService:PlacePet(player: Player, uid: string): (boolean, strin
 		return false, "That pet is gone"
 	end
 	if pet.Placed then
+		InventoryService:DropHeldIfGone(player)
 		return true, nil
 	end
 	local slots = S.AlienService:GetSlotCount(player)
