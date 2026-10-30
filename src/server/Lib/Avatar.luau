@@ -12,6 +12,9 @@ local Avatar = {}
 
 Avatar.PlayerGroup = "Players"
 Avatar.VehicleGroup = "Vehicles"
+-- A seated driver touches nothing: their legs poke through low cab floors, and dragging
+-- them on the ground stopped trucks from driving (Dev, 2026-10-30).
+Avatar.DriverGroup = "Drivers"
 
 -- Largest value allowed for each HumanoidDescription scale.
 local MAX_SCALE = {
@@ -25,7 +28,7 @@ local MAX_SCALE = {
 
 function Avatar.setupGroups()
 	pcall(function()
-		for _, group in { Avatar.PlayerGroup, Avatar.VehicleGroup } do
+		for _, group in { Avatar.PlayerGroup, Avatar.VehicleGroup, Avatar.DriverGroup } do
 			if not PhysicsService:IsCollisionGroupRegistered(group) then
 				PhysicsService:RegisterCollisionGroup(group)
 			end
@@ -33,6 +36,9 @@ function Avatar.setupGroups()
 		PhysicsService:CollisionGroupSetCollidable(Avatar.PlayerGroup, Avatar.PlayerGroup, false)
 		PhysicsService:CollisionGroupSetCollidable(Avatar.PlayerGroup, Avatar.VehicleGroup, false)
 		PhysicsService:CollisionGroupSetCollidable(Avatar.VehicleGroup, Avatar.VehicleGroup, false)
+		for _, other in { "Default", Avatar.PlayerGroup, Avatar.VehicleGroup, Avatar.DriverGroup } do
+			PhysicsService:CollisionGroupSetCollidable(Avatar.DriverGroup, other, false)
+		end
 	end)
 end
 

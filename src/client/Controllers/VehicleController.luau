@@ -111,6 +111,35 @@ rayParams.CollisionGroup = "Vehicles" -- skips players and other cars like the c
 
 local lean = 0
 
+-- Throttle and steer. The VehicleSeat gets them from Roblox's controls, but read the raw
+-- move input too (keyboard, thumbstick, gamepad) in case the seat's values don't come through.
+local controls: any = nil
+local function readInput(seat: VehicleSeat): (number, number)
+	local throttle, steer = seat.ThrottleFloat, seat.SteerFloat
+	if throttle ~= 0 or steer ~= 0 then
+		return throttle, steer
+	end
+	if controls == nil then
+		local scripts = player:FindFirstChild("PlayerScripts")
+		local playerModule = scripts and scripts:FindFirstChild("PlayerModule")
+		if playerModule and playerModule:IsA("ModuleScript") then
+			local ok, module = pcall(function()
+				return (require(playerModule) :: any):GetControls()
+			end)
+			controls = if ok and module then module else false
+		end
+	end
+	if controls then
+		local ok, move = pcall(function()
+			return controls:GetMoveVector()
+		end)
+		if ok and typeof(move) == "Vector3" then
+			return math.clamp(-move.Z, -1, 1), math.clamp(move.X, -1, 1)
+		end
+	end
+	return 0, 0
+end
+
 local function drive(dt: number)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -135,6 +164,7 @@ local function drive(dt: number)
 	local clearance = (chassis:GetAttribute("Clearance") :: number?) or 0.8
 	local half = chassis.Size / 2
 	local maxSpeed = (seat:GetAttribute("Speed") :: number?) or 40
+	local throttleIn, steerIn = readInput(seat)
 
 	-- Suspension: a ray down at each corner.
 	rayParams.FilterDescendantsInstances = { model, character :: Model }
@@ -160,7 +190,7 @@ local function drive(dt: number)
 	local speedFrac = math.clamp(math.abs(forward) / maxSpeed, 0, 1)
 	local steerScale = math.clamp(math.abs(forward) / (maxSpeed * 0.2), 0, 1) * (1 - 0.3 * speedFrac)
 	local direction = if forward < -0.5 then -1 else 1
-	yaw = (yaw :: number) - seat.SteerFloat * TURN_RATE * steerScale * direction * dt
+	yaw = (yaw :: number) - steerIn * TURN_RATE * steerScale * direction * dt
 	heading = CFrame.Angles(0, yaw :: number, 0)
 	local look = heading.LookVector
 	local right = heading.RightVector
@@ -169,7 +199,7 @@ local function drive(dt: number)
 
 	-- Throttle, brakes and coasting (only with wheels on the ground).
 	if grounded then
-		local throttle = seat.ThrottleFloat
+		local throttle = throttleIn
 		local accel = maxSpeed / ACCEL_TIME
 		if throttle ~= 0 then
 			local target = throttle * maxSpeed * (if throttle > 0 then 1 else REVERSE)
@@ -196,7 +226,7 @@ local function drive(dt: number)
 		local tilt = math.acos(math.clamp(n.Y, -1, 1))
 		up = if tilt > MAX_TILT then Vector3.yAxis:Lerp(n, MAX_TILT / tilt).Unit else n
 	end
-	local targetLean = if grounded then seat.SteerFloat * direction * speedFrac * LEAN else 0
+	local targetLean = if grounded then steerIn * direction * speedFrac * LEAN else 0
 	lean += (targetLean - lean) * math.min(1, dt * 6)
 	local r = look:Cross(up).Unit
 	local f = up:Cross(r).Unit

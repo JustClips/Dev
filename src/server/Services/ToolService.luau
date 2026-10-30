@@ -421,10 +421,40 @@ local function spawnVehicle(player: Player, id: string?, atGarage: boolean?): (b
 	if atGarage then
 		character:PivotTo(seat.CFrame * CFrame.new(0, 3, 0))
 	end
+	-- The driver's body collides with nothing while seated (Avatar.DriverGroup).
+	local function driverGroup(group: string)
+		for _, d in character:GetDescendants() do
+			if d:IsA("BasePart") then
+				d.CollisionGroup = group
+			end
+		end
+	end
 	seat:Sit(humanoid)
+	-- Sit can miss right after the car appears (the character is still settling): retry.
+	task.spawn(function()
+		for _ = 1, 6 do
+			task.wait(0.25)
+			if seat.Occupant or not seat.Parent or session.Runtime.Vehicle ~= model then
+				return
+			end
+			if humanoid.Health > 0 and not humanoid.SeatPart then
+				character:PivotTo(seat.CFrame * CFrame.new(0, 3, 0))
+				seat:Sit(humanoid)
+			end
+		end
+		if not seat.Occupant and session.Runtime.Vehicle == model then
+			destroyVehicle(player) -- never got in: don't leave an empty car behind
+		end
+	end)
+	if seat.Occupant then
+		driverGroup(Avatar.DriverGroup)
+	end
 	-- Leaving the seat puts the vehicle away.
 	seat:GetPropertyChangedSignal("Occupant"):Connect(function()
 		S.StateService:Mark(player)
+		if character.Parent then
+			driverGroup(if seat.Occupant == humanoid then Avatar.DriverGroup else Avatar.PlayerGroup)
+		end
 		if seat.Occupant == nil then
 			task.delay(1, function()
 				if seat.Occupant == nil and session.Runtime.Vehicle == model then
