@@ -145,6 +145,16 @@ local function screenPoint(): Vector2
 	if pointer then
 		return pointer
 	end
+	-- Controller: aim a few studs in front of you.
+	if Ui.gamepad() then
+		local camera = Workspace.CurrentCamera
+		local character = Players.LocalPlayer.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if camera and root then
+			local at = camera:WorldToViewportPoint(root.Position + root.CFrame.LookVector * 6 - Vector3.new(0, 2.5, 0))
+			return Vector2.new(at.X, at.Y)
+		end
+	end
 	return UserInputService:GetMouseLocation()
 end
 
@@ -171,7 +181,10 @@ local function update()
 	if far then
 		titleLabel.Text = "Go to your base to place it"
 	else
-		titleLabel.Text = if UserInputService.TouchEnabled then "Tap a spot in your pet park" else "Click a spot in your pet park"
+		titleLabel.Text = if Ui.gamepad()
+			then "Face a green spot and press R2"
+			elseif UserInputService.TouchEnabled then "Tap a spot in your pet park"
+			else "Click a spot in your pet park"
 	end
 
 	-- Where the pointer meets the park floor. A flat plane instead of a raycast, so props,
@@ -279,7 +292,7 @@ function PlacementController:HoldPet(uid: string)
 	ModelView.show(modelView, AssetLibrary.alien(pet.Id, pet.Mutation), "Alien_" .. pet.Id)
 	goBase.Visible = false
 	placePet.Visible = false -- tap anywhere at your base instead (Dev)
-	Ui.setText(cancelButton, "Put away (Q)")
+	Ui.setText(cancelButton, if Ui.gamepad() then "Put away (B)" else "Put away (Q)")
 	gui.Enabled = true
 	Ui.popIn(gui)
 	refreshBag()
@@ -335,7 +348,7 @@ function PlacementController:Hold(uid: string)
 		heldPet = nil -- the server swaps the pet for the egg
 		placePet.Visible = false
 	end
-	Ui.setText(cancelButton, "Cancel (Q)")
+	Ui.setText(cancelButton, if Ui.gamepad() then "Cancel (B)" else "Cancel (Q)")
 	holding = uid
 	makeGhost(egg)
 	local left = 0
@@ -450,7 +463,9 @@ function PlacementController:Start()
 			task.wait(0.3)
 			if heldPet and not holding and gui.Enabled then
 				local near = nearBase()
-				titleLabel.Text = if near then "Tap anywhere to let it out!" else "Take it to your base"
+				titleLabel.Text = if not near then "Take it to your base"
+					elseif Ui.gamepad() then "Press R2 to let it out!"
+					else "Tap anywhere to let it out!"
 				goBase.Visible = not near
 			end
 		end
@@ -460,12 +475,13 @@ function PlacementController:Start()
 		Net.func("Teleport"):InvokeServer("Base")
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
-		if heldPet and not holding and (input.KeyCode == Enum.KeyCode.Q or input.KeyCode == Enum.KeyCode.Backspace) then
+		local cancel = input.KeyCode == Enum.KeyCode.Q or input.KeyCode == Enum.KeyCode.Backspace or (input.KeyCode == Enum.KeyCode.ButtonB and not Ui.anyWindowOpen())
+		if heldPet and not holding and cancel then
 			stopPet()
 			return
 		end
 		if heldPet and not holding and not processed then
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.KeyCode == Enum.KeyCode.ButtonR2 then
 				task.spawn(releasePet)
 			elseif input.UserInputType == Enum.UserInputType.Touch then
 				petTouch = Vector2.new(input.Position.X, input.Position.Y)
@@ -475,14 +491,14 @@ function PlacementController:Start()
 		if not holding then
 			return
 		end
-		if input.KeyCode == Enum.KeyCode.Q or input.KeyCode == Enum.KeyCode.Backspace then
+		if cancel then
 			PlacementController:Stop()
 			return
 		end
 		if processed then
 			return
 		end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.KeyCode == Enum.KeyCode.ButtonR2 then
 			pointer = nil
 			place()
 		elseif input.UserInputType == Enum.UserInputType.Touch then

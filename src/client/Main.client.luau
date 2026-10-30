@@ -55,6 +55,7 @@ local ORDER = {
 	"SpinController",
 	"BroadcastController",
 	"AdminController",
+	"GamepadController",
 }
 
 local folder = Client:WaitForChild("Controllers")

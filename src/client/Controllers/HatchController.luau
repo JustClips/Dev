@@ -240,7 +240,7 @@ local function showCard(info)
 	local hex = class.Color:ToHex()
 	infoLabel.Text = `<font color="#{hex}">{Weights.format(weight)} ({class.Name})</font>   +{Format.cash(income)}/s`
 	newBadge.Visible = info.IsNew == true
-	hintLabel.Text = if UserInputService.TouchEnabled then "Tap to skip" else "Click to skip"
+	hintLabel.Text = if Ui.gamepad() then "Press A to skip" elseif UserInputService.TouchEnabled then "Tap to skip" else "Click to skip"
 	hintLabel.Visible = true
 	card.Visible = true
 	cardScale.Scale = Ui.scale() * 0.6
@@ -1339,7 +1339,9 @@ function HatchController:Start()
 		pump()
 	end)
 	UserInputService.InputBegan:Connect(function(input)
-		if playing and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+		local kind = input.UserInputType
+		local pad = input.KeyCode == Enum.KeyCode.ButtonA or input.KeyCode == Enum.KeyCode.ButtonB or input.KeyCode == Enum.KeyCode.ButtonR2
+		if playing and (kind == Enum.UserInputType.MouseButton1 or kind == Enum.UserInputType.Touch or pad) then
 			skipRequested = true
 		end
 	end)
