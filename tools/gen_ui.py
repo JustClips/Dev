@@ -841,7 +841,7 @@ def base_panels():
         autoscale(compact=0.88),
         side_button("EggsButton", "Eggs", "Egg", DANGER, 1),
         side_button("PetsButton", "Pets", "Alien", "#FF9A3C", 2),
-        side_button("ToolsButton", "Gear", "Tool", "#4C8DFF", 3),
+        side_button("ToolsButton", "Gear", "Tools", "#4C8DFF", 3),
     ])
     write("BasePanels", screen([buttons], order=4))
     head = dict(size=U(0, 132, 0, 40), pos=U(1, -50, 0, 28), anchor=(1, 0.5))
@@ -1305,7 +1305,7 @@ def garage():
     hint = text("Hint", "", U(1, -260, 0, 44), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True, xa="Left")
     go = button("GoGarage", U(0, 230, 0, 48), U(1, -14, 1, -10), (1, 1), color=SUCCESS, label="Go to Garage", ts=20,
                 ico="Base", ico_px=32)
-    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Gear", "Tool", [tabs, lst, hint, go], header="#4C8DFF")],
+    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Gear", "Tools", [tabs, lst, hint, go], header="#4C8DFF")],
                            order=10, enabled=False))
 
 

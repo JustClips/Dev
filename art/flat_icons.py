@@ -801,7 +801,7 @@ def _turbovac():
     return out
 
 
-@fit_icon("Gear")
+@fit_icon("Tools")  # the Gear button / window
 def _gear():
     wrench = [
         rect(228, 120, 56, 360, STEEL, r=28),
