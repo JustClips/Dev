@@ -167,6 +167,19 @@ local function bindSlider(key: string, row: Frame)
 			setFrom(input.Position.X)
 		end
 	end)
+	-- Controller: with the bar selected, d-pad left / right turns it down / up.
+	hit.NextSelectionLeft = hit
+	hit.NextSelectionRight = hit
+	UserInputService.InputBegan:Connect(function(input)
+		if GuiService.SelectedObject ~= hit then
+			return
+		end
+		if input.KeyCode == Enum.KeyCode.DPadLeft then
+			setVolume(key, volumes[key] - 0.1)
+		elseif input.KeyCode == Enum.KeyCode.DPadRight then
+			setVolume(key, volumes[key] + 0.1)
+		end
+	end)
 	Ui.button(row:FindFirstChild("Mute") :: GuiButton, function()
 		if volumes[key] > 0 then
 			setVolume(key, 0)

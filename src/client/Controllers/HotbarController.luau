@@ -339,6 +339,64 @@ local function dropEgg()
 	end
 end
 
+-- Controller LB / RB: the previous / next slot (your tool, then the filled pet and egg
+-- slots), like Roblox's own backpack.
+function HotbarController:Cycle(direction: number)
+	local data = State.data
+	local h = humanoid()
+	if not data or not h or h.SeatPart or h.Health <= 0 then
+		return
+	end
+	local list: { number } = { 0 } -- 0 = the tool, 1-6 = item slots
+	local current = if sweepTool(player.Character) then 1 else nil
+	for i = 1, visibleSlots() do
+		local key = slotKeys[i]
+		local entry = if key ~= "" then BagItems.resolve(data, key) else nil
+		if entry then
+			table.insert(list, i)
+			if BagItems.isHeld(C, data, entry, true) then
+				current = #list
+			end
+		end
+	end
+	local nextIndex = if current then (current - 1 + direction) % #list + 1 elseif direction > 0 then 1 else #list
+	if nextIndex == current then
+		return
+	end
+	local target = list[nextIndex]
+	if target == 0 then
+		toggleTool()
+	else
+		useSlot(target)
+	end
+end
+
+function HotbarController:ToggleCar()
+	task.spawn(toggleCar)
+end
+
+function HotbarController:DropEgg()
+	task.spawn(dropEgg)
+end
+
+-- Key hints on the slots: keyboard keys, or the controller buttons.
+local function keyHints()
+	local pad = Ui.gamepad()
+	local function set(slot: TextButton, keyboard: string, gamepad: string)
+		local label = slot:FindFirstChild("Key") and (slot:FindFirstChild("Key") :: Frame):FindFirstChild("Label") :: TextLabel?
+		if label then
+			label.Text = if pad then gamepad else keyboard
+		end
+	end
+	set(toolSlot, "1", "")
+	set(carSlot, "2", "↑")
+	set(bagSlot, "B", "Y")
+	set(dropSlot, "G", "↓")
+	for i, slot in itemSlots do
+		set(slot, tostring(i + 2), "")
+	end
+end
+
 -- The selected slot gets a thick mint outline instead of the navy one.
 function setSelected(slot: TextButton, on: boolean)
 	local stroke = slot:FindFirstChild("Stroke") :: UIStroke?
@@ -450,6 +508,10 @@ function HotbarController:Start()
 		end
 	end)
 	State.observe(render)
+	keyHints()
+	UserInputService.LastInputTypeChanged:Connect(function()
+		task.defer(keyHints)
+	end)
 	-- Eggs turn ready on their own: refresh the badge now and then.
 	task.spawn(function()
 		while true do

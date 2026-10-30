@@ -7,6 +7,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Sounds = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Sounds"))
@@ -129,6 +130,8 @@ local function pressScale(button: GuiButton): UIScale?
 	return s
 end
 
+local handlers: { [GuiButton]: () -> () } = setmetatable({}, { __mode = "k" }) :: any
+
 -- Activated + press squash, hover pop on PC, click sound.
 function Ui.button(button: GuiButton, fn: () -> ())
 	local scale = pressScale(button)
@@ -153,10 +156,35 @@ function Ui.button(button: GuiButton, fn: () -> ())
 			to(1, POP)
 		end)
 	end
+	handlers[button] = fn
 	button.Activated:Connect(function()
 		Ui.sound("Click")
 		fn()
 	end)
+end
+
+-- What Ui.button runs for a button (GamepadController presses Close buttons with B).
+function Ui.handler(button: GuiButton): (() -> ())?
+	return handlers[button]
+end
+
+-- True while the player plays with a controller (console, or a gamepad on PC/phone).
+local GAMEPADS = {
+	[Enum.UserInputType.Gamepad1] = true,
+	[Enum.UserInputType.Gamepad2] = true,
+	[Enum.UserInputType.Gamepad3] = true,
+	[Enum.UserInputType.Gamepad4] = true,
+}
+local usingGamepad = GuiService:IsTenFootInterface() or GAMEPADS[UserInputService:GetLastInputType()] == true
+UserInputService.LastInputTypeChanged:Connect(function(kind)
+	if GAMEPADS[kind] then
+		usingGamepad = true
+	elseif kind == Enum.UserInputType.Touch or kind == Enum.UserInputType.Keyboard or kind == Enum.UserInputType.MouseButton1 or kind == Enum.UserInputType.MouseMovement then
+		usingGamepad = false
+	end
+end)
+function Ui.gamepad(): boolean
+	return usingGamepad
 end
 
 -- Open/close motion for screens with a "Window" (and optional "Dim" backdrop):
@@ -357,6 +385,17 @@ function Ui.open(name: string)
 	if not Ui.isOpen(gui) then
 		Ui.show(gui)
 	end
+end
+
+-- The open full window's screen, if any.
+function Ui.openModal(): ScreenGui?
+	for _, name in MODALS do
+		local gui = playerGui:FindFirstChild(name) :: ScreenGui?
+		if gui and Ui.isOpen(gui) then
+			return gui
+		end
+	end
+	return nil
 end
 
 -- True while any full window (shop, inventory, panels...) is open.

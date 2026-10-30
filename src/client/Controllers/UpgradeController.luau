@@ -14,6 +14,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
+local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
@@ -280,7 +281,8 @@ local function setTip(id: string?)
 	local state = computeStates(data)[id]
 	local level = data.Upgrades[id] or 0
 	local touch = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
-	local again = if touch then "Tap again to buy" else "Click again to buy"
+	local pad = Ui.gamepad()
+	local again = if pad then "Press A again to buy" elseif touch then "Tap again to buy" else "Click again to buy"
 	tip.Visible = true
 	info.TextColor3 = INFO_GREEN
 	hint.TextColor3 = GOLD_TEXT
@@ -294,7 +296,7 @@ local function setTip(id: string?)
 		desc.Text = Upgrades.description(def, level)
 		local wait = waitsForRebirth(def, data)
 		if def.Opens then
-			info.Text = if level > 0 then "Tap to go inside" else `Unlock for {Format.cash(price(def, data))}`
+			info.Text = if level > 0 then (if pad then "Press A to go inside" else "Tap to go inside") else `Unlock for {Format.cash(price(def, data))}`
 		elseif state == "Rebirth" then
 			info.TextColor3 = RED
 			info.Text = `Rebirth {def.RequiredRebirths} time{if def.RequiredRebirths == 1 then "" else "s"} to open this`
@@ -316,7 +318,7 @@ local function setTip(id: string?)
 			elseif selected == id then
 				hint.Text = again
 			else
-				hint.Text = if touch then "Tap to select" else "Double-click to buy"
+				hint.Text = if pad then "Press A twice to buy" elseif touch then "Tap to select" else "Double-click to buy"
 			end
 		end
 	end
@@ -447,6 +449,15 @@ local function showBoard(treeId: string, flyIn: boolean?)
 	title.Text = if treeId == "Main" then "Upgrades!" else `{Upgrades.Trees[treeId].Name}!`
 	hovered = nil
 	selected = nil
+	-- Controller: start on the board's first hex.
+	if Ui.gamepad() then
+		local first = nodes[Upgrades.Trees[treeId].Root]
+		task.defer(function()
+			if first and first.Visible and gui.Enabled then
+				GuiService.SelectedObject = first
+			end
+		end)
+	end
 	local target = fitZoom()
 	zoom.Scale = target
 	pan = Vector2.zero
@@ -680,9 +691,10 @@ function UpgradeController:Start()
 		local root = nodes[Upgrades.Root]
 		if teaching and root then
 			local touch = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+			local pad = Ui.gamepad()
 			tutorialHint.Text = if selected == Upgrades.Root
-				then (if touch then "Tap it again to buy!" else "Click it again to buy!")
-				else (if touch then "Double-tap Sweep Power to buy it!" else "Double-click Sweep Power to buy it!")
+				then (if pad then "Press A again to buy!" elseif touch then "Tap it again to buy!" else "Click it again to buy!")
+				else (if pad then "Press A twice on Sweep Power to buy it!" elseif touch then "Double-tap Sweep Power to buy it!" else "Double-click Sweep Power to buy it!")
 			local k = 1 + math.abs(math.sin(os.clock() * 4)) * 0.08
 			root.Size = UDim2.fromOffset(nodeSize.X.Offset * k, nodeSize.Y.Offset * k)
 			;(root:FindFirstChild("Glow") :: Frame).Visible = true
@@ -699,6 +711,34 @@ function UpgradeController:Start()
 			local def = Upgrades.ById[lab]
 			pan = -hexToPixel(def.Hex.q, def.Hex.r) * zoom.Scale
 			clampPan()
+		end
+	end)
+	-- Controller: the board follows the selected hex and shows its tooltip; LB / RB zoom.
+	GuiService:GetPropertyChangedSignal("SelectedObject"):Connect(function()
+		if not gui.Enabled then
+			return
+		end
+		local object = GuiService.SelectedObject
+		local id = object and nodes[object.Name] == object and object.Name or nil
+		if id then
+			local def = Upgrades.ById[id]
+			hovered = id
+			pan = -hexToPixel(def.Hex.q, def.Hex.r) * zoom.Scale
+			clampPan()
+			refreshTip()
+		elseif hovered and not UserInputService.MouseEnabled then
+			hovered = nil
+			refreshTip()
+		end
+	end)
+	UserInputService.InputBegan:Connect(function(input)
+		if not gui.Enabled then
+			return
+		end
+		if input.KeyCode == Enum.KeyCode.ButtonR1 then
+			setZoom(zoom.Scale + 0.15)
+		elseif input.KeyCode == Enum.KeyCode.ButtonL1 then
+			setZoom(zoom.Scale - 0.15)
 		end
 	end)
 	Ui.button(Ui.find(gui, "Bottom.ZoomIn"), function()

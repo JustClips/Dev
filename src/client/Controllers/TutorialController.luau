@@ -33,19 +33,21 @@ local World = require(Shared.Config.World)
 local NEAR_PARK = 75 -- studs from the park centre to put the egg in your hands
 local NUDGE_SECONDS = 5
 
-type Step = { key: string, text: string, touch: string?, icon: string }
+type Step = { key: string, text: string, touch: string?, pad: string?, icon: string }
 
 local STEPS: { Step } = {
 	{
 		key = "Sweep",
 		text = "Hold the mouse to sweep the leaves and find an egg!",
 		touch = "Hold your finger on the right side of the screen to sweep the leaves and find an egg!",
+		pad = "Hold R2 to sweep the leaves and find an egg!",
 		icon = "Icon_Dust",
 	},
 	{
 		key = "Egg",
 		text = "You found an egg! Walk up to it and hold E to pick it up.",
 		touch = "You found an egg! Walk up to it and hold the button to pick it up.",
+		pad = "You found an egg! Walk up to it and hold X to pick it up.",
 		icon = "Icon_Egg",
 	},
 	{ key = "Base", text = "Carry the egg home to your base!", icon = "Icon_Base" },
@@ -53,6 +55,7 @@ local STEPS: { Step } = {
 		key = "Place",
 		text = "Walk into your pet park and click a green spot to plant your egg!",
 		touch = "Walk into your pet park and tap a green spot to plant your egg!",
+		pad = "Walk into your pet park, face a green spot and press R2 to plant your egg!",
 		icon = "Icon_Egg",
 	},
 	{ key = "Hatching", text = "Your egg is growing... watch it get bigger!", icon = "Icon_Timer" },
@@ -60,21 +63,34 @@ local STEPS: { Step } = {
 		key = "Open",
 		text = "It's ready! Walk up to your egg and press E to open it.",
 		touch = "It's ready! Walk up to your egg and tap Open.",
+		pad = "It's ready! Walk up to your egg and press X to open it.",
 		icon = "Icon_Egg",
 	},
-	{ key = "PlacePet", text = "Put your pet in your park: hold it from your hotbar, go to your base and tap anywhere.", icon = "Icon_Alien" },
+	{
+		key = "PlacePet",
+		text = "Put your pet in your park: hold it from your hotbar, go to your base and tap anywhere.",
+		pad = "Put your pet in your park: pick it with LB/RB, go to your base and press R2.",
+		icon = "Icon_Alien",
+	},
 	{ key = "Sell", text = "Dump your leaves at the market for cash!", icon = "Icon_Sell" },
-	{ key = "Shop", text = "Open Gear and buy a better tool. It sweeps faster!", icon = "Icon_Tools" },
+	{
+		key = "Shop",
+		text = "Open Gear and buy a better tool. It sweeps faster!",
+		pad = "Press d-pad right, open Gear and buy a better tool. It sweeps faster!",
+		icon = "Icon_Tools",
+	},
 	{
 		key = "Upgrade",
 		text = "Open Upgrades and double-click Sweep Power to buy it!",
 		touch = "Open Upgrades and double-tap Sweep Power to buy it!",
+		pad = "Press d-pad left, open Upgrades and press A twice on Sweep Power!",
 		icon = "Icon_Upgrade",
 	},
 	{
 		key = "Wheel",
 		text = "Go to the Lucky Wheel in the plaza and press E for your FREE spin!",
 		touch = "Go to the Lucky Wheel in the plaza and tap it for your FREE spin!",
+		pad = "Go to the Lucky Wheel in the plaza and press X for your FREE spin!",
 		icon = "Icon_Spin",
 	},
 }
@@ -112,6 +128,9 @@ local holdCooldown = 0
 local pointerTarget: GuiObject? = nil
 
 local function stepText(step: Step): string
+	if Ui.gamepad() and step.pad then
+		return step.pad
+	end
 	if UserInputService.TouchEnabled and step.touch then
 		return step.touch
 	end
@@ -412,6 +431,15 @@ end
 
 function TutorialController:Start()
 	Net.event("TutorialDone").OnClientEvent:Connect(showReward)
+	-- Picking up a controller (or putting it down) swaps the step text.
+	UserInputService.LastInputTypeChanged:Connect(function()
+		task.defer(function()
+			local step = shownStep and STEPS[STEP_INDEX[shownStep] or 0]
+			if step and not celebrating then
+				textLabel.Text = stepText(step)
+			end
+		end)
+	end)
 	local function close()
 		Ui.close("TutorialDone")
 	end
