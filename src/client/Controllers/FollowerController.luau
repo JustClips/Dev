@@ -5,7 +5,8 @@
 -- feet on the ground (raycast, so it follows slopes and steps), and plays its walk cycle at
 -- a speed that matches how fast it moves. Fall behind and it breaks into a run (faster,
 -- with little hops) to catch up; fall far behind (a teleport, a fast car) and it pops
--- over to you.
+-- over to you. While their owner drives a car they ride on its back in a row (Dev,
+-- 2026-10-30: running inside the truck looked weird), and hop off beside them after.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -148,6 +149,68 @@ function FollowerController:Start()
 		return from + d * k
 	end
 
+	-- Riding: a row across the back of the car, standing on its top. The car's body doesn't
+	-- take raycasts (CanQuery off), so its box is measured from the parts, in the chassis's
+	-- space: the top is the highest point (the truck's container), the row stands a bit
+	-- behind the middle. Measured again now and then, in case parts streamed in late.
+	type Spot = { top: number, z: number, spread: number, at: number }
+	local spots: { [Model]: Spot } = setmetatable({}, { __mode = "k" }) :: any
+	local function spotFor(vehicle: Model, root: BasePart, now: number): Spot?
+		local cached = spots[vehicle]
+		if cached and now - cached.at < 3 then
+			return cached
+		end
+		local inv = root.CFrame:Inverse()
+		local axes = { root.CFrame.RightVector, root.CFrame.UpVector, root.CFrame.LookVector }
+		local top, zMin, zMax, xMax = -math.huge, math.huge, -math.huge, 0
+		local visual = vehicle:FindFirstChild("Visual") or vehicle
+		for _, part in visual:GetDescendants() do
+			if part:IsA("BasePart") and part.Transparency < 1 then
+				local c = inv * part.Position
+				local h = part.Size / 2
+				local r = part.CFrame
+				local reach = {}
+				for k, axis in axes do
+					reach[k] = math.abs(axis:Dot(r.XVector)) * h.X + math.abs(axis:Dot(r.YVector)) * h.Y + math.abs(axis:Dot(r.ZVector)) * h.Z
+				end
+				xMax = math.max(xMax, math.abs(c.X) + reach[1])
+				top = math.max(top, c.Y + reach[2])
+				zMin = math.min(zMin, c.Z - reach[3])
+				zMax = math.max(zMax, c.Z + reach[3])
+			end
+		end
+		if top == -math.huge then
+			return nil
+		end
+		-- Cars face -Z, so the back is zMax.
+		local spot = { top = top, z = zMax - (zMax - zMin) * 0.3, spread = math.clamp(xMax * 0.55, 1.6, 3), at = now }
+		spots[vehicle] = spot
+		return spot
+	end
+	local function ride(follower: Follower, i: number, count: number, vehicle: Model, now: number, bob: number): boolean
+		local root = vehicle.PrimaryPart
+		local spot = root and spotFor(vehicle, root, now)
+		if not root or not spot then
+			return false
+		end
+		local x = (i - (count + 1) / 2) * spot.spread
+		local cf = root.CFrame
+		local surface = cf * Vector3.new(x, spot.top, spot.z)
+		local forward = cf.LookVector * Vector3.new(1, 0, 1)
+		if forward.Magnitude < 0.01 then
+			forward = Vector3.new(0, 0, -1)
+		end
+		local lift = if follower.floats then FLOAT_HEIGHT * 0.6 + bob else 0
+		follower.model:PivotTo(CFrame.lookAt(surface, surface + forward.Unit) + cf.UpVector * lift)
+		follower.pos = nil -- pops down beside you when you get out
+		follower.speed = 0
+		if follower.walk and follower.walking then
+			follower.walking = false
+			follower.walk:Stop(0.2)
+		end
+		return true
+	end
+
 	RunService.RenderStepped:Connect(function(dt)
 		dt = math.min(dt, 1 / 20)
 		filterAcc += dt
@@ -168,6 +231,11 @@ function FollowerController:Start()
 				if not root or not humanoid or (root.Position - focus).Magnitude > RENDER_DISTANCE then
 					model:PivotTo(CFrame.new(0, -500, 0))
 					follower.pos = nil
+					continue
+				end
+				local seat = (humanoid :: Humanoid).SeatPart
+				local vehicle = if seat and seat:IsA("VehicleSeat") then seat.Parent else nil
+				if vehicle and vehicle:IsA("Model") and ride(follower, i, #entry.models, vehicle, now, bob) then
 					continue
 				end
 				-- Its spot behind the owner, turned with the owner (only their heading counts).
