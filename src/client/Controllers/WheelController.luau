@@ -125,7 +125,7 @@ local function fill()
 		local def = Products.ProductByKey[key]
 		button.Visible = def ~= nil and def.Id ~= 0
 		if def then
-			;(button:FindFirstChild("Price") :: TextLabel).Text = `{Ui.ROBUX} {def.Price}`
+			(button:FindFirstChild("Price") :: TextLabel).Text = `{Ui.ROBUX} {def.Price}`
 		end
 	end
 end
