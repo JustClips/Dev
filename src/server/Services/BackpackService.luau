@@ -158,8 +158,19 @@ local function sellAll(player: Player): number
 	lastSell[player] = now
 	local cash = cashOut(player, session, session.Data.Backpack)
 	session.Data.Stats.Sells += 1
-	BackpackService:GiveCash(player, cash, "SellAnywhere")
+	S.AnalyticsService:Source(player, cash, Enum.AnalyticsEconomyTransactionType.Gameplay, "SellAnywhere")
 	S.AnalyticsService:Funnel(player, "FirstSell")
+	-- The cash bursts out around you as coins to pick up (CoinService).
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if root then
+		local feet = root.Position - Vector3.new(0, (if humanoid then humanoid.HipHeight else 2) + root.Size.Y / 2, 0)
+		S.CoinService:Drop(player, cash, root.Position + Vector3.new(0, 2, 0), feet, Economy.Coins.PerSellAll, 3, 9)
+	else
+		S.CoinService:Drop(player, cash, Vector3.zero, Vector3.zero, 1, 0, 0)
+	end
+	S.StateService:Mark(player)
 	return cash
 end
 
@@ -184,7 +195,17 @@ local function dumpAt(player: Player): number?
 	return nil
 end
 
-type Dump = { spot: number, rate: number, total: number }
+type Dump = { spot: number, rate: number, total: number, unpaid: number, nextDrop: number }
+
+-- The cash poured so far comes out of the dump's coin slot as coins (CoinService).
+local function dropCoins(player: Player, dump: Dump, count: number)
+	if dump.unpaid <= 0 then
+		return
+	end
+	local cf = World.Dumps[dump.spot]
+	S.CoinService:Drop(player, dump.unpaid, (cf * CFrame.new(0, 3, -3.8)).Position, World.dumpSpot(dump.spot), count, 4, 14)
+	dump.unpaid = 0
+end
 
 local function stopDump(player: Player, session)
 	local dump: Dump? = session.Runtime.Dump
@@ -193,11 +214,11 @@ local function stopDump(player: Player, session)
 	end
 	session.Runtime.Dump = nil
 	player:SetAttribute("Dumping", nil)
+	dropCoins(player, dump, Economy.Coins.PerDumpBurst)
 	if dump.total > 0 then
 		session.Data.Stats.Sells += 1
 		S.AnalyticsService:Source(player, BigNum.toNumber(dump.total), Enum.AnalyticsEconomyTransactionType.Gameplay, "SellDust")
 		S.AnalyticsService:Funnel(player, "FirstSell")
-		Net.fire("CashGained", player, { Amount = BigNum.from(dump.total), Source = "SellDust" })
 	end
 end
 
@@ -217,15 +238,19 @@ local function dumpStep(player: Player, session, spot: number, dt: number)
 	if not dump then
 		local capacity = S.ToolService:GetCapacity(player)
 		local rate = math.max(1, math.min(capacity / Economy.DumpSeconds, data.Backpack / Economy.DumpMinSeconds))
-		dump = { spot = spot, rate = rate, total = 0 }
+		dump = { spot = spot, rate = rate, total = 0, unpaid = 0, nextDrop = os.clock() + Economy.Coins.DumpEvery }
 		session.Runtime.Dump = dump
 		player:SetAttribute("Dumping", spot)
 	end
 	local d = dump :: Dump
 	local units = math.ceil(d.rate * dt)
 	local cash = cashOut(player, session, units)
-	data.Cash = BigNum.add(data.Cash, cash)
 	d.total += cash
+	d.unpaid += cash
+	if os.clock() >= d.nextDrop then
+		d.nextDrop = os.clock() + Economy.Coins.DumpEvery
+		dropCoins(player, d, Economy.Coins.PerDumpBurst)
+	end
 	S.StateService:Mark(player)
 	local capacity = math.max(1, S.ToolService:GetCapacity(player))
 	Net.fire("DumpTick", player, cash, data.Backpack / capacity)

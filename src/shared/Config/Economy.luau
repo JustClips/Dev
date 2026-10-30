@@ -61,6 +61,17 @@ local Economy = {
 
 	-- Eggs (GAME_PLAN §4, §5.3)
 	TutorialEggTile = 5, -- guaranteed first egg on this tile cleared (must be <= 25)
+	-- Coins from selling (CoinService): pick them up by walking near. Money Magnet upgrades
+	-- (MagnetUpgrades) add pickup range; leftovers fly to you after AutoCollectSeconds.
+	Coins = {
+		MagnetBase = 7, -- studs
+		MagnetPerLevel = 1.5, -- studs per Money Magnet / Rich Sweeper / Golden Broom level
+		MagnetUpgrades = { "Cash", "Cash2", "Cash3" },
+		AutoCollectSeconds = 20,
+		DumpEvery = 0.6, -- seconds between coin bursts while pouring into a dump
+		PerDumpBurst = 3,
+		PerSellAll = 12, -- Sell Anywhere: coins in one burst around you
+	},
 	EggDespawnSeconds = 60, -- eggs you found (only you see and can pick them up)
 	EggRainDespawnSeconds = 45, -- Egg Rain eggs (shared)
 	MaxGroundEggs = 40, -- eggs lying around a server at once; the oldest go first

@@ -20,6 +20,7 @@ local ORDER = {
 	"ToolService",
 	"UpgradeService",
 	"BackpackService",
+	"CoinService",
 	"ZoneService",
 	"EggService",
 	"HatchService",
