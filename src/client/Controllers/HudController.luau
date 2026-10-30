@@ -2,7 +2,7 @@
 -- Main HUD (stud style, see docs/UI_STYLE.md): left rail (Shop / Index / Rebirth),
 -- top teleport pills (Base / Sell / Zones), Moon Clean bar + event, boost chips,
 -- wallet (cash + bag) bottom-left, Auto Sweep / Auto Sell switches on the right,
--- the mobile SWEEP button, toasts and server announcements.
+-- toasts and server announcements.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -457,8 +457,7 @@ end
 -- stacked pieces (pills -> clean bar -> toasts) are spaced by scale here.
 -- Phones (Ui.compact): the thumbstick owns the bottom-left corner and the jump button the
 -- bottom-right, so the wallet goes top-left with the rail under it, the Eggs/Pets
--- buttons go top-right (BasePanelsController) with the boost chips under them, and the
--- round SWEEP button sits left of the jump button.
+-- buttons go top-right (BasePanelsController) with the boost chips under them.
 -- The left rail and the right-hand stack (Eggs/Pets buttons, then Next Tool + Auto) are
 -- centred on the same line, RAIL_CENTRE px from the screen's middle.
 local RAIL_CENTRE = -30
@@ -532,8 +531,6 @@ layout = function(s: number, compact: boolean)
 		if boostLayout then
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 		end
-		-- Clear of the hotbar's Bag slot and its badge, still left of the jump button.
-		el.SweepButton.Position = UDim2.new(1, -math.ceil(170 * s + 8), 1, -14)
 	else
 		el.Rail.Size = UDim2.fromOffset(180, 304)
 		if railGrid then
@@ -551,13 +548,11 @@ layout = function(s: number, compact: boolean)
 		if boostLayout then
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
-		el.SweepButton.Position = UDim2.new(1, -196, 1, -28)
 	end
 	-- The Eggs/Pets/Tools column starts level with the clean bar (BasePanelsController).
 	if C.BasePanelsController and C.BasePanelsController.Relayout then
 		task.defer(C.BasePanelsController.Relayout, C.BasePanelsController)
 	end
-	el.SweepButton.Visible = UserInputService.TouchEnabled
 	local rightFrame = el.Right :: Frame
 	local rightList = rightFrame:FindFirstChildOfClass("UIListLayout")
 	if compact then
@@ -600,7 +595,6 @@ function HudController:Init(controllers)
 	el.BoostTip = Ui.find(hud, "BoostTip")
 	el.AutoButton = Ui.find(hud, "Right.AutoButton")
 	el.AutoSellButton = Ui.find(hud, "Right.AutoSellButton")
-	el.SweepButton = Ui.find(hud, "SweepButton")
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
 	el.Pills = Ui.find(hud, "Pills")
@@ -678,10 +672,6 @@ end
 -- Lays the HUD out again (after a HUD piece shows or hides).
 function HudController:Relayout()
 	layout(Ui.scale(), Ui.compact())
-end
-
-function HudController:GetSweepButton(): GuiButton
-	return el.SweepButton
 end
 
 function HudController:Start()

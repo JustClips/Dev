@@ -526,11 +526,8 @@ def hud():
         auto_toggle("AutoButton", "Auto Sweep", "Auto", 3),
         auto_toggle("AutoSellButton", "Auto Sell", "Sell", 4),
     ])
-    sweep = button("SweepButton", U(0, 108, 0, 108), U(1, -196, 1, -28), (1, 1), color=SUCCESS, r=54, Visible=False, children=[
-        autoscale(),
-        icon("Icon", "Tool", 64, U(0.5, 0, 0, 6), (0.5, 0)),
-        text("Label", "SWEEP", U(1, 0, 0, 28), U(0.5, 0, 1, -8), (0.5, 1), ts=22, display=True, stroke=2.5),
-    ])
+    # No Sweep button on phones: holding a finger on the screen sweeps (SweepController,
+    # Dev 2026-10-30).
     # Own hotbar (the default Roblox backpack is hidden), Roblox-tool style: 1 = tool,
     # 2 = car, 3-8 = pets / egg stacks / potions (pinned ones first, HotbarController), then
     # the bag button (B) and, while you carry an egg on your head, Drop egg (G).
@@ -588,7 +585,7 @@ def hud():
             frame("Fill", U(1, 0, 1, 0), bg=PREMIUM),
         ]),
     ])
-    write("Hud", screen([rail, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, sweep, hotbar, hint, combo, picker,
+    write("Hud", screen([rail, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, picker,
                          spot, pointer], order=1))
 
 

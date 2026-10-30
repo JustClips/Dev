@@ -36,7 +36,12 @@ local NUDGE_SECONDS = 5
 type Step = { key: string, text: string, touch: string?, icon: string }
 
 local STEPS: { Step } = {
-	{ key = "Sweep", text = "Sweep the leaves to find an egg!", icon = "Icon_Dust" },
+	{
+		key = "Sweep",
+		text = "Hold the mouse to sweep the leaves and find an egg!",
+		touch = "Hold your finger on the screen to sweep the leaves and find an egg!",
+		icon = "Icon_Dust",
+	},
 	{
 		key = "Egg",
 		text = "You found an egg! Walk up to it and hold E to pick it up.",

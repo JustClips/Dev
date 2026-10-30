@@ -1,5 +1,5 @@
 --!strict
--- Sweeping input and feel. Hold mouse / touch the SWEEP button / gamepad R2 while the tool is
+-- Sweeping input and feel. Hold mouse / a finger on the screen / gamepad R2 while the tool is
 -- equipped; Auto Sweep (gamepass) and vehicles sweep while moving. Sends at most 10 ticks/s.
 -- The leaves themselves (wiggle, suck-in) are LeafController; sweep results get pooled "+$"
 -- numbers, a TRASH! pop and a pop sound that climbs with the combo.
@@ -32,6 +32,7 @@ local C: any
 local player = Players.LocalPlayer
 local holding = false
 local touchHolding = false
+local touches: { [InputObject]: boolean } = {}
 local emitter: ParticleEmitter
 local emitterPart: Part
 local numberPool: { { attachment: Attachment, gui: BillboardGui, label: TextLabel } } = {}
@@ -311,15 +312,18 @@ function SweepController:Start()
 			holding = false
 		end
 	end)
-	local sweepButton = C.HudController:GetSweepButton()
-	sweepButton.MouseButton1Down:Connect(function()
-		touchHolding = true
+	-- Phones: hold a finger anywhere on the screen to sweep (Dev, 2026-10-30: no Sweep
+	-- button). Touches on buttons and the thumbstick are "processed" and don't count;
+	-- dragging the camera does, so you can turn while you sweep.
+	UserInputService.TouchStarted:Connect(function(touch, processed)
+		if not processed then
+			touches[touch] = true
+			touchHolding = true
+		end
 	end)
-	sweepButton.MouseButton1Up:Connect(function()
-		touchHolding = false
-	end)
-	sweepButton.MouseLeave:Connect(function()
-		touchHolding = false
+	UserInputService.TouchEnded:Connect(function(touch)
+		touches[touch] = nil
+		touchHolding = next(touches) ~= nil
 	end)
 
 	Net.event("SweepResult").OnClientEvent:Connect(onSweepResult)
