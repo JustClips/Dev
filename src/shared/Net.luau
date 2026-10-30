@@ -8,8 +8,8 @@ local RunService = game:GetService("RunService")
 -- name = max calls per second from one client (0 = server -> client only)
 local EVENTS: { [string]: number } = {
 	SweepTick = 12, -- client: position while sweeping (server enforces 10/s on top)
-	TilesCleared = 0, -- server -> all: buffer of u16 tile ids
-	TilesRestored = 0, -- server -> all: buffer of u16 tile ids that grew back
+	TilesCleared = 0, -- server -> one player: buffer of u16 tile ids they cleared, their UserId
+	TilesRestored = 0, -- server -> one player: buffer of u16 tile ids that grew back in their field
 	TilesGolden = 0, -- server -> all: buffer of u16 ids turned golden (id + 32768 = back to normal)
 	SweepResult = 0, -- server -> sweeper: dust gained, cash value, full flag
 	PlayerState = 0, -- server -> owner: full PlayerSnapshot
@@ -36,7 +36,7 @@ local EVENTS: { [string]: number } = {
 
 local FUNCTIONS: { [string]: number } = {
 	GetState = 2,
-	GetDust = 2, -- () -> cleared tile ids, golden tile ids (packed u16 buffers)
+	GetDust = 2, -- () -> your cleared tile ids, golden tile ids (packed u16 buffers)
 	SellNow = 2, -- () -> ok, message: sell the whole bag here (Sell Anywhere pass)
 	BuyNextTool = 4,
 	Rebirth = 2,

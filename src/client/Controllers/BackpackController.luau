@@ -237,7 +237,8 @@ function BackpackController:Start()
 			bag.shown += (goal - bag.shown) * math.min(1, dt * EASE)
 			bag.bounce = math.max(0, bag.bounce - dt * 4)
 			applyBed(bag, bag.shown)
-			local near = (bag.body.Position - camPos).Magnitude < RANGE
+			-- Leaf meshes only in your own bag; other players' bags show the plain heap.
+			local near = player == Players.LocalPlayer and (bag.body.Position - camPos).Magnitude < RANGE
 			updateLeaves(bag, player, dt, near)
 		end
 	end)

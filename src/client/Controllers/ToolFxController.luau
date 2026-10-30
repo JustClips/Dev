@@ -1,12 +1,10 @@
 --!strict
--- Effects at the tip of every player's hand tool while they use it: toothbrush foam, broom
--- dust, mop splashes, leaf blower air and leaves, vacuum suction. Your own tool follows your
--- input right away; other players' tools follow the "SweepAt" time the server stamps on
--- their character for each sweep tick.
+-- Effects at the tip of your hand tool while you use it: toothbrush foam, broom dust, mop
+-- splashes, leaf blower air and leaves, vacuum suction. Only your own: every player has
+-- their own leaf field, so other players' effects would show over leaves you still see.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Assets = require(Shared.Config.Assets)
@@ -15,8 +13,6 @@ local ToolFxController = {}
 
 local C: any
 local SMOKE = "rbxasset://textures/particles/smoke_main.dds"
-local ACTIVE_FOR = 0.4 -- seconds after the last sweep tick
-local MAX_DISTANCE = 160
 
 type Fx = { emitters: { ParticleEmitter }, on: boolean }
 local built: { [Tool]: Fx } = setmetatable({}, { __mode = "k" }) :: any
@@ -250,29 +246,14 @@ local function setOn(fx: Fx, on: boolean)
 end
 
 local function update()
-	local me = Players.LocalPlayer
-	local now = Workspace:GetServerTimeNow()
-	local camera = Workspace.CurrentCamera
-	for _, player in Players:GetPlayers() do
-		local char = player.Character
-		local tool = char and char:FindFirstChildOfClass("Tool")
-		if not char or not tool or not tool:GetAttribute("SweepTool") then
-			continue
-		end
-		local fx = build(tool)
-		if not fx then
-			continue
-		end
-		local on: boolean
-		if player == me then
-			on = C.SweepController:IsToolActive()
-		else
-			local at = char:GetAttribute("SweepAt")
-			local root = char:FindFirstChild("HumanoidRootPart") :: BasePart?
-			local near = camera ~= nil and root ~= nil and (root.Position - camera.CFrame.Position).Magnitude < MAX_DISTANCE
-			on = near and type(at) == "number" and now - at < ACTIVE_FOR
-		end
-		setOn(fx, on)
+	local char = Players.LocalPlayer.Character
+	local tool = char and char:FindFirstChildOfClass("Tool")
+	if not tool or not tool:GetAttribute("SweepTool") then
+		return
+	end
+	local fx = build(tool)
+	if fx then
+		setOn(fx, C.SweepController:IsToolActive())
 	end
 end
 

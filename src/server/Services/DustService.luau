@@ -1,8 +1,12 @@
 --!strict
 -- Owns the leaf tiles. Tiles are generated at server start from Config/Zones (nothing is
--- stored in the repo) and tracked by HP. The server keeps only data: every client draws
--- the leaves, litter and trash near it (LeafController) from a snapshot (GetDust) plus
--- compact batches: TilesCleared, TilesRestored (regrown) and TilesGolden (golden piles).
+-- stored in the repo). Every player has their own field (Dev, 2026-10-30): what you sweep
+-- clears and regrows only for you, so a fast car can't empty the map for everyone. The
+-- server keeps only data: each client draws its own field (LeafController) from a snapshot
+-- (GetDust) plus compact batches sent only to that player: TilesCleared and TilesRestored
+-- (regrown). Golden piles (TilesGolden) are shared: whoever sweeps one first gets it.
+-- The "World Cleaned" bar counts everyone's sweeping together.
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -16,24 +20,43 @@ local GOLDEN_OFF = 32768 -- TilesGolden: id = turned golden, id + GOLDEN_OFF = b
 local DustService = {}
 
 local S: any
-local hp: { [number]: number } = {}
 local zoneOf: { [number]: any } = {} -- id -> ZoneDef
 local zoneTiles: { [string]: { number } } = {}
 -- Golden dust piles: a few per zone at a time, worth Economy.Golden.Mult x cash.
 local golden: { [number]: boolean } = {}
 local goldenCount: { [string]: number } = {}
-local clearedBatch: { number } = {}
--- Cleared tiles by who swept them (UserId), so each client flies the leaves to the right
--- player's tool or backpack. 0: nobody in particular.
-local clearedBy: { [number]: { number } } = {}
-local restoredBatch: { number } = {}
 local goldenBatch: { number } = {}
 -- One FIFO per zone (same regrow delay per zone, so entries come out in order).
 type RegrowQueue = { items: { [number]: { id: number, at: number } }, head: number, tail: number }
-local regrowQueues: { [string]: RegrowQueue } = {}
+-- One player's field: tiles only take space here once they're hit.
+type Field = {
+	hp: { [number]: number }, -- damaged but standing tiles
+	cleared: { [number]: boolean },
+	queues: { [string]: RegrowQueue },
+	clearedBatch: { number },
+	restoredBatch: { number },
+}
+local fields: { [Player]: Field } = {}
 
 local moonTotal = 0
 local moonClearedSinceReset = 0
+
+local function newQueues(): { [string]: RegrowQueue }
+	local queues = {}
+	for zoneId in zoneTiles do
+		queues[zoneId] = { items = {}, head = 1, tail = 0 }
+	end
+	return queues
+end
+
+local function fieldOf(player: Player): Field
+	local field = fields[player]
+	if not field then
+		field = { hp = {}, cleared = {}, queues = newQueues(), clearedBatch = {}, restoredBatch = {} }
+		fields[player] = field
+	end
+	return field
+end
 
 local function buildTiles()
 	for _, zg in Grid.Zones do
@@ -42,24 +65,21 @@ local function buildTiles()
 			local id = zg.FirstId + index
 			zoneTiles[zone.Id] = zoneTiles[zone.Id] or {}
 			table.insert(zoneTiles[zone.Id], id)
-			hp[id] = zone.DustHP
 			zoneOf[id] = zone
 			if zone.IsMoon then
 				moonTotal += 1
 			end
 		end
-		regrowQueues[zone.Id] = { items = {}, head = 1, tail = 0 }
 	end
 	assert(Grid.MaxId < GOLDEN_OFF, "tile ids must stay below GOLDEN_OFF")
 end
 
-local function restore(id: number)
-	local zone = zoneOf[id]
-	if not zone or hp[id] > 0 then
+local function restore(field: Field, id: number)
+	if not field.cleared[id] then
 		return
 	end
-	hp[id] = zone.DustHP
-	table.insert(restoredBatch, id)
+	field.cleared[id] = nil
+	table.insert(field.restoredBatch, id)
 end
 
 function DustService:GetZone(id: number)
@@ -89,7 +109,7 @@ end
 function DustService:StrikeGolden(position: Vector3, radius: number, count: number): number
 	local made = 0
 	Grid.forEachInRadius(position, radius, function(id)
-		if made < count and hp[id] and hp[id] > 0 and not golden[id] then
+		if made < count and zoneOf[id] and not golden[id] then
 			setGolden(id, true)
 			made += 1
 		end
@@ -106,7 +126,7 @@ function DustService:RefreshGolden(rng: Random)
 		while (goldenCount[zoneId] or 0) < perZone and tries < 20 * perZone / Economy.Golden.PerZone do
 			tries += 1
 			local id = ids[rng:NextInteger(1, #ids)]
-			if hp[id] > 0 and not golden[id] then
+			if not golden[id] then
 				setGolden(id, true)
 			end
 		end
@@ -122,36 +142,33 @@ function DustService:GetRandomTilePosition(zoneId: string, rng: Random): Vector3
 	return Grid.tilePosition(ids[rng:NextInteger(1, #ids)])
 end
 
-function DustService:IsCleared(id: number): boolean
-	return (hp[id] or 0) <= 0
+function DustService:IsCleared(player: Player, id: number): boolean
+	local field = fields[player]
+	return field ~= nil and field.cleared[id] == true
 end
 
--- Applies damage. Returns true if this hit cleared the tile. by: the sweeping player.
-function DustService:Damage(id: number, power: number, by: Player?): boolean
-	local current = hp[id]
-	if not current or current <= 0 then
-		return false
-	end
-	current -= power
-	hp[id] = current
-	if current > 0 then
-		return false
-	end
-	hp[id] = 0
-	local who = if by then by.UserId else 0
-	local list = clearedBy[who]
-	if not list then
-		list = {}
-		clearedBy[who] = list
-	end
-	table.insert(list, id)
-	table.insert(clearedBatch, id)
-
+-- Applies damage to this player's field. Returns true if this hit cleared the tile.
+function DustService:Damage(id: number, power: number, by: Player): boolean
 	local zone = zoneOf[id]
+	if not zone then
+		return false
+	end
+	local field = fieldOf(by)
+	if field.cleared[id] then
+		return false
+	end
+	local current = (field.hp[id] or zone.DustHP) - power
+	if current > 0 then
+		field.hp[id] = current
+		return false
+	end
+	field.hp[id] = nil
+	field.cleared[id] = true
+	table.insert(field.clearedBatch, id)
 	if zone.IsMoon then
 		moonClearedSinceReset += 1
 	end
-	local queue = regrowQueues[zone.Id]
+	local queue = field.queues[zone.Id]
 	queue.tail += 1
 	queue.items[queue.tail] = { id = id, at = os.clock() + zone.RegrowSeconds }
 	return true
@@ -169,12 +186,14 @@ function DustService:ResetMoonProgress()
 	moonClearedSinceReset = 0
 end
 
+-- Everyone's leaves grow back at once (after an Egg Rain).
 function DustService:RespawnAll()
-	for id in hp do
-		restore(id)
-	end
-	for zoneId in regrowQueues do
-		regrowQueues[zoneId] = { items = {}, head = 1, tail = 0 }
+	for _, field in fields do
+		for id in field.cleared do
+			restore(field, id)
+		end
+		table.clear(field.hp)
+		field.queues = newQueues()
 	end
 end
 
@@ -196,11 +215,12 @@ function DustService:GetRandomMoonPosition(rng: Random): Vector3
 	return Vector3.new(0, 1, -40)
 end
 
--- What a joining client needs to draw the field: every cleared tile and every golden pile.
-local function snapshot(): (buffer, buffer)
+-- What a joining client needs to draw its field: its cleared tiles and every golden pile.
+local function snapshot(player: Player): (buffer, buffer)
 	local cleared, gold = {}, {}
-	for id, value in hp do
-		if value <= 0 then
+	local field = fields[player]
+	if field then
+		for id in field.cleared do
 			table.insert(cleared, id)
 		end
 	end
@@ -213,8 +233,11 @@ end
 function DustService:Init(services)
 	S = services
 	buildTiles()
-	Net.onInvoke("GetDust", function()
-		return snapshot()
+	Net.onInvoke("GetDust", function(player)
+		return snapshot(player)
+	end)
+	Players.PlayerRemoving:Connect(function(player)
+		fields[player] = nil
 	end)
 	S.StateService:GetServerState():SetAttribute("MoonTiles", moonTotal)
 end
@@ -223,18 +246,18 @@ function DustService:Start()
 	task.spawn(function()
 		while true do
 			task.wait(Economy.TileBatchInterval)
-			if #clearedBatch > 0 then
-				local byPlayer = clearedBy
-				clearedBatch = {}
-				clearedBy = {}
-				for userId, ids in byPlayer do
-					Net.fireAll("TilesCleared", Grid.pack(ids), userId)
+			-- Each player hears only about their own field.
+			for player, field in fields do
+				if #field.clearedBatch > 0 then
+					local batch = field.clearedBatch
+					field.clearedBatch = {}
+					Net.fire("TilesCleared", player, Grid.pack(batch), player.UserId)
 				end
-			end
-			if #restoredBatch > 0 then
-				local batch = restoredBatch
-				restoredBatch = {}
-				Net.fireAll("TilesRestored", Grid.pack(batch))
+				if #field.restoredBatch > 0 then
+					local batch = field.restoredBatch
+					field.restoredBatch = {}
+					Net.fire("TilesRestored", player, Grid.pack(batch))
+				end
 			end
 			if #goldenBatch > 0 then
 				local batch = goldenBatch
@@ -258,16 +281,18 @@ function DustService:Start()
 			local now = os.clock()
 			-- Leaf Storm (Config/Weather RegrowMult): leaves blow back in faster.
 			local regrowMult = S.WeatherService:GetRegrowMult()
-			for zoneId, queue in regrowQueues do
-				local zone = zoneTiles[zoneId] and zoneOf[zoneTiles[zoneId][1]]
-				local early = if zone then zone.RegrowSeconds * (1 - regrowMult) else 0
-				while queue.head <= queue.tail and queue.items[queue.head].at - early <= now do
-					restore(queue.items[queue.head].id)
-					queue.items[queue.head] = nil
-					queue.head += 1
-				end
-				if queue.head > queue.tail then
-					queue.head, queue.tail = 1, 0
+			for _, field in fields do
+				for zoneId, queue in field.queues do
+					local zone = zoneTiles[zoneId] and zoneOf[zoneTiles[zoneId][1]]
+					local early = if zone then zone.RegrowSeconds * (1 - regrowMult) else 0
+					while queue.head <= queue.tail and queue.items[queue.head].at - early <= now do
+						restore(field, queue.items[queue.head].id)
+						queue.items[queue.head] = nil
+						queue.head += 1
+					end
+					if queue.head > queue.tail then
+						queue.head, queue.tail = 1, 0
+					end
 				end
 			end
 		end

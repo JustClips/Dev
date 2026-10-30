@@ -4,8 +4,9 @@
 -- the ground reads as a thick carpet. Some tiles hold a piece of trash instead (cans,
 -- bottles, pizza boxes...), which pays more (Grid.trashKind, Economy.TrashMult).
 --
--- The server only keeps data (DustService). This controller loads a snapshot (GetDust) and
--- follows TilesCleared / TilesRestored / TilesGolden. Only chunks near you are built, from a
+-- The server only keeps data (DustService). Every player has their own field: this
+-- controller loads yours (GetDust) and follows TilesCleared / TilesRestored (yours only)
+-- and TilesGolden (shared). Only chunks near you are built, from a
 -- pool of parts, so phones stay smooth. Feel:
 --   * the leaves under your tool wiggle while you sweep (Disturb),
 --   * a cleared tile's leaves hop up, swirl and get sucked into the sweeper's tool tip (or
@@ -893,7 +894,8 @@ local function kickers(now: number)
 	if not at then
 		return
 	end
-	for _, player in Players:GetPlayers() do
+	-- Only you kick your leaves (everyone has their own field).
+	for _, player in { Players.LocalPlayer } do
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")

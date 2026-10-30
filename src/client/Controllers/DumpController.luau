@@ -235,7 +235,9 @@ local function stepDumps(now: number, dt: number)
 			continue
 		end
 		v.busyUntil = now + 0.4
-		if now >= (nextPour[player] or 0) then
+		-- Only your own leaves pour (other players' dumps just run their rollers): less to
+		-- animate with a full server.
+		if player == Players.LocalPlayer and now >= (nextPour[player] or 0) then
 			nextPour[player] = now + POUR_EVERY
 			launch(from, mouthOf(v), FLIGHT, 5 + math.random() * 2, C.BackpackController:LookOf(player))
 		end
