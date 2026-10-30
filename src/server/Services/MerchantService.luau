@@ -260,6 +260,15 @@ end
 
 function MerchantService:Init(services)
 	S = services
+	-- Joining while he's visiting: tell them he's here.
+	S.DataService.ProfileLoaded:Connect(function(player)
+		task.delay(10, function()
+			local _, here, changesAt = Merchant.visitAt(os.time())
+			if player.Parent and here and changesAt - os.time() > 60 then
+				Net.fire("Notify", player, "The Traveling Merchant is in the plaza right now!", "Rare")
+			end
+		end)
+	end)
 	Net.onInvoke("Merchant", function(player, action, arg)
 		if action == "Get" then
 			return true, nil, state(player)
@@ -293,12 +302,15 @@ function MerchantService:Start()
 						tease = ` He has a {if def then def.Name else `{best.Egg} Egg`}!`
 					end
 					Net.fireAll("Announce", `The Traveling Merchant is in the plaza for {Merchant.StaySeconds // 60} min!{tease}`, "Event")
+					-- A toast for everyone too, so nobody misses him (Dev, 2026-10-30).
+					Net.fireAll("Notify", `The Traveling Merchant has arrived in the plaza!{tease}`, "Rare")
 				end
 				lastHere = here
 			end
 			if here and changesAt - os.time() <= 60 and warned ~= visit then
 				warned = visit
 				Net.fireAll("Announce", "The Traveling Merchant leaves in 1 minute!", "Event")
+				Net.fireAll("Notify", "The Traveling Merchant leaves in 1 minute!", "Good")
 			end
 			task.wait(1)
 		end

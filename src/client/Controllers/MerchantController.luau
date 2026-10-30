@@ -163,8 +163,8 @@ function MerchantController:Open()
 	refresh()
 end
 
--- A sign high over the cart: "MERCHANT HERE 7:12" (seen from across the plaza) or
--- "Merchant back in 4:30" (only up close).
+-- A sign over the cart: "MERCHANT HERE 7:12" (seen from around the plaza) or "Merchant
+-- back in 4:30" (only up close). Not on top of walls, and gone from far away (Dev).
 local function buildSign()
 	local anchor = Instance.new("Part")
 	anchor.Name = "MerchantSignAnchor"
@@ -178,7 +178,8 @@ local function buildSign()
 	anchor.Parent = Workspace
 	local board = Instance.new("BillboardGui")
 	board.Name = "MerchantSign"
-	board.Size = UDim2.fromOffset(260, 60)
+	-- Sized in studs so it shrinks with distance like a real sign (pixels stayed huge far away).
+	board.Size = UDim2.fromScale(12, 3)
 	board.LightInfluence = 0
 	board.Adornee = anchor
 	board.Parent = anchor
@@ -207,13 +208,11 @@ local function tickSign()
 	if here then
 		label.Text = `MERCHANT HERE! {left}`
 		label.TextColor3 = Color3.fromRGB(255, 200, 60)
-		board.MaxDistance = 600
-		board.AlwaysOnTop = true
+		board.MaxDistance = 160
 	else
 		label.Text = `Merchant back in {left}`
 		label.TextColor3 = WHITE
-		board.MaxDistance = 80
-		board.AlwaysOnTop = false
+		board.MaxDistance = 70
 	end
 end
 
