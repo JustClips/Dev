@@ -406,6 +406,7 @@ function InventoryController:Init(controllers)
 	emptyLabel = Ui.find(gui, "Window.Empty")
 	infoLabel = Ui.find(gui, "Window.Info")
 	tabsFrame = Ui.find(gui, "Window.Tabs")
+	Ui.fitText(infoLabel, 16, 7) -- one line that shrinks (it wrapped into the search box)
 	searchBox = Ui.find(gui, "Window.Search")
 end
 

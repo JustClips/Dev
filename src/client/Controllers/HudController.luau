@@ -545,14 +545,16 @@ layout = function(s: number, compact: boolean)
 	local pillsH = math.ceil(52 * s)
 	-- Pills go up into Roblox's top bar row when they fit between its buttons and the
 	-- ADMIN button. Centred if they can be (Dev, 2026-10-30), otherwise moved right just
-	-- past Roblox's buttons. Our settings gear sits under the top bar row, so it isn't in
-	-- the way.
+	-- past Roblox's buttons and our settings gear.
 	local inset = GuiService.TopbarInset
 	local shift = 0
 	if inset.Height >= pillsH and hud.AbsoluteSize.X > 2 then
 		local w = math.ceil(el.Pills.Size.X.Offset * s)
 		local guiMid = hud.AbsolutePosition.X + hud.AbsoluteSize.X / 2
-		local freeLeft = math.max(inset.Min.X, 104) + 8
+		-- Past Roblox's buttons and our settings gear next to them (AudioController
+		-- placeGear: same spot and size), so the pills never cover it (Dev, 2026-10-30).
+		local gearSize = math.floor(math.clamp(inset.Height - 14, 32, 48))
+		local freeLeft = math.max(inset.Min.X, 104) + 4 + gearSize + 8
 		-- Room for the ADMIN button or (for everyone else) the Spin button in that spot.
 		local freeRight = inset.Max.X - 8 - (if Admin.isAdmin(Players.LocalPlayer.UserId) then 100 else SPIN_W + 14)
 		local x0 = math.max(guiMid - w / 2, freeLeft)

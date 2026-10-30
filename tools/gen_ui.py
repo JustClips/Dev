@@ -795,14 +795,14 @@ def inventory():
         # Filters (Dev, 2026-10-30, in place of the totals line): All / Pets / Eggs / Items,
         # each with its count. While the pointer is on a tile (PC) the Info line shows that
         # tile instead: name, rarity, weight, passive.
-        frame("Tabs", U(1, -440, 0, 34), U(0, 150, 0, 11), children=[
+        frame("Tabs", U(0, 304, 0, 34), U(0, 150, 0, 11), children=[
             hlist(6, "Left", "Center"),
-            button("All", U(0, 70, 0, 32), color="#4C8DFF", label="All", ts=16, stroke=2, LayoutOrder=1),
-            button("Pets", U(0, 78, 0, 32), color="#4C8DFF", label="Pets", ts=16, stroke=2, LayoutOrder=2),
-            button("Eggs", U(0, 78, 0, 32), color="#4C8DFF", label="Eggs", ts=16, stroke=2, LayoutOrder=3),
-            button("Items", U(0, 84, 0, 32), color="#4C8DFF", label="Items", ts=16, stroke=2, LayoutOrder=4),
+            button("All", U(0, 52, 0, 32), color="#4C8DFF", label="All", ts=16, stroke=2, LayoutOrder=1),
+            button("Pets", U(0, 74, 0, 32), color="#4C8DFF", label="Pets", ts=16, stroke=2, LayoutOrder=2),
+            button("Eggs", U(0, 74, 0, 32), color="#4C8DFF", label="Eggs", ts=16, stroke=2, LayoutOrder=3),
+            button("Items", U(0, 82, 0, 32), color="#4C8DFF", label="Items", ts=16, stroke=2, LayoutOrder=4),
         ]),
-        text("Info", "", U(1, -440, 0, 36), U(0, 150, 0, 10), ts=16, color="#C8D0E8", display=True, stroke=1.5, xa="Left",
+        text("Info", "", U(0, 304, 0, 36), U(0, 150, 0, 10), ts=16, color="#C8D0E8", display=True, stroke=1.5, xa="Left",
              Visible=False, TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
         search, close, grid,
         text("Empty", "", U(1, -40, 0, 60), U(0.5, 0, 0.55, 0), (0.5, 0.5), ts=19, color="#C8D0E8", heavy=True, Visible=False),

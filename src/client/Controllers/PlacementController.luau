@@ -51,6 +51,7 @@ local holding: string? = nil
 local heldPet: string? = nil
 local placePet: GuiButton
 local autoPlace: GuiButton
+local syncPlacing = function() end -- set in Init
 local cancelButton: GuiButton
 local ghost: Model? = nil
 local ring: BasePart? = nil
@@ -352,6 +353,7 @@ function PlacementController:Hold(uid: string)
 	modelView.Visible = true
 	ModelView.show(modelView, AssetLibrary.egg(egg.Rarity), "Egg_" .. egg.Rarity)
 	gui.Enabled = true
+	syncPlacing()
 	Ui.popIn(gui)
 	if not stepConn then
 		stepConn = RunService.RenderStepped:Connect(update)
@@ -429,6 +431,20 @@ function PlacementController:Init(controllers)
 	modelView = Ui.find(gui, "Bar.Model")
 	placePet = Ui.find(gui, "Bar.PlacePet")
 	autoPlace = Ui.find(gui, "Bar.AutoPlace")
+	-- While an egg is in your hands the hotbar and bag step aside and the place bar takes
+	-- the hotbar's spot (Dev, 2026-10-30: on phones the two piled up).
+	local bar = Ui.find(gui, "Bar") :: GuiObject
+	local hotbar = Ui.find(Ui.screen("Hud"), "Hotbar") :: GuiObject
+	local barHome = bar.Position
+	syncPlacing = function()
+		local placingEgg = gui.Enabled and holding ~= nil
+		hotbar.Visible = not placingEgg
+		bar.Position = if placingEgg then UDim2.new(barHome.X.Scale, barHome.X.Offset, 1, -12) else barHome
+		if placingEgg and Ui.isOpen(Ui.screen("Inventory")) then
+			Ui.close("Inventory")
+		end
+	end
+	gui:GetPropertyChangedSignal("Enabled"):Connect(syncPlacing)
 	cancelButton = Ui.find(gui, "Bar.Cancel")
 end
 
