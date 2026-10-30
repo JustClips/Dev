@@ -268,6 +268,18 @@ local function buildVehicle(player: Player, def): Model
 		weld.Parent = part
 	end
 
+	-- The chassis box only carries the mass. A shorter, higher Hull does the colliding
+	-- (walls, fences, buildings), so the box's long flat ends never dig into the ground at
+	-- the top or bottom of a ramp (Dev, 2026-10-30: the truck stuck on a ramp edge).
+	chassis.CanCollide = false
+	local hull = Instance.new("Part")
+	hull.Name = "Hull"
+	hull.Size = Vector3.new(5.6 * s, 1.2 * s, 7 * s)
+	hull.CustomPhysicalProperties = PhysicalProperties.new(0.01, 0, 0, 100, 1)
+	hull.CanQuery = false
+	hull.Transparency = 1
+	attach(hull, CFrame.new(0, 0.5 * s, 0))
+
 	local seat = Instance.new("VehicleSeat")
 	seat.Name = "Seat"
 	seat.Size = Vector3.new(2, 1, 2)

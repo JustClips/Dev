@@ -21,6 +21,8 @@ local MAX_LIFT = 40 -- studs per second the springs may move the body up or down
 local STEP_REACH = 2.5 -- the springs feel this far under the wheels (then you're airborne)
 local LEAN = math.rad(5) -- body roll out of a full-speed corner
 local MAX_TILT = math.rad(35) -- steeper ground than this doesn't tilt the body further
+local SLOPE_PULL = 0.5 -- share of gravity along the slope that speeds you up downhill
+local DOWNHILL_MAX = 1.35 -- top speed downhill, relative to the car's speed
 
 local VehicleController = {}
 
@@ -110,6 +112,10 @@ rayParams.RespectCanCollide = true
 rayParams.CollisionGroup = "Vehicles" -- skips players and other cars like the car itself does
 
 local lean = 0
+local smoothUp = Vector3.yAxis
+-- Corner order matters for the slope: 1 back-left, 2 back-right, 3 front-left, 4 front-right
+-- (x, z in half-sizes; -z is the front).
+local CORNERS = { Vector2.new(-0.8, 0.8), Vector2.new(0.8, 0.8), Vector2.new(-0.8, -0.8), Vector2.new(0.8, -0.8) }
 
 -- Throttle and steer. The VehicleSeat gets them from Roblox's controls, but read the raw
 -- move input too (keyboard, thumbstick, gamepad) in case the seat's values don't come through.
@@ -147,6 +153,7 @@ local function drive(dt: number)
 	if not seat or not seat:IsA("VehicleSeat") or seat:GetAttribute("OwnerUserId") ~= player.UserId then
 		yaw = nil
 		lean = 0
+		smoothUp = Vector3.yAxis
 		return
 	end
 	local model = seat.Parent :: Model
@@ -166,22 +173,40 @@ local function drive(dt: number)
 	local maxSpeed = (seat:GetAttribute("Speed") :: number?) or 40
 	local throttleIn, steerIn = readInput(seat)
 
-	-- Suspension: a ray down at each corner.
+	-- Suspension: a ray down at each corner. Walls and steep faces don't count as ground.
 	rayParams.FilterDescendantsInstances = { model, character :: Model }
 	local reach = half.Y + clearance + STEP_REACH
-	local groundY, normal, hits = 0, Vector3.zero, 0
-	for _, x in { -0.8, 0.8 } do
-		for _, z in { -0.8, 0.8 } do
-			local origin = (cf * CFrame.new(half.X * x, 0, half.Z * z)).Position
-			local hit = Workspace:Raycast(origin, Vector3.new(0, -reach, 0), rayParams)
-			if hit then
-				groundY += hit.Position.Y
-				normal += hit.Normal
-				hits += 1
-			end
+	local points: { [number]: Vector3 } = {}
+	local groundY, normalSum, hits = 0, Vector3.zero, 0
+	for i, corner in CORNERS do
+		local origin = (cf * CFrame.new(half.X * corner.X, 0, half.Z * corner.Y)).Position
+		local hit = Workspace:Raycast(origin, Vector3.new(0, -reach, 0), rayParams)
+		if hit and hit.Normal.Y > 0.55 then
+			points[i] = hit.Position
+			groundY += hit.Position.Y
+			normalSum += hit.Normal
+			hits += 1
 		end
 	end
 	local grounded = hits >= 2
+
+	-- The ground's slope: from the four contact points (smooth over seams between parts),
+	-- else the average surface normal; eased so the body tilts smoothly.
+	local ground = Vector3.yAxis
+	if hits == 4 then
+		local n = (points[2] - points[3]):Cross(points[1] - points[4])
+		if n.Magnitude > 1e-3 then
+			n = n.Unit
+			ground = if n.Y < 0 then -n else n
+		end
+	elseif grounded then
+		ground = (normalSum / hits).Unit
+	end
+	local tilt = math.acos(math.clamp(ground.Y, -1, 1))
+	if tilt > MAX_TILT then
+		ground = Vector3.yAxis:Lerp(ground, MAX_TILT / tilt).Unit
+	end
+	smoothUp = smoothUp:Lerp(if grounded then ground else Vector3.yAxis, math.min(1, dt * (if grounded then 10 else 2))).Unit
 
 	-- Steering: only while rolling (reversing turns the other way), a bit less at top speed.
 	local velocity = chassis.AssemblyLinearVelocity
@@ -192,45 +217,38 @@ local function drive(dt: number)
 	local direction = if forward < -0.5 then -1 else 1
 	yaw = (yaw :: number) - steerIn * TURN_RATE * steerScale * direction * dt
 	heading = CFrame.Angles(0, yaw :: number, 0)
-	local look = heading.LookVector
-	local right = heading.RightVector
-	forward = velocity:Dot(look)
-	local side = velocity:Dot(right)
+	-- Forward and right along the ground, so the car drives down (and up) the slope itself
+	-- instead of sliding flat and dropping in steps.
+	local right = heading.LookVector:Cross(smoothUp).Unit
+	local look = smoothUp:Cross(right).Unit
 
-	-- Throttle, brakes and coasting (only with wheels on the ground).
 	if grounded then
-		local throttle = throttleIn
+		forward = velocity:Dot(look)
+		local side = velocity:Dot(right)
+		-- Throttle, brakes and coasting.
 		local accel = maxSpeed / ACCEL_TIME
-		if throttle ~= 0 then
-			local target = throttle * maxSpeed * (if throttle > 0 then 1 else REVERSE)
-			local rate = if forward * throttle < 0 then accel * BRAKE else accel
+		if throttleIn ~= 0 then
+			local target = throttleIn * maxSpeed * (if throttleIn > 0 then 1 else REVERSE)
+			local rate = if forward * throttleIn < 0 then accel * BRAKE else accel
 			forward = moveToward(forward, target, rate * dt)
 		else
 			forward = moveToward(forward, 0, accel * COAST * dt)
 		end
+		-- Gravity along the slope: rolls you downhill and slows you uphill.
+		forward -= Workspace.Gravity * SLOPE_PULL * look.Y * dt
+		forward = math.clamp(forward, -maxSpeed * DOWNHILL_MAX, maxSpeed * DOWNHILL_MAX)
 		side *= math.exp(-GRIP * dt)
-	end
-
-	-- Ride height: springs pull the body to `clearance` over the ground; airborne, gravity.
-	local vy = velocity.Y
-	if grounded then
+		-- Ride height: a small spring correction on top of following the slope.
 		local target = groundY / hits + clearance + half.Y
-		vy = math.clamp((target - cf.Position.Y) * SPRING, -MAX_LIFT, MAX_LIFT)
+		local lift = math.clamp((target - cf.Position.Y) * SPRING, -MAX_LIFT, MAX_LIFT)
+		chassis.AssemblyLinearVelocity = look * forward + right * side + Vector3.new(0, lift, 0)
 	end
-	chassis.AssemblyLinearVelocity = look * forward + right * side + Vector3.new(0, vy, 0)
+	-- Airborne: the engine's gravity and momentum carry the car; only the heading changes.
 
 	-- Body: follows the ground's slope and leans out of corners.
-	local up = Vector3.yAxis
-	if grounded then
-		local n = (normal / hits).Unit
-		local tilt = math.acos(math.clamp(n.Y, -1, 1))
-		up = if tilt > MAX_TILT then Vector3.yAxis:Lerp(n, MAX_TILT / tilt).Unit else n
-	end
 	local targetLean = if grounded then steerIn * direction * speedFrac * LEAN else 0
 	lean += (targetLean - lean) * math.min(1, dt * 6)
-	local r = look:Cross(up).Unit
-	local f = up:Cross(r).Unit
-	align.CFrame = CFrame.fromMatrix(Vector3.zero, r, up, -f) * CFrame.Angles(0, 0, lean)
+	align.CFrame = CFrame.fromMatrix(Vector3.zero, right, smoothUp, -look) * CFrame.Angles(0, 0, lean)
 end
 
 function VehicleController:Start()
