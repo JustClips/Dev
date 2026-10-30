@@ -67,6 +67,9 @@ local nodes: { [string]: TextButton } = {}
 local nodeSize = UDim2.fromOffset(130, 150)
 local extents: { [string]: Vector2 } = {}
 local current = "Main"
+-- Each board's zoom and pan, kept while you play so closing and reopening the window (or
+-- going into a lab and back) doesn't reset your view (Dev, 2026-10-30).
+local views: { [string]: { zoom: number, pan: Vector2 } } = {}
 local hovered: string? = nil -- mouse is over this hex
 local selected: string? = nil -- tapped once: tooltip stays, the next tap buys
 local flashText: string? = nil -- a short message in the tooltip (e.g. "Need $50 more")
@@ -441,6 +444,9 @@ end
 
 -- Shows one board (Main or a lab) and frames it on screen.
 local function showBoard(treeId: string, flyIn: boolean?)
+	if zoom and boards[current] then
+		views[current] = { zoom = zoom.Scale, pan = pan }
+	end
 	current = treeId
 	for id, board in boards do
 		board.Visible = id == treeId
@@ -458,12 +464,13 @@ local function showBoard(treeId: string, flyIn: boolean?)
 			end
 		end)
 	end
-	local target = fitZoom()
+	local saved = views[treeId]
+	local target = if saved then math.clamp(saved.zoom, ZOOM_MIN, ZOOM_MAX) else fitZoom()
 	zoom.Scale = target
-	pan = Vector2.zero
+	pan = if saved then saved.pan else Vector2.zero
 	clampPan()
 	renderBoard()
-	if flyIn and not Ui.reducedMotion() then
+	if flyIn and not saved and not Ui.reducedMotion() then
 		-- The new board grows out of the middle of the screen.
 		zoom.Scale = target * 0.4
 		TweenService:Create(zoom, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = target }):Play()
