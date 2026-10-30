@@ -322,9 +322,9 @@ local function layoutButtons(_scale: number, compact: boolean)
 	if compact then
 		local screenGui = buttons:FindFirstAncestorOfClass("ScreenGui") :: ScreenGui
 		local _, right = Ui.edges(screenGui)
-		-- Top of the column level with the clean bar under the pills (Dev, phones).
+		-- Top of the column level with the clean bar under the pills, dropped SIDE_DROP (Dev, phones).
 		buttons.AnchorPoint = Vector2.new(1, 0)
-		buttons.Position = UDim2.new(1, -right, 0, math.max(4, (C.HudController.barY or 10) - math.ceil(4 * s)))
+		buttons.Position = UDim2.new(1, -right, 0, math.max(4, (C.HudController.barY or 10) - math.ceil(4 * s)) + math.ceil(C.HudController.SIDE_DROP * s))
 		buttons.Size = UDim2.fromOffset(80, 280)
 		eggsButton.Position = UDim2.fromOffset(40, 40)
 		petsButton.Position = UDim2.fromOffset(40, 136)

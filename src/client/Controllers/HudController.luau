@@ -461,6 +461,9 @@ end
 -- The left rail and the right-hand stack (Eggs/Pets buttons, then Next Tool + Auto) are
 -- centred on the same line, RAIL_CENTRE px from the screen's middle.
 local RAIL_CENTRE = -30
+-- Phones: how far the side button columns sit below their top spot (gui px before scale).
+HudController.SIDE_DROP = 44
+local SIDE_DROP = HudController.SIDE_DROP
 local STACK_BUTTONS, STACK_GAP, STACK_RIGHT = 324, 16, 50
 
 function HudController.rightStackTop(s: number): number
@@ -478,15 +481,16 @@ layout = function(s: number, compact: boolean)
 	end
 	el.Pills.Size = UDim2.fromOffset(math.max(1, shown) * 136 + math.max(0, shown - 1) * 12, el.Pills.Size.Y.Offset)
 	local pillsH = math.ceil(52 * s)
-	-- Pills go up into Roblox's top bar row when they fit between its buttons (and our
-	-- settings gear, which sits right after them) and the ADMIN button. Centred if they
-	-- can be, otherwise moved right just past the gear (Dev wanted them up there on phones).
+	-- Pills go up into Roblox's top bar row when they fit between its buttons and the
+	-- ADMIN button. Centred if they can be (Dev, 2026-10-30), otherwise moved right just
+	-- past Roblox's buttons. Our settings gear sits under the top bar row, so it isn't in
+	-- the way.
 	local inset = GuiService.TopbarInset
 	local shift = 0
 	if inset.Height >= pillsH and hud.AbsoluteSize.X > 2 then
 		local w = math.ceil(el.Pills.Size.X.Offset * s)
 		local guiMid = hud.AbsolutePosition.X + hud.AbsoluteSize.X / 2
-		local freeLeft = math.max(inset.Min.X, 104) + math.ceil(inset.Height) + 8
+		local freeLeft = math.max(inset.Min.X, 104) + 8
 		local freeRight = inset.Max.X - 8 - (if Admin.isAdmin(Players.LocalPlayer.UserId) then 100 else 0)
 		local x0 = math.max(guiMid - w / 2, freeLeft)
 		if x0 + w <= freeRight then
@@ -521,7 +525,8 @@ layout = function(s: number, compact: boolean)
 			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
 		el.Rail.AnchorPoint = Vector2.new(0, 0)
-		el.Rail.Position = UDim2.new(0, left, 0, 6)
+		-- A bit lower than right under the top bar (Dev, 2026-10-30).
+		el.Rail.Position = UDim2.new(0, left, 0, 6 + math.ceil(SIDE_DROP * s))
 		el.Rail.Size = UDim2.fromOffset(180, 280)
 		if railGrid then
 			railGrid.CellPadding = UDim2.fromOffset(12, 14)
