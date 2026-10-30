@@ -386,7 +386,7 @@ local function foundEgg(player: Player, position: Vector3, rarity: string, zone:
 	session.Data.Stats.EggsFound += 1
 	session.Runtime.TutorialEggSpawned = true
 	trackTutorialEgg(player, session, egg)
-	S.AnalyticsService:Funnel(player, "FirstEgg")
+	S.AnalyticsService:Custom(player, "EggFound", 1, { Rarity = rarity })
 	S.StateService:Mark(player)
 	Net.fire("Notify", player, `You found a {rarity} egg!`, "Egg")
 end

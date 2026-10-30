@@ -145,6 +145,7 @@ function HatchService:PlaceEgg(player: Player, uid: string, position: Vector3?):
 		StartsAt = os.time(),
 		EndsAt = os.time() + seconds,
 	})
+	S.AnalyticsService:Custom(player, "EggPlaced", 1, { Rarity = egg.Rarity })
 	changed(player)
 	if Eggs.order(egg.Rarity) >= Eggs.order("Rare") and seconds > 0 then
 		S.OfferService:OnRareHatchStarted(player, egg.Rarity, uid)
@@ -252,7 +253,7 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	data.Pets[petUid] = pet
 	data.Stats.Hatches += 1
 
-	S.AnalyticsService:Funnel(player, "FirstHatch")
+	S.AnalyticsService:Custom(player, "EggHatched", 1, { Pet = def.Rarity, Egg = entry.Rarity })
 	changed(player)
 	if not quiet then
 		Net.fire("HatchCompleted", player, {

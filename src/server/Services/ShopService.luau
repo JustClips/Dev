@@ -244,6 +244,7 @@ local function processReceipt(info): Enum.ProductPurchaseDecision
 	S.DataService:RecordReceipt(data, purchaseId, tostring(recipient.UserId))
 	S.StateService:Mark(recipient)
 	S.AnalyticsService:Custom(buyer, "RobuxPurchase", product.Price, { Product = product.Key, Gift = tostring(recipient ~= buyer) })
+	S.AnalyticsService:Purchased(buyer, product.Key, product.Price, product.Kind == "WheelSpins")
 	if recipient ~= buyer then
 		notify(recipient, `{buyer.DisplayName} gifted you {product.Name}!`)
 		notify(buyer, `Gift sent to {recipient.DisplayName}!`)
@@ -291,6 +292,7 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 			return false, "You already own this"
 		end
 		MarketplaceService:PromptGamePassPurchase(player, pass.Id)
+		S.AnalyticsService:PromptShown(player, pass.Key)
 		return true, nil
 	end
 	local product = Products.ProductByKey[key]
@@ -357,6 +359,7 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		return false, `{recipient.DisplayName} already owns this`
 	end
 	MarketplaceService:PromptProductPurchase(player, product.Id)
+	S.AnalyticsService:PromptShown(player, product.Key, product.Kind == "WheelSpins")
 	return true, nil
 end
 
@@ -400,6 +403,17 @@ function ShopService:Start()
 			applyPassEffects(player)
 			notify(player, `{pass.Name} is yours!`)
 			S.AnalyticsService:Custom(player, "GamepassPurchase", pass.Price, { Pass = pass.Key })
+			S.AnalyticsService:Purchased(player, pass.Key, pass.Price)
+		elseif not purchased and pass then
+			S.AnalyticsService:Custom(player, "PurchaseCancelled", pass.Price, { Product = pass.Key })
+		end
+	end)
+	-- Closed product prompts (bought ones are counted in processReceipt).
+	MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId, productId, purchased)
+		local player = Players:GetPlayerByUserId(userId)
+		local product = Products.ProductById[productId]
+		if player and product and not purchased then
+			S.AnalyticsService:Custom(player, "PurchaseCancelled", product.Price, { Product = product.Key })
 		end
 	end)
 

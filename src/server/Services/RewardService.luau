@@ -224,6 +224,7 @@ local function spin(player: Player): (boolean, string?, number?)
 		end)
 	end
 	S.AnalyticsService:Custom(player, "WheelSpin", index, { Free = tostring(free) })
+	S.AnalyticsService:WheelSpun(player)
 	if seg.Weight <= 1 then
 		-- After the wheel stops, so the spinner sees it land first.
 		local name = player.DisplayName

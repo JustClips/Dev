@@ -45,7 +45,7 @@ function ZoneService:Unlock(player: Player, zoneId: string): (boolean, string)
 		return false, `Need {Format.cash(zone.UnlockCost)} to open {zone.Name}`
 	end
 	data.ZonesUnlocked[zoneId] = true
-	S.AnalyticsService:Funnel(player, "FirstZone")
+	S.AnalyticsService:ZoneUnlocked(player, zoneId)
 	S.StateService:Mark(player)
 	return true, `{zone.Name} unlocked!`
 end

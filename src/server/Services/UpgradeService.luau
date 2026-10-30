@@ -76,6 +76,7 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 	end
 	S.StateService:Mark(player)
 	local level = data.Upgrades[def.Id]
+	S.AnalyticsService:Custom(player, "UpgradeBought", level, { Upgrade = def.Id })
 	if def.Opens then
 		return true, `{def.Name} unlocked! Tap it to go inside`
 	end

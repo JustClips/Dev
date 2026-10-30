@@ -12,6 +12,7 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Sounds = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Sounds"))
+local Net = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Net"))
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui") :: PlayerGui
@@ -385,7 +386,17 @@ function Ui.open(name: string)
 	local gui = Ui.screen(name)
 	if not Ui.isOpen(gui) then
 		Ui.show(gui)
+		Ui.report("Open", name)
 	end
+end
+
+-- Tells the server's AnalyticsService something only the client knows (never yields).
+function Ui.report(kind: string, arg: string?)
+	task.spawn(function()
+		pcall(function()
+			Net.event("Analytics"):FireServer(kind, arg)
+		end)
+	end)
 end
 
 -- The open full window's screen, if any.

@@ -16,6 +16,8 @@ local StateService = {}
 local S: any
 local dirty: { [Player]: boolean } = {}
 local sentInventory: { [Player]: number } = {}
+-- Last tutorial step sent to each player (analytics logs each new one).
+local lastStep: { [Player]: string } = {}
 local serverState: Folder
 
 -- Server-wide values (Moon %, event state, server luck) live as attributes on
@@ -100,6 +102,11 @@ local function tutorialStep(player: Player, session: any): string
 	return "Done"
 end
 
+-- The tutorial step this player was last shown ("Done" once finished).
+function StateService:GetTutorialStep(player: Player): string?
+	return lastStep[player]
+end
+
 function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapshot?
 	local session = S.DataService:GetSession(player)
 	if not session then
@@ -113,6 +120,11 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 	local invVersion = S.InventoryService:GetVersion(player)
 	local sendInventory = full == true or sentInventory[player] ~= invVersion
 	sentInventory[player] = invVersion
+	local step = tutorialStep(player, session)
+	if lastStep[player] ~= step then
+		lastStep[player] = step
+		S.AnalyticsService:TutorialStep(player, step)
+	end
 	local carried = {}
 	for _, entry in runtime.Carried or {} do
 		table.insert(carried, entry.Rarity)
@@ -158,7 +170,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		CarriedEggs = carried,
 		CarryLimit = S.EggService:GetCarryLimit(player),
 		BaseIndex = runtime.BaseIndex or 0,
-		TutorialStep = tutorialStep(player, session),
+		TutorialStep = step,
 		TutorialTarget = runtime.TutorialEggPosition,
 		AutoSweep = data.Settings.AutoSweep == true,
 		AutoSell = data.Settings.AutoSell ~= false,
@@ -189,6 +201,10 @@ function StateService:Init(services)
 	S.DataService.ProfileReleasing:Connect(function(player)
 		dirty[player] = nil
 		sentInventory[player] = nil
+		-- After AnalyticsService has read it for the "left during step" event.
+		task.defer(function()
+			lastStep[player] = nil
+		end)
 	end)
 end
 

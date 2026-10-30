@@ -45,6 +45,7 @@ local EVENTS: { [string]: number } = {
 	PollVote = 4, -- client: (option index) vote in the running poll
 	AskFavorite = 0, -- server -> owner: a high moment (rare hatch, rebirth): ask to favorite the game
 	FavoriteDone = 2, -- client: (result) the favorite prompt was answered, or the game is already a favorite
+	Analytics = 6, -- client: ("Loaded") loading screen gone, ("Open", screenName) a window opened
 }
 
 local FUNCTIONS: { [string]: number } = {

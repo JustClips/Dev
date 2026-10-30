@@ -38,7 +38,7 @@ function RebirthService:DoRebirth(player: Player, paid: boolean): (boolean, stri
 	S.ToolService:ResetForRebirth(player)
 	S.UpgradeService:ResetForRebirth(player)
 	S.AlienService:RefreshBase(player)
-	S.AnalyticsService:Funnel(player, "FirstRebirth")
+	S.AnalyticsService:Rebirthed(player, data.Rebirths)
 	S.StateService:Mark(player)
 	local bonus = math.floor(data.Rebirths * Economy.RebirthCashBonus * 100)
 	Net.fireAll("Announce", `{player.DisplayName} reached Rebirth {data.Rebirths}!`, "Rebirth")

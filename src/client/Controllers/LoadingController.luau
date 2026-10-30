@@ -15,6 +15,7 @@ local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
 local State = require(Client.State)
+local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Assets = require(Shared.Config.Assets)
@@ -248,6 +249,13 @@ function LoadingController:Init()
 end
 
 function LoadingController:Start()
+	-- Onboarding funnel: "Loading screen done" (skipped or finished).
+	task.spawn(function()
+		while not done do
+			task.wait(0.25)
+		end
+		Ui.report("Loaded")
+	end)
 	if done then
 		return
 	end

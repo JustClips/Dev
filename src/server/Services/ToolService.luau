@@ -560,9 +560,7 @@ function ToolService:SetTier(player: Player, tier: number)
 		data.OwnedTools[t] = true
 	end
 	giveTool(player, true)
-	if tier >= 2 then
-		S.AnalyticsService:Funnel(player, "FirstTool")
-	end
+	S.AnalyticsService:ToolTier(player, tier, Tools.get(tier).Name)
 	S.StateService:Mark(player)
 end
 
