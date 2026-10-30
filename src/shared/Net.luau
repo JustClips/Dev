@@ -16,6 +16,7 @@ local EVENTS: { [string]: number } = {
 	Notify = 0, -- server -> one: short toast
 	Announce = 0, -- server -> all: server-wide message
 	HatchCompleted = 0, -- server -> owner: cutscene payload
+	HatchShown = 0, -- server -> everyone else: a short version of someone's hatch at their base
 	WelcomeBack = 0, -- server -> owner: offline income payload
 	CashGained = 0, -- server -> owner: { Amount, Source } for the "you got" popup
 	ShowOffer = 0, -- server -> owner: contextual offer

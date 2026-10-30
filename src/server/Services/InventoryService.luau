@@ -82,6 +82,9 @@ function InventoryService:AddItem(player: Player, itemId: string, amount: number
 end
 
 local function changedBase(player: Player)
+	-- A pet held out that just went on the base (Equip Best, Equip) or away leaves your
+	-- hands (Dev, 2026-10-30: it stayed in them after Equip Best).
+	InventoryService:DropHeldIfGone(player)
 	InventoryService:Touch(player)
 	S.AlienService:RefreshBase(player)
 end
@@ -158,6 +161,20 @@ local function dropHeldModel(player: Player)
 	local held = player.Character and player.Character:FindFirstChild("HeldPet")
 	if held then
 		held:Destroy()
+	end
+end
+
+-- Drops the held pet's model when that pet is no longer in the bag (placed, sold).
+function InventoryService:DropHeldIfGone(player: Player)
+	local session = S.DataService:GetSession(player)
+	local uid = session and session.Runtime.HeldPet
+	if not session or not uid then
+		return
+	end
+	local pet = session.Data.Pets[uid]
+	if not pet or pet.Placed then
+		session.Runtime.HeldPet = nil
+		dropHeldModel(player)
 	end
 end
 

@@ -243,6 +243,27 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 			FreeSlot = S.AlienService:PlacedCount(player) < S.AlienService:GetSlotCount(player),
 		})
 	end
+	if not quiet then
+		-- Everyone else sees a short version of the show at this player's base.
+		local show = {
+			UserId = player.UserId,
+			AlienId = def.Id,
+			Mutation = mutation,
+			Huge = huge,
+			Rarity = def.Rarity,
+			Weight = weight,
+			EggRarity = entry.Rarity,
+			EggMutation = entry.Mutation,
+			EggWeight = entry.Weight,
+			X = entry.X,
+			Z = entry.Z,
+		}
+		for _, other in Players:GetPlayers() do
+			if other ~= player then
+				Net.fire("HatchShown", other, show)
+			end
+		end
+	end
 	if huge or mutation or Eggs.order(def.Rarity) >= Eggs.order("Mythic") then
 		local label = (if huge then "HUGE " else "") .. (if mutation then Eggs.MutationByName[mutation].Label .. " " else "")
 		-- Everyone else hears about it; the hatcher already sees their own reveal.

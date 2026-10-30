@@ -1179,7 +1179,121 @@ function HatchController:Init(controllers)
 	viewport.CurrentCamera = camera
 end
 
+-- Someone else's hatch (Dev, 2026-10-30: everyone should see hatches). A short, light
+-- version at their base: the egg shakes and rises, bursts with a few shards and a ring
+-- (a light pillar for Legendary+), and the pet pops out with its name for a moment.
+-- Only near you, and at most a few at once, so it stays easy on phones.
+local OTHER_RANGE = 160
+local OTHER_MAX = 3
+local othersPlaying = 0
+
+local function playOther(info)
+	local owner = Players:GetPlayerByUserId(info.UserId)
+	local camera = Workspace.CurrentCamera
+	if not owner or owner == Players.LocalPlayer or not camera or not info.X or not info.Z or othersPlaying >= OTHER_MAX then
+		return
+	end
+	local index = owner:GetAttribute("BaseIndex")
+	if type(index) ~= "number" or index < 1 then
+		return
+	end
+	local spot = World.baseCFrame(index) * CFrame.new(info.X, 0.2, info.Z)
+	if (camera.CFrame.Position - spot.Position).Magnitude > OTHER_RANGE then
+		return
+	end
+	othersPlaying += 1
+	local fx = Instance.new("Folder")
+	fx.Name = "OtherHatch"
+	fx.Parent = Workspace
+	local ok, err = pcall(function()
+		local rarity = rarityOf(info.Rarity)
+		local special = info.Huge == true or info.Mutation ~= nil
+		local power = math.clamp(Eggs.order(info.Rarity) + (if special then 1 else 0), 1, #TIERS)
+		local tier = TIERS[power]
+		local eggRarity = info.EggRarity or info.Rarity
+		local eggScale = Weights.visualScale(Weights.eggMult(eggRarity, info.EggWeight)) * 1.25
+		local egg = AssetLibrary.egg(eggRarity)
+		AssetLibrary.applyMutation(egg, info.EggMutation)
+		looks(egg)
+		egg:ScaleTo(eggScale)
+		egg:PivotTo(spot)
+		egg.Parent = fx
+		local eggHeight = egg:GetExtentsSize().Y
+		-- Shake and rise.
+		animate(0.5 + 0.12 * power, function(t)
+			local angle = math.sin(t * math.pi * 6) * math.rad(12) * (0.4 + 0.6 * t)
+			egg:PivotTo(spot * CFrame.new(0, t * 1.2, 0) * CFrame.Angles(angle * 0.4, 0, angle))
+		end, true)
+		local focus = spot.Position + Vector3.new(0, 1.2 + eggHeight / 2, 0)
+		egg:Destroy()
+		-- Burst.
+		HatchFx.burst(fx, focus, rarity.Color, 8 + power * 2, 18)
+		HatchFx.shockwave(fx, spot, rarity.Color, math.max(6, eggHeight * 2.5), 0.5)
+		HatchFx.shards(fx, focus, spot.Position.Y, eggRarity, math.ceil(tier.shards / 2), 16, eggScale)
+		local endPillar = if tier.pillar then HatchFx.pillar(fx, spot, eggHeight * 0.6, 60, rarity.Color) else nil
+		-- The pet pops out facing the camera, with its name over it.
+		local face = CFrame.lookAt(spot.Position, Vector3.new(camera.CFrame.Position.X, spot.Position.Y, camera.CFrame.Position.Z))
+		local petScale = Weights.visualScale(Weights.incomeMult(info.Rarity, info.Weight)) * (if info.Huge then Aliens.HugeScale else 1)
+		local model = AssetLibrary.alien(info.AlienId, info.Mutation)
+		for _, d in model:GetDescendants() do
+			if d:IsA("BasePart") then
+				d.Anchored = true
+				d.CanCollide = false
+				d.CanQuery = false
+				d.CanTouch = false
+			end
+		end
+		model:PivotTo(face)
+		model.Parent = fx
+		model:ScaleTo(0.05)
+		animate(0.35, function(t)
+			model:ScaleTo(math.max(0.05, petScale * backOut(t)))
+		end, true)
+		local _, size = model:GetBoundingBox()
+		local board = Instance.new("BillboardGui")
+		board.Size = UDim2.fromOffset(220, 46)
+		board.StudsOffsetWorldSpace = Vector3.new(0, size.Y + 1.5, 0)
+		board.AlwaysOnTop = true
+		board.LightInfluence = 0
+		board.MaxDistance = OTHER_RANGE
+		board.Adornee = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+		local label = Instance.new("TextLabel")
+		label.BackgroundTransparency = 1
+		label.Size = UDim2.fromScale(1, 1)
+		label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+		label.TextScaled = true
+		label.TextColor3 = rarity.Color
+		label.Text = (if info.Huge then "HUGE " else "") .. AlienModel.displayName(info.AlienId, info.Mutation)
+		local stroke = Instance.new("UIStroke")
+		stroke.Thickness = 2.5
+		stroke.Color = Color3.new(0, 0, 0)
+		stroke.Parent = label
+		label.Parent = board
+		board.Parent = fx
+		task.wait(2.2)
+		if endPillar then
+			endPillar()
+		end
+		animate(0.3, function(t)
+			model:ScaleTo(math.max(0.05, petScale * (1 - t)))
+			label.TextTransparency = t
+		end, true)
+	end)
+	if not ok then
+		warn("[HatchController] other hatch: " .. tostring(err))
+	end
+	task.delay(1, function()
+		fx:Destroy()
+	end)
+	othersPlaying -= 1
+end
+
 function HatchController:Start()
+	Net.event("HatchShown").OnClientEvent:Connect(function(info)
+		if type(info) == "table" then
+			task.spawn(playOther, info)
+		end
+	end)
 	Net.event("HatchCompleted").OnClientEvent:Connect(function(info)
 		if playing or #queue > 0 then
 			-- Keep this egg visible where it sat until its turn comes.
