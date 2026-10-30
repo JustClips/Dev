@@ -13,6 +13,7 @@
 -- Built in code in the game's style (white panels, thick dark outlines, stud buttons), not
 -- gen_ui, so the panel never ships in other players' StarterGui.
 local HttpService = game:GetService("HttpService")
+local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -819,8 +820,14 @@ local function build()
 	local toggle = button(gui, "ADMIN", RED, UDim2.fromOffset(86, 34), function()
 		window.Visible = not window.Visible
 	end, 15)
+	-- Up in Roblox's top bar row, right side, so it never covers the Eggs/Pets/Tools column.
 	toggle.AnchorPoint = Vector2.new(1, 0)
-	toggle.Position = UDim2.new(1, -10, 0, 6)
+	local function placeToggle()
+		local h = GuiService.TopbarInset.Height
+		toggle.Position = if h >= 34 then UDim2.new(1, -10, 0, -math.floor(h) + math.floor((h - 34) / 2)) else UDim2.new(1, -10, 0, 6)
+	end
+	placeToggle()
+	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(placeToggle)
 
 	window = panel(gui, UDim2.fromOffset(W, H), SURFACE)
 	window.Name = "Window"

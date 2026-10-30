@@ -568,21 +568,40 @@ local function rescale()
 	end
 end
 
+-- A full-screen ScreenGui (no safe-area insets) to measure the insets against.
+local probe: ScreenGui? = nil
+local function fullScreen(): ScreenGui
+	if not probe or not probe.Parent then
+		local g = Instance.new("ScreenGui")
+		g.Name = "SafeAreaProbe"
+		g.ScreenInsets = Enum.ScreenInsets.None
+		g.IgnoreGuiInset = true
+		g.ResetOnSpawn = false
+		g.Parent = playerGui
+		probe = g
+	end
+	return probe :: ScreenGui
+end
+
 -- How far from the left / right screen edge HUD pieces sit, as offsets inside a ScreenGui
 -- that keeps out of the safe-area insets (negative = out into the inset). On phones the
 -- safe area leaves a wide empty band beside the camera hole; Dev wanted the HUD hugging
--- the edges, so we only keep a small part of the inset clear.
+-- the edges, so we only keep a small part of the inset clear. Each side is measured on
+-- its own (the camera hole is often on one side only).
 function Ui.edges(gui: ScreenGui): (number, number)
-	local camera = Workspace.CurrentCamera
-	if not camera or gui.AbsoluteSize.X < 2 then
+	local full = fullScreen()
+	if gui.AbsoluteSize.X < 2 or full.AbsoluteSize.X < 2 then
 		return 14, 14
 	end
-	local inset = math.max(0, (camera.ViewportSize.X - gui.AbsoluteSize.X) / 2)
-	if inset < 1 then
-		return 14, 14
+	local insetL = math.max(0, gui.AbsolutePosition.X - full.AbsolutePosition.X)
+	local insetR = math.max(0, (full.AbsolutePosition.X + full.AbsoluteSize.X) - (gui.AbsolutePosition.X + gui.AbsoluteSize.X))
+	local function pull(inset: number): number
+		if inset < 1 then
+			return 14
+		end
+		return math.floor(math.clamp(inset - 30, 10, 24) - inset)
 	end
-	local offset = math.floor(math.clamp(inset - 30, 10, 24) - inset)
-	return offset, offset
+	return pull(insetL), pull(insetR)
 end
 
 -- Buttons carry a tinted "Studs" texture (gen_ui.py). Controllers recolour buttons

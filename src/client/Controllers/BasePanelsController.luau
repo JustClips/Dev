@@ -322,8 +322,9 @@ local function layoutButtons(_scale: number, compact: boolean)
 	if compact then
 		local screenGui = buttons:FindFirstAncestorOfClass("ScreenGui") :: ScreenGui
 		local _, right = Ui.edges(screenGui)
+		-- Top of the column level with the clean bar under the pills (Dev, phones).
 		buttons.AnchorPoint = Vector2.new(1, 0)
-		buttons.Position = UDim2.new(1, -right, 0, 10)
+		buttons.Position = UDim2.new(1, -right, 0, math.max(4, (C.HudController.barY or 10) - math.ceil(4 * s)))
 		buttons.Size = UDim2.fromOffset(80, 280)
 		eggsButton.Position = UDim2.fromOffset(40, 40)
 		petsButton.Position = UDim2.fromOffset(40, 136)
@@ -348,6 +349,10 @@ local function layoutButtons(_scale: number, compact: boolean)
 			Ui.setHome(panel, UDim2.new(1, -math.ceil(14 + 96 * s), 0.5, -30))
 		end
 	end
+end
+
+function BasePanelsController:Relayout()
+	layoutButtons(Ui.scale(), Ui.compact())
 end
 
 function BasePanelsController:Toggle(name: string)
