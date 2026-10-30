@@ -237,7 +237,8 @@ local function grantOffline(player: Player, session)
 	if data.LastOnline <= 0 then
 		return
 	end
-	local cap = if data.Gamepasses.VIP then Economy.OfflineCapSecondsVIP else Economy.OfflineCapSeconds
+	local cap = (if data.Gamepasses.VIP then Economy.OfflineCapSecondsVIP else Economy.OfflineCapSeconds)
+		+ Upgrades.stat(data.Upgrades, "OfflineCap") * 3600
 	local seconds = math.clamp(os.time() - data.LastOnline, 0, cap)
 	local base = AlienService:GetBaseIncome(player)
 	if seconds < Economy.OfflineMinSeconds or base <= 0 then

@@ -121,6 +121,7 @@ def _upgrades() -> list[dict]:
     text = re.sub(r"--[^\n]*", "", (CFG / "Upgrades.luau").read_text())
     rows = []
     tree = "Main"
+    cur = None
     for line in text.splitlines():
         t = re.match(r"local (\w+) = inTree\(\"(\w+)\"", line.strip())
         if t:
@@ -144,6 +145,32 @@ def _upgrades() -> list[dict]:
                     RequiredRebirths=int(m.group(10) or 0),
                 )
             )
+        m = re.search(r"\bt\(\"(\w+)\",\s*(-?\d+),\s*(-?\d+),\s*(nil|\"\w+\"),\s*\"(\w+)\",\s*\{", line)
+        if m:
+            # Evolving hex: each tier below becomes its own pseudo-node that needs the tier
+            # before it maxed (tier 1 keeps the hex's Id, so children find their parent).
+            cur = dict(Id=m.group(1), Tree=tree, Parent=None if m.group(4) == "nil" else m.group(4).strip('"'),
+                       Stat=m.group(5), tiers=0)
+            continue
+        m = re.search(r"\btier\(\"[^\"]*\",\s*\"[^\"]*\",\s*(\d+),\s*([\d.]+),\s*([\d_]+),\s*([\d.]+)(?:,\s*(\d+))?\)", line)
+        if m and cur:
+            cur["tiers"] += 1
+            k = cur["tiers"]
+            rows.append(
+                dict(
+                    Id=cur["Id"] if k == 1 else f"{cur['Id']}#{k}",
+                    Tree=cur["Tree"],
+                    Parent=cur["Parent"] if k == 1 else None,
+                    Prev=None if k == 1 else (cur["Id"] if k == 2 else f"{cur['Id']}#{k - 1}"),
+                    Stat=cur["Stat"],
+                    MaxLevel=int(m.group(1)),
+                    PerLevel=float(m.group(2)),
+                    BaseCost=_num(m.group(3)),
+                    CostGrowth=float(m.group(4)),
+                    RequiredRebirths=int(m.group(5) or 0),
+                )
+            )
+            continue
         m = re.search(r"\blab\(\"(\w+)\",\s*-?\d+,\s*-?\d+,\s*\"(\w+)\",.*?([\d_]+)\),\s*$", line)
         if m:
             rows.append(
@@ -210,6 +237,7 @@ class Config:
         self.upgrades = _upgrades()
         self.up_by_id = {u["Id"]: u for u in self.upgrades}
         self.trees = {u["Opens"]: u["Id"] for u in self.upgrades if u.get("Opens")}
+        self.by_id = {u["Id"]: u for u in self.upgrades}
         self.rarities, self.mutations, self.faster_hatch, self.hatch_odds = _rarities()
         self.rorder = {r["Name"]: r["Order"] for r in self.rarities}
         self.rhatch = {r["Name"]: r["HatchSeconds"] for r in self.rarities}
@@ -219,6 +247,14 @@ class Config:
             self.pools.setdefault(a.get("Zone", "Landing"), {}).setdefault(a["Rarity"], []).append(a)
         self.products = _products()
         self.items = _items()
+        itext = (CFG / "Items.luau").read_text()
+        dblock = itext[itext.index("local Drops"):]
+        dblock = dblock[: dblock.index("\n}")]
+        self.drops = [dict(Cash=float(c) if c else None, Item=i or None, Weight=float(w))
+                      for c, i, w in re.findall(r'\{\s*(?:Cash = ([\d.]+)|Item = "(\w+)"),\s*Weight = ([\d.]+)', dblock)]
+        num, den = re.search(r"DropChance = (\d+) / (\d+)", itext).groups()
+        self.drop_chance = float(num) / float(den)
+        self.drop_gap = float(re.search(r"DropGap = ([\d.]+)", itext).group(1))
         self.daily, self.playtime = _rewards()
         # tiles per zone (bounds / tile size; the Landing field is World.Field)
         world = (CFG / "World.luau").read_text()
@@ -284,6 +320,7 @@ class Player:
         self.incubators: list = []  # (ends_at, rarity, zone)
         self.boosts: dict = {}  # name -> play-time expiry
         self.items: dict = {}
+        self.drop_cash = 0.0
         self.since_trip = 0.0
         self.log: list = []
         self.robux = 0
@@ -321,7 +358,8 @@ class Player:
                 continue
             seen.add(d["Id"])
             out[pas["Stat"]] = out.get(pas["Stat"], 0) + pas["Value"] * (2 if p.get("huge") else 1)
-        return out
+        k = 1 + self.stat("PassivePower")
+        return {key: v * k for key, v in out.items()}
 
     def stat(self, s: str, passive: dict | None = None) -> float:
         cache = self._stats
@@ -344,13 +382,17 @@ class Player:
             m *= eco["Cash2xPassMult"]
         if "VIP" in self.passes:
             m *= 1 + eco["VIPCashBonus"]
-        if temp and self.boost("Cash2x"):
+        if temp and self.boost("Cash3x"):
+            m *= 3
+        elif temp and self.boost("Cash2x"):
             m *= eco["Cash2xBoostMult"]
         return m
 
     def luck(self) -> float:
         l = (1 + self.stat("Luck", self._pas)) * self.sp.server_luck
-        if self.boost("Luck2x"):
+        if self.boost("Luck3x"):
+            l *= 3
+        elif self.boost("Luck2x"):
             l *= 2
         return l
 
@@ -370,9 +412,10 @@ class Player:
     def sweep(self):
         """Best (cash/s, tiles/s, trip seconds, zone) over owned gear and open zones."""
         c, pas = self.c, self._pas
-        power_m = 1 + self.stat("Power", pas)
+        power_m = (1 + self.stat("Power", pas)) * (2 if self.boost("Leaf2x") else 1)
+        regrow = 1 + self.stat("Regrow", pas)
         size_m = 1 + self.stat("Radius", pas)
-        bag_m = 1 + self.stat("Backpack", pas)
+        bag_m = (1 + self.stat("Backpack", pas)) * (1.5 if self.boost("BigBag") else 1)
         value_m = 1 + self.stat("DustValue", pas)
         crit = self.stat("Crit", pas) * (5 + self.stat("CritMult", pas) - 1)
         gold = 1 + (GOLDEN - 1) * (1 + self.stat("Golden", pas))
@@ -398,7 +441,7 @@ class Player:
                 dwell = TICKS * (2 * r / spd)
                 if dwell < hits:
                     tiles *= dwell / hits
-                tiles = min(tiles * eff, z["Tiles"] / z["RegrowSeconds"] * FIELD_SHARE)
+                tiles = min(tiles * eff, z["Tiles"] / z["RegrowSeconds"] * regrow * FIELD_SHARE)
                 units = tiles * z["DustPerTile"] * p
                 trash = 1 + z.get("TrashPercent", 0) / 100 * (c.eco["TrashMult"] - 1)
                 fill = cap / units
@@ -518,9 +561,14 @@ class Player:
             lvl = self.levels.get(u["Id"], 0)
             if lvl >= u["MaxLevel"] or self.rebirths < u["RequiredRebirths"]:
                 continue
-            need = u["Parent"] or (c.trees.get(u["Tree"]) if u["Tree"] != "Main" else None)
-            if need and self.levels.get(need, 0) < 1:
-                continue
+            prev = u.get("Prev")
+            if prev:
+                if self.levels.get(prev, 0) < c.by_id[prev]["MaxLevel"]:
+                    continue
+            else:
+                need = u["Parent"] or (c.trees.get(u["Tree"]) if u["Tree"] != "Main" else None)
+                if need and self.levels.get(need, 0) < 1:
+                    continue
             if u["Stat"] in ("Offline",) and not self.pets:
                 continue
             out.append((math.floor(u["BaseCost"] * u["CostGrowth"] ** lvl), "up", u["Id"]))
@@ -609,7 +657,7 @@ class Player:
         for _ in range(n):
             if d.get("Boost"):
                 key = d["Boost"]
-                self.boosts[key] = max(self.boosts.get(key, self.t), self.t) + d.get("Minutes", 10) * 60
+                self.boosts[key] = max(self.boosts.get(key, self.t), self.t) + d.get("Minutes", 10) * 60 * (1 + self.stat("PotionTime"))
             elif d.get("HatchSeconds"):
                 self.incubators = [(e - d["HatchSeconds"], r, z) for e, r, z in self.incubators]
 
@@ -639,7 +687,15 @@ class Player:
             self.cash += (cps + pets) * STEP
             # eggs found while sweeping
             zdef = next(z for z in self.c.zones if z["Id"] == zone)
-            lam = tiles * STEP * zdef["EggChance"] * self.luck()
+            lam = tiles * STEP * zdef["EggChance"] * self.luck() * (1 + self.stat("EggFind"))
+            # leaf drops (Config/Items Drops): coin pouches and items
+            for _ in range(_poisson(self.rng, min(tiles * STEP * self.c.drop_chance * (1 + self.stat("ItemFind")), STEP / self.c.drop_gap))):
+                drop = self.rng.choices(self.c.drops, weights=[d["Weight"] for d in self.c.drops])[0]
+                if drop.get("Cash"):
+                    self.cash += (cps + pets) * drop["Cash"]
+                    self.drop_cash += (cps + pets) * drop["Cash"]
+                elif drop.get("Item"):
+                    self.use_item(drop["Item"], 1)
             n = _poisson(self.rng, lam)
             if n:
                 # only the best few eggs of a trip matter: roll best-of-n a few times

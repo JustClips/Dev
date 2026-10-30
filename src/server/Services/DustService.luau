@@ -13,6 +13,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local Grid = require(Shared.Grid)
 local Net = require(Shared.Net)
+local Upgrades = require(Shared.Config.Upgrades)
 
 local REGROW_CHECK_SECONDS = 0.5
 local GOLDEN_OFF = 32768 -- TilesGolden: id = turned golden, id + GOLDEN_OFF = back to normal
@@ -170,8 +171,17 @@ function DustService:Damage(id: number, power: number, by: Player): boolean
 	end
 	local queue = field.queues[zone.Id]
 	queue.tail += 1
-	queue.items[queue.tail] = { id = id, at = os.clock() + zone.RegrowSeconds }
+	-- Fertilizer (upgrade tree): your leaves grow back faster.
+	local data = S.DataService:GetData(by)
+	local regrow = Upgrades.multiplier(data and data.Upgrades, "Regrow")
+	queue.items[queue.tail] = { id = id, at = os.clock() + zone.RegrowSeconds / regrow }
 	return true
+end
+
+-- True when this tile has no leaves in this player's field right now.
+function DustService:IsCleared(player: Player, id: number): boolean
+	local field = fields[player]
+	return field ~= nil and field.cleared[id] == true
 end
 
 -- 0..1 progress of the shared "Moon Clean" bar.

@@ -64,6 +64,21 @@ export type UpgradeDef = {
 	Format: string, -- how the effect is shown: "percent", "plus", "x" or "seconds"
 	Description: string,
 	RequiredRebirths: number,
+	-- Evolving nodes: each tier is a stage with its own name, levels and prices. Maxing a
+	-- tier evolves the node into the next one (which may need rebirths). Simple nodes have
+	-- one tier. MaxLevel above is the sum of every tier's levels.
+	Tiers: { UpgradeTier },
+}
+
+export type UpgradeTier = {
+	Name: string,
+	Description: string,
+	Levels: number,
+	PerLevel: number,
+	BaseCost: number,
+	CostGrowth: number,
+	RequiredRebirths: number,
+	First: number, -- total node level before this tier starts
 }
 
 export type Exclusion = { Center: Vector2, Radius: number }
@@ -247,6 +262,8 @@ export type ProfileData = {
 	Flags: { [string]: any },
 	Stats: { [string]: number },
 	Settings: { [string]: any },
+	-- Traveling Merchant (MerchantService): which visit this is for and what you bought.
+	Merchant: { [string]: any },
 }
 
 -- What the server sends to the owning client (see StateService).

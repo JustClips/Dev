@@ -64,6 +64,9 @@ World.Plaza = { Min = Vector2.new(-62, 186), Max = Vector2.new(62, 198) }
 World.Wheel = CFrame.lookAt(Vector3.new(0, 0, 191), Vector3.new(0, 0, 0))
 -- Global leaderboards (LeaderboardService): one stand each on the plaza strip in front of
 -- the big screen, facing the field.
+-- The Traveling Merchant's cart (MerchantService, Config/Merchant) on the plaza strip,
+-- right of the leaderboard stands, facing the field. Keep x 36..48 clear.
+World.Merchant = CFrame.lookAt(Vector3.new(42, 0, 191), Vector3.new(42, 0, 0))
 World.LeaderboardZ = 189
 World.Leaderboards = {
 	{ Key = "Earned", Title = "TOTAL CASH EARNED", Color = Color3.fromRGB(47, 191, 85), X = -42 },

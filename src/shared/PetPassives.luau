@@ -70,7 +70,15 @@ function PetPassives.install(getSessions: () -> { [Player]: any })
 				local entry = cache[data]
 				local now = os.clock()
 				if not entry or now - entry.at > 1 then
-					entry = { at = now, totals = PetPassives.totals(data.Pets) }
+					local totals = PetPassives.totals(data.Pets)
+					-- Best Friends (Pet Lab) makes every passive stronger.
+					local power = 1 + Upgrades.treeStat(levels, "PassivePower")
+					if power ~= 1 then
+						for stat, value in totals do
+							totals[stat] = value * power
+						end
+					end
+					entry = { at = now, totals = totals }
 					cache[data] = entry
 				end
 				return entry.totals

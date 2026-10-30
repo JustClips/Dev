@@ -34,6 +34,7 @@ local TOAST_COLORS: { [string]: Color3 } = {
 	Bad = Color3.fromRGB(255, 92, 104),
 	Sell = Color3.fromRGB(255, 214, 72),
 	Egg = Color3.fromRGB(255, 170, 255),
+	Rare = Color3.fromRGB(255, 205, 60), -- rare finds (leaf drops, treasure)
 	Info = Color3.fromRGB(255, 255, 255),
 }
 local LUCK_TIERS = { 16, 8, 4, 2 }
@@ -56,6 +57,7 @@ local pulseTween: Tween? = nil
 local TOAST_ICONS: { [string]: string } = {
 	Sell = "Icon_Cash",
 	Egg = "Icon_Egg",
+	Rare = "Icon_Gift",
 }
 
 -- Bold outlined text under the Moon bar, with an icon for cash and eggs. The same message
@@ -140,9 +142,13 @@ end
 local layout: (number, boolean) -> ()
 
 local announceToken = 0
-local function announce(text: string)
+local GLOBAL_COLOR = Color3.fromRGB(255, 126, 182) -- rare hatches from other servers
+local ANNOUNCE_COLOR: Color3? = nil
+local function announce(text: string, kind: string?)
 	announceToken += 1
 	local token = announceToken
+	ANNOUNCE_COLOR = ANNOUNCE_COLOR or el.AnnouncementText.TextColor3
+	el.AnnouncementText.TextColor3 = if kind == "Global" then GLOBAL_COLOR else ANNOUNCE_COLOR :: Color3
 	el.AnnouncementText.Text = text
 	el.Announcement.Visible = true
 	layout(Ui.scale(), Ui.compact()) -- toasts move down under it
@@ -400,11 +406,32 @@ local function renderBoosts()
 		end
 	end
 	local data = State.data
-	if data and (data.Boosts.Cash2x or 0) > now then
+	if data and (data.Boosts.Cash3x or 0) > now then
+		add("Cash3x", "Icon_PotionMegaCash", `{Items.MegaCashMult}x`, data.Boosts.Cash3x, "Mega Cash Potion", `Your pets and selling earn {Items.MegaCashMult}x cash.`)
+	elseif data and (data.Boosts.Cash2x or 0) > now then
 		add("Cash2x", "Icon_Cash", "2x", data.Boosts.Cash2x, "2x Cash", "Your pets and selling earn double cash.")
 	end
-	if data and (data.Boosts.Luck2x or 0) > now then
+	if data and (data.Boosts.Luck3x or 0) > now then
+		add("Luck3x", "Icon_PotionSuperLuck", `{Items.SuperLuckMult}x`, data.Boosts.Luck3x, "Super Luck Potion", `Your eggs hatch rarer pets {Items.SuperLuckMult}x more often, and you find bigger eggs.`)
+	elseif data and (data.Boosts.Luck2x or 0) > now then
 		add("Luck2x", "Icon_PotionLuck", `{Items.LuckMult}x`, data.Boosts.Luck2x, "Luck Potion", `Your eggs hatch rarer pets {Items.LuckMult}x more often, and you find bigger eggs.`)
+	end
+	if data and (data.Boosts.Leaf2x or 0) > now then
+		add("Leaf2x", "Icon_PotionLeaf", `{Items.LeafMult}x`, data.Boosts.Leaf2x, "Leaf Potion", `Every pile gives you {Items.LeafMult}x leaves.`)
+	end
+	if data and (data.Boosts.BigBag or 0) > now then
+		add("BigBag", "Icon_PotionBag", `+{math.floor((Items.BigBagMult - 1) * 100 + 0.5)}%`, data.Boosts.BigBag, "Big Bag Potion", "Your bag holds more leaves.")
+	end
+	if data and (data.Boosts.Magnet or 0) > now then
+		add("Magnet", "Icon_PotionMagnet", `+{Items.MagnetBonus}`, data.Boosts.Magnet, "Magnet Potion", "You grab coins and drops from much further away.")
+	end
+	-- Charms waiting for your next hatch (no timer).
+	local charms = if data and data.Flags then data.Flags.Charms else nil
+	if charms and (charms.Huge or 0) > 0 then
+		add("CharmHuge", "Icon_HugeCharm", `x{charms.Huge}`, 0, "Huge Charm", `Your next hatch is {Items.HugeCharmMult}x more likely to be Huge.`)
+	end
+	if charms and (charms.Clover or 0) > 0 then
+		add("CharmClover", "Icon_LuckyClover", `x{charms.Clover}`, 0, "Lucky Clover", "Your next hatch is 3x more likely to go up a rarity.")
 	end
 	if data and (data.Boosts.Speed or 0) > now then
 		add("Speed", "Icon_PotionSpeed", `+{Items.SpeedBonus}`, data.Boosts.Speed, "Speed Potion", `You run {Items.SpeedBonus} faster.`)

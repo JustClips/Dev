@@ -82,6 +82,8 @@ local Products: { ProductDef } = {
 	{ Key = "WheelSpin1", Id = 3724118622, Price = 19, Name = "1 Wheel Spin", Kind = "WheelSpins", Category = "Wheel", Giftable = true, Count = 1 },
 	{ Key = "WheelSpin5", Id = 3724118638, Price = 79, Name = "5 Wheel Spins", Kind = "WheelSpins", Category = "Wheel", Giftable = true, Count = 5 },
 	{ Key = "WheelSpin10", Id = 3724118654, Price = 149, Name = "10 Wheel Spins", Kind = "WheelSpins", Category = "Wheel", Giftable = true, Count = 10 },
+	-- Traveling Merchant: a fresh set of wares just for you (sold in the merchant window).
+	{ Key = "MerchantRestock", Id = 3724147406, Price = 29, Name = "Merchant Restock", Kind = "MerchantRestock", Category = "Merchant", Giftable = false },
 	{ Key = "DoubleOffline", Id = 3723359071, Price = 49, Name = "Double Offline Reward", Kind = "DoubleOffline", Category = "Special", Giftable = false },
 
 	-- Gamepass gifts: Roblox can't gift a gamepass, so each pass has a product you buy for a

@@ -22,6 +22,8 @@ local Aliens = require(Shared.Config.Aliens)
 local AssetLibrary = require(Shared.AssetLibrary)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
+local Items = require(Shared.Config.Items)
+local Upgrades = require(Shared.Config.Upgrades)
 local Weather = require(Shared.Config.Weather)
 local World = require(Shared.Config.World)
 local Zones = require(Shared.Config.Zones)
@@ -152,17 +154,72 @@ local function upgradeEgg(egg: GrowingEgg, mutation: string, how: string)
 	Net.fire("Notify", egg.player, `{how} Your {egg.rarity} Egg is {label} now! The pet keeps it.`, "Good")
 end
 
+-- Storm Chaser (Egg Lab): this player's eggs get weather mutations more often.
+local function weatherMutMult(player: Player): number
+	local data = S.DataService:GetData(player)
+	return Upgrades.multiplier(data and data.Upgrades, "WeatherMut")
+end
+
 local function rollEggMutations()
 	for _, def in active() do
 		local mutation, chance = def.Mutation, def.EggChance
 		if mutation and chance then
 			for _, egg in growingEggs() do
-				if not egg.mutated and rng:NextNumber() < chance then
+				if not egg.mutated and rng:NextNumber() < chance * weatherMutMult(egg.player) then
 					upgradeEgg(egg, mutation, `{def.Name}!`)
 				end
 			end
 		end
 	end
+end
+
+-- Mutation Spray (item): one of this player's growing eggs without a mutation gets a random
+-- weather mutation (the commoner ones more often).
+local SPRAY_WEIGHTS = { Wet = 30, Windswept = 26, Frozen = 18, Shocked = 12, Golden = 8, Disco = 6, Starlit = 5, Bloodlit = 3, Rainbow = 3, Starstruck = 2 }
+function WeatherService:SprayEgg(player: Player): (boolean, string?)
+	local mine = {}
+	for _, egg in growingEggs() do
+		if egg.player == player and not egg.mutated then
+			table.insert(mine, egg)
+		end
+	end
+	if #mine == 0 then
+		return false, "Place an egg in your park first (one without a mutation)"
+	end
+	local total = 0
+	for _, w in SPRAY_WEIGHTS do
+		total += w
+	end
+	local roll, pick = rng:NextNumber() * total, "Wet"
+	for name, w in SPRAY_WEIGHTS do
+		roll -= w
+		if roll <= 0 then
+			pick = name
+			break
+		end
+	end
+	local egg = mine[rng:NextInteger(1, #mine)]
+	if not S.HatchService:SetEggMutation(player, egg.uid, pick) then
+		return false, "That egg can't be sprayed right now"
+	end
+	local label = Eggs.MutationByName[pick] and Eggs.MutationByName[pick].Label or pick
+	Net.fireAll("EggUpgraded", egg.position, pick)
+	return true, `Psssht! Your {egg.rarity} Egg is {label} now! The pet keeps it.`
+end
+
+-- Weather Totem (item): starts a random lucky weather for the whole server.
+function WeatherService:Totem(player: Player, minutes: number): (boolean, string?)
+	if weather and weatherEnds > os.time() + 30 then
+		return false, `{weather.Name} is still going. Use the totem when it's over!`
+	end
+	local options = Items.TotemWeathers
+	local id = options[rng:NextInteger(1, #options)]
+	if not WeatherService:Begin(id, minutes * 60) then
+		return false, "The totem fizzled. Try again!"
+	end
+	local def = Weather.ById[id]
+	Net.fireAll("Announce", `{player.DisplayName} used a Weather Totem: {def.Name} for {minutes} min!`, "Event")
+	return true, `{def.Name} for everyone!`
 end
 
 local function growEggs(seconds: number)

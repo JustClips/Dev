@@ -44,12 +44,13 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 	end
 	local want = if type(count) == "number" and count == count then math.clamp(math.floor(count), 1, 100) else 1
 	local bought = 0
+	local startLevel = data.Upgrades[def.Id] or 0
 	for _ = 1, want do
 		local level = data.Upgrades[def.Id] or 0
 		local blocked = Upgrades.blocked(def, data.Upgrades, data.Rebirths)
 		if blocked then
 			if bought == 0 then
-				return false, if blocked == "Maxed" then `{def.Name} is maxed!` else blocked
+				return false, if blocked == "Maxed" then `{Upgrades.name(def, level)} is maxed!` else blocked
 			end
 			break
 		end
@@ -68,8 +69,10 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 	end
 	if def.Stat == "Speed" then
 		applyWalkSpeed(player)
-	elseif def.Stat == "Incubators" or def.Stat == "PetIncome" then
+	elseif def.Stat == "Incubators" or def.Stat == "PetIncome" or def.Stat == "PassivePower" then
 		S.AlienService:RefreshBase(player)
+	elseif def.Stat == "Cash" then
+		player:SetAttribute("CoinMagnet", S.CoinService:MagnetRange(player))
 	end
 	S.StateService:Mark(player)
 	local level = data.Upgrades[def.Id]
@@ -79,7 +82,18 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 	if level == 1 and #Upgrades.Children[def.Id] > 0 then
 		return true, `{def.Name} unlocked! New upgrades opened`
 	end
-	return true, `{def.Name} level {level}: {Upgrades.describe(def, level)}`
+	-- Maxed a tier: the hex evolves into the next one.
+	local _, fromTier = Upgrades.currentTier(def, startLevel)
+	local cur, nowTier = Upgrades.currentTier(def, level)
+	if nowTier > fromTier and level < def.MaxLevel then
+		local before = def.Tiers[nowTier - 1].Name
+		if (data.Rebirths or 0) < cur.RequiredRebirths then
+			return true, `{before} maxed! It evolves into {cur.Name} at Rebirth {cur.RequiredRebirths}`
+		end
+		return true, `{before} evolved into {cur.Name}!`
+	end
+	local tr = Upgrades.tierFor(def, level)
+	return true, `{tr.Name} level {level - tr.First}: {Upgrades.describe(def, level)}`
 end
 
 function UpgradeService:ResetForRebirth(player: Player)
@@ -92,8 +106,31 @@ function UpgradeService:ResetForRebirth(player: Player)
 	S.StateService:Mark(player)
 end
 
+-- Hexes removed in the 2026-10-30 tree remake: pay back what their levels cost.
+local function refundRetired(player: Player, session)
+	local levels = session.Data.Upgrades
+	local total = 0
+	for id, level in levels do
+		if Upgrades.Retired[id] then
+			total += Upgrades.retiredRefund(id, level)
+			levels[id] = nil
+		elseif not Upgrades.ById[id] then
+			levels[id] = nil
+		end
+	end
+	if total > 0 then
+		S.BackpackService:GiveCash(player, total, "UpgradeRefund")
+		task.delay(6, function()
+			if player.Parent then
+				Net.fire("Notify", player, `The upgrade tree got remade! You got back {Format.cash(total)} for the old upgrades.`, "Good")
+			end
+		end)
+	end
+end
+
 function UpgradeService:Init(services)
 	S = services
+	S.DataService.ProfileLoaded:Connect(refundRetired)
 	Net.onInvoke("BuyUpgrade", function(player, id, count)
 		return UpgradeService:Buy(player, id, count)
 	end)

@@ -161,7 +161,7 @@ local function reward(player: Player, bunny: Bunny)
 			return
 		end
 	elseif roll < cfg.EggChance + cfg.PotionChance then
-		local item = Items.List[rng:NextInteger(1, #Items.List)]
+		local item = Items.rollItem(rng, "Uncommon")
 		S.InventoryService:AddItem(player, item.Id, 1)
 		Net.fire("Notify", player, `The Dust Bunny dropped a {item.Name}! It's in your bag.`, "Good")
 		return

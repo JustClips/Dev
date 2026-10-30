@@ -95,7 +95,10 @@ end
 -- Personal luck: the Luck potion times the friend boost. Multiplies egg rarity luck,
 -- mutations and Huge chance.
 function BoostService:GetPersonalLuck(player: Player): number
-	local potion = if BoostService:IsBoostActive(player, "Luck2x") then Items.LuckMult else 1
+	local potion = if BoostService:IsBoostActive(player, "Luck3x")
+		then Items.SuperLuckMult
+		elseif BoostService:IsBoostActive(player, "Luck2x") then Items.LuckMult
+		else 1
 	return potion * BoostService:GetFriendLuck(player)
 end
 
@@ -170,7 +173,11 @@ function BoostService:GetCashMultiplier(player: Player): number
 	if data.Gamepasses.VIP then
 		mult *= 1 + Economy.VIPCashBonus
 	end
-	if (data.Boosts.Cash2x or 0) > os.time() then
+	-- Cash potions: the Mega Cash one (3x) wins over the 2x one; they don't stack.
+	local now = os.time()
+	if (data.Boosts.Cash3x or 0) > now then
+		mult *= Items.MegaCashMult
+	elseif (data.Boosts.Cash2x or 0) > now then
 		mult *= Economy.Cash2xBoostMult
 	end
 	return mult * S.AdminService:Mult("Cash")

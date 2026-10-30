@@ -195,6 +195,9 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 		local got = S.RewardService:AddSpins(recipient, product.Count or 1)
 		notify(recipient, `+{product.Count or 1} wheel spin{if (product.Count or 1) == 1 then "" else "s"}! You have {got} now.`)
 	end,
+	MerchantRestock = function(_product, _buyer, recipient)
+		S.MerchantService:Restock(recipient)
+	end,
 	DoubleOffline = function(_product, _buyer, recipient)
 		local session = S.DataService:GetSession(recipient)
 		local amount = session.Runtime.OfflineReward or (S.AlienService:GetIncomePerSec(recipient) * 600)
@@ -348,6 +351,8 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		if BigNum.lt(targetData.Cash, need) then
 			return false, `Save up {Format.cash(need)} first ({math.floor(Economy.SkipRebirthMinShare * 100)}% of the rebirth)`
 		end
+	elseif product.Kind == "MerchantRestock" and not S.MerchantService:CanRestock() then
+		return false, "The merchant isn't here right now"
 	elseif product.Kind == "GiftPass" and targetData.Gamepasses[product.Pass or ""] then
 		return false, `{recipient.DisplayName} already owns this`
 	end

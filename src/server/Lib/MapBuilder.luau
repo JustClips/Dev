@@ -695,6 +695,54 @@ local function luckyWheel()
 	prompt(plinth, "Wheel", "Spin", "Lucky Wheel")
 end
 
+-- Traveling Merchant cart (World.Merchant, front = -Z toward the field): a wooden wagon with
+-- big wheels, a striped canopy, a counter and a name board. MerchantService puts the
+-- merchant and his goods in "Goods" while he's visiting and turns the prompt on.
+local function merchantCart()
+	local cf = World.Merchant
+	local model = make("Model", { Name = "MerchantCart" }, structures)
+	local red = Color3.fromRGB(230, 70, 70)
+	local cream = Color3.fromRGB(255, 240, 210)
+	block(model, "Bed", Vector3.new(9, 0.8, 4.6), cf * CFrame.new(0, 1.9, 0.6), WOOD, M.WoodPlanks)
+	block(model, "Back", Vector3.new(9, 2.4, 0.5), cf * CFrame.new(0, 3.5, 2.65), WOOD_DARK, M.Wood)
+	for _, x in { -4.6, 4.6 } do
+		make("Part", {
+			Name = "Wheel",
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(0.6, 3.4, 3.4),
+			CFrame = cf * CFrame.new(x, 1.7, 0.6),
+			Color = WOOD_DARK,
+			Material = M.Wood,
+		}, model)
+		for _, z in { -1.4, 2.6 } do
+			block(model, "Post", Vector3.new(0.5, 6, 0.5), cf * CFrame.new(x * 0.93, 5.3, z), WOOD_DARK, M.Wood)
+		end
+	end
+	-- Striped canopy: alternating red and cream slats.
+	for i = 0, 7 do
+		local x = -4.5 + 0.5625 + i * 1.125
+		block(model, "Canopy", Vector3.new(1.125, 0.3, 5.4), cf * CFrame.new(x, 8.45, 0.6) * CFrame.Angles(math.rad(-8), 0, 0),
+			if i % 2 == 0 then red else cream, M.Fabric)
+	end
+	local counter = block(model, "Counter", Vector3.new(8, 1.2, 1.2), cf * CFrame.new(0, 2.9, -1.2), WOOD, M.WoodPlanks)
+	block(model, "Pole", Vector3.new(0.3, 3, 0.3), cf * CFrame.new(-5.6, 1.5, -2.4) * CFrame.Angles(0, 0, math.rad(-20)), WOOD_DARK, M.Wood)
+	sign(model, "MerchantSign", cf * CFrame.new(0, 7.2, -1.6), 7.5, 1.6, red, "TRAVELING MERCHANT", "Rare items, rare eggs!")
+	local lamp = glow(model, "MerchantLight", Vector3.new(0.3, 0.3, 0.3), cf * CFrame.new(0, 7.8, 0.6), LANTERN)
+	light(lamp, LANTERN, 18, 1.2)
+	make("Folder", { Name = "Goods" }, model)
+	local p = make("ProximityPrompt", {
+		Name = "MerchantPrompt",
+		ActionText = "Shop",
+		ObjectText = "Traveling Merchant",
+		HoldDuration = 0,
+		MaxActivationDistance = 14,
+		RequiresLineOfSight = false,
+		KeyboardKeyCode = Enum.KeyCode.E,
+		Enabled = false,
+	}, counter)
+	p:SetAttribute("Opens", "Merchant")
+end
+
 -- Ramps where a corridor changes height (terrain under them is carved by buildTerrain).
 local function corridorRamps()
 	local model = make("Model", { Name = "Ramps" }, structures)
@@ -788,6 +836,7 @@ function MapBuilder.buildStructures()
 	plazaScreen()
 	luckyWheel()
 	leaderboards()
+	merchantCart()
 	for i = 1, World.BaseCount do
 		MapBuilder.buildBaseStructure(i)
 	end

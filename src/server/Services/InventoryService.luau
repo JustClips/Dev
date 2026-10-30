@@ -18,6 +18,7 @@ local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 local Weights = require(Shared.Config.Weights)
+local Upgrades = require(Shared.Config.Upgrades)
 
 local InventoryService = {}
 
@@ -236,7 +237,9 @@ end
 
 -- What a pet sells for at the Pet Trader.
 function InventoryService:PetValue(player: Player, pet): number
+	local data = S.DataService:GetData(player)
 	return Aliens.income(pet) * Economy.PetSellSeconds * S.BoostService:GetBaseCashMultiplier(player)
+		* Upgrades.multiplier(data and data.Upgrades, "PetSell")
 end
 
 function InventoryService:SellPet(player: Player, uid: string): (boolean, string?)
@@ -291,15 +294,51 @@ function InventoryService:UseItem(player: Player, itemId: string): (boolean, str
 	if not data or not def or (data.Items[itemId] or 0) <= 0 then
 		return false, "You don't have that"
 	end
-	if def.HatchSeconds then
-		if S.HatchService:SpeedUp(player, def.HatchSeconds) == 0 then
+	local message = `{def.Name}: {def.Description}!`
+	if def.Kind == "Hatch" then
+		if S.HatchService:SpeedUp(player, def.HatchSeconds or 300) == 0 then
 			return false, "No eggs are hatching right now"
 		end
-	elseif def.Boost then
-		S.BoostService:AddPersonalBoost(player, def.Boost, def.Minutes or 10)
+	elseif def.Kind == "Boost" and def.Boost then
+		-- Long Brew (upgrade tree) makes potions last longer.
+		local minutes = (def.Minutes or 10) * Upgrades.multiplier(data.Upgrades, "PotionTime")
+		S.BoostService:AddPersonalBoost(player, def.Boost, minutes)
 		if def.Boost == "Speed" then
 			S.UpgradeService:ApplyWalkSpeed(player)
+		elseif def.Boost == "Magnet" then
+			player:SetAttribute("CoinMagnet", S.CoinService:MagnetRange(player))
 		end
+		local desc = string.gsub(def.Description, "for %d+ min", "for " .. math.floor(minutes + 0.5) .. " min")
+		message = `{def.Name}: {desc}!`
+	elseif def.Kind == "Charm" and def.Charm then
+		local charms = data.Flags.Charms or {}
+		data.Flags.Charms = charms
+		charms[def.Charm] = (charms[def.Charm] or 0) + 1
+		message = `{def.Name} is on! It works on your next hatch.`
+	elseif def.Kind == "Spray" then
+		local ok, text = S.WeatherService:SprayEgg(player)
+		if not ok then
+			return false, text
+		end
+		message = text or message
+	elseif def.Kind == "Bomb" then
+		local ok, text = S.SweepService:Blast(player, def.Radius or 24)
+		if not ok then
+			return false, text
+		end
+		message = text or message
+	elseif def.Kind == "Map" then
+		local ok, text = S.DropService:StartTreasure(player)
+		if not ok then
+			return false, text
+		end
+		message = text or message
+	elseif def.Kind == "Totem" then
+		local ok, text = S.WeatherService:Totem(player, def.Minutes or 5)
+		if not ok then
+			return false, text
+		end
+		message = text or message
 	end
 	data.Items[itemId] -= 1
 	if data.Items[itemId] <= 0 then
@@ -307,7 +346,7 @@ function InventoryService:UseItem(player: Player, itemId: string): (boolean, str
 	end
 	InventoryService:Touch(player)
 	S.AnalyticsService:Custom(player, "ItemUsed", 1, { Item = itemId })
-	return true, `{def.Name}: {def.Description}!`
+	return true, message
 end
 
 -- Skip Hatch on one egg: remembers which egg, then opens the Robux prompt.

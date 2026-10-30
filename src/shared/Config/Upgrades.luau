@@ -5,20 +5,27 @@
 -- more. "Lab" hexes on the main board open their own sub-trees (Trees below). Levels reset
 -- on rebirth, like cash and tools.
 --
--- Each node raises one stat (Stats below). Several nodes can raise the same stat; their
--- bonuses add up. Other services read stats through Upgrades.multiplier / Upgrades.stat.
+-- Every hex does something different (Dev, 2026-10-30: the old tree repeated the same
+-- upgrade over and over, like Sweep Power, Strong Arms, Mighty Sweep, Titan Sweep). A
+-- stat that grows a long way is ONE evolving hex instead: its tiers (t() below) each have
+-- their own name and prices, and maxing a tier evolves the hex into the next one. Later
+-- tiers need rebirths, so the hex keeps growing as you rebirth.
+--
+-- Each node raises one stat (Stats below). Other services read stats through
+-- Upgrades.multiplier / Upgrades.stat.
 --
 -- Hex = axial coordinates {q, r} (pointy-top). A node's Parent must be a direct neighbour,
--- so every link in the tree is one short line. Cost of the next level =
--- BaseCost * CostGrowth ^ level.
+-- so every link in the tree is one short line. Cost of a level inside a tier =
+-- BaseCost * CostGrowth ^ (levels already bought in that tier).
 local Types = require(script.Parent.Parent.Types)
 
 type UpgradeDef = Types.UpgradeDef
+type UpgradeTier = Types.UpgradeTier
 
 export type StatDef = {
 	Name: string,
 	Icon: string,
-	Format: string, -- "percent" (+25%), "plus" (+4), "x" (+0.5x), "seconds" (+0.6s)
+	Format: string, -- "percent" (+25%), "plus" (+4), "x" (+0.5x), "seconds" (+0.6s), "hours" (+1h)
 }
 
 -- What each stat does in the game (where it is applied).
@@ -29,7 +36,7 @@ local Stats: { [string]: StatDef } = {
 	Luck = { Name = "Egg Luck", Icon = "Icon_Luck", Format = "percent" }, -- EggService
 	DustValue = { Name = "Leaf Value", Icon = "Icon_Dust", Format = "percent" }, -- BackpackService
 	Radius = { Name = "Sweep Size", Icon = "Icon_Tool_LeafBlower", Format = "percent" }, -- ToolService
-	Cash = { Name = "All Cash", Icon = "Icon_Cash", Format = "percent" }, -- BoostService
+	Cash = { Name = "All Cash", Icon = "Icon_Cash", Format = "percent" }, -- BoostService (+ coin magnet range, CoinService)
 	PetIncome = { Name = "Pet Income", Icon = "Icon_Alien", Format = "percent" }, -- AlienService
 	Offline = { Name = "Offline Cash", Icon = "Icon_Daily", Format = "percent" }, -- AlienService
 	ComboMax = { Name = "Max Combo", Icon = "Icon_Boost", Format = "x" }, -- SweepService
@@ -41,11 +48,71 @@ local Stats: { [string]: StatDef } = {
 	HatchSpeed = { Name = "Hatch Speed", Icon = "Icon_PotionHatch", Format = "percent" }, -- HatchService
 	Incubators = { Name = "Eggs at Once", Icon = "Icon_Egg", Format = "plus" }, -- HatchService
 	Portal = { Name = "Lab", Icon = "Icon_Upgrade", Format = "plus" }, -- opens a sub-tree
+	-- Added 2026-10-30 with the remake (one hex each):
+	DumpSpeed = { Name = "Dump Speed", Icon = "Icon_Sell", Format = "percent" }, -- BackpackService: the bag pours faster
+	ItemFind = { Name = "Leaf Drops", Icon = "Icon_Gift", Format = "percent" }, -- SweepService: more items drop from leaves
+	PotionTime = { Name = "Potion Time", Icon = "Icon_Timer", Format = "percent" }, -- InventoryService: boosts last longer
+	MerchantDiscount = { Name = "Merchant Discount", Icon = "Icon_Merchant", Format = "percent" }, -- MerchantService
+	MerchantSlots = { Name = "Merchant Items", Icon = "Icon_Merchant", Format = "plus" }, -- MerchantService
+	Regrow = { Name = "Regrow Speed", Icon = "Icon_PotionLeaf", Format = "percent" }, -- DustService: your leaves grow back faster
+	Huge = { Name = "Huge Chance", Icon = "Icon_HugeCharm", Format = "percent" }, -- HatchService
+	MutChance = { Name = "Mutation Chance", Icon = "Icon_MutationSpray", Format = "percent" }, -- HatchService: Golden/Rainbow/Sparkly
+	WeatherMut = { Name = "Weather Mutations", Icon = "Icon_Weather_Rain", Format = "percent" }, -- WeatherService: growing eggs
+	EggFind = { Name = "Eggs Found", Icon = "Icon_Egg", Format = "percent" }, -- EggService: eggs in the leaves
+	ComboKeep = { Name = "Combo Kept", Icon = "Icon_Boost", Format = "percent" }, -- SweepService: a broken combo keeps part of it
+	GoldenCombo = { Name = "Golden Combo", Icon = "Icon_Sell", Format = "x" }, -- SweepService: golden piles push the combo up
+	BunnyReach = { Name = "Bunny Reach", Icon = "Icon_Gift", Format = "percent" }, -- DustBunnyService
+	PetSell = { Name = "Pet Sell Price", Icon = "Icon_Cash", Format = "percent" }, -- InventoryService
+	PassivePower = { Name = "Pet Passives", Icon = "Icon_Alien", Format = "percent" }, -- PetPassives
+	OfflineCap = { Name = "Offline Time", Icon = "Icon_Daily", Format = "hours" }, -- AlienService
 }
 
 -- A lucky sweep pays this many times a normal tile (plus CritMult from the tree).
 local CRIT_BASE_MULT = 5
 
+-- One tier of a hex: name, description, levels, bonus per level, first price, price growth,
+-- rebirths needed.
+local function tier(name: string, desc: string, levels: number, perLevel: number, baseCost: number, growth: number, rebirths: number?): UpgradeTier
+	return {
+		Name = name,
+		Description = desc,
+		Levels = levels,
+		PerLevel = perLevel,
+		BaseCost = baseCost,
+		CostGrowth = growth,
+		RequiredRebirths = rebirths or 0,
+		First = 0,
+	}
+end
+
+-- An evolving hex (several tiers).
+local function t(id: string, q: number, r: number, parent: string?, stat: string, tiers: { UpgradeTier }): UpgradeDef
+	local first = 0
+	for _, tr in tiers do
+		tr.First = first
+		first += tr.Levels
+	end
+	local one = tiers[1]
+	return {
+		Id = id,
+		Tree = "Main",
+		Hex = { q = q, r = r },
+		Parent = parent,
+		Stat = stat,
+		Name = one.Name,
+		Description = one.Description,
+		Icon = Stats[stat].Icon,
+		Format = Stats[stat].Format,
+		MaxLevel = first,
+		PerLevel = one.PerLevel,
+		BaseCost = one.BaseCost,
+		CostGrowth = one.CostGrowth,
+		RequiredRebirths = one.RequiredRebirths,
+		Tiers = tiers,
+	}
+end
+
+-- A simple hex (one tier).
 local function n(
 	id: string,
 	q: number,
@@ -60,22 +127,7 @@ local function n(
 	growth: number,
 	rebirths: number?
 ): UpgradeDef
-	return {
-		Id = id,
-		Tree = "Main",
-		Hex = { q = q, r = r },
-		Parent = parent,
-		Stat = stat,
-		Name = name,
-		Description = desc,
-		Icon = Stats[stat].Icon,
-		Format = Stats[stat].Format,
-		MaxLevel = maxLevel,
-		PerLevel = perLevel,
-		BaseCost = baseCost,
-		CostGrowth = growth,
-		RequiredRebirths = rebirths or 0,
-	}
+	return t(id, q, r, parent, stat, { tier(name, desc, maxLevel, perLevel, baseCost, growth, rebirths) })
 end
 
 -- Sub-trees (Slime RNG style): a "Lab" hex on the main board costs cash once, then tapping
@@ -102,72 +154,147 @@ local function inTree(tree: string, defs: { UpgradeDef }): { UpgradeDef }
 	return defs
 end
 
--- Ids Power, Backpack, Speed and Luck are the old flat upgrades, so saved levels carry over.
+-- Ids are kept from the old tree where the hex is the same thing (saved levels carry
+-- over); hexes that went away are in Retired below and are refunded.
 -- A sub-tree's root has no Parent: it needs its lab instead.
 -- stylua: ignore
 local Main = {
-	n("Power",      0,  0, nil,          "Power",     "Sweep Power",    "Every pile gives more leaves",     10, 0.25, 150,     1.9),
-	n("Backpack",   1,  0, "Power",      "Backpack",  "Backpack",       "Carry more leaves per trip",       10, 0.25, 300,     2.2),
-	n("LeafValue",  0,  1, "Power",      "DustValue", "Leaf Value",     "Every leaf sells for more",        10, 0.10, 800,     2.2),
-	n("Speed",     -1,  0, "Power",      "Speed",     "Running Shoes",  "Walk faster",                       8, 2,    400,     2.0),
-	lab("EggLab",   1, -1, "Eggs",  "Egg Lab",   "Egg luck, hatch speed and more eggs at once", "Icon_Egg", 2_000),
+	t("Power",      0,  0, nil,         "Power", {
+		tier("Sweep Power",    "Every pile gives more leaves",          10, 0.25, 150,             1.9),
+		tier("Strong Arms",    "Even more leaves from every pile",      10, 0.20, 20_000,          2.3),
+		tier("Mighty Sweep",   "Much more leaves from every pile",      10, 0.20, 2_000_000_000,   2.3, 1),
+		tier("Titan Sweep",    "Huge leaf hauls from every pile",       10, 0.25, 30_000_000_000,  2.3, 2),
+	}),
+	t("Backpack",   1,  0, "Power",     "Backpack", {
+		tier("Backpack",       "Carry more leaves per trip",            10, 0.25, 300,             2.2),
+		tier("Giant Sack",     "Carry even more leaves",                10, 0.20, 30_000,          2.3),
+		tier("Leaf Truck",     "Carry way more leaves",                 10, 0.25, 3_000_000_000,   2.3, 1),
+	}),
+	t("LeafValue",  0,  1, "Power",     "DustValue", {
+		tier("Leaf Value",     "Every leaf sells for more",             10, 0.10, 800,             2.2),
+		tier("Fancy Leaves",   "Every leaf sells for even more",        10, 0.15, 60_000,          2.4),
+		tier("Diamond Leaves", "Every leaf sells for way more",         10, 0.20, 45_000_000_000,  2.4, 2),
+	}),
+	t("Speed",     -1,  0, "Power",     "Speed", {
+		tier("Running Shoes",  "Walk faster",                            8, 2,    400,             2.0),
+		tier("Rocket Shoes",   "Walk even faster",                       5, 2,    3_000_000_000,   2.5, 1),
+	}),
+	lab("EggLab",   1, -1, "Eggs",  "Egg Lab",   "Egg luck, Huge pets, mutations and hatching", "Icon_Egg", 2_000),
 	lab("LuckyLab", 0, -1, "Lucky", "Lucky Lab", "Combos, lucky sweeps and golden piles",       "Icon_Star", 5_000),
-	lab("PetLab",  -1,  1, "Pets",  "Pet Lab",   "Pet income and offline cash",                 "Icon_Alien", 1_500),
-	n("Backpack2",  2,  0, "Backpack",   "Backpack",  "Giant Sack",     "Carry even more leaves",           10, 0.20, 30_000,  2.3),
-	n("Radius",     2, -1, "Backpack",   "Radius",    "Wide Sweep",     "Sweep a bigger area at once",       5, 0.05, 25_000,  2.6),
-	n("Cash",       1,  1, "LeafValue",  "Cash",      "Money Magnet",   "Grab coins from further away, plus more cash", 10, 0.05, 50_000,  2.5),
-	n("LeafValue2", 0,  2, "LeafValue",  "DustValue", "Fancy Leaves",   "Every leaf sells for more",        10, 0.15, 60_000,  2.4),
-	n("Power2",    -2,  0, "Speed",      "Power",     "Strong Arms",    "Even more leaves from every pile", 10, 0.20, 20_000,  2.3),
-	n("Speed2",    -2,  1, "Speed",      "Speed",     "Rocket Shoes",   "Walk even faster",                  5, 2,    3_000_000_000, 2.5, 1),
-	n("Backpack3",  3,  0, "Backpack2",  "Backpack",  "Leaf Truck",     "Carry way more leaves",            10, 0.25, 3_000_000_000, 2.3, 1),
-	n("Radius2",    3, -1, "Radius",     "Radius",    "Mega Sweep",     "Sweep a bigger area at once",       5, 0.05, 3_000_000_000, 2.6, 1),
-	n("Radius3",    3, -2, "Radius2",    "Radius",    "Tornado",        "Sweep a huge area at once",         5, 0.06, 200_000_000_000, 2.8, 3),
-	n("Cash2",      1,  2, "Cash",       "Cash",      "Rich Sweeper",   "Bigger coin magnet, plus more cash", 10, 0.05, 5_000_000_000, 2.5, 1),
-	n("Cash3",      1,  3, "Cash2",      "Cash",      "Golden Broom",   "Huge coin magnet, plus more cash", 10, 0.05, 250_000_000_000, 2.5, 3),
-	n("LeafValue3", 0,  3, "LeafValue2", "DustValue", "Diamond Leaves", "Every leaf sells for way more",    10, 0.20, 45_000_000_000, 2.4, 2),
-	n("Power3",    -3,  0, "Power2",     "Power",     "Mighty Sweep",   "Much more leaves from every pile",         10, 0.20, 2_000_000_000, 2.3, 1),
-	n("Power4",    -4,  0, "Power3",     "Power",     "Titan Sweep",    "Huge leaf hauls from every pile",       10, 0.25, 30_000_000_000, 2.3, 2),
+	lab("PetLab",  -1,  1, "Pets",  "Pet Lab",   "Pet income, passives and offline cash",       "Icon_Alien", 1_500),
+	t("Radius",     2, -1, "Backpack",  "Radius", {
+		tier("Wide Sweep",     "Sweep a bigger area at once",            5, 0.05, 25_000,          2.6),
+		tier("Mega Sweep",     "Sweep an even bigger area",              5, 0.05, 3_000_000_000,   2.6, 1),
+		tier("Tornado",        "Sweep a huge area at once",              5, 0.06, 200_000_000_000, 2.8, 3),
+	}),
+	t("Cash",       1,  1, "LeafValue", "Cash", {
+		tier("Money Magnet",   "Grab coins from further away, plus more cash", 10, 0.05, 50_000,          2.5),
+		tier("Rich Sweeper",   "Bigger coin magnet, plus more cash",           10, 0.05, 5_000_000_000,   2.5, 1),
+		tier("Golden Broom",   "Huge coin magnet, plus more cash",             10, 0.05, 250_000_000_000, 2.5, 3),
+	}),
+	n("QuickDump",  2,  0, "Backpack",  "DumpSpeed",        "Quick Dump",   "Your bag pours into the dump faster",     5, 0.20, 5_000,   3.0),
+	t("LuckyFinds",-2,  0, "Speed",     "ItemFind", {
+		tier("Lucky Finds",    "Items drop from the leaves more often",  5, 0.05, 3_000,           2.8),
+		tier("Treasure Hunter","Items drop from the leaves way more often", 5, 0.05, 4_000_000_000, 2.8, 1),
+	}),
+	n("LongBrew",  -2,  1, "Speed",     "PotionTime",       "Long Brew",    "Potions last longer",                     5, 0.10, 8_000,   3.0),
+	n("Fertilizer", 0,  2, "LeafValue", "Regrow",           "Fertilizer",   "Your leaves grow back faster",            4, 0.03, 3_000_000_000, 3.0, 1),
+	n("Haggler",    1,  2, "Cash",      "MerchantDiscount", "Haggler",      "The Traveling Merchant gives you a discount", 4, 0.05, 100_000, 3.0),
+	n("BiggerCart", 1,  3, "Haggler",   "MerchantSlots",    "Bigger Cart",  "The Traveling Merchant shows you one more item", 2, 1, 5_000_000_000, 20, 1),
 }
 
 -- stylua: ignore
 local Eggs = inTree("Eggs", {
-	n("Luck",        0,  0, nil,          "Luck",       "Egg Luck",         "Find more and rarer eggs",      10, 0.10, 1_000,     2.5),
-	n("HatchSpeed",  1,  0, "Luck",       "HatchSpeed", "Quick Hatch",      "Eggs grow faster",               5, 0.10, 30_000,    2.7),
-	n("Bunny",       0, -1, "Luck",       "Bunny",      "Bunny Hunter",     "Dust bunnies drop more cash",    5, 0.25, 20_000,    2.5),
-	n("Incubator",  -1,  1, "Luck",       "Incubators", "Bigger Nest",      "Grow one more egg at once",      1, 1,    150_000,   1),
-	n("Luck2",       1, -1, "Luck",       "Luck",       "Lucky Charm",      "Find more and rarer eggs",      10, 0.05, 2_500_000_000, 2.4, 1),
-	n("HatchSpeed2", 2,  0, "HatchSpeed", "HatchSpeed", "Hatch Hurry",      "Eggs grow faster",               5, 0.10, 5_000_000_000, 2.7, 1),
-	n("Bunny2",     -1, -1, "Bunny",      "Bunny",      "Bunny Boss",       "Dust bunnies drop more cash",    5, 0.50, 2_000_000_000, 2.5, 1),
-	n("Incubator2", -2,  2, "Incubator",  "Incubators", "Egg Nursery",      "Grow one more egg at once",      1, 1,    25_000_000_000, 1,  1),
-	n("Luck3",       2, -2, "Luck2",      "Luck",       "Four-Leaf Clover", "Find more and rarer eggs",       5, 0.10, 6_000_000_000, 2.8, 2),
-	n("Luck4",       3, -3, "Luck3",      "Luck",       "Rainbow Luck",     "Find more and rarer eggs",       5, 0.10, 250_000_000_000, 3.0, 3),
+	t("Luck",        0,  0, nil,          "Luck", {
+		tier("Egg Luck",         "Find more and rarer eggs",         10, 0.10, 1_000,           2.5),
+		tier("Lucky Charm",      "Find even more and rarer eggs",    10, 0.05, 2_500_000_000,   2.4, 1),
+		tier("Four-Leaf Clover", "Find way more and rarer eggs",      5, 0.10, 6_000_000_000,   2.8, 2),
+		tier("Rainbow Luck",     "The best egg luck there is",        5, 0.10, 250_000_000_000, 3.0, 3),
+	}),
+	t("HatchSpeed",  1,  0, "Luck",       "HatchSpeed", {
+		tier("Quick Hatch",      "Eggs grow faster",                  5, 0.10, 30_000,          2.7),
+		tier("Hatch Hurry",      "Eggs grow even faster",             5, 0.10, 5_000_000_000,   2.7, 1),
+	}),
+	t("Bunny",       0, -1, "Luck",       "Bunny", {
+		tier("Bunny Hunter",     "Dust bunnies drop more cash",       5, 0.25, 20_000,          2.5),
+		tier("Bunny Boss",       "Dust bunnies drop way more cash",   5, 0.50, 2_000_000_000,   2.5, 1),
+	}),
+	t("Incubator",  -1,  1, "Luck",       "Incubators", {
+		tier("Bigger Nest",      "Grow one more egg at once",         1, 1,    150_000,         1),
+		tier("Egg Nursery",      "Grow another egg at once",          1, 1,    25_000_000_000,  1, 1),
+	}),
+	n("HugeHunter",  1, -1, "Luck",       "Huge",       "Huge Hunter",  "Pets hatch Huge more often",                  5, 0.20, 50_000,        3.0),
+	n("EggSniffer", -1,  0, "Luck",       "EggFind",    "Egg Sniffer",  "Find eggs in the leaves more often",          5, 0.05, 15_000,        2.8),
+	n("StormChaser", 2,  0, "HatchSpeed", "WeatherMut", "Storm Chaser", "Weather mutates your growing eggs more often", 5, 0.20, 80_000,      2.8),
+	n("ShinyHunter", 2, -2, "HugeHunter", "MutChance",  "Shiny Hunter", "Golden, Rainbow and Sparkly pets more often", 5, 0.20, 3_000_000_000, 2.8, 1),
 })
 
 -- stylua: ignore
 local Lucky = inTree("Lucky", {
-	n("Combo",       0,  0, nil,         "ComboMax",  "Combo Master", "Your sweep combo goes higher",           4, 0.25, 2_000,     3.0),
-	n("ComboTime",   1, -1, "Combo",     "ComboTime", "Steady Hands", "Your combo lasts longer between sweeps", 5, 0.3,  35_000,    2.6),
-	n("Golden",      1,  0, "Combo",     "Golden",    "Golden Touch", "Golden piles pay even more",             5, 0.20, 40_000,    2.8),
-	n("Crit",       -1,  1, "Combo",     "Crit",      "Lucky Sweep",  "Chance a leaf pays 5x",                  5, 0.01, 50_000,    2.8),
-	n("Combo2",      0, -1, "Combo",     "ComboMax",  "Combo King",   "Your sweep combo goes higher",           4, 0.25, 3_000_000_000, 3.0, 1),
-	n("ComboTime2",  2, -2, "ComboTime", "ComboTime", "Zen Focus",    "Your combo lasts longer between sweeps", 5, 0.3,  3_500_000_000, 2.6, 1),
-	n("Golden2",     2,  0, "Golden",    "Golden",    "Gold Rush",    "Golden piles pay even more",             5, 0.25, 4_000_000_000, 2.7, 1),
-	n("CritMult",   -1,  0, "Crit",      "CritMult",  "Jackpot",      "Lucky sweeps pay more",                  5, 1,    5_000_000_000, 2.7, 1),
-	n("Crit2",      -2,  2, "Crit",      "Crit",      "Lucky Streak", "Chance a leaf pays 5x",                  5, 0.01, 4_000_000_000, 2.8, 1),
-	n("Golden3",     3,  0, "Golden2",   "Golden",    "Midas",        "Golden piles pay way more",              5, 0.50, 45_000_000_000, 2.8, 2),
-	n("Combo3",      0, -2, "Combo2",    "ComboMax",  "Combo God",    "Your sweep combo goes way higher",       2, 0.5,  300_000_000_000, 4.0, 3),
-	n("CritMult2",  -2,  0, "CritMult",  "CritMult",  "Mega Jackpot", "Lucky sweeps pay way more",              3, 2,    150_000_000_000, 3.0, 3),
+	t("Combo",       0,  0, nil,         "ComboMax", {
+		tier("Combo Master",  "Your sweep combo goes higher",           4, 0.25, 2_000,           3.0),
+		tier("Combo King",    "Your sweep combo goes even higher",      4, 0.25, 3_000_000_000,   3.0, 1),
+		tier("Combo God",     "Your sweep combo goes way higher",       2, 0.5,  300_000_000_000, 4.0, 3),
+	}),
+	t("ComboTime",   1, -1, "Combo",     "ComboTime", {
+		tier("Steady Hands",  "Your combo lasts longer between sweeps", 5, 0.3,  35_000,          2.6),
+		tier("Zen Focus",     "Your combo lasts even longer",           5, 0.3,  3_500_000_000,   2.6, 1),
+	}),
+	t("Golden",      1,  0, "Combo",     "Golden", {
+		tier("Golden Touch",  "Golden piles pay more",                  5, 0.20, 40_000,          2.8),
+		tier("Gold Rush",     "Golden piles pay even more",             5, 0.25, 4_000_000_000,   2.7, 1),
+		tier("Midas",         "Golden piles pay way more",              5, 0.50, 45_000_000_000,  2.8, 2),
+	}),
+	t("Crit",       -1,  1, "Combo",     "Crit", {
+		tier("Lucky Sweep",   "Chance a leaf pays 5x",                  5, 0.01, 50_000,          2.8),
+		tier("Lucky Streak",  "Even more lucky leaves",                 5, 0.01, 4_000_000_000,   2.8, 1),
+	}),
+	t("CritMult",   -1,  0, "Crit",      "CritMult", {
+		tier("Jackpot",       "Lucky sweeps pay more",                  5, 1,    5_000_000_000,   2.7, 1),
+		tier("Mega Jackpot",  "Lucky sweeps pay way more",              3, 2,    150_000_000_000, 3.0, 3),
+	}),
+	n("SecondWind",  0, -1, "Combo",     "ComboKeep",   "Second Wind",  "When your combo breaks, keep part of it", 5, 0.10, 20_000,        2.8),
+	n("GoldenCombo", 2,  0, "Golden",    "GoldenCombo", "Golden Combo", "Golden piles push your combo up",         3, 0.5,  3_000_000_000, 3.0, 1),
+	n("BunnyNet",   -2,  2, "Crit",      "BunnyReach",  "Bunny Net",    "Catch dust bunnies from further away",    4, 0.25, 60_000,        2.8),
 })
 
 -- stylua: ignore
 local Pets = inTree("Pets", {
-	n("PetIncome",   0,  0, nil,          "PetIncome", "Happy Pets",   "Pets in your park earn more",     10, 0.10, 1_500,     2.3),
-	n("PetIncome2",  1,  0, "PetIncome",  "PetIncome", "Pet Treats",   "Pets in your park earn more",     10, 0.15, 60_000,    2.4),
-	n("Offline",    -1,  1, "PetIncome",  "Offline",   "Night Shift",  "Earn more while you're away",      5, 0.20, 25_000,    2.5),
-	n("PetIncome3",  2,  0, "PetIncome2", "PetIncome", "Pet Party",    "Pets in your park earn more",     10, 0.20, 4_000_000_000, 2.4, 1),
-	n("Offline2",   -2,  2, "Offline",    "Offline",   "Sleep Pay",    "Earn more while you're away",      5, 0.25, 3_000_000_000, 2.5, 1),
-	n("PetIncome4",  3,  0, "PetIncome3", "PetIncome", "Pet Paradise", "Pets in your park earn way more", 10, 0.25, 60_000_000_000, 2.4, 2),
+	t("PetIncome",   0,  0, nil,          "PetIncome", {
+		tier("Happy Pets",    "Pets in your park earn more",            10, 0.10, 1_500,           2.3),
+		tier("Pet Treats",    "Pets in your park earn even more",       10, 0.15, 60_000,          2.4),
+		tier("Pet Party",     "Pets in your park earn a lot more",      10, 0.20, 4_000_000_000,   2.4, 1),
+		tier("Pet Paradise",  "Pets in your park earn way more",        10, 0.25, 60_000_000_000,  2.4, 2),
+	}),
+	t("Offline",    -1,  1, "PetIncome",  "Offline", {
+		tier("Night Shift",   "Earn more while you're away",             5, 0.20, 25_000,          2.5),
+		tier("Sleep Pay",     "Earn even more while you're away",        5, 0.25, 3_000_000_000,   2.5, 1),
+	}),
+	n("GoodDeals",   1,  0, "PetIncome",  "PetSell",      "Good Deals",   "The Pet Trader pays more for your pets", 5, 0.15, 10_000,        2.6),
+	n("BestFriends", 0, -1, "PetIncome",  "PassivePower", "Best Friends", "Your pets' passive powers get stronger", 5, 0.06, 500_000,       2.8),
+	n("LongNap",    -2,  2, "Offline",    "OfflineCap",   "Long Nap",     "Earn offline for longer",                4, 0.5,  2_000_000_000, 2.5, 1),
 })
+
+-- Hexes removed in the 2026-10-30 remake: their levels are refunded (what they cost) the
+-- next time the player loads in (UpgradeService). BaseCost and CostGrowth as they were.
+-- stylua: ignore
+local Retired: { [string]: { BaseCost: number, CostGrowth: number } } = {
+	Backpack2 = { BaseCost = 30_000, CostGrowth = 2.3 },          Backpack3 = { BaseCost = 3_000_000_000, CostGrowth = 2.3 },
+	Radius2 = { BaseCost = 3_000_000_000, CostGrowth = 2.6 },     Radius3 = { BaseCost = 200_000_000_000, CostGrowth = 2.8 },
+	Cash2 = { BaseCost = 5_000_000_000, CostGrowth = 2.5 },       Cash3 = { BaseCost = 250_000_000_000, CostGrowth = 2.5 },
+	LeafValue2 = { BaseCost = 60_000, CostGrowth = 2.4 },         LeafValue3 = { BaseCost = 45_000_000_000, CostGrowth = 2.4 },
+	Power2 = { BaseCost = 20_000, CostGrowth = 2.3 },             Power3 = { BaseCost = 2_000_000_000, CostGrowth = 2.3 },
+	Power4 = { BaseCost = 30_000_000_000, CostGrowth = 2.3 },     Speed2 = { BaseCost = 3_000_000_000, CostGrowth = 2.5 },
+	Luck2 = { BaseCost = 2_500_000_000, CostGrowth = 2.4 },       Luck3 = { BaseCost = 6_000_000_000, CostGrowth = 2.8 },
+	Luck4 = { BaseCost = 250_000_000_000, CostGrowth = 3.0 },     HatchSpeed2 = { BaseCost = 5_000_000_000, CostGrowth = 2.7 },
+	Bunny2 = { BaseCost = 2_000_000_000, CostGrowth = 2.5 },      Incubator2 = { BaseCost = 25_000_000_000, CostGrowth = 1 },
+	Combo2 = { BaseCost = 3_000_000_000, CostGrowth = 3.0 },      ComboTime2 = { BaseCost = 3_500_000_000, CostGrowth = 2.6 },
+	Golden2 = { BaseCost = 4_000_000_000, CostGrowth = 2.7 },     Golden3 = { BaseCost = 45_000_000_000, CostGrowth = 2.8 },
+	Crit2 = { BaseCost = 4_000_000_000, CostGrowth = 2.8 },       Combo3 = { BaseCost = 300_000_000_000, CostGrowth = 4.0 },
+	CritMult2 = { BaseCost = 150_000_000_000, CostGrowth = 3.0 }, PetIncome2 = { BaseCost = 60_000, CostGrowth = 2.4 },
+	PetIncome3 = { BaseCost = 4_000_000_000, CostGrowth = 2.4 },  PetIncome4 = { BaseCost = 60_000_000_000, CostGrowth = 2.4 },
+	Offline2 = { BaseCost = 3_000_000_000, CostGrowth = 2.5 },
+}
 
 local List: { UpgradeDef } = {}
 for _, group in { Main, Eggs, Lucky, Pets } do
@@ -183,6 +310,7 @@ local Upgrades = {
 	ById = {} :: { [string]: UpgradeDef },
 	Stats = Stats,
 	Trees = Trees,
+	Retired = Retired,
 	-- Children of each node (drawn as links, opened when the node is bought).
 	Children = {} :: { [string]: { UpgradeDef } },
 	-- Nodes that raise each stat.
@@ -194,13 +322,21 @@ local Upgrades = {
 
 for _, def in List do
 	assert(not Upgrades.ById[def.Id], `duplicate upgrade {def.Id}`)
+	assert(not Retired[def.Id], `{def.Id} is both live and retired`)
 	assert(Trees[def.Tree], `{def.Id}: unknown tree {def.Tree}`)
+	assert(Stats[def.Stat], `{def.Id}: unknown stat {def.Stat}`)
 	Upgrades.ById[def.Id] = def
 	Upgrades.Children[def.Id] = {}
 	Upgrades.ByStat[def.Stat] = Upgrades.ByStat[def.Stat] or {}
 	table.insert(Upgrades.ByStat[def.Stat], def)
 end
+local seenStat: { [string]: string } = {}
 for _, def in List do
+	-- One hex per stat (Dev: no repeats). Labs all share "Portal".
+	if def.Stat ~= "Portal" then
+		assert(not seenStat[def.Stat], `{def.Id} repeats {def.Stat} (already on {seenStat[def.Stat]})`)
+		seenStat[def.Stat] = def.Id
+	end
 	if def.Parent then
 		local parent = Upgrades.ById[def.Parent]
 		assert(parent, `{def.Id}: unknown parent {def.Parent}`)
@@ -212,9 +348,40 @@ for _, def in List do
 	end
 end
 
+-- The tier that holds level `level` (1-based; 0 counts as the first tier). Returns the
+-- tier and its index.
+function Upgrades.tierFor(def: UpgradeDef, level: number): (UpgradeTier, number)
+	for i, tr in def.Tiers do
+		if level <= tr.First + tr.Levels then
+			return tr, i
+		end
+	end
+	return def.Tiers[#def.Tiers], #def.Tiers
+end
+
+-- The tier the hex shows now: the one the next level is in (the last one when maxed).
+function Upgrades.currentTier(def: UpgradeDef, level: number): (UpgradeTier, number)
+	return Upgrades.tierFor(def, math.min(level + 1, def.MaxLevel))
+end
+
+-- Name and description the hex shows at a level (it evolves as tiers are maxed).
+function Upgrades.name(def: UpgradeDef, level: number): string
+	return (Upgrades.currentTier(def, level)).Name
+end
+
+function Upgrades.description(def: UpgradeDef, level: number): string
+	return (Upgrades.currentTier(def, level)).Description
+end
+
+-- Rebirths needed for the next level.
+function Upgrades.requiredRebirths(def: UpgradeDef, level: number): number
+	return (Upgrades.currentTier(def, level)).RequiredRebirths
+end
+
 -- Price of going from `level` to `level + 1`.
 function Upgrades.cost(def: UpgradeDef, level: number): number
-	return math.floor(def.BaseCost * def.CostGrowth ^ level)
+	local tr = Upgrades.tierFor(def, level + 1)
+	return math.floor(tr.BaseCost * tr.CostGrowth ^ math.max(0, level - tr.First))
 end
 
 -- Total price of the next `count` levels from `level`.
@@ -226,9 +393,26 @@ function Upgrades.costFor(def: UpgradeDef, level: number, count: number): number
 	return total
 end
 
--- The bonus a node gives at a level.
+-- The bonus a node gives at a level (every tier's levels add up).
 function Upgrades.bonus(def: UpgradeDef, level: number): number
-	return def.PerLevel * level
+	local total = 0
+	for _, tr in def.Tiers do
+		total += tr.PerLevel * math.clamp(level - tr.First, 0, tr.Levels)
+	end
+	return total
+end
+
+-- What a retired hex's levels cost (refund).
+function Upgrades.retiredRefund(id: string, level: number): number
+	local old = Retired[id]
+	if not old then
+		return 0
+	end
+	local total = 0
+	for i = 0, level - 1 do
+		total += math.floor(old.BaseCost * old.CostGrowth ^ i)
+	end
+	return total
 end
 
 local function formatValue(format: string, b: number): string
@@ -242,6 +426,8 @@ local function formatValue(format: string, b: number): string
 		return `+{math.floor(b * 100 + 0.5) / 100}x`
 	elseif format == "seconds" then
 		return `+{math.floor(b * 10 + 0.5) / 10}s`
+	elseif format == "hours" then
+		return `+{math.floor(b * 10 + 0.5) / 10}h`
 	end
 	return `+{b}`
 end
@@ -256,8 +442,8 @@ function Upgrades.describeStat(stat: string, value: number): string
 	return formatValue(Stats[stat].Format, value)
 end
 
--- Sum of all bonuses for a stat from a player's levels (missing levels count as 0).
-function Upgrades.stat(levels: { [string]: number }?, stat: string): number
+-- Sum of the tree's bonuses for a stat (no pet passives).
+function Upgrades.treeStat(levels: { [string]: number }?, stat: string): number
 	if not levels then
 		return 0
 	end
@@ -265,9 +451,19 @@ function Upgrades.stat(levels: { [string]: number }?, stat: string): number
 	for _, def in Upgrades.ByStat[stat] or {} do
 		local level = levels[def.Id]
 		if level and level > 0 then
-			total += def.PerLevel * math.min(level, def.MaxLevel)
+			total += Upgrades.bonus(def, level)
 		end
 	end
+	return total
+end
+
+-- Sum of all bonuses for a stat from a player's levels (missing levels count as 0), plus
+-- their pets' passives.
+function Upgrades.stat(levels: { [string]: number }?, stat: string): number
+	if not levels then
+		return 0
+	end
+	local total = Upgrades.treeStat(levels, stat)
 	-- Pet passives (shared/PetPassives) add to the same stats; the server sets this hook.
 	local extra = Upgrades.extra
 	if extra then
@@ -306,8 +502,12 @@ function Upgrades.blocked(def: UpgradeDef, levels: { [string]: number }, rebirth
 	if need and (levels[need] or 0) < 1 then
 		return `Buy {Upgrades.ById[need].Name} first`
 	end
-	if rebirths < def.RequiredRebirths then
-		return `Needs Rebirth {def.RequiredRebirths}`
+	local tr = Upgrades.tierFor(def, level + 1)
+	if rebirths < tr.RequiredRebirths then
+		if level > 0 and level == tr.First then
+			return `Evolves into {tr.Name} at Rebirth {tr.RequiredRebirths}`
+		end
+		return `Needs Rebirth {tr.RequiredRebirths}`
 	end
 	return nil
 end

@@ -32,6 +32,12 @@ local EVENTS: { [string]: number } = {
 	CoinsDropped = 0, -- server -> owner: (origin, { {Id, Pos, Value} }) coins from selling to pick up
 	CoinsAuto = 0, -- server -> owner: ({ ids }) coins left too long: paid out, they fly to you
 	CoinsCollect = 10, -- client: ({ ids }) coins you walked up to
+	ItemsDropped = 0, -- server -> owner: ({ {Id, Pos, Item?, Cash?} }) leaf drops to pick up (DropService)
+	ItemsAuto = 0, -- server -> owner: ({ ids }) drops left too long: given to you, they fly to you
+	ItemsCollect = 6, -- client: ({ ids }) drops you walked up to
+	Treasure = 0, -- server -> owner: (tilePos? , dugAt?) your Treasure Map chest (nil = gone)
+	LeafBomb = 0, -- server -> all: (position, radius) a Leaf Bomb went off
+	MerchantRestocked = 0, -- server -> buyer: your Robux restock went through (refresh the window)
 	SetSetting = 6, -- client: ("Music" | "Sfx", 0-1) volume sliders, saved
 	Broadcast = 0, -- server -> all: admin announcement { Text, From, Seconds }
 	Poll = 0, -- server -> all: the running admin poll (or nil when it's gone)
@@ -57,6 +63,7 @@ local FUNCTIONS: { [string]: number } = {
 	Rewards = 6, -- (action, arg?) -> ok, message: see RewardService ACTIONS
 	BaseSkin = 4, -- ("Unlock" | "Equip" | "Preview", skinId) -> ok, message
 	RedeemCode = 2, -- (code) -> ok, message: CodeService
+	Merchant = 6, -- ("Get" | "Buy", slot?) -> ok, message, stock: MerchantService
 	Admin = 8, -- (action, payload) -> ok, message: admins only, see AdminService
 }
 

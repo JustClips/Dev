@@ -1309,6 +1309,51 @@ def wheel():
                          order=10, enabled=False))
 
 
+# ---------------------------------------------------------------- Traveling Merchant
+def merchant():
+    """Traveling Merchant window (screen "Merchant", MerchantController), opened from the
+    prompt on his cart in the plaza. "Timer" says how long he stays; six ware cards
+    ("Card1".."Card6", the controller hides the ones you don't have slots for), each with
+    an icon (items) or a 3D egg ("Model"), name, rarity, stock left and a Buy button with
+    the cash price. "Away" covers the cards while he's gone. "Restock" is the Robux button
+    that rolls you a fresh set."""
+    def card(i):
+        fit = lambda mx, mn: [node("Fit", "UITextSizeConstraint", {"MaxTextSize": mx, "MinTextSize": mn})]
+        return plate(f"Card{i}", U(0, 252, 0, 160), tint=WHITE, stroke=3, LayoutOrder=i, children=[
+            frame("Stripe", U(0, 8, 1, 0), bg=MUTED, ZIndex=2),
+            icon("Icon", "Potion", 66, U(0, 14, 0, 8)),
+            node("Model", "ViewportFrame", base(U(0, 66, 0, 66), U(0, 14, 0, 8), BackgroundTransparency=1, Visible=False,
+                                               ZIndex=3)),
+            text("Name", "", U(1, -94, 0, 26), U(0, 86, 0, 6), ts=19, color=INK, display=True, xa="Left", TextScaled=True,
+                 TextWrapped=False, children=fit(19, 10)),
+            text("Rarity", "", U(1, -94, 0, 20), U(0, 86, 0, 32), ts=16, color=SUB, display=True, xa="Left"),
+            text("Left", "", U(1, -94, 0, 20), U(0, 86, 0, 52), ts=15, color=SUB, heavy=True, xa="Left"),
+            text("Info", "", U(1, -22, 0, 30), U(0, 14, 0, 76), ts=13, color=SUB, heavy=True, xa="Left", ya="Top",
+                 TextScaled=True, children=fit(14, 8)),
+            button("Buy", U(1, -26, 0, 42), U(0.5, 4, 1, -7), (0.5, 1), color=SUCCESS, label="Buy", ts=20),
+        ])
+
+    cards = frame("Cards", U(1, -24, 0, 334), U(0, 12, 0, 114), children=[
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 252, 0, 160), "CellPadding": U(0, 12, 0, 12), "SortOrder": "LayoutOrder",
+                                        "HorizontalAlignment": "Center"}),
+    ] + [card(i) for i in range(1, 7)])
+    away = frame("Away", U(1, -24, 0, 334), U(0, 12, 0, 114), Visible=False, children=[
+        icon("Icon", "Merchant", 120, U(0.5, 0, 0, 20), (0.5, 0)),
+        text("Title", "The merchant is away", U(1, 0, 0, 44), U(0.5, 0, 0, 150), (0.5, 0), ts=36, color=INK, display=True),
+        text("Back", "Back in 12:00", U(1, 0, 0, 34), U(0.5, 0, 0, 198), (0.5, 0), ts=28, color=SUB, display=True),
+        text("Info", "He visits the plaza every 20 minutes with potions, charms and rare eggs.", U(1, -60, 0, 50),
+             U(0.5, 0, 0, 240), (0.5, 0), ts=18, color=SUB, heavy=True),
+    ])
+    body = [
+        text("Timer", "", U(1, -40, 0, 34), U(0.5, 0, 0, 74), (0.5, 0), ts=24, color=INK, display=True),
+        cards, away,
+        button("Restock", U(0, 330, 0, 52), U(0.5, 0, 1, -10), (0.5, 1), color=PREMIUM, label="New wares", ts=22, ico="Merchant",
+               ico_px=38),
+    ]
+    write("Merchant", screen([dim(), window(WIN_W, WIN_H, "Traveling Merchant", "Merchant", body, header="#B5651D")],
+                            order=10, enabled=False))
+
+
 # ---------------------------------------------------------------- Codes
 def codes():
     """Codes window (screen "Codes", CodesController), opened from the Codes button in
@@ -1564,6 +1609,7 @@ def main():
     group_reward()
     wheel()
     codes()
+    merchant()
     upgrades()
     loading()
     print("ui written to", OUT)

@@ -28,7 +28,7 @@ local lastSell: { [Player]: number } = {}
 
 -- Adds cash (number or BigNum) and logs it as an economy source.
 -- Sources that show their own feedback (the cash pop for these comes from elsewhere or not at all).
-local QUIET_SOURCES = { SellPet = true, OfflineIncome = true, TutorialReward = true }
+local QUIET_SOURCES = { SellPet = true, OfflineIncome = true, TutorialReward = true, LeafDrop = true }
 
 function BackpackService:GiveCash(player: Player, amount: any, sku: string, transactionType: Enum.AnalyticsEconomyTransactionType?)
 	local data = S.DataService:GetData(player)
@@ -248,7 +248,9 @@ local function dumpStep(player: Player, session, spot: number, dt: number)
 	end
 	if not dump then
 		local capacity = S.ToolService:GetCapacity(player)
-		local rate = math.max(1, math.min(capacity / Economy.DumpSeconds, data.Backpack / Economy.DumpMinSeconds))
+		-- Quick Dump (upgrade tree) pours faster.
+		local quick = Upgrades.multiplier(data.Upgrades, "DumpSpeed")
+		local rate = math.max(1, math.min(capacity / Economy.DumpSeconds, data.Backpack / Economy.DumpMinSeconds) * quick)
 		dump = { spot = spot, rate = rate, total = 0, unpaid = 0, unpaidUnits = 0, nextDrop = os.clock() + Economy.Coins.DumpEvery }
 		session.Runtime.Dump = dump
 		player:SetAttribute("Dumping", spot)

@@ -12,6 +12,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
 local Grid = require(Shared.Grid)
+local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local World = require(Shared.Config.World)
 
@@ -32,7 +33,8 @@ function CoinService:MagnetRange(player: Player): number
 	for _, id in Economy.Coins.MagnetUpgrades do
 		magnet += levels[id] or 0
 	end
-	return Economy.Coins.MagnetBase + Economy.Coins.MagnetPerLevel * magnet
+	local potion = if S.BoostService:IsBoostActive(player, "Magnet") then Items.MagnetBonus else 0
+	return Economy.Coins.MagnetBase + Economy.Coins.MagnetPerLevel * magnet + potion
 end
 
 local function credit(player: Player, amount: number)

@@ -376,7 +376,8 @@ function EggService:OnTileCleared(player: Player, zone, position: Vector3)
 		return
 	end
 	local luck = S.BoostService:GetServerLuck() * Upgrades.multiplier(session.Data.Upgrades, "Luck") * S.BoostService:GetPersonalLuck(player)
-	if rng:NextNumber() < zone.EggChance * luck then
+	local sniff = Upgrades.multiplier(session.Data.Upgrades, "EggFind")
+	if rng:NextNumber() < zone.EggChance * luck * sniff then
 		foundEgg(player, position, EggService:RollRarity(zone.MaxRarity, luck), zone.Id)
 	end
 end

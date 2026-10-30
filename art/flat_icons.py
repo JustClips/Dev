@@ -124,9 +124,11 @@ def stroke_line(d, width=W, color=LINE):
 
 def text(x, y, value, size, fill=WHITE, weight=900):
     s = Shape("text", fill, {}, body=False, shade=False, line=False)
-    s.raw_svg = ('<text x="%s" y="%s" font-family="Montserrat, Arial Black, sans-serif" font-weight="%s" font-size="%s" '
-                 'text-anchor="middle" dominant-baseline="central" fill="%s" stroke="%s" stroke-width="%s" '
-                 'paint-order="stroke" stroke-linejoin="round">%s</text>' % (x, y, weight, size, fill, LINE, W * 0.9, value))
+    # Outline and fill as two layers (cairosvg ignores paint-order, so one element hid the fill).
+    common = ('x="%s" y="%s" font-family="Montserrat, Arial Black, sans-serif" font-weight="%s" font-size="%s" '
+              'text-anchor="middle" dominant-baseline="central"' % (x, y, weight, size))
+    s.raw_svg = ('<text %s fill="%s" stroke="%s" stroke-width="%s" stroke-linejoin="round">%s</text>'
+                 '<text %s fill="%s">%s</text>' % (common, LINE, LINE, W * 0.9, value, common, fill, value))
     return s
 
 
@@ -868,6 +870,133 @@ ICONS["PotionCash"] = potion(GREEN, lambda: [text(256, 380, "$", 120, fill=YELLO
 ICONS["PotionLuck"] = potion(LEAF, lambda: [poly(star_points(256, 380, 56, 26), YELLOW, shade=False)])
 ICONS["PotionSpeed"] = potion(BLUE, lambda: [poly([(270, 320), (220, 390), (254, 390), (236, 450), (296, 370), (262, 370)], YELLOW, shade=False)])
 ICONS["PotionHatch"] = potion(ORANGE, lambda: [egg_shape(256, 386, 40, 54, CREAM)])
+
+
+# ------------------------------------------------------------------ new items (2026-10-30)
+def _magnet_symbol(cx, cy, k=1.0):
+    r1, r2 = 50 * k, 22 * k
+    d = ("M %s %s L %s %s A %s %s 0 0 0 %s %s L %s %s L %s %s L %s %s A %s %s 0 0 1 %s %s L %s %s Z" % (
+        cx - r1, cy - 40 * k, cx - r1, cy, r1, r1, cx + r1, cy, cx + r1, cy - 40 * k, cx + r2, cy - 40 * k,
+        cx + r2, cy, r2, r2, cx - r2, cy, cx - r2, cy - 40 * k))
+    return [path(d, RED, shade=False),
+            rect(cx - r1, cy - 40 * k, r1 - r2, 26 * k, WHITE, shade=False, line=False),
+            rect(cx + r2, cy - 40 * k, r1 - r2, 26 * k, WHITE, shade=False, line=False)]
+
+
+def _small_leaf(cx, cy, s, col, rot=-30):
+    d = "M 0 %s C %s %s %s %s 0 %s C %s %s %s %s 0 %s Z" % (s, s * 0.9, s * 0.5, s * 0.8, -s * 0.6, -s,
+                                                          -s * 0.8, -s * 0.6, -s * 0.9, s * 0.5, s)
+    leafp = path(d, col, shade=False)
+    leafp.attrs["transform"] = "translate(%s %s) rotate(%s)" % (cx, cy, rot)
+    return leafp
+
+
+ICONS["PotionMagnet"] = potion(SKY, lambda: _magnet_symbol(256, 400, 0.9))
+ICONS["PotionLeaf"] = potion(ORANGE, lambda: [_small_leaf(256, 382, 56, LEAF)])
+ICONS["PotionBag"] = potion(TAN, lambda: [
+    rect(206, 350, 100, 86, BROWN, r=16, shade=False),
+    rect(206, 350, 100, 28, DBROWN, r=8, shade=False),
+    rect(244, 368, 24, 20, YELLOW, r=4, shade=False)])
+ICONS["PotionSuperLuck"] = potion(DGREEN, lambda: [text(256, 384, "3x", 110, fill=YELLOW)])
+ICONS["PotionMegaCash"] = potion(GOLD, lambda: [text(256, 384, "3x", 110, fill=GREEN)])
+
+
+@icon("LeafBomb")
+def _leaf_bomb():
+    return [
+        circle(236, 300, 168, "#3C4256"),
+        rect(196, 100, 90, 60, DGREY, r=10),
+        stroke_line("M 244 104 C 250 60 300 40 340 70", width=W * 1.6),
+        stroke_line("M 244 104 C 250 60 300 40 340 70", width=W * 0.6, color=TAN),
+        poly(star_points(356, 66, 56, 22, n=8), YELLOW, shade=False),
+        circle(356, 66, 18, WHITE, body=False, shade=False, line=False),
+        _small_leaf(236, 310, 80, ORANGE, rot=-25),
+        hl(160, 230, 34, 20, rot=-40, opacity=0.35),
+    ]
+
+
+@icon("TreasureMap")
+def _treasure_map():
+    paper = path("M 70 110 L 200 70 L 320 110 L 442 70 L 442 400 L 320 440 L 200 400 L 70 440 Z", CREAM)
+    return [
+        paper,
+        path("M 200 70 L 320 110 L 320 440 L 200 400 Z", TAN, body=False, shade=False),
+        stroke_line("M 120 380 C 160 330 140 280 210 260 C 270 245 260 190 320 180", width=W * 0.7, color=DBROWN),
+        stroke_line("M 334 150 L 404 220 M 404 150 L 334 220", width=W * 1.9),
+        stroke_line("M 334 150 L 404 220 M 404 150 L 334 220", width=W * 1.0, color=RED),
+        circle(120, 386, 18, DBROWN, body=False, shade=False, line=False),
+    ]
+
+
+@icon("LuckyClover")
+def _lucky_clover():
+    out = ICONS["Luck"]()
+    for s in out:
+        if s.fill == GREEN:
+            s.fill = "#3BD46A"
+    return out + [poly(star_points(410, 96, 54, 18, n=4), YELLOW, shade=False),
+                  poly(star_points(96, 380, 40, 14, n=4), YELLOW, shade=False),
+                  poly(star_points(430, 400, 30, 11, n=4), WHITE, shade=False)]
+
+
+@icon("MutationSpray")
+def _mutation_spray():
+    out = [
+        rect(150, 230, 170, 240, PURPLE, r=26),
+        rect(176, 300, 118, 100, WHITE, r=14, shade=False),
+        rect(196, 150, 78, 90, DGREY, r=10),
+        path("M 196 150 L 196 110 L 330 110 L 330 150 Z", GREY),
+        path("M 300 180 L 336 240 L 300 240 Z", DGREY),
+        poly(star_points(235, 350, 34, 14), PINK, shade=False),
+    ]
+    for (x, y, r, c) in ((372, 96, 22, RED), (412, 132, 18, YELLOW), (382, 168, 20, GREEN), (436, 82, 16, SKY),
+                         (446, 176, 14, PINK)):
+        out.append(circle(x, y, r, c, shade=False))
+    return out
+
+
+@icon("HugeCharm")
+def _huge_charm():
+    return [
+        stroke_line("M 150 70 C 190 20 322 20 362 70", width=W * 1.4),
+        stroke_line("M 150 70 C 190 20 322 20 362 70", width=W * 0.5, color=TAN),
+        circle(256, 296, 170, GOLD),
+        circle(256, 296, 128, YELLOW, body=False, shade=False),
+        rect(226, 96, 60, 50, GOLD, r=10),
+        path("M 256 196 C 300 196 340 236 340 276 C 340 316 300 330 276 326 C 266 324 262 320 256 320 "
+             "C 250 320 246 324 236 326 C 212 330 172 316 172 276 C 172 236 212 196 256 196 Z", PURPLE, shade=False),
+        text(256, 380, "XL", 70, fill=WHITE),
+        hl(186, 210, 26, 16, rot=-40),
+    ]
+
+
+@icon("WeatherTotem")
+def _weather_totem():
+    out = [
+        rect(196, 210, 120, 262, WOOD, r=10),
+        rect(176, 300, 160, 36, BROWN, r=8),
+        circle(230, 250, 12, LINE, body=False, shade=False, line=False),
+        circle(282, 250, 12, LINE, body=False, shade=False, line=False),
+        rect(232, 368, 48, 60, DBROWN, r=6, shade=False),
+    ]
+    out += cloud(256, 140, 92)
+    out.append(poly([(270, 150), (226, 214), (256, 214), (238, 270), (296, 194), (264, 194)], YELLOW, shade=False))
+    return out
+
+
+@icon("Merchant")  # a merchant's wagon with a striped canopy
+def _merchant():
+    out = [
+        rect(70, 230, 372, 150, WOOD, r=10),
+        path("M 80 236 C 80 90 432 90 432 236 Z", WHITE),
+        path("M 150 236 C 150 120 200 102 220 100 C 214 140 210 190 210 236 Z", RED, body=False, shade=False),
+        path("M 302 236 C 302 190 298 140 292 100 C 312 102 362 120 362 236 Z", RED, body=False, shade=False),
+        rect(70, 230, 372, 32, DBROWN, r=6, shade=False),
+        circle(150, 400, 62, DBROWN), circle(150, 400, 24, TAN, body=False, shade=False),
+        circle(362, 400, 62, DBROWN), circle(362, 400, 24, TAN, body=False, shade=False),
+        circle(256, 310, 34, GOLD, shade=False), text(256, 312, "$", 46, fill=YELLOW),
+    ]
+    return out
 
 
 # ------------------------------------------------------------------ output

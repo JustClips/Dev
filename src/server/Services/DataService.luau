@@ -55,9 +55,11 @@ local TEMPLATE: Types.ProfileData = {
 		GroupRewardClaimed = false,
 		EventSignups = {},
 		FavoriteAsked = false, -- the favorite-the-game prompt was answered once; never ask again
+		Charms = {}, -- item charms waiting for your next hatch: Huge / Clover -> count
 	},
 	Stats = { EggsFound = 0, Hatches = 0, Playtime = 0, TilesCleared = 0, Sells = 0 },
 	Settings = { AutoSweep = true, AutoSell = true, Music = 0.6, Sfx = 0.8 },
+	Merchant = {}, -- MerchantService: { Visit, Bought = { [slot] = count }, Reroll }
 }
 
 export type Session = {

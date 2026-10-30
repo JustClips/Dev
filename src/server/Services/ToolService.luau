@@ -13,6 +13,7 @@ local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local ToolGrips = require(Shared.Config.ToolGrips)
 local Tools = require(Shared.Config.Tools)
+local Items = require(Shared.Config.Items)
 local Upgrades = require(Shared.Config.Upgrades)
 local Avatar = require(script.Parent.Parent.Lib.Avatar)
 
@@ -58,7 +59,11 @@ function ToolService:GetCapacity(player: Player): number
 	if car then
 		capacity = math.max(capacity, car.Capacity)
 	end
-	return math.floor(capacity * Upgrades.multiplier(data and data.Upgrades, "Backpack"))
+	local mult = Upgrades.multiplier(data and data.Upgrades, "Backpack")
+	if S.BoostService:IsBoostActive(player, "BigBag") then
+		mult *= Items.BigBagMult
+	end
+	return math.floor(capacity * mult)
 end
 
 function ToolService:IsInVehicle(player: Player): boolean
@@ -78,6 +83,9 @@ function ToolService:GetSweepTool(player: Player): { Radius: number, Power: numb
 	local session = S.DataService:GetSession(player)
 	local levels = session and session.Data.Upgrades
 	local mult = Upgrades.multiplier(levels, "Power")
+	if S.BoostService:IsBoostActive(player, "Leaf2x") then
+		mult *= Items.LeafMult
+	end
 	local size = Upgrades.multiplier(levels, "Radius")
 	if session and ToolService:IsInVehicle(player) then
 		local car = Tools.vehicle(session.Runtime.VehicleId or "")

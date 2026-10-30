@@ -107,6 +107,28 @@ local function computeStates(data): { [string]: string }
 	return states
 end
 
+-- An owned hex whose next tier needs more rebirths: the rebirth it waits for (else nil).
+local function waitsForRebirth(def: UpgradeDef, data): number?
+	local level = data.Upgrades[def.Id] or 0
+	if level <= 0 or level >= def.MaxLevel then
+		return nil
+	end
+	local need = Upgrades.requiredRebirths(def, level)
+	return if (data.Rebirths or 0) < need then need else nil
+end
+
+local ROMAN = { "I", "II", "III", "IV", "V", "VI" }
+
+-- "II 3/10" on an evolving hex (stage and level inside it), "3/10" on a simple one.
+local function levelText(def: UpgradeDef, level: number): string
+	local tr, index = Upgrades.currentTier(def, level)
+	local inTier = math.clamp(level - tr.First, 0, tr.Levels)
+	if #def.Tiers > 1 then
+		return `{ROMAN[index] or index} {inTier}/{tr.Levels}`
+	end
+	return `{inTier}/{tr.Levels}`
+end
+
 local function price(def: UpgradeDef, data): number
 	local level = data.Upgrades[def.Id] or 0
 	local cost = Upgrades.cost(def, level)
@@ -119,6 +141,9 @@ end
 -- Can be bought right now (sub-tree roots also need their lab).
 local function canBuy(def: UpgradeDef, data, state: string): boolean
 	if state ~= "Open" and state ~= "Owned" then
+		return false
+	end
+	if waitsForRebirth(def, data) then
 		return false
 	end
 	local need = Upgrades.requires(def)
@@ -265,8 +290,9 @@ local function setTip(id: string?)
 		info.Text = "Buy the upgrade next to it to find out"
 		desc.Text = ""
 	else
-		nameLabel.Text = def.Name
-		desc.Text = def.Description
+		nameLabel.Text = Upgrades.name(def, level)
+		desc.Text = Upgrades.description(def, level)
+		local wait = waitsForRebirth(def, data)
 		if def.Opens then
 			info.Text = if level > 0 then "Tap to go inside" else `Unlock for {Format.cash(price(def, data))}`
 		elseif state == "Rebirth" then
@@ -275,11 +301,14 @@ local function setTip(id: string?)
 		elseif state == "Max" then
 			info.TextColor3 = GOLD_TEXT
 			info.Text = `MAX  {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
+		elseif wait then
+			info.TextColor3 = RED
+			info.Text = `Evolves at Rebirth {wait}  ·  now {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
 		else
 			local stat = Upgrades.Stats[def.Stat]
-			info.Text = `Lv {level}/{def.MaxLevel}  ·  {Upgrades.describe(def, level)} > {Upgrades.describe(def, level + 1)} {stat.Name}`
+			info.Text = `Lv {levelText(def, level)}  ·  {Upgrades.describe(def, level)} > {Upgrades.describe(def, level + 1)} {stat.Name}`
 		end
-		if (state == "Open" or state == "Owned") and not (def.Opens and level > 0) then
+		if (state == "Open" or state == "Owned") and not (def.Opens and level > 0) and not wait then
 			local cost = price(def, data)
 			if not BigNum.gte(data.Cash, cost) then
 				hint.TextColor3 = RED
@@ -369,7 +398,9 @@ local function renderBoard()
 		nameLabel.Visible = known
 		priceRow.Visible = known
 		levelLabel.Visible = known and not isLab and state ~= "Rebirth"
-		levelLabel.Text = `{level}/{def.MaxLevel}`
+		levelLabel.Text = levelText(def, level)
+		nameLabel.Text = Upgrades.name(def, level) -- evolving hexes change name
+		local wait = waitsForRebirth(def, data)
 		;(node:FindFirstChild("Lock") :: ImageLabel).Visible = state == "Rebirth"
 		;(node:FindFirstChild("Question") :: TextLabel).Visible = state == "Mystery"
 
@@ -381,6 +412,8 @@ local function renderBoard()
 			priceLabel.Text = "MAX"
 		elseif state == "Rebirth" then
 			priceLabel.Text = `Rebirth {def.RequiredRebirths}`
+		elseif wait then
+			priceLabel.Text = `Rebirth {wait}`
 		else
 			local cost = price(def, data)
 			coin.Visible = true
