@@ -141,6 +141,7 @@ function HatchService:PlaceEgg(player: Player, uid: string, position: Vector3?):
 		Weight = egg.Weight,
 		Size = egg.Size,
 		Paid = egg.Paid,
+		Mutation = egg.Mutation, -- from weather while it lay in the field
 		StartsAt = os.time(),
 		EndsAt = os.time() + seconds,
 	})

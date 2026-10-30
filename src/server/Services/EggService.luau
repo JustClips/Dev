@@ -92,6 +92,7 @@ local function refreshCarryVisual(player: Player)
 	for i, entry in carried do
 		-- A smaller copy of the egg model, welded above the head.
 		local egg = AssetLibrary.egg(entry.Rarity)
+		AssetLibrary.applyMutation(egg, entry.Mutation)
 		egg:ScaleTo(0.6)
 		egg:PivotTo(head.CFrame * CFrame.new(0, 0.8 + (i - 1) * 1.6, 0))
 		for _, part in egg:GetDescendants() do
@@ -112,7 +113,7 @@ local function refreshCarryVisual(player: Player)
 	folder.Parent = character
 end
 
-type Carried = { Rarity: string, Zone: string }
+type Carried = { Rarity: string, Zone: string, Mutation: string? }
 
 local function setCarried(player: Player, carried: { Carried })
 	local session = S.DataService:GetSession(player)
@@ -148,8 +149,9 @@ local function pickup(player: Player, egg: BasePart)
 	end
 	local rarity = egg:GetAttribute("Rarity") :: string
 	local zone = (egg:GetAttribute("Zone") or "Landing") :: string
+	local mutation = egg:GetAttribute("Mutation")
 	egg:Destroy()
-	table.insert(carried, { Rarity = rarity, Zone = zone })
+	table.insert(carried, { Rarity = rarity, Zone = zone, Mutation = if type(mutation) == "string" then mutation else nil })
 	if session.Runtime.TutorialEgg == egg then
 		session.Runtime.TutorialEgg = nil
 		session.Runtime.TutorialEggPosition = nil
@@ -332,6 +334,33 @@ function EggService:SpawnEgg(position: Vector3, rarity: string, owner: Player?, 
 	return egg
 end
 
+-- Eggs lying in the field (weather can hit them too, WeatherService). Owner is the player
+-- who found it (nil for Egg Rain eggs anyone can grab).
+function EggService:GroundEggs(): { { egg: BasePart, owner: number? } }
+	return ground
+end
+
+-- Weather gives a field egg a mutation: shown on the egg, kept when it's picked up, placed
+-- and hatched. False if it already has one.
+function EggService:MutateGroundEgg(egg: BasePart, mutation: string): boolean
+	if not egg.Parent or egg:GetAttribute("Mutation") then
+		return false
+	end
+	egg:SetAttribute("Mutation", mutation)
+	for _, child in egg:GetChildren() do
+		if child:IsA("Model") then
+			AssetLibrary.applyMutation(child, mutation)
+		end
+	end
+	local label = egg:FindFirstChild("Label")
+	local text = label and label:FindFirstChildOfClass("TextLabel")
+	local def = Eggs.MutationByName[mutation]
+	if text and def then
+		text.Text = `{def.Label} {text.Text}`
+	end
+	return true
+end
+
 -- Before the first hatch, the tutorial arrow points at the player's egg on the ground.
 local function trackTutorialEgg(player: Player, session, egg: BasePart)
 	if session.Data.Stats.Hatches > 0 or #session.Data.Hatching > 0 or session.Runtime.TutorialEgg then
@@ -432,7 +461,7 @@ local function deliver(player: Player, baseIndex: number)
 	end
 	local remaining = {}
 	for _, entry in carried do
-		if not S.InventoryService:AddEgg(player, entry.Rarity, entry.Zone) then
+		if not S.InventoryService:AddEgg(player, entry.Rarity, entry.Zone, nil, nil, entry.Mutation) then
 			table.insert(remaining, entry)
 		end
 	end

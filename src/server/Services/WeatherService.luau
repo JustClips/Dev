@@ -125,11 +125,26 @@ end
 
 -- Eggs ------------------------------------------------------------------------------------
 
-type GrowingEgg = { player: Player, uid: string, rarity: string, position: Vector3, mutated: boolean }
+-- An egg weather can hit: growing in a park (uid), or lying in a leaf field (part; its
+-- finder is `player`, nil for Egg Rain eggs).
+type GrowingEgg = { player: Player?, uid: string?, part: BasePart?, rarity: string, position: Vector3, mutated: boolean }
 
--- Every unopened egg in every park, with where it sits in the world.
+-- Every unopened egg in every park and every egg lying in the fields, with where it is.
 local function growingEggs(): { GrowingEgg }
 	local list = {}
+	for _, entry in S.EggService:GroundEggs() do
+		local part = entry.egg
+		if part.Parent then
+			local rarity = part:GetAttribute("Rarity")
+			table.insert(list, {
+				player = if entry.owner then Players:GetPlayerByUserId(entry.owner) else nil,
+				part = part,
+				rarity = if type(rarity) == "string" then rarity else "Common",
+				position = part.Position - Vector3.new(0, 1.7, 0),
+				mutated = part:GetAttribute("Mutation") ~= nil,
+			})
+		end
+	end
 	for _, player in Players:GetPlayers() do
 		local session = S.DataService:GetSession(player)
 		local index = session and session.Runtime.BaseIndex
@@ -146,12 +161,19 @@ local function growingEggs(): { GrowingEgg }
 end
 
 local function upgradeEgg(egg: GrowingEgg, mutation: string, how: string)
-	if not S.HatchService:SetEggMutation(egg.player, egg.uid, mutation) then
+	if egg.part then
+		if not S.EggService:MutateGroundEgg(egg.part, mutation) then
+			return
+		end
+	elseif not (egg.player and egg.uid and S.HatchService:SetEggMutation(egg.player, egg.uid, mutation)) then
 		return
 	end
 	local label = Eggs.MutationByName[mutation] and Eggs.MutationByName[mutation].Label or mutation
 	Net.fireAll("EggUpgraded", egg.position, mutation)
-	Net.fire("Notify", egg.player, `{how} Your {egg.rarity} Egg is {label} now! The pet keeps it.`, "Good")
+	if egg.player then
+		local where = if egg.part then " in the field" else ""
+		Net.fire("Notify", egg.player, `{how} Your {egg.rarity} Egg{where} is {label} now! The pet keeps it.`, "Good")
+	end
 end
 
 -- Storm Chaser (Egg Lab): this player's eggs get weather mutations more often.
@@ -165,7 +187,8 @@ local function rollEggMutations()
 		local mutation, chance = def.Mutation, def.EggChance
 		if mutation and chance then
 			for _, egg in growingEggs() do
-				if not egg.mutated and rng:NextNumber() < chance * weatherMutMult(egg.player) then
+				local mult = if egg.player then weatherMutMult(egg.player) else 1
+				if not egg.mutated and rng:NextNumber() < chance * mult then
 					upgradeEgg(egg, mutation, `{def.Name}!`)
 				end
 			end
@@ -179,7 +202,7 @@ local SPRAY_WEIGHTS = { Wet = 30, Windswept = 26, Frozen = 18, Shocked = 12, Gol
 function WeatherService:SprayEgg(player: Player): (boolean, string?)
 	local mine = {}
 	for _, egg in growingEggs() do
-		if egg.player == player and not egg.mutated then
+		if egg.player == player and egg.uid and not egg.mutated then
 			table.insert(mine, egg)
 		end
 	end
@@ -199,7 +222,7 @@ function WeatherService:SprayEgg(player: Player): (boolean, string?)
 		end
 	end
 	local egg = mine[rng:NextInteger(1, #mine)]
-	if not S.HatchService:SetEggMutation(player, egg.uid, pick) then
+	if not S.HatchService:SetEggMutation(player, egg.uid :: string, pick) then
 		return false, "That egg can't be sprayed right now"
 	end
 	local label = Eggs.MutationByName[pick] and Eggs.MutationByName[pick].Label or pick

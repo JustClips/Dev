@@ -211,6 +211,7 @@ export type EggInstance = {
 	Weight: number?, -- kg; bigger eggs hatch heavier pets (Config/Weights)
 	Size: string?, -- size class: Normal, Big, Heavy, Giant, Colossal
 	Paid: boolean?, -- bought with Robux: always hatches its own rarity
+	Mutation: string?, -- a weather mutation it got while lying in the field (the pet keeps it)
 }
 
 -- An egg placed in an incubator on your base. Ready to open once EndsAt has passed.
