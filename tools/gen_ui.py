@@ -1199,7 +1199,8 @@ def settings():
                ico_px=32),
         text("Track", "", U(1, -28, 0, 22), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True),
     ]
-    write("Settings", screen([dim(), window(520, 350, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
+    # 370 tall so "Now playing" has its own line under the buttons.
+    write("Settings", screen([dim(), window(520, 370, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Group reward
