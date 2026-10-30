@@ -796,10 +796,12 @@ local function leaderboards()
 		Material = M.SmoothPlastic,
 	}, model)
 	light(cap, GOLD, 24, 1.2)
+	block(model, "Pole", Vector3.new(0.6, 6, 0.6), base * CFrame.new(0, 20.2, 0), GOLD, M.SmoothPlastic)
 	local top = make("BillboardGui", {
 		Name = "TopLabel",
-		Size = UDim2.fromScale(16, 7),
-		StudsOffsetWorldSpace = Vector3.new(0, 5, 0),
+		-- Well above the boards so it never covers their headers from below (Dev).
+		Size = UDim2.fromScale(14, 6),
+		StudsOffsetWorldSpace = Vector3.new(0, 11, 0),
 		LightInfluence = 0,
 		MaxDistance = 600,
 	}, cap)
