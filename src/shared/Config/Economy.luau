@@ -61,7 +61,7 @@ local Economy = {
 
 	-- Eggs (GAME_PLAN §4, §5.3)
 	TutorialEggTile = 5, -- guaranteed first egg on this tile cleared (must be <= 25)
-	EggDespawnSeconds = 90, -- eggs you found (only you see and can pick them up)
+	EggDespawnSeconds = 60, -- eggs you found (only you see and can pick them up)
 	EggRainDespawnSeconds = 45, -- Egg Rain eggs (shared)
 	MaxGroundEggs = 40, -- eggs lying around a server at once; the oldest go first
 	MaxGroundEggsPerPlayer = 5, -- found eggs per player on the ground
