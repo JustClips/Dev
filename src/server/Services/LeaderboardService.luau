@@ -3,7 +3,7 @@
 --
 -- Global leaderboards (Dev, 2026-10-30): total cash earned (all time), best cash per second
 -- ever reached, and most rebirths, each the top 10 across every server. Scores go to
--- OrderedDataStores every SAVE_SECONDS and the three plaza boards (MapBuilder leaderboards)
+-- OrderedDataStores every SAVE_SECONDS and the leaderboard tower (MapBuilder leaderboards)
 -- reload every LOAD_SECONDS. OrderedDataStores only hold whole numbers, so cash values are
 -- stored as round(log10(value + 1) * SCALE) and turned back for display.
 local DataStoreService = game:GetService("DataStoreService")
@@ -125,7 +125,7 @@ local function row(parent: Instance, rank: number, userId: number, value: string
 	local frame = Instance.new("Frame")
 	frame.Name = "Row"
 	frame.LayoutOrder = rank
-	frame.Size = UDim2.new(1, 0, 0, 25)
+	frame.Size = UDim2.new(1, 0, 0, 46)
 	frame.BackgroundColor3 = Color3.new(1, 1, 1)
 	frame.BackgroundTransparency = if rank % 2 == 1 then 0.92 else 1
 	frame.BorderSizePixel = 0
@@ -145,8 +145,8 @@ local function row(parent: Instance, rank: number, userId: number, value: string
 	text("Rank", `#{rank}`, 0, 0.11, Enum.TextXAlignment.Left, RANK_COLORS[rank] or Color3.fromRGB(200, 205, 220))
 	local head = Instance.new("ImageLabel")
 	head.BackgroundTransparency = 1
-	head.Position = UDim2.new(0.12, 0, 0, 0)
-	head.Size = UDim2.fromOffset(25, 25)
+	head.Position = UDim2.new(0.11, 0, 0, 1)
+	head.Size = UDim2.fromOffset(44, 44)
 	head.Image = `rbxthumb://type=AvatarHeadShot&id={userId}&w=48&h=48`
 	head.Parent = frame
 	text("Name", nameOf(userId), 0.2, 0.48, Enum.TextXAlignment.Left, Color3.new(1, 1, 1))

@@ -11,6 +11,7 @@ local World = require(script.Parent.World)
 
 local landingExclusions: { Types.Exclusion } = {
 	{ Center = Vector2.new(World.RocketPosition.X, World.RocketPosition.Z), Radius = World.RocketClearRadius },
+	{ Center = Vector2.new(World.LeaderTower.X, World.LeaderTower.Z), Radius = 11 }, -- leaderboard tower
 }
 -- Leaf dumps: the dump itself and the spot in front of it.
 for i, dump in World.Dumps do

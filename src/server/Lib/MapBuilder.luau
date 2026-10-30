@@ -728,32 +728,51 @@ local function corridorRamps()
 	end
 end
 
--- Global leaderboards: three boards in a row in front of the plaza screen, between the
--- Garage and the Upgrade station, facing the field. LeaderboardService fills the "Rows"
--- frame of each board's SurfaceGui (board part "Board_<Key>").
+-- Global leaderboards (Dev, 2026-10-30: the plaza boards were easy to miss): a three-sided
+-- tower just north of the market hall, where everyone comes to sell. Each face is one board
+-- (World.Leaderboards, facing north, south-east and south-west) and a gold star on top with
+-- "TOP PLAYERS" shows from across the field. LeaderboardService fills the "Rows" frame of
+-- each board part "Board_<Key>".
 local function leaderboards()
 	local model = make("Model", { Name = "Leaderboards" }, structures)
-	for i, board in World.Leaderboards do
-		local x = (i - 2) * 12
-		local cf = CFrame.lookAt(Vector3.new(x, 0, 186), Vector3.new(x, 0, 0))
-		for _, lx in { -4.4, 4.4 } do
-			block(model, "Leg", Vector3.new(0.8, 1.4, 0.8), cf * CFrame.new(lx, 0.7, 0.2), WOOD_DARK, M.Wood)
-		end
-		local part = block(model, "Board_" .. board.Key, Vector3.new(11, 8.4, 0.6), cf * CFrame.new(0, 5.4, 0), INK)
-		block(part, "Trim", Vector3.new(11.6, 9, 0.4), cf * CFrame.new(0, 5.4, 0.15), WOOD_DARK, M.Wood, { CanCollide = false, CanQuery = false, CanTouch = false })
+	local center = World.LeaderTower
+	local base = CFrame.new(center)
+	make("Part", {
+		Name = "Base",
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(1.2, 19, 19),
+		CFrame = base * CFrame.new(0, 0.6, 0) * CFrame.Angles(0, 0, math.rad(90)),
+		Color = WOOD_DARK,
+		Material = M.WoodPlanks,
+	}, model)
+	make("Part", {
+		Name = "Core",
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(16, 6.6, 6.6),
+		CFrame = base * CFrame.new(0, 9, 0) * CFrame.Angles(0, 0, math.rad(90)),
+		Color = INK,
+		Material = M.SmoothPlastic,
+	}, model)
+	for k, board in World.Leaderboards do
+		local a = math.rad((k - 1) * 120)
+		local dir = Vector3.new(math.sin(a), 0, -math.cos(a))
+		local at = center + dir * 3.7 + Vector3.new(0, 9.2, 0)
+		local cf = CFrame.lookAt(at, at + dir)
+		local part = block(model, "Board_" .. board.Key, Vector3.new(12, 14, 0.6), cf, INK)
+		block(part, "Trim", Vector3.new(12.6, 14.6, 0.4), cf * CFrame.new(0, 0, 0.15), board.Color, M.SmoothPlastic, { CanCollide = false, CanQuery = false, CanTouch = false })
 		local gui = make("SurfaceGui", {
 			Name = "BoardGui",
 			Face = Enum.NormalId.Front,
 			SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
 			PixelsPerStud = 40,
 			LightInfluence = 0,
-			Brightness = 1.2,
-			MaxDistance = 150,
+			Brightness = 1.3,
+			MaxDistance = 260,
 		}, part)
-		local header = make("Frame", { Name = "Header", Size = UDim2.new(1, 0, 0, 52), BackgroundColor3 = board.Color, BorderSizePixel = 0 }, gui)
+		local header = make("Frame", { Name = "Header", Size = UDim2.new(1, 0, 0, 72), BackgroundColor3 = board.Color, BorderSizePixel = 0 }, gui)
 		local title = make("TextLabel", {
-			Size = UDim2.new(1, -16, 1, -8),
-			Position = UDim2.fromOffset(8, 4),
+			Size = UDim2.new(1, -20, 1, -12),
+			Position = UDim2.fromOffset(10, 6),
 			BackgroundTransparency = 1,
 			Text = board.Title,
 			TextScaled = true,
@@ -761,9 +780,44 @@ local function leaderboards()
 			FontFace = Font.new(MONTSERRAT, Enum.FontWeight.Heavy),
 		}, header)
 		make("UIStroke", { Color = Color3.new(0, 0, 0), Thickness = 3, Transparency = 0.2 }, title)
-		local rows = make("Frame", { Name = "Rows", Size = UDim2.new(1, -16, 1, -60), Position = UDim2.fromOffset(8, 56), BackgroundTransparency = 1 }, gui)
+		local rows = make("Frame", { Name = "Rows", Size = UDim2.new(1, -20, 1, -84), Position = UDim2.fromOffset(10, 78), BackgroundTransparency = 1 }, gui)
 		make("UIListLayout", { Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder }, rows)
 	end
+	-- Gold star on top, with a label you can see from across the field.
+	local cap = make("Part", {
+		Name = "Cap",
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(1, 9, 9),
+		CFrame = base * CFrame.new(0, 16.7, 0) * CFrame.Angles(0, 0, math.rad(90)),
+		Color = GOLD,
+		Material = M.SmoothPlastic,
+	}, model)
+	light(cap, GOLD, 24, 1.2)
+	local top = make("BillboardGui", {
+		Name = "TopLabel",
+		Size = UDim2.fromScale(16, 7),
+		StudsOffsetWorldSpace = Vector3.new(0, 5, 0),
+		LightInfluence = 0,
+		MaxDistance = 600,
+	}, cap)
+	make("ImageLabel", {
+		Size = UDim2.fromScale(0.42, 0.62),
+		Position = UDim2.fromScale(0.5, 0),
+		AnchorPoint = Vector2.new(0.5, 0),
+		BackgroundTransparency = 1,
+		ScaleType = Enum.ScaleType.Fit,
+		Image = AssetLibrary.image("Icon_Star"),
+	}, top)
+	local label = make("TextLabel", {
+		Size = UDim2.fromScale(1, 0.36),
+		Position = UDim2.fromScale(0, 0.64),
+		BackgroundTransparency = 1,
+		Text = "TOP PLAYERS",
+		TextScaled = true,
+		TextColor3 = GOLD,
+		FontFace = Font.new(MONTSERRAT, Enum.FontWeight.Heavy),
+	}, top)
+	make("UIStroke", { Color = INK, Thickness = 3 }, label)
 end
 
 -- Everything above, plus base platforms. Needs only images (no models), so it runs at boot.

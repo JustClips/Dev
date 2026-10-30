@@ -58,7 +58,9 @@ World.Plaza = { Min = Vector2.new(-62, 150), Max = Vector2.new(62, 198) }
 World.Garage = CFrame.lookAt(Vector3.new(-34, 0, 178), Vector3.new(-34, 0, 100))
 World.GarageSpawn = CFrame.lookAt(Vector3.new(-34, 0, 158), Vector3.new(-34, 0, 100))
 World.UpgradeStation = CFrame.lookAt(Vector3.new(34, 0, 178), Vector3.new(34, 0, 100))
--- Global leaderboards in front of the plaza screen, left to right (LeaderboardService).
+-- Global leaderboards (LeaderboardService): a three-sided tower north of the market hall,
+-- faces in this order: north, south-east, south-west.
+World.LeaderTower = Vector3.new(0, 0, -27)
 World.Leaderboards = {
 	{ Key = "Earned", Title = "TOTAL CASH EARNED", Color = Color3.fromRGB(47, 191, 85) },
 	{ Key = "PerSec", Title = "BEST CASH / SEC", Color = Color3.fromRGB(255, 176, 32) },
