@@ -6175,6 +6175,302 @@ Assets.Models = {
 		},
 		sign = Vector3.new(0.0, 3.6, -0.2),
 	},
+	Skin_Autumn = {
+		bounds = {
+			max = Vector3.new(46.0, 14.15, 44.0),
+			min = Vector3.new(-46.4, -2.1, -47.116),
+		},
+		id = 108320257757153,
+		kind = "prop",
+		parts = {
+			Arch = {
+				collide = false,
+			},
+			Body = {
+				collide = false,
+			},
+			Body_Glow1 = {
+				collide = false,
+				glow = "FFC56B",
+				parent = "Body",
+			},
+			Decor = {
+				collide = false,
+			},
+			Decor2 = {
+				collide = false,
+			},
+			Fences = {
+				collide = false,
+			},
+			Hatchery = {
+				collide = false,
+			},
+			House = {
+				collide = false,
+			},
+			Incubators = {
+				collide = false,
+			},
+			Lamps = {
+				collide = false,
+			},
+			Pillars = {
+				collide = false,
+			},
+			Walls = {
+				collide = false,
+			},
+		},
+	},
+	Skin_Candy = {
+		bounds = {
+			max = Vector3.new(46.0, 14.95, 44.0),
+			min = Vector3.new(-46.0, -2.1, -47.116),
+		},
+		id = 109219248753694,
+		kind = "prop",
+		parts = {
+			Arch = {
+				collide = false,
+			},
+			Body = {
+				collide = false,
+			},
+			Body_Glow1 = {
+				collide = false,
+				glow = "7FD6FF",
+				parent = "Body",
+			},
+			Body_Glow2 = {
+				collide = false,
+				glow = "E8323C",
+				parent = "Body",
+			},
+			Body_Glow3 = {
+				collide = false,
+				glow = "FF5C9E",
+				parent = "Body",
+			},
+			Body_Glow4 = {
+				collide = false,
+				glow = "FF8AC4",
+				parent = "Body",
+			},
+			Body_Glow5 = {
+				collide = false,
+				glow = "FFE066",
+				parent = "Body",
+			},
+			Body_Glow6 = {
+				collide = false,
+				glow = "FFFFFF",
+				parent = "Body",
+			},
+			Decor = {
+				collide = false,
+			},
+			Fences = {
+				collide = false,
+			},
+			Fences2 = {
+				collide = false,
+			},
+			Hatchery = {
+				collide = false,
+			},
+			House = {
+				collide = false,
+			},
+			Incubators = {
+				collide = false,
+			},
+			Lamps = {
+				collide = false,
+			},
+			Pillars = {
+				collide = false,
+			},
+			Walls = {
+				collide = false,
+			},
+			Walls2 = {
+				collide = false,
+			},
+			Walls3 = {
+				collide = false,
+			},
+			Walls4 = {
+				collide = false,
+			},
+		},
+	},
+	Skin_Castle = {
+		bounds = {
+			max = Vector3.new(46.307, 21.67, 44.4),
+			min = Vector3.new(-46.307, -2.1, -47.116),
+		},
+		id = 106695625130279,
+		kind = "prop",
+		parts = {
+			Arch = {
+				collide = false,
+			},
+			Body = {
+				collide = false,
+			},
+			Body_Glow1 = {
+				collide = false,
+				glow = "FFB347",
+				parent = "Body",
+			},
+			Body_Glow2 = {
+				collide = false,
+				glow = "FFE066",
+				parent = "Body",
+			},
+			Decor = {
+				collide = false,
+			},
+			Fences = {
+				collide = false,
+			},
+			Fences2 = {
+				collide = false,
+			},
+			Hatchery = {
+				collide = false,
+			},
+			House = {
+				collide = false,
+			},
+			Incubators = {
+				collide = false,
+			},
+			Lamps = {
+				collide = false,
+			},
+			Pillars = {
+				collide = false,
+			},
+			Walls = {
+				collide = false,
+			},
+			Walls2 = {
+				collide = false,
+			},
+			Walls3 = {
+				collide = false,
+			},
+		},
+	},
+	Skin_Tiki = {
+		bounds = {
+			max = Vector3.new(46.0, 14.7, 44.119),
+			min = Vector3.new(-46.202, -2.1, -47.116),
+		},
+		id = 129773936435294,
+		kind = "prop",
+		parts = {
+			Arch = {
+				collide = false,
+			},
+			Body = {
+				collide = false,
+			},
+			Body_Glow1 = {
+				collide = false,
+				glow = "FF9A3C",
+				parent = "Body",
+			},
+			Body_Glow2 = {
+				collide = false,
+				glow = "FFD23F",
+				parent = "Body",
+			},
+			Decor = {
+				collide = false,
+			},
+			Fences = {
+				collide = false,
+			},
+			Fences2 = {
+				collide = false,
+			},
+			Hatchery = {
+				collide = false,
+			},
+			House = {
+				collide = false,
+			},
+			Incubators = {
+				collide = false,
+			},
+			Lamps = {
+				collide = false,
+			},
+			Pillars = {
+				collide = false,
+			},
+			Walls = {
+				collide = false,
+			},
+			Walls2 = {
+				collide = false,
+			},
+		},
+	},
+	Skin_Winter = {
+		bounds = {
+			max = Vector3.new(46.4, 14.9, 44.4),
+			min = Vector3.new(-46.0, -2.1, -47.116),
+		},
+		id = 78209803285249,
+		kind = "prop",
+		parts = {
+			Arch = {
+				collide = false,
+			},
+			Body = {
+				collide = false,
+			},
+			Body_Glow1 = {
+				collide = false,
+				glow = "FFC56B",
+				parent = "Body",
+			},
+			Decor = {
+				collide = false,
+			},
+			Fences = {
+				collide = false,
+			},
+			Fences2 = {
+				collide = false,
+			},
+			Hatchery = {
+				collide = false,
+			},
+			House = {
+				collide = false,
+			},
+			Incubators = {
+				collide = false,
+			},
+			Lamps = {
+				collide = false,
+			},
+			Pillars = {
+				collide = false,
+			},
+			Walls = {
+				collide = false,
+			},
+			Walls2 = {
+				collide = false,
+			},
+		},
+	},
 	Tool_Broom = {
 		bounds = {
 			max = Vector3.new(0.865, 0.272, 2.73),
@@ -7122,6 +7418,11 @@ Assets.Images = {
 	ArrowDown = "rbxassetid://128500393291275",
 	BannerLuck = "rbxassetid://81303789977135",
 	BannerStarter = "rbxassetid://115565610992968",
+	BaseSkin_Autumn = "rbxassetid://83462786728330",
+	BaseSkin_Candy = "rbxassetid://137098554057298",
+	BaseSkin_Castle = "rbxassetid://95709317278734",
+	BaseSkin_Tiki = "rbxassetid://125069349482373",
+	BaseSkin_Winter = "rbxassetid://81254928174997",
 	Chevron = "rbxassetid://114720155624899",
 	EggSkin_Common_Bloodlit = "rbxassetid://127389763269575",
 	EggSkin_Common_Disco = "rbxassetid://82712213824338",

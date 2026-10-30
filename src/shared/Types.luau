@@ -230,6 +230,7 @@ export type ProfileData = {
 	NextUid: number,
 	Hatching: { HatchEntry },
 	Index: { [string]: boolean },
+	BaseSkins: { Owned: { [string]: boolean }, Equipped: string },
 	Boosts: { [string]: number },
 	Gamepasses: { [string]: boolean },
 	-- Passes a friend gifted (gift products); count as owned for good.
@@ -271,6 +272,7 @@ export type PlayerSnapshot = {
 	EggBagSize: number,
 	PlacedCount: number,
 	Index: { [string]: boolean },
+	BaseSkins: { Owned: { [string]: boolean }, Equipped: string }?,
 	Boosts: { [string]: number },
 	Gamepasses: { [string]: boolean },
 	Daily: { Streak: number, LastDay: number, LastClaim: number? },

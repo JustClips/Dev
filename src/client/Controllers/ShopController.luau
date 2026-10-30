@@ -17,6 +17,8 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local Aliens = require(Shared.Config.Aliens)
+local BaseSkins = require(Shared.Config.BaseSkins)
 local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
@@ -28,6 +30,7 @@ local GREEN = Color3.fromRGB(61, 220, 90)
 local GREY = Color3.fromRGB(166, 174, 194)
 local ROBUX = Color3.fromRGB(255, 200, 60)
 local WHITE = Color3.new(1, 1, 1)
+local BLUE = Color3.fromRGB(76, 141, 255)
 local INK = Color3.fromRGB(27, 31, 58)
 
 -- Layout numbers shared with tools/gen_ui.py shop().
@@ -50,6 +53,8 @@ type Item = {
 	GiftKey: string?,
 	Icon: string?,
 	Tag: string?,
+	-- small square button on the right instead of the gift button (base skin Preview)
+	Alt: { Icon: string, Color: Color3, OnClick: () -> () }?,
 }
 
 type Section = {
@@ -71,7 +76,7 @@ local TAGS = {
 }
 
 -- Short names for the tabs (the section titles are too long for them).
-local TAB_NAMES = { Boosts = "Boosts", Passes = "Passes", Tools = "Tools", Eggs = "Eggs", Cash = "Cash", Offers = "Offers" }
+local TAB_NAMES = { Boosts = "Boosts", Passes = "Passes", Bases = "Bases", Tools = "Tools", Eggs = "Eggs", Cash = "Cash", Offers = "Offers" }
 
 local PASS_ICONS = {
 	Cash2x = "Icon_Cash",
@@ -267,10 +272,113 @@ local function cashItems(data): { Item }
 	return items
 end
 
+local function rarityOf(id: string): string?
+	local def = Aliens.ById[id]
+	return if def then def.Rarity else nil
+end
+
+local function petName(id: string): string
+	local def = Aliens.ById[id]
+	return if def then def.Name else id
+end
+
+-- Skins whose requirements are met but that aren't unlocked yet (rail badge).
+local function unlockableSkins(data): number
+	local owned = data.BaseSkins and data.BaseSkins.Owned or {}
+	local count = 0
+	for _, def in BaseSkins.List do
+		if not owned[def.Id] and def.Id ~= BaseSkins.Default and BaseSkins.progress(def, data.Rebirths, data.Index or {}, rarityOf).Met then
+			count += 1
+		end
+	end
+	return count
+end
+
+local function skinAction(action: string, id: string): boolean
+	local ok, message = Net.func("BaseSkin"):InvokeServer(action, id)
+	toast(ok, message)
+	return ok == true
+end
+
+local function mark(ok: boolean): string
+	return if ok then "✓" else "✗"
+end
+
+local function baseItems(data): { Item }
+	local items: { Item } = {}
+	local skins = data.BaseSkins or { Owned = { Classic = true }, Equipped = BaseSkins.Default }
+	for _, def in BaseSkins.List do
+		local id = def.Id
+		local owned = skins.Owned[id] == true or id == BaseSkins.Default
+		local equipped = (skins.Equipped or BaseSkins.Default) == id
+		local p = BaseSkins.progress(def, data.Rebirths, data.Index or {}, rarityOf)
+		local req = def.Requires
+		local desc = def.Desc
+		if not owned then
+			local missing = {}
+			for _, petId in req.Pets do
+				if not p.Pets[petId] then
+					table.insert(missing, petName(petId))
+				end
+			end
+			if req.AnyCosmic and not p.HasCosmic then
+				table.insert(missing, "any Cosmic")
+			end
+			desc = `{mark(p.Rebirths >= req.Rebirths)} Rebirth {math.min(p.Rebirths, req.Rebirths)}/{req.Rebirths}   {mark(p.IndexCount >= req.IndexCount)} Index {math.min(p.IndexCount, req.IndexCount)}/{req.IndexCount}\n`
+				.. (if #missing == 0 then "✓ All pets found" else `✗ Find: {table.concat(missing, ", ")}`)
+		end
+		local item: Item = {
+			Name = def.Name,
+			Desc = desc,
+			Price = "",
+			Color = GREY,
+			Enabled = true,
+			Icon = def.Image or "Icon_Base",
+		}
+		if equipped then
+			item.Price = "Equipped"
+			item.Color = ROBUX
+			item.Tag = "IN USE"
+		elseif owned then
+			item.Price = "Equip"
+			item.Color = BLUE
+			item.OnBuy = function()
+				skinAction("Equip", id)
+			end
+		elseif p.Met then
+			item.Price = "Unlock"
+			item.Color = GREEN
+			item.Tag = "READY"
+			item.OnBuy = function()
+				skinAction("Unlock", id)
+			end
+		else
+			item.Price = "Locked"
+			item.Enabled = false
+		end
+		if def.Asset and not equipped then
+			item.Alt = {
+				Icon = "Icon_Base",
+				Color = Color3.fromRGB(155, 107, 255),
+				OnClick = function()
+					-- Shows it on your own base for a few seconds and takes you there.
+					if skinAction("Preview", id) then
+						Net.func("Teleport"):InvokeServer("Base")
+						Ui.close("Shop")
+					end
+				end,
+			}
+		end
+		table.insert(items, item)
+	end
+	return items
+end
+
 local function sections(data): { Section }
 	return {
 		{ Key = "Boosts", Title = "Server Boosts", Icon = "Icon_Luck", Color = Color3.fromRGB(255, 128, 48), Note = "Everyone on the server gets it!", Items = boostItems(data) },
 		{ Key = "Passes", Title = "Gamepasses", Icon = "Icon_Star", Color = Color3.fromRGB(155, 107, 255), Note = "Yours forever", Items = passItems(data) },
+		{ Key = "Bases", Title = "Base Skins", Icon = "Icon_Base", Color = Color3.fromRGB(242, 140, 40), Note = "Free with rebirths and your pet Index", Items = baseItems(data) },
 		{ Key = "Tools", Title = "Tools", Icon = "Icon_Tool", Color = Color3.fromRGB(76, 141, 255), Note = "", Items = toolItems(data) },
 		{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Color = Color3.fromRGB(255, 95, 162), Note = "", Items = eggItems(data) },
 		{ Key = "Cash", Title = "Cash", Icon = "Icon_Cash", Color = Color3.fromRGB(47, 191, 85), Note = "", Items = cashItems(data) },
@@ -402,8 +510,20 @@ local function buildCard(item: Item, order: number, color: Color3): Frame
 	end
 	local gift = Ui.find(card, "Gift") :: TextButton
 	local giftKey = item.GiftKey
-	gift.Visible = giftKey ~= nil
-	if giftKey then
+	local alt = item.Alt
+	gift.Visible = giftKey ~= nil or alt ~= nil
+	if alt then
+		-- Buy button makes room for the alt button on its right.
+		buy.AnchorPoint = Vector2.new(0, 1)
+		buy.Position = UDim2.new(0, 8, 1, -8)
+		buy.Size = UDim2.new(1, -64, 0, 46)
+		gift.BackgroundColor3 = alt.Color
+		local altIcon = gift:FindFirstChild("Icon") :: ImageLabel?
+		if altIcon then
+			altIcon.Image = AssetLibrary.image(alt.Icon)
+		end
+		Ui.button(gift, alt.OnClick)
+	elseif giftKey then
 		-- Buy button makes room for the gift button on its right.
 		buy.AnchorPoint = Vector2.new(0, 1)
 		buy.Position = UDim2.new(0, 8, 1, -8)
@@ -489,7 +609,7 @@ local function render()
 	if not data then
 		return
 	end
-	Ui.setBadge(shopBadge, specialCount(data))
+	Ui.setBadge(shopBadge, specialCount(data) + unlockableSkins(data))
 	if not gui.Enabled then
 		return
 	end
@@ -603,7 +723,7 @@ function ShopController:Toggle()
 	list.CanvasPosition = Vector2.zero
 end
 
--- Opens the shop, optionally scrolled to a section ("Boosts", "Passes", "Tools", "Eggs", "Cash").
+-- Opens the shop, optionally scrolled to a section ("Boosts", "Passes", "Bases", "Tools", "Eggs", "Cash").
 function ShopController:Open(section: string?)
 	Ui.open("Shop")
 	giftPicker.Visible = false
@@ -664,6 +784,16 @@ function ShopController:Start()
 			table.insert(passes, key)
 		end
 		table.sort(passes)
+		local indexCount = 0
+		for _ in data.Index or {} do
+			indexCount += 1
+		end
+		local skins = data.BaseSkins
+		local owned = {}
+		for id in (skins and skins.Owned) or {} do
+			table.insert(owned, id)
+		end
+		table.sort(owned)
 		local signature = table.concat({
 			data.ToolTier,
 			data.EffectiveTier,
@@ -673,6 +803,9 @@ function ShopController:Start()
 			if data.CashPacks and data.CashPacks.Cash1 then Format.cash(data.CashPacks.Cash1) else "",
 			table.concat(hatching, ","),
 			table.concat(passes, ","),
+			indexCount,
+			table.concat(owned, ","),
+			if skins then skins.Equipped else "",
 		}, "|")
 		if signature ~= lastSignature then
 			lastSignature = signature
@@ -686,7 +819,7 @@ function ShopController:Start()
 			task.wait(1)
 			local data = State.data
 			if data then
-				local count = specialCount(data)
+				local count = specialCount(data) + unlockableSkins(data)
 				if tickTimers() or count ~= lastCount then
 					lastCount = count
 					render()

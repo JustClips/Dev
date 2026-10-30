@@ -36,6 +36,7 @@ local TEMPLATE: Types.ProfileData = {
 	NextUid = 1,
 	Hatching = {},
 	Index = {},
+	BaseSkins = { Owned = { Classic = true }, Equipped = "Classic" }, -- Config/BaseSkins
 	Boosts = {},
 	Gamepasses = {},
 	GiftedPasses = {},

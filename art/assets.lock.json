@@ -482,6 +482,26 @@
    "id": 115565610992968,
    "sha": "3f7b389bf687cfcd35b9b8d7cf37dd4728fc8838fbb602e191b2401be2400b71"
   },
+  "BaseSkin_Autumn": {
+   "id": 83462786728330,
+   "sha": "7632599bab8f2c378f30d1ecc170ed6eb6fd0d15d40f3c8214bf97cc260d580f"
+  },
+  "BaseSkin_Candy": {
+   "id": 137098554057298,
+   "sha": "8a513d1616d993720744c5e9a74839d86f7d691468b23f55f6f913a4423a1044"
+  },
+  "BaseSkin_Castle": {
+   "id": 95709317278734,
+   "sha": "82934f1b894464a8c7c43b3f068b314a71b52e70c6a17b7a90407998ebb7d1fc"
+  },
+  "BaseSkin_Tiki": {
+   "id": 125069349482373,
+   "sha": "9df504a4f300ae5cac70ab909b230f0271f9472931d6eef326d1874121ae325e"
+  },
+  "BaseSkin_Winter": {
+   "id": 81254928174997,
+   "sha": "b28416f2e6dda99c4f6be9a7dc727d0e3c7cfb3acc426d4015e528a55361eb65"
+  },
   "Chevron": {
    "id": 114720155624899,
    "sha": "7ea119751b8a03cfdd9b40d16c8c4527978450dfcbfc877db8d6757585c525df"
@@ -5139,6 +5159,26 @@
   "Signpost": {
    "id": 119424033297262,
    "sha": "5c2290563c2d61d28ff4bf63c9f6f1d8f78550a0e1da0113549482939e7ee210"
+  },
+  "Skin_Autumn": {
+   "id": 108320257757153,
+   "sha": "db31bf7ef788c62767b844a893c082ed951863f8d69fb6006d7d7a1d6e665b5d"
+  },
+  "Skin_Candy": {
+   "id": 109219248753694,
+   "sha": "d5df6f0bd0b792abf049c057d6c070661c18bec92477daef39481723cccae9ac"
+  },
+  "Skin_Castle": {
+   "id": 106695625130279,
+   "sha": "5244c5c889fdfe65646a2ce7dd1a124cc0f69ac3f7396d9900ea98937ff32f1a"
+  },
+  "Skin_Tiki": {
+   "id": 129773936435294,
+   "sha": "fa9822afaa67756243baa8db0f0ca1b0ba6b192df6a21606c504cac510dab962"
+  },
+  "Skin_Winter": {
+   "id": 78209803285249,
+   "sha": "3b7d1074a63c1c8f56588a7617af064a9578788419d77aad1565cea1073440fc"
   },
   "Tool_Broom": {
    "id": 115435271632713,

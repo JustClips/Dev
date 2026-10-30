@@ -137,6 +137,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		Daily = data.Daily,
 		Rewards = S.RewardService:Snapshot(player),
 		Index = data.Index,
+		BaseSkins = data.BaseSkins,
 		Boosts = data.Boosts,
 		Gamepasses = data.Gamepasses,
 		Flags = data.Flags,

@@ -12355,6 +12355,619 @@
   ],
   "tris": 136
  },
+ "Skin_Autumn": {
+  "bounds": {
+   "max": [
+    46.0,
+    14.15,
+    44.0
+   ],
+   "min": [
+    -46.4,
+    -2.1,
+    -47.116
+   ]
+  },
+  "kind": "prop",
+  "name": "Skin_Autumn",
+  "parts": {
+   "Arch": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow1": {
+    "collide": false,
+    "glow": "FFC56B",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Decor": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Decor2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Hatchery": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "House": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Incubators": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamps": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Pillars": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 45186
+ },
+ "Skin_Candy": {
+  "bounds": {
+   "max": [
+    46.0,
+    14.95,
+    44.0
+   ],
+   "min": [
+    -46.0,
+    -2.1,
+    -47.116
+   ]
+  },
+  "kind": "prop",
+  "name": "Skin_Candy",
+  "parts": {
+   "Arch": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow1": {
+    "collide": false,
+    "glow": "7FD6FF",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Body_Glow2": {
+    "collide": false,
+    "glow": "E8323C",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Body_Glow3": {
+    "collide": false,
+    "glow": "FF5C9E",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Body_Glow4": {
+    "collide": false,
+    "glow": "FF8AC4",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Body_Glow5": {
+    "collide": false,
+    "glow": "FFE066",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Body_Glow6": {
+    "collide": false,
+    "glow": "FFFFFF",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Decor": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Hatchery": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "House": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Incubators": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamps": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Pillars": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls3": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls4": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 73000
+ },
+ "Skin_Castle": {
+  "bounds": {
+   "max": [
+    46.307,
+    21.67,
+    44.4
+   ],
+   "min": [
+    -46.307,
+    -2.1,
+    -47.116
+   ]
+  },
+  "kind": "prop",
+  "name": "Skin_Castle",
+  "parts": {
+   "Arch": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow1": {
+    "collide": false,
+    "glow": "FFB347",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Body_Glow2": {
+    "collide": false,
+    "glow": "FFE066",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Decor": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Hatchery": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "House": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Incubators": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamps": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Pillars": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls3": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 51982
+ },
+ "Skin_Tiki": {
+  "bounds": {
+   "max": [
+    46.0,
+    14.7,
+    44.119
+   ],
+   "min": [
+    -46.202,
+    -2.1,
+    -47.116
+   ]
+  },
+  "kind": "prop",
+  "name": "Skin_Tiki",
+  "parts": {
+   "Arch": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow1": {
+    "collide": false,
+    "glow": "FF9A3C",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Body_Glow2": {
+    "collide": false,
+    "glow": "FFD23F",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Decor": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Hatchery": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "House": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Incubators": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamps": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Pillars": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 45586
+ },
+ "Skin_Winter": {
+  "bounds": {
+   "max": [
+    46.4,
+    14.9,
+    44.4
+   ],
+   "min": [
+    -46.0,
+    -2.1,
+    -47.116
+   ]
+  },
+  "kind": "prop",
+  "name": "Skin_Winter",
+  "parts": {
+   "Arch": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow1": {
+    "collide": false,
+    "glow": "FFC56B",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Decor": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Hatchery": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "House": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Incubators": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamps": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Pillars": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 51598
+ },
  "Tool_Broom": {
   "bounds": {
    "max": [

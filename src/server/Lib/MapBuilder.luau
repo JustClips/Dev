@@ -11,6 +11,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local BaseSkins = require(Shared.Config.BaseSkins)
 local World = require(Shared.Config.World)
 local Zones = require(Shared.Config.Zones)
 
@@ -734,6 +735,7 @@ end
 -- Props --------------------------------------------------------------------------
 
 local propsFolder: Folder
+local skinOf: { [number]: string } = {} -- base index -> skin id (Config/BaseSkins)
 
 local function place(name: string, cf: CFrame, scale: number?, parent: Instance?): Model?
 	local model = AssetLibrary.get(name)
@@ -805,6 +807,9 @@ function MapBuilder.buildBase(index: number): Model
 		place(prop.Asset, baseCf * CFrame.new(prop.Position) * yaw(prop.Yaw), 1, model)
 	end
 	model.Parent = propsFolder
+	if skinOf[index] and skinOf[index] ~= BaseSkins.Default then
+		MapBuilder.applySkin(index, skinOf[index])
+	end
 	return model
 end
 
@@ -973,6 +978,135 @@ function MapBuilder.buildProps()
 	for i = 1, World.BaseCount do
 		MapBuilder.buildBase(i)
 	end
+end
+
+
+-- Base skins ---------------------------------------------------------------------
+-- A skin (Config/BaseSkins) is one model over the whole base. The classic base stays where
+-- it is for every collision but turns invisible; its name sign and the Pet Trader stall
+-- stay visible (the stall's awning takes the skin colour).
+
+-- Hidden classic props that keep colliding (the skin draws them in the same place).
+local KEEP_COLLIDE = { Fence = true, BaseArch = true, Habitat = true, Hatchery = true, Incubator = true, Lamp = true }
+
+local function remember(inst: Instance, attr: string, value: any): any
+	local saved = inst:GetAttribute(attr)
+	if saved == nil then
+		inst:SetAttribute(attr, value)
+		return value
+	end
+	return saved
+end
+
+local function setClassicVisible(index: number, visible: boolean, accent: Color3?)
+	local platform = structures and structures:FindFirstChild("BasePlatform" .. index)
+	local props = propsFolder and propsFolder:FindFirstChild("BaseProps" .. index)
+	for _, root in { platform, props } do
+		if not root then
+			continue
+		end
+		for _, d in root:GetDescendants() do
+			local stall = d:FindFirstAncestor("TraderStall")
+			if stall or d.Name == "TraderStall" then
+				if d:IsA("BasePart") and d.Name == "Awning" then
+					local original = remember(d, "SkinColor", d.Color)
+					if visible or not accent then
+						d.Color = original
+					elseif original ~= WHITE then
+						d.Color = accent
+					end
+				end
+				continue
+			end
+			local signPart = string.sub(d.Name, -4) == "Sign" or (d.Parent and string.sub(d.Parent.Name, -4) == "Sign")
+			if signPart or d:FindFirstAncestorOfClass("SurfaceGui") then
+				continue
+			end
+			if d:IsA("BasePart") then
+				local t = remember(d, "SkinT", d.Transparency)
+				local shadow = remember(d, "SkinShadow", d.CastShadow)
+				d.Transparency = if visible then t else 1
+				d.CastShadow = visible and shadow
+				if root == props then
+					local top: Instance = d
+					while top.Parent and top.Parent ~= props do
+						top = top.Parent
+					end
+					if not KEEP_COLLIDE[top.Name] then
+						local collide = remember(d, "SkinCollide", d.CanCollide)
+						d.CanCollide = visible and collide
+					end
+				end
+			elseif d:IsA("Decal") or d:IsA("Texture") then
+				local t = remember(d, "SkinT", d.Transparency)
+				d.Transparency = if visible then t else 1
+			elseif d:IsA("Light") or d:IsA("ParticleEmitter") or d:IsA("Beam") or d:IsA("SurfaceGui") then
+				local on = remember(d, "SkinOn", d.Enabled)
+				d.Enabled = visible and on
+			end
+		end
+	end
+	-- the name sign hangs higher over the taller skin arches
+	local s = baseSigns[index]
+	if s then
+		local lift = 0
+		local def = BaseSkins.ById[skinOf[index] or ""]
+		if def and not visible then
+			lift = def.SignLift
+		end
+		local base = remember(s.Board, "SkinCFrame", s.Board.CFrame)
+		local target = base + Vector3.new(0, lift, 0)
+		local delta = target.Position - s.Board.Position
+		if delta.Magnitude > 0.001 then
+			for _, part in { s.Board :: Instance, table.unpack(s.Board:GetChildren()) } do
+				if part:IsA("BasePart") then
+					part.CFrame += delta
+				end
+			end
+		end
+	end
+end
+
+-- Shows skin `skinId` on base `index` ("Classic" = the classic base). Before the props are
+-- built it only remembers the choice; buildBase calls it again once they exist.
+function MapBuilder.applySkin(index: number, skinId: string)
+	local def = BaseSkins.ById[skinId] or BaseSkins.ById[BaseSkins.Default]
+	skinOf[index] = def.Id
+	if not propsFolder then
+		return
+	end
+	local old = propsFolder:FindFirstChild("BaseSkin" .. index)
+	if old then
+		old:Destroy()
+	end
+	local model = if def.Asset then place(def.Asset, World.baseCFrame(index), 1, propsFolder) else nil
+	if model then
+		model.Name = "BaseSkin" .. index
+		model:SetAttribute("Skin", def.Id)
+		setClassicVisible(index, false, def.Color)
+	else
+		-- classic, or the skin's model isn't loaded (offline Studio): show the classic base
+		setClassicVisible(index, true)
+	end
+end
+
+function MapBuilder.getSkin(index: number): string
+	return skinOf[index] or BaseSkins.Default
+end
+
+-- Runs fn once the Blender props are placed (now if they already are).
+function MapBuilder.onPropsReady(fn: () -> ())
+	if Workspace:GetAttribute("PropsReady") then
+		task.spawn(fn)
+		return
+	end
+	local conn: RBXScriptConnection
+	conn = Workspace:GetAttributeChangedSignal("PropsReady"):Connect(function()
+		if Workspace:GetAttribute("PropsReady") then
+			conn:Disconnect()
+			fn()
+		end
+	end)
 end
 
 return MapBuilder

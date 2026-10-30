@@ -52,6 +52,7 @@ local FUNCTIONS: { [string]: number } = {
 	Teleport = 2, -- ("Base" | "Rocket" | zoneId) -> ok, message
 	Inventory = 10, -- (action, arg?) -> ok, message: see InventoryService ACTIONS
 	Rewards = 6, -- (action, arg?) -> ok, message: see RewardService ACTIONS
+	BaseSkin = 4, -- ("Unlock" | "Equip" | "Preview", skinId) -> ok, message
 	Admin = 8, -- (action, payload) -> ok, message: admins only, see AdminService
 }
 
