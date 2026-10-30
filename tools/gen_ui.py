@@ -1190,9 +1190,11 @@ def settings():
     body = [
         row("Music", "Music", "Music", 80),
         row("Sfx", "Sound effects", "Speaker", 176),
+        # Roblox's own feedback prompt (SocialService:PromptFeedbackSubmissionAsync).
+        button("Feedback", U(1, -28, 0, 52), U(0, 14, 0, 272), color=HEADER, label="Leave feedback", ts=22, ico="Star", ico_px=32),
         text("Track", "", U(1, -28, 0, 22), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True),
     ]
-    write("Settings", screen([dim(), window(520, 310, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
+    write("Settings", screen([dim(), window(520, 350, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Group reward

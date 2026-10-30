@@ -4,6 +4,8 @@
 -- sits in Roblox's top bar right after its own buttons and opens Settings, where two
 -- sliders set the volume of each group. The values are saved with the profile.
 local GuiService = game:GetService("GuiService")
+local RunService = game:GetService("RunService")
+local SocialService = game:GetService("SocialService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
@@ -174,7 +176,30 @@ local function bindSlider(key: string, row: Frame)
 	end)
 end
 
-function AudioController:Init()
+local C: any
+
+-- Roblox's own feedback form. Roblox decides who can send (not the game's owner, once a
+-- day per player, age limits) and shows its own "unavailable" message otherwise. It only
+-- works in the published game, not in Studio.
+local function leaveFeedback()
+	Ui.close("Settings")
+	if RunService:IsStudio() then
+		C.HudController:Toast("Feedback only works in the published game, not in Studio.", "Bad")
+		return
+	end
+	task.spawn(function()
+		local ok, err = pcall(function()
+			(SocialService :: any):PromptFeedbackSubmissionAsync({ FeedbackType = (Enum :: any).FeedbackType.Feedback })
+		end)
+		if not ok then
+			warn("[Feedback] " .. tostring(err))
+			C.HudController:Toast("Feedback isn't available right now. Try again later!", "Bad")
+		end
+	end)
+end
+
+function AudioController:Init(controllers)
+	C = controllers
 	musicGroup = Ui.soundGroup("Music")
 	sfxGroup = Ui.soundGroup("SFX")
 	gui = Ui.screen("Settings")
@@ -202,6 +227,7 @@ function AudioController:Start()
 	Ui.button(Ui.find(gui, "Window.Close"), function()
 		Ui.close("Settings")
 	end)
+	Ui.button(Ui.find(gui, "Window.Feedback"), leaveFeedback)
 	Ui.button(Ui.find(gui, "Dim"), function()
 		Ui.close("Settings")
 	end)
