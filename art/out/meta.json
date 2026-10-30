@@ -14779,5 +14779,136 @@
    -1.8
   ],
   "tris": 1960
+ },
+ "Mob_DustBunny": {
+  "name": "Mob_DustBunny",
+  "kind": "mob",
+  "parts": {
+   "LegFL": {
+    "parent": "Body",
+    "joint": [
+     -0.494,
+     0.988,
+     -0.988
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegFR": {
+    "parent": "Body",
+    "joint": [
+     0.494,
+     0.988,
+     -0.988
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBL": {
+    "parent": "Body",
+    "joint": [
+     -0.8645,
+     1.235,
+     0.741
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBR": {
+    "parent": "Body",
+    "joint": [
+     0.8645,
+     1.235,
+     0.741
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     2.223,
+     -0.988
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarL": {
+    "parent": "Head",
+    "joint": [
+     -0.6175,
+     3.952,
+     -1.235
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarR": {
+    "parent": "Head",
+    "joint": [
+     0.6175,
+     3.952,
+     -1.235
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Leaf": {
+    "parent": "Head",
+    "joint": [
+     0.494,
+     4.199,
+     -1.482
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.482,
+     1.482
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "rig": true,
+  "anims": {
+   "idle": "Mob_DustBunny_Idle",
+   "walk": "Mob_DustBunny_Walk",
+   "run": "Mob_DustBunny_Run"
+  },
+  "bounds": {
+   "min": [
+    -1.235,
+    0.0,
+    -2.964
+   ],
+   "max": [
+    1.482,
+    6.175,
+    2.223
+   ]
+  },
+  "tris": 3268
  }
 }

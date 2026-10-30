@@ -5943,6 +5943,70 @@ Assets.Models = {
 			},
 		},
 	},
+	Mob_DustBunny = {
+		anims = {
+			idle = "Mob_DustBunny_Idle",
+			run = "Mob_DustBunny_Run",
+			walk = "Mob_DustBunny_Walk",
+		},
+		bounds = {
+			max = Vector3.new(1.482, 6.175, 2.223),
+			min = Vector3.new(-1.235, 0.0, -2.964),
+		},
+		id = 106018405041641,
+		kind = "mob",
+		parts = {
+			Body = {
+				collide = false,
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.6175, 3.952, -1.235),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.6175, 3.952, -1.235),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 2.223, -0.988),
+				parent = "Body",
+			},
+			Leaf = {
+				collide = false,
+				joint = Vector3.new(0.494, 4.199, -1.482),
+				parent = "Head",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.8645, 1.235, 0.741),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.8645, 1.235, 0.741),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.494, 0.988, -0.988),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.494, 0.988, -0.988),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.482, 1.482),
+				parent = "Body",
+			},
+		},
+		rig = true,
+	},
 	Mushroom_Glow = {
 		bounds = {
 			max = Vector3.new(2.0, 2.432, 0.83),
@@ -7358,6 +7422,9 @@ Assets.Animations = {
 	Egg_MythicIdle = 101861978498535,
 	Egg_RareIdle = 75646233175758,
 	Egg_UncommonIdle = 77677946832650,
+	Mob_DustBunny_Idle = 90442357943974,
+	Mob_DustBunny_Run = 119311771612706,
+	Mob_DustBunny_Walk = 101000777177710,
 	Pet_ArcticWolf_Idle = 117770537706940,
 	Pet_ArcticWolf_Walk = 113637784937445,
 	Pet_AuroraWhale_Idle = 110951118714979,

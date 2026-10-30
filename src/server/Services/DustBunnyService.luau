@@ -15,18 +15,19 @@ local Upgrades = require(Shared.Config.Upgrades)
 local Zones = require(Shared.Config.Zones)
 
 local STEP = 0.1
-local EYE = Color3.fromRGB(27, 21, 48)
-local PINK = Color3.fromRGB(255, 158, 196)
 
+-- Each bunny is one invisible anchored part (its spot and heading on the ground) plus a
+-- Running attribute. Clients draw the voxel bunny on it, smooth its movement and play
+-- its hop animations (DustBunnyController).
 type Bunny = {
-	model: Model,
-	pieces: { { part: BasePart, offset: CFrame } },
+	model: BasePart,
 	zone: any,
 	ground: number,
 	position: Vector3,
 	heading: Vector3,
 	turnAt: number,
 	phase: number,
+	resting: boolean,
 }
 
 local DustBunnyService = {}
@@ -36,55 +37,37 @@ local folder: Folder
 local rng = Random.new()
 local bunnies: { Bunny } = {}
 
-local function piece(model: Model, name: string, shape: Enum.PartType, size: Vector3, color: Color3, material: Enum.Material?): BasePart
-	local p = Instance.new("Part")
-	p.Name = name
-	p.Shape = shape
-	p.Size = size
-	p.Color = color
-	p.Material = material or Enum.Material.SmoothPlastic
-	p.Anchored = true
-	p.CanCollide = false
-	p.CanQuery = false
-	p.CanTouch = false
-	p.CastShadow = false
-	p.Parent = model
-	return p
-end
-
 local function build(zone): Bunny
-	local model = Instance.new("Model")
-	model.Name = "DustBunny"
-	local fur = zone.DustColor:Lerp(Color3.new(1, 1, 1), 0.55)
-	local ball, block = Enum.PartType.Ball, Enum.PartType.Block
-	local parts = {
-		{ piece(model, "Body", ball, Vector3.new(2.6, 2.6, 2.6), fur, Enum.Material.Sand), CFrame.new(0, 1.3, 0) },
-		{ piece(model, "EarL", block, Vector3.new(0.45, 1.5, 0.3), fur, Enum.Material.Sand), CFrame.new(-0.5, 2.9, 0.1) * CFrame.Angles(0, 0, math.rad(12)) },
-		{ piece(model, "EarR", block, Vector3.new(0.45, 1.5, 0.3), fur, Enum.Material.Sand), CFrame.new(0.5, 2.9, 0.1) * CFrame.Angles(0, 0, math.rad(-12)) },
-		{ piece(model, "InnerL", block, Vector3.new(0.22, 1.0, 0.05), PINK), CFrame.new(-0.52, 2.95, -0.08) * CFrame.Angles(0, 0, math.rad(12)) },
-		{ piece(model, "InnerR", block, Vector3.new(0.22, 1.0, 0.05), PINK), CFrame.new(0.52, 2.95, -0.08) * CFrame.Angles(0, 0, math.rad(-12)) },
-		{ piece(model, "EyeL", ball, Vector3.new(0.45, 0.45, 0.45), EYE), CFrame.new(-0.45, 1.6, -1.1) },
-		{ piece(model, "EyeR", ball, Vector3.new(0.45, 0.45, 0.45), EYE), CFrame.new(0.45, 1.6, -1.1) },
-		{ piece(model, "Nose", ball, Vector3.new(0.3, 0.3, 0.3), PINK), CFrame.new(0, 1.25, -1.28) },
-		{ piece(model, "Tail", ball, Vector3.new(0.9, 0.9, 0.9), Color3.new(1, 1, 1), Enum.Material.Sand), CFrame.new(0, 1.0, 1.3) },
-	}
-	local pieces = {}
-	for _, entry in parts do
-		table.insert(pieces, { part = entry[1], offset = entry[2] })
-	end
-	model.PrimaryPart = pieces[1].part
-	model:SetAttribute("Zone", zone.Id)
-	model.Parent = folder
+	local anchor = Instance.new("Part")
+	anchor.Name = "DustBunny"
+	anchor.Size = Vector3.new(3, 3, 3)
+	anchor.Transparency = 1
+	anchor.Anchored = true
+	anchor.CanCollide = false
+	anchor.CanQuery = false
+	anchor.CanTouch = false
+	anchor.CastShadow = false
+	anchor:SetAttribute("Zone", zone.Id)
+	anchor:SetAttribute("Running", false)
+	anchor.Parent = folder
 	return {
-		model = model,
-		pieces = pieces,
+		model = anchor,
 		zone = zone,
 		ground = 0,
 		position = Vector3.zero,
 		heading = Vector3.new(0, 0, -1),
 		turnAt = 0,
 		phase = rng:NextNumber(0, 6),
+		resting = false,
 	}
+end
+
+local function draw(bunny: Bunny)
+	local look = Vector3.new(bunny.heading.X, 0, bunny.heading.Z)
+	if look.Magnitude < 0.01 then
+		look = Vector3.new(0, 0, -1)
+	end
+	bunny.model.CFrame = CFrame.lookAt(bunny.position, bunny.position + look.Unit)
 end
 
 local function place(bunny: Bunny)
@@ -94,18 +77,8 @@ local function place(bunny: Bunny)
 	end
 	bunny.ground = spot.Y - 0.2
 	bunny.position = Vector3.new(spot.X, bunny.ground, spot.Z)
+	draw(bunny)
 	bunny.model.Parent = folder
-end
-
-local function draw(bunny: Bunny, hop: number)
-	local look = Vector3.new(bunny.heading.X, 0, bunny.heading.Z)
-	if look.Magnitude < 0.01 then
-		look = Vector3.new(0, 0, -1)
-	end
-	local base = CFrame.lookAt(bunny.position + Vector3.new(0, hop, 0), bunny.position + Vector3.new(0, hop, 0) + look.Unit)
-	for _, p in bunny.pieces do
-		p.part.CFrame = base * p.offset
-	end
 end
 
 local function clampToZone(bunny: Bunny, position: Vector3): Vector3
@@ -148,23 +121,32 @@ local function update(bunny: Bunny, now: number)
 			bunny.heading = (away.Unit + side).Unit
 		end
 		speed = cfg.Speed
+		bunny.resting = false
+		bunny.turnAt = now + 1
 	else
 		if now >= bunny.turnAt then
-			local a = rng:NextNumber(0, math.pi * 2)
-			bunny.heading = Vector3.new(math.cos(a), 0, math.sin(a))
-			bunny.turnAt = now + rng:NextNumber(1.5, 4)
+			-- Wander: hop off somewhere, or sit and sniff around for a bit.
+			bunny.resting = rng:NextNumber() < 0.45
+			if not bunny.resting then
+				local a = rng:NextNumber(0, math.pi * 2)
+				bunny.heading = Vector3.new(math.cos(a), 0, math.sin(a))
+			end
+			bunny.turnAt = now + (if bunny.resting then rng:NextNumber(2.5, 6) else rng:NextNumber(1.5, 4))
 		end
-		speed = cfg.Speed * 0.25
+		speed = if bunny.resting then 0 else cfg.Speed * 0.25
 	end
 	local nextPosition = clampToZone(bunny, bunny.position + bunny.heading * speed * STEP)
-	if (nextPosition - bunny.position).Magnitude < speed * STEP * 0.3 then
+	if speed > 0 and (nextPosition - bunny.position).Magnitude < speed * STEP * 0.3 then
 		-- Stuck on the zone edge: turn around.
 		bunny.heading = -bunny.heading
 		bunny.turnAt = now + 1
 	end
 	bunny.position = nextPosition
-	local hop = math.abs(math.sin(now * (if speed > cfg.Speed * 0.5 then 12 else 6) + bunny.phase)) * (if speed > 0 then 0.9 else 0.2)
-	draw(bunny, hop)
+	local running = speed > cfg.Speed * 0.5
+	if bunny.model:GetAttribute("Running") ~= running then
+		bunny.model:SetAttribute("Running", running)
+	end
+	draw(bunny)
 end
 
 local function reward(player: Player, bunny: Bunny)

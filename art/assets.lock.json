@@ -24,6 +24,18 @@
    "id": 77677946832650,
    "sha": "9edcbaa0872fbde377f35c41a07006b44299f676357c958657ce01dec22fc381"
   },
+  "Mob_DustBunny_Idle": {
+   "id": 90442357943974,
+   "sha": "f4c904043c3d8a1f7c9e74cac132b1070ef8074bf93812f7bdf044e89903febd"
+  },
+  "Mob_DustBunny_Run": {
+   "id": 119311771612706,
+   "sha": "36134e9100ccb75ce7cc80ea19dda99b5b13c136fa4f86c5d796d0ed11461c11"
+  },
+  "Mob_DustBunny_Walk": {
+   "id": 101000777177710,
+   "sha": "e7ce6ce7d68ab275877b91604fbd518c8abd0fd2da51c6c1b337edde048d911c"
+  },
   "Pet_ArcticWolf_Idle": {
    "id": 117770537706940,
    "sha": "4f69dfc58756716fe08d298ae748cc8adb8836c163db01f701f68746ed54a0da"
@@ -5095,6 +5107,10 @@
   "Leaf_Snow": {
    "id": 78516068863706,
    "sha": "5a6cd4a65cd21f49102f19fa9f1cb22667fa1e118ecb8a8b560e7be11403b028"
+  },
+  "Mob_DustBunny": {
+   "id": 106018405041641,
+   "sha": "c8121fd6c925fed466b6793f709a55c4fbe2845188285277144e161624be6a07"
   },
   "Mushroom_Glow": {
    "id": 136474999711601,

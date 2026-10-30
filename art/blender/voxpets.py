@@ -35,10 +35,11 @@ from lib import Asset  # noqa: E402
 U = 0.13            # cube size in studs (BASE_U times the pet's SCALE while it builds)
 BASE_U = U
 # Bigger pets: same cube grid, bigger cubes.
-SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6}
+SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6, "DustBunny": 1.9}
 FPS = 30
 IDLE = (0, 90)      # frames
 WALK = (120, 138)
+RUN = (150, 162)
 OUT = os.path.join(HERE, "..", "out")
 
 EYE = "241A16"
@@ -138,17 +139,22 @@ def mesh_part(a, p):
     return o
 
 
-def assemble(key, parts):
-    """The asset is Alien_<key> (the game's pet model name); its anims are Pet_<key>_Idle/_Walk."""
-    name = f"Alien_{key}"
-    a = Asset(name, "alien")
+def assemble(key, parts, name=None, kind="alien"):
+    """The asset is Alien_<key> (the game's pet model name); its anims are Pet_<key>_Idle/_Walk.
+    Field mobs pass name="Mob_<key>", kind="mob": their anims are Mob_<key>_<Anim>."""
+    name = name or f"Alien_{key}"
+    a = Asset(name, kind)
     for p in parts:
         o = mesh_part(a, p)
         j = p.joint if p.joint is not None else p.centre()
         a.parts[p.name] = {"obj": o, "parent": p.parent, "joint": [x * U for x in j] if p.parent else None,
                            "glow": p.glow, "material": None, "collide": False}
-    a.extra["voxel"] = True
-    a.extra["anims"] = {"idle": f"Pet_{key}_Idle", "walk": f"Pet_{key}_Walk"}
+    if kind == "alien":
+        a.extra["voxel"] = True
+        a.extra["anims"] = {"idle": f"Pet_{key}_Idle", "walk": f"Pet_{key}_Walk"}
+    else:
+        a.extra["rig"] = True
+        a.extra["anims"] = {k.lower(): f"{name}_{k}" for k in ANIMS[key]}
     return a
 
 
@@ -1822,6 +1828,68 @@ def aurora_whale():
     return a
 
 
+# --------------------------------------------------------------- field mob: dust bunny
+# Not a pet: the big wild bunnies that hop around the leaf fields (DustBunnyService).
+# Model Mob_DustBunny, anims Mob_DustBunny_Idle / _Walk (slow hop) / _Run (fleeing).
+
+
+def dust_bunny():
+    F, FS, FL, P, N, B, L, LV = "EFE4D2", "DDCFBC", "FBF6EE", "FFB0C4", "F27E98", "FFC9D6", "F2A33A", "C8641E"
+    # fur, dusty fur, light fur (belly, cheeks), inner ear, nose, blush, leaf, leaf vein
+    fur = lambda i, j, k: FS if (i * 7 + j * 5 + k * 3) % 19 == 0 else F    # noqa: E731  dust speckles
+    parts = []
+    for name, x0 in (("LegFL", 1), ("LegFR", -3)):                 # small front paws
+        p = Part(name, "Body", joint=(x0 + 1, -4, 4))
+        p.box(x0, x0 + 2, -5, -3, 0, 4, lambda i, j, k: FL if k == 0 else F)
+        parts.append(p)
+    for name, x0 in (("LegBL", 2), ("LegBR", -5)):                 # big haunches with long feet
+        p = Part(name, "Body", joint=(x0 + 1.5, 3, 5))
+        p.rbox(x0, x0 + 3, 0, 6, 1, 6, fur, edges=(True, False, False))
+        p.box(x0, x0 + 3, -3, 3, 0, 1, lambda i, j, k: FL if j <= -2 else F)
+        p.set([(x0, -3, 0), (x0 + 2, -3, 0)], FS)                # toe lines
+        parts.append(p)
+    body = Part("Body")
+    body.rbox(-4, 4, -5, 6, 2, 10, lambda i, j, k: FL if (j <= -4 and k <= 7 and -2 <= i <= 1) or k == 2 else fur(i, j, k))
+    body.rbox(-3, 3, -3, 5, 10, 11, fur)                             # rounded back
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -4, 9))
+    head.rbox(-5, 5, -10, -2, 8, 16, fur, edges=(True, True, True))
+    head.box(-5, 5, -10, -9, 8, 11, lambda i, j, k: FL if abs(i + 0.5) >= 2 else None)    # puffy cheeks
+    for x0 in (-4, 2):                                                                    # big eyes, 2x3 with a shine
+        head.box(x0, x0 + 2, -11, -10, 11, 14, EYE)
+        head.set([(x0 if x0 < 0 else x0 + 1, -11, 13)], SHINE)
+    head.set([(-5, -10, 10), (4, -10, 10), (-5, -11, 10), (4, -11, 10)], B)              # blush
+    head.box(-2, 2, -11, -10, 9, 11, FL)                                                  # muzzle
+    head.set([(-1, -11, 11), (0, -11, 11), (-1, -12, 11), (0, -12, 11)], N)             # nose
+    head.set([(-1, -11, 9), (0, -11, 9)], "FFFFFF")                                       # buck teeth
+    head.set([(-3, -11, 10), (-4, -11, 10), (2, -11, 10), (3, -11, 10)], FS)            # whiskers
+    head.box(-3, 3, -9, -3, 16, 17, lambda i, j, k: FS if (i + j) % 3 == 0 else F)       # tuft on top
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2.5, -5, 16))
+    ear.rbox(1, 4, -6, -4, 16, 25, lambda i, j, k: P if (j == -6 and i == 2 and 17 <= k <= 23) else (FS if k == 24 else F), edges=(False, False, True))
+    parts.append(ear)
+    earR = ear.mirror("EarR")
+    for c in list(earR.cells):                                       # right ear flops over at the tip
+        if c[2] >= 22:
+            del earR.cells[c]
+    earR.box(-4, -1, -6, -4, 22, 23, F)
+    earR.box(-6, -3, -6, -4, 21, 22, FS)
+    parts.append(earR)
+    leaf = Part("Leaf", "Head", joint=(-2, -6, 17))                  # a leaf stuck on its head
+    for (i, j) in [(-3, -7), (-2, -7), (-3, -6), (-2, -6), (-1, -6), (-4, -6), (-3, -5), (-2, -5), (-2, -8), (-1, -5), (-2, -4)]:
+        leaf.cells[(i, j, 17)] = LV if (i == -2 or j == -6) and (i, j) != (-4, -6) else L
+    leaf.cells[(-2, -9, 17)] = LV                                    # stem
+    parts.append(leaf)
+    tail = Part("Tail", "Body", joint=(0, 6, 6))
+    tail.rbox(-2, 2, 6, 9, 4, 8, FL, edges=(False, False, False))
+    parts.append(tail)
+    for p in parts:                                                  # no doubled-up cubes: they z-fight
+        if p is not body:
+            for c in p.cells:
+                body.cells.pop(c, None)
+    return assemble("DustBunny", parts, name="Mob_DustBunny", kind="mob")
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
@@ -1832,7 +1900,8 @@ PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon":
         "Crab": crab, "Seagull": seagull, "Seal": seal, "Dolphin": dolphin, "Shark": shark, "SeaSerpent": sea_serpent,
         "Pigeon": pigeon, "Rat": rat, "Corgi": corgi, "Bulldog": bulldog, "RoboPup": robo_pup, "Gargoyle": gargoyle,
         "SnowHare": snow_hare, "MountainGoat": mountain_goat, "SnowLeopard": snow_leopard, "Mammoth": mammoth, "FrostEagle": frost_eagle, "Yeti": yeti,
-        "ButterflyQueen": butterfly_queen, "Kraken": kraken, "MechaRex": mecha_rex, "AuroraWhale": aurora_whale}
+        "ButterflyQueen": butterfly_queen, "Kraken": kraken, "MechaRex": mecha_rex, "AuroraWhale": aurora_whale,
+        "DustBunny": dust_bunny}
 
 
 # ------------------------------------------------------------------------- animation
@@ -2541,6 +2610,47 @@ def whale(speed, amp):
     return f
 
 
+def bunny_mob_idle(w):
+    """Sniffs, looks around, then sits up on its haunches and washes its face."""
+    sniff = s(12 * w) * (s(w) < 0.2)
+    up = max(0.0, s(w)) ** 2                                      # sits up for the first half
+    wash = s(10 * w) * up
+    return {
+        "Body": ((0, 0.04 * up, 0.08 * up), (-22 * up + 0.8 * s(2 * w), 0, 0)),
+        "Head": ((0, 0, 0.01 * sniff), (14 * up - 3 * sniff + 6 * wash, 4 * s(w + 1) * (1 - up), 18 * s(2 * w + 2) * (1 - up))),
+        "LegFL": ((0, 0, 0), (-60 * up + 25 * wash, 0, -10 * up)), "LegFR": ((0, 0, 0), (-60 * up - 25 * wash, 0, 10 * up)),
+        "LegBL": ((0, 0, 0), (22 * up, 0, 0)), "LegBR": ((0, 0, 0), (22 * up, 0, 0)),
+        "EarL": ((0, 0, 0), (8 * s(w) - 10 * wash, -4 - 10 * max(0.0, s(3 * w)) ** 8, 0)),
+        "EarR": ((0, 0, 0), (6 * s(w + 0.5), 4, 0)),
+        "Leaf": ((0, 0, 0), (0, 6 * s(2 * w), 0)),
+        "Tail": ((0, 0, 0), (0, 0, 14 * s(8 * w))),
+    }
+
+
+def bunny_mob_hop(height, stretch, ears_back):
+    """One big hop per loop: crouch, launch with the back legs, stretch out in the air,
+    land on the front paws, back feet come down last."""
+    def f(w):
+        t = (w / (2 * math.pi)) % 1.0
+        air = max(0.0, s(2 * math.pi * (t - 0.1) / 0.8 * 0.5)) if 0.1 <= t <= 0.9 else 0.0
+        crouch = max(0.0, c(2 * math.pi * t)) ** 6                # squash at take-off and landing
+        launch = max(0.0, s(2 * math.pi * t)) if t < 0.5 else 0.0
+        land = max(0.0, -s(2 * math.pi * t)) if t >= 0.5 else 0.0
+        return {
+            "Body": ((0, 0, height * air - 0.06 * crouch), (-14 * launch + 16 * land, 0, 0)),
+            "Head": ((0, 0, -0.03 * crouch), (8 * launch - 10 * land, 0, 0)),
+            "LegFL": ((0, 0, 0), (-stretch * launch * 0.6 - 30 * land, 0, 0)),
+            "LegFR": ((0, 0, 0), (-stretch * launch * 0.6 - 30 * land, 0, 0)),
+            "LegBL": ((0, 0, 0), (stretch * launch + 15 * land, 0, 0)),
+            "LegBR": ((0, 0, 0), (stretch * launch + 15 * land, 0, 0)),
+            "EarL": ((0, 0, 0), (ears_back * air + 12 * crouch, -6, 0)),
+            "EarR": ((0, 0, 0), (ears_back * air + 12 * crouch, 6, 0)),
+            "Leaf": ((0, 0, 0), (-10 * air, 0, 0)),
+            "Tail": ((0, 0, 0), (-12 * air, 0, 0)),
+        }
+    return f
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -2589,6 +2699,7 @@ ANIMS = {
     "Kraken": {"Idle": kraken_anim(1, 14, 0.02), "Walk": kraken_anim(2, 24, 0.05)},
     "MechaRex": {"Idle": rex_idle, "Walk": rex_walk},
     "AuroraWhale": {"Idle": whale(1, 18), "Walk": whale(2, 26)},
+    "DustBunny": {"Idle": bunny_mob_idle, "Walk": bunny_mob_hop(1.0, 30, 20), "Run": bunny_mob_hop(2.4, 55, 45)},
 }
 
 
@@ -2685,9 +2796,10 @@ def build(key, out_dir=OUT):
     rest = {k: e.location.copy() for k, e in empties.items()}
     scn = bpy.context.scene
     scn.render.fps = FPS
-    scn.frame_start, scn.frame_end = IDLE[0], WALK[1]
-    keyframe(empties, rest, ANIMS[key]["Idle"], IDLE)
-    keyframe(empties, rest, ANIMS[key]["Walk"], WALK)
+    ranges = {"Idle": IDLE, "Walk": WALK, "Run": RUN}
+    scn.frame_start, scn.frame_end = IDLE[0], max(ranges[k][1] for k in ANIMS[key])
+    for kind in ANIMS[key]:
+        keyframe(empties, rest, ANIMS[key][kind], ranges[kind])
     for e in empties.values():
         ad = e.animation_data
         if ad and ad.action:
@@ -2697,8 +2809,10 @@ def build(key, out_dir=OUT):
                     kp.interpolation = "LINEAR"
     anim_dir = os.path.join(out_dir, "anims")
     os.makedirs(anim_dir, exist_ok=True)
-    for kind, frames, prio in (("Idle", IDLE, 0), ("Walk", WALK, 1)):
-        nm = f"Pet_{key}_{kind}"
+    prefix = a.name if a.kind != "alien" else f"Pet_{key}"
+    for kind in ANIMS[key]:
+        frames, prio = ranges[kind], (0 if kind == "Idle" else 1)
+        nm = f"{prefix}_{kind}"
         with open(os.path.join(anim_dir, f"{nm}.rbxmx"), "w") as fh:
             fh.write(sample(a, empties, nm, frames, prio))
     blend = os.path.abspath(os.path.join(out_dir, f"{a.name}.blend"))
