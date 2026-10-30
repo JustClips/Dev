@@ -397,7 +397,7 @@ def auto_toggle(name, label, ico, order):
 
 def hud():
     # Phones: tiles 12% smaller (Dev, 2026-10-30: a little oversized), same spot.
-    rail = frame("Rail", U(0, 180, 0, 414), U(0, 14, 0.5, -30), (0, 0.5), children=[
+    rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
         autoscale(compact=0.88),
         node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 26), "SortOrder": "LayoutOrder"}),
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
@@ -406,7 +406,6 @@ def hud():
         rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 4),
         rail_tile("RewardsButton", "Daily", "Daily", "#FF5FA2", 5),
         rail_tile("GiftsButton", "Gifts", "Gift", "#3DDC5A", 6),
-        rail_tile("SpinButton", "Spin", "Spin", "#4C8DFF", 7),
     ])
     pills = frame("Pills", U(0, 432, 0, 52), U(0.5, 0, 0, 6), (0.5, 0), children=[
         autoscale(), hlist(12),
@@ -586,7 +585,12 @@ def hud():
             frame("Fill", U(1, 0, 1, 0), bg=PREMIUM),
         ]),
     ])
-    write("Hud", screen([rail, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, picker,
+    # Lucky Wheel button, top right where the ADMIN button sits (under it for admins). Fixed
+    # size like ADMIN; HudController places it (Dev, 2026-10-30: the rail tile went under the
+    # wallet on phones).
+    spin = button("SpinButton", U(0, 104, 0, 38), U(1, -10, 0, 6), (1, 0), color="#4C8DFF", label="Spin", ts=20, ico="Spin",
+                  ico_px=30, stroke=3, Visible=False, children=[badge(px=24)])
+    write("Hud", screen([rail, spin, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, picker,
                          spot, pointer], order=1))
 
 

@@ -324,7 +324,10 @@ local function layoutButtons(_scale: number, compact: boolean)
 		local _, right = Ui.edges(screenGui)
 		-- Top of the column level with the clean bar under the pills, dropped SIDE_DROP (Dev, phones).
 		buttons.AnchorPoint = Vector2.new(1, 0)
-		buttons.Position = UDim2.new(1, -right, 0, math.max(4, (C.HudController.barY or 10) - math.ceil(4 * s)) + math.ceil(C.HudController.SIDE_DROP * s))
+		-- Never above the bottom of the top-right Spin button (under ADMIN for admins).
+		local top = math.max(4, (C.HudController.barY or 10) - math.ceil(4 * s)) + math.ceil(C.HudController.SIDE_DROP * s)
+		top = math.max(top, 8 + (C.HudController.RightDrop or 0))
+		buttons.Position = UDim2.new(1, -right, 0, top)
 		buttons.Size = UDim2.fromOffset(80, 280)
 		eggsButton.Position = UDim2.fromOffset(40, 40)
 		petsButton.Position = UDim2.fromOffset(40, 136)

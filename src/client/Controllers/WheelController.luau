@@ -231,12 +231,12 @@ function WheelController:Init(controllers)
 	gui = Ui.screen("Wheel")
 	spinner = Ui.find(gui, "Window.WheelArea.Spinner")
 	spinButton = Ui.find(gui, "Window.Side.SpinButton")
-	railBadge = Ui.find(Ui.screen("Hud"), "Rail.SpinButton"):FindFirstChild("Badge") :: Frame?
+	railBadge = Ui.find(Ui.screen("Hud"), "SpinButton"):FindFirstChild("Badge") :: Frame?
 end
 
 function WheelController:Start()
 	fill()
-	Ui.button(Ui.find(Ui.screen("Hud"), "Rail.SpinButton"), function()
+	Ui.button(Ui.find(Ui.screen("Hud"), "SpinButton"), function()
 		if Ui.isOpen(gui) then
 			Ui.close("Wheel")
 		else

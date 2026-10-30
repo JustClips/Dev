@@ -217,7 +217,8 @@ end
 
 -- New players see the left rail fill in as the tutorial goes (Dev, 2026-10-30: too many
 -- buttons at once on phones). Shop is always there; Index after the first pet, Upgrades
--- at the step that uses it, Rebirth / Daily / Gifts / Spin once the tutorial is done.
+-- at the step that uses it, Rebirth / Daily / Gifts once the tutorial is done (and the
+-- top-right Spin button with them).
 local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10, Wheel = 11 }
 local function revealRail(data)
 	local step = STEP_ORDER[data.TutorialStep] or 99
@@ -228,8 +229,10 @@ local function revealRail(data)
 		RebirthButton = done,
 		RewardsButton = done,
 		GiftsButton = done,
-		SpinButton = done,
 	}
+	if el.SpinButton.Visible ~= done then
+		el.SpinButton.Visible = done
+	end
 	local changed = false
 	for name, visible in show do
 		local button = el.Rail:FindFirstChild(name) :: GuiObject?
@@ -519,6 +522,11 @@ local RAIL_CENTRE = -30
 HudController.SIDE_DROP = 44
 local SIDE_DROP = HudController.SIDE_DROP
 local STACK_BUTTONS, STACK_GAP, STACK_RIGHT = 324, 16, 50
+-- The Lucky Wheel button (top right, fixed size like the ADMIN button).
+local SPIN_W, SPIN_H, ADMIN_H = 104, 38, 34
+-- Phones, admins only: the Spin button sits under ADMIN, so the right-hand columns start
+-- this much lower (gui px, not scaled). BasePanelsController reads it.
+HudController.RightDrop = 0
 
 function HudController.rightStackTop(s: number): number
 	return RAIL_CENTRE - math.ceil((STACK_BUTTONS + STACK_GAP + STACK_RIGHT) * s / 2)
@@ -545,7 +553,8 @@ layout = function(s: number, compact: boolean)
 		local w = math.ceil(el.Pills.Size.X.Offset * s)
 		local guiMid = hud.AbsolutePosition.X + hud.AbsoluteSize.X / 2
 		local freeLeft = math.max(inset.Min.X, 104) + 8
-		local freeRight = inset.Max.X - 8 - (if Admin.isAdmin(Players.LocalPlayer.UserId) then 100 else 0)
+		-- Room for the ADMIN button or (for everyone else) the Spin button in that spot.
+		local freeRight = inset.Max.X - 8 - (if Admin.isAdmin(Players.LocalPlayer.UserId) then 100 else SPIN_W + 14)
 		local x0 = math.max(guiMid - w / 2, freeLeft)
 		if x0 + w <= freeRight then
 			top = -math.floor(inset.Height) + math.floor((inset.Height - pillsH) / 2)
@@ -553,6 +562,19 @@ layout = function(s: number, compact: boolean)
 		end
 	end
 	el.Pills.Position = UDim2.new(0.5, shift, 0, top)
+	-- Spin button: in the top bar row where ADMIN sits, or under ADMIN for admins.
+	local barH = math.floor(inset.Height)
+	local isAdmin = Admin.isAdmin(Players.LocalPlayer.UserId)
+	local spinY = 6
+	if isAdmin then
+		local adminTop = if barH >= ADMIN_H then -barH + math.floor((barH - ADMIN_H) / 2) else 6
+		spinY = adminTop + ADMIN_H + 6
+	elseif barH >= SPIN_H then
+		spinY = -barH + math.floor((barH - SPIN_H) / 2)
+	end
+	el.SpinButton.Position = UDim2.new(1, -10, 0, spinY)
+	-- Anything at the top right below that line moves down under the Spin button.
+	HudController.RightDrop = math.max(0, spinY + SPIN_H + 6 - 8)
 	local barY = top + pillsH + math.ceil(8 * s)
 	HudController.barY = barY
 	el.MoonPanel.Position = UDim2.new(0.5, 0, 0, barY)
@@ -581,17 +603,17 @@ layout = function(s: number, compact: boolean)
 		el.Rail.AnchorPoint = Vector2.new(0, 0)
 		-- A bit lower than right under the top bar (Dev, 2026-10-30).
 		el.Rail.Position = UDim2.new(0, left, 0, 6 + math.ceil(SIDE_DROP * s))
-		el.Rail.Size = UDim2.fromOffset(180, 378)
+		el.Rail.Size = UDim2.fromOffset(180, 280)
 		if railGrid then
 			railGrid.CellPadding = UDim2.fromOffset(12, 14)
 		end
 		boosts.AnchorPoint = Vector2.new(1, 0)
-		boosts.Position = UDim2.new(1, -column, 0, 8)
+		boosts.Position = UDim2.new(1, -column, 0, 8 + HudController.RightDrop)
 		if boostLayout then
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 		end
 	else
-		el.Rail.Size = UDim2.fromOffset(180, 414)
+		el.Rail.Size = UDim2.fromOffset(180, 304)
 		if railGrid then
 			railGrid.CellPadding = UDim2.fromOffset(12, 26)
 		end
@@ -657,6 +679,7 @@ function HudController:Init(controllers)
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
 	el.Pills = Ui.find(hud, "Pills")
+	el.SpinButton = Ui.find(hud, "SpinButton")
 	el.MoonPanel = Ui.find(hud, "MoonPanel")
 	el.Toasts = Ui.find(hud, "Toasts")
 	el.Hint = Ui.find(hud, "Hint")
