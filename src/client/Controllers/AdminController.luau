@@ -10,6 +10,8 @@
 --   Give     cash, eggs, pets, potions, tools, cars and boosts to you, everyone or a player
 --   Message  an announcement card for everyone
 --   Poll     a question everyone votes on
+--   Codes    make codes for social posts (rewards + how long they last) and delete them;
+--            codes always work in every server (CodeService)
 -- Built in code in the game's style (white panels, thick dark outlines, stud buttons), not
 -- gen_ui, so the panel never ships in other players' StarterGui.
 local HttpService = game:GetService("HttpService")
@@ -282,7 +284,8 @@ local gui: ScreenGui
 local window: Frame
 local pages: { [string]: ScrollingFrame } = {}
 local tabButtons: { [string]: TextButton } = {}
-local TAB_COLORS = { Events = ORANGE, Give = GREEN, Message = BLUE, Poll = PURPLE }
+local TAB_COLORS = { Events = ORANGE, Give = GREEN, Message = BLUE, Poll = PURPLE, Codes = GOLD }
+local onShow: { [string]: () -> () } = {}
 local global = false
 local target: any = "me"
 
@@ -302,6 +305,9 @@ local function showTab(name: string)
 	end
 	for n, b in tabButtons do
 		paint(b, if n == name then TAB_COLORS[n] else CHIP)
+	end
+	if onShow[name] then
+		task.spawn(onShow[name])
 	end
 end
 
@@ -804,6 +810,174 @@ local function buildPoll()
 	end)
 end
 
+------------------------------------------------------------------------------- codes
+
+local function rewardText(r: any): string
+	if r.Kind == "Cash" then
+		return `{math.floor((r.Seconds or 0) / 60)} min cash`
+	elseif r.Kind == "Item" then
+		local item = Items.ById[r.Item or ""]
+		return `{if item then item.Name else r.Item} x{r.Amount or 1}`
+	elseif r.Kind == "Egg" then
+		return `{r.Rarity} Egg`
+	end
+	return "?"
+end
+
+local function buildCodes()
+	local page = newPage("Codes", 5)
+	local body = section(page, "New code (works in every server)")
+	vlist(body, 8)
+	local codeBox = input(body, "CODE (letters and numbers)", UDim2.new(1, 0, 0, 44))
+	codeBox:GetPropertyChangedSignal("Text"):Connect(function()
+		local clean = string.upper((string.gsub(codeBox.Text, "[^%w]", "")))
+		if clean ~= codeBox.Text then
+			codeBox.Text = clean
+		end
+	end)
+
+	text(body, "REWARD", UDim2.new(1, 0, 0, 20), 15, SUB, Enum.FontWeight.Heavy)
+	local kinds: { Choice } = { { label = "Cash", value = "Cash", color = GOLD } }
+	for _, item in Items.List do
+		table.insert(kinds, { label = item.Name, value = item.Id, color = item.Color })
+	end
+	table.insert(kinds, { label = "Egg", value = "Egg", color = PURPLE })
+	local amountRow: Frame, amountLabel: TextLabel, amount: TextBox, rarityGrid: Frame
+	local _, kindState = chips(body, kinds, Vector2.new(120, 38), function(kind)
+		amountRow.Visible = kind ~= "Egg"
+		rarityGrid.Visible = kind == "Egg"
+		amountLabel.Text = if kind == "Cash" then "MINUTES OF CASH" else "HOW MANY"
+		amount.Text = if kind == "Cash" then "10" else "1"
+	end)
+	amountRow = row(body, 44)
+	amountLabel = text(amountRow, "MINUTES OF CASH", UDim2.fromOffset(170, 40), 15, SUB, Enum.FontWeight.Heavy)
+	amount = input(amountRow, "Amount", UDim2.fromOffset(120, 40), "10")
+	local rarities: { Choice } = {}
+	for _, egg in Eggs.Rarities do
+		table.insert(rarities, { label = egg.Name, value = egg.Name, color = egg.Color })
+	end
+	local pickRarity, rarityState, grid = chips(body, rarities, Vector2.new(96, 34))
+	rarityGrid = grid
+	pickRarity("Rare")
+	rarityGrid.Visible = false
+
+	local pending: { { [string]: any } } = {}
+	local pendingText = text(body, "Rewards: none yet", UDim2.new(1, 0, 0, 0), 17, INK, Enum.FontWeight.Heavy)
+	pendingText.AutomaticSize = Enum.AutomaticSize.Y
+	local function showPending()
+		if #pending == 0 then
+			pendingText.Text = "Rewards: none yet"
+			return
+		end
+		local parts = {}
+		for _, r in pending do
+			if r.Kind == "Cash" then
+				table.insert(parts, `{r.Minutes} min cash`)
+			elseif r.Kind == "Item" then
+				local item = Items.ById[r.Item]
+				table.insert(parts, `{if item then item.Name else r.Item} x{r.Amount}`)
+			else
+				table.insert(parts, `{r.Rarity} Egg`)
+			end
+		end
+		pendingText.Text = "Rewards: " .. table.concat(parts, " + ")
+	end
+	local r1 = row(body, 50)
+	button(r1, "ADD REWARD", BLUE, UDim2.fromOffset(170, 46), function()
+		local kind = kindState.value
+		if not kind then
+			C.HudController:Toast("Pick a reward first", "Bad")
+			return
+		end
+		if #pending >= Admin.MaxCodeRewards then
+			C.HudController:Toast(`Up to {Admin.MaxCodeRewards} rewards per code`, "Bad")
+			return
+		end
+		local n = math.max(1, math.floor(tonumber(amount.Text) or 1))
+		if kind == "Cash" then
+			table.insert(pending, { Kind = "Cash", Minutes = n })
+		elseif kind == "Egg" then
+			table.insert(pending, { Kind = "Egg", Rarity = rarityState.value })
+		else
+			table.insert(pending, { Kind = "Item", Item = kind, Amount = n })
+		end
+		showPending()
+	end, 18)
+	button(r1, "CLEAR", CHIP, UDim2.fromOffset(110, 46), function()
+		table.clear(pending)
+		showPending()
+	end, 18)
+
+	text(body, "LASTS", UDim2.new(1, 0, 0, 20), 15, SUB, Enum.FontWeight.Heavy)
+	local pickDays, daysState = chips(body, {
+		{ label = "1 day", value = 1 },
+		{ label = "3 days", value = 3 },
+		{ label = "1 week", value = 7 },
+		{ label = "30 days", value = 30 },
+		{ label = "Forever", value = 0 },
+	}, Vector2.new(96, 38))
+	pickDays(7)
+
+	local listBody: Frame
+	local refresh: () -> ()
+	button(body, "CREATE CODE", GREEN, UDim2.fromOffset(220, 50), function()
+		local ok, message = Net.func("Admin"):InvokeServer("CodeAdd", { Code = codeBox.Text, Rewards = pending, Days = daysState.value })
+		C.HudController:Toast(if type(message) == "string" then message else "", if ok then "Good" else "Bad")
+		if ok then
+			codeBox.Text = ""
+			table.clear(pending)
+			showPending()
+			refresh()
+		end
+	end, 20)
+
+	listBody = section(page, "All codes")
+	vlist(listBody, 6)
+	refresh = function()
+		local ok, list = Net.func("Admin"):InvokeServer("CodeList", {})
+		for _, child in listBody:GetChildren() do
+			if child:IsA("GuiObject") then
+				child:Destroy()
+			end
+		end
+		if not ok or type(list) ~= "table" then
+			text(listBody, "Couldn't load codes.", UDim2.new(1, 0, 0, 24), 16, SUB)
+			return
+		end
+		if #list == 0 then
+			text(listBody, "No codes yet.", UDim2.new(1, 0, 0, 24), 16, SUB)
+		end
+		local now = State.now()
+		for _, c in list do
+			local card = panel(listBody, UDim2.new(1, -6, 0, 58), if c.Expired then CHIP else WHITE)
+			local name = text(card, c.Code, UDim2.new(0, 170, 0, 28), 20, INK, Enum.FontWeight.Heavy)
+			name.Position = UDim2.fromOffset(10, 4)
+			local parts = {}
+			for _, r in c.Rewards or {} do
+				table.insert(parts, rewardText(r))
+			end
+			local when = if c.Expired then "EXPIRED"
+				elseif c.ExpiresAt then `ends in {Format.countdown(c.ExpiresAt - now)}`
+				else "never ends"
+			local source = if c.Custom then `by {c.By or "admin"}` else "built in"
+			local info = text(card, `{table.concat(parts, " + ")} · {when} · {source}`, UDim2.new(1, -150, 0, 22), 14, SUB)
+			info.Position = UDim2.fromOffset(10, 32)
+			info.TextTruncate = Enum.TextTruncate.AtEnd
+			info.TextWrapped = false
+			if c.Custom then
+				local del = button(card, "DELETE", RED, UDim2.fromOffset(110, 40), function()
+					local done, message = Net.func("Admin"):InvokeServer("CodeRemove", { Code = c.Code })
+					C.HudController:Toast(if type(message) == "string" then message else "", if done then "Good" else "Bad")
+					refresh()
+				end, 16)
+				del.AnchorPoint = Vector2.new(1, 0.5)
+				del.Position = UDim2.new(1, -8, 0.5, 0)
+			end
+		end
+	end
+	onShow.Codes = refresh
+end
+
 ------------------------------------------------------------------------------- panel
 
 local scopeHint: TextLabel
@@ -903,6 +1077,7 @@ local function build()
 	buildGive()
 	buildMessage()
 	buildPoll()
+	buildCodes()
 	setScope(false)
 	showTab("Events")
 

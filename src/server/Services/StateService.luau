@@ -136,6 +136,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		PlacedCount = S.AlienService:PlacedCount(player),
 		Daily = data.Daily,
 		Rewards = S.RewardService:Snapshot(player),
+		FriendsHere = S.BoostService:GetFriendCount(player),
 		Index = data.Index,
 		BaseSkins = data.BaseSkins,
 		Boosts = data.Boosts,

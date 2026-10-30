@@ -73,6 +73,11 @@ local function grant(player: Player, reward: Rewards.Reward, sku: string): strin
 	return ""
 end
 
+-- Other services (CodeService) give rewards the same way.
+function RewardService:Grant(player: Player, reward: Rewards.Reward, sku: string): string
+	return grant(player, reward, sku)
+end
+
 local function runtime(player: Player): any
 	local session = S.DataService:GetSession(player)
 	return session and session.Runtime

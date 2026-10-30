@@ -41,6 +41,7 @@ local TEMPLATE: Types.ProfileData = {
 	Gamepasses = {},
 	GiftedPasses = {},
 	Daily = { Streak = 0, LastDay = 0, LastClaim = 0 },
+	RedeemedCodes = {}, -- code -> unix time it was used (CodeService)
 	ReceiptsGranted = {},
 	ReceiptOrder = {},
 	LastOnline = 0,

@@ -1,7 +1,8 @@
 --!strict
--- Server luck (2x/4x/8x/16x) and personal boosts, plus the one place that computes a
--- player's cash multiplier. Luck timers stack additively per tier; the highest active
--- tier is the server's luck.
+-- Server luck (2x/4x/8x/16x), personal boosts (potions, +10% luck per friend in the
+-- server), plus the one place that computes a player's cash multiplier. Luck timers stack
+-- additively per tier; the highest active tier is the server's luck.
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -17,6 +18,9 @@ local BoostService = {}
 
 local S: any
 local luckEnds: { [number]: number } = {}
+-- Friend boost: who each player is friends with in this server (by UserId). Filled when
+-- someone joins (IsFriendsWith is a web call, so it's asked once per pair).
+local friendsOf: { [Player]: { [number]: boolean } } = {}
 
 local function publish()
 	local state = S.StateService:GetServerState()
@@ -70,9 +74,77 @@ function BoostService:IsBoostActive(player: Player, key: string): boolean
 	return data ~= nil and (data.Boosts[key] or 0) > os.time()
 end
 
--- Luck potion (personal). Multiplies egg rarity luck, mutations and Huge chance.
+-- Friends of this player who are in the server right now.
+function BoostService:GetFriendCount(player: Player): number
+	local count = 0
+	for userId in friendsOf[player] or {} do
+		local other = Players:GetPlayerByUserId(userId)
+		if other and other ~= player then
+			count += 1
+		end
+	end
+	return count
+end
+
+-- +10% egg luck per friend in the server (Economy.FriendLuckPerFriend), capped.
+function BoostService:GetFriendLuck(player: Player): number
+	local friends = math.min(BoostService:GetFriendCount(player), Economy.FriendLuckMaxFriends)
+	return 1 + friends * Economy.FriendLuckPerFriend
+end
+
+-- Personal luck: the Luck potion times the friend boost. Multiplies egg rarity luck,
+-- mutations and Huge chance.
 function BoostService:GetPersonalLuck(player: Player): number
-	return if BoostService:IsBoostActive(player, "Luck2x") then Items.LuckMult else 1
+	local potion = if BoostService:IsBoostActive(player, "Luck2x") then Items.LuckMult else 1
+	return potion * BoostService:GetFriendLuck(player)
+end
+
+local function areFriends(a: Player, b: Player): boolean
+	local ok, result = pcall(function()
+		return a:IsFriendsWith(b.UserId)
+	end)
+	return ok and result == true
+end
+
+local function markFriends(player: Player)
+	if player.Parent and S.DataService:GetSession(player) then
+		S.StateService:Mark(player)
+	end
+end
+
+local function onJoin(player: Player)
+	friendsOf[player] = friendsOf[player] or {}
+	for _, other in Players:GetPlayers() do
+		if other ~= player then
+			task.spawn(function()
+				if not areFriends(player, other) or not player.Parent or not other.Parent then
+					return
+				end
+				local mine, theirs = friendsOf[player], friendsOf[other]
+				if not mine or mine[other.UserId] then
+					return -- left meanwhile, or already counted
+				end
+				mine[other.UserId] = true
+				if theirs then
+					theirs[player.UserId] = true
+				end
+				markFriends(player)
+				markFriends(other)
+				local pct = math.floor(Economy.FriendLuckPerFriend * 100 + 0.5)
+				Net.fire("Notify", other, `Your friend {player.DisplayName} joined: +{pct}% luck!`, "Good")
+			end)
+		end
+	end
+end
+
+local function onLeave(player: Player)
+	friendsOf[player] = nil
+	for other, list in friendsOf do
+		if list[player.UserId] then
+			list[player.UserId] = nil
+			markFriends(other)
+		end
+	end
 end
 
 -- Speed potion: extra walk speed while active.
@@ -126,6 +198,11 @@ end
 
 function BoostService:Start()
 	publish()
+	Players.PlayerAdded:Connect(onJoin)
+	Players.PlayerRemoving:Connect(onLeave)
+	for _, player in Players:GetPlayers() do
+		task.spawn(onJoin, player)
+	end
 	local lastLuck = 1
 	task.spawn(function()
 		while true do

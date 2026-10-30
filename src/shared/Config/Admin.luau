@@ -54,4 +54,9 @@ Admin.Events = {
 -- Personal boosts the panel can give (data.Boosts keys).
 Admin.Boosts = { "Luck2x", "Cash2x", "Speed" }
 
+-- Codes tab (CodeService): limits for codes made in-game.
+Admin.MaxCodeLength = 20
+Admin.MaxCodeRewards = 4
+Admin.MaxCodeDays = 365
+
 return Admin

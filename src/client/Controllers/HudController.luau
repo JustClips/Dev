@@ -20,6 +20,7 @@ local Admin = require(Shared.Config.Admin)
 local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
+local Economy = require(Shared.Config.Economy)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
@@ -292,7 +293,10 @@ local function renderTip()
 	end
 	tip.Visible = true
 	;(tip:FindFirstChild("Title") :: TextLabel).Text = entry.title
-	;(tip:FindFirstChild("Text") :: TextLabel).Text = `{entry.text}\n{Format.countdown(entry.endsAt - State.now())} left`
+	-- endsAt 0 = no timer (friend boost lasts while they're here).
+	;(tip:FindFirstChild("Text") :: TextLabel).Text = if entry.endsAt > 0
+		then `{entry.text}\n{Format.countdown(entry.endsAt - State.now())} left`
+		else entry.text
 	-- Sit just above the chips (below them on phones, where the chips are top right).
 	local top, bottom, right = math.huge, -math.huge, 0
 	for _, chip in boostChips do
@@ -378,6 +382,14 @@ local function renderBoosts()
 	if data and (data.Boosts.Speed or 0) > now then
 		add("Speed", "Icon_PotionSpeed", `+{Items.SpeedBonus}`, data.Boosts.Speed, "Speed Potion", `You run {Items.SpeedBonus} faster.`)
 	end
+	-- Friend boost: +10% luck per friend in this server, no timer ("+20%").
+	local friends = if data then math.min(data.FriendsHere or 0, Economy.FriendLuckMaxFriends) else 0
+	if friends > 0 then
+		local pct = math.floor(friends * Economy.FriendLuckPerFriend * 100 + 0.5)
+		local each = math.floor(Economy.FriendLuckPerFriend * 100 + 0.5)
+		add("Friends", "Icon_Group", `+{pct}%`, 0, "Friend Boost",
+			`{friends} friend{if friends == 1 then "" else "s"} in this server: +{pct}% egg luck. Every friend here adds {each}%.`)
+	end
 	local seen = {}
 	for i, entry in entries do
 		seen[entry.key] = true
@@ -414,8 +426,8 @@ local function renderBoosts()
 		local c = chip :: TextButton
 		local label = c:FindFirstChild("Label") :: TextLabel?
 		if label then
-			local left = Format.countdown(entry.endsAt - now)
-			label.Text = if entry.label == "" then left else `{entry.label} {left}`
+			local left = if entry.endsAt > 0 then Format.countdown(entry.endsAt - now) else ""
+			label.Text = if entry.label == "" then left elseif left == "" then entry.label else `{entry.label} {left}`
 		end
 		c.LayoutOrder = i
 		local icon = c:FindFirstChild("Icon") :: ImageLabel?
@@ -511,7 +523,7 @@ layout = function(s: number, compact: boolean)
 		end
 		el.Rail.AnchorPoint = Vector2.new(0, 0)
 		el.Rail.Position = UDim2.new(0, left, 0, 6)
-		el.Rail.Size = UDim2.fromOffset(180, 280)
+		el.Rail.Size = UDim2.fromOffset(180, 378) -- 4 rows of tiles
 		if railGrid then
 			railGrid.CellPadding = UDim2.fromOffset(12, 14)
 		end
@@ -523,7 +535,7 @@ layout = function(s: number, compact: boolean)
 		-- Clear of the hotbar's Bag slot and its badge, still left of the jump button.
 		el.SweepButton.Position = UDim2.new(1, -math.ceil(170 * s + 8), 1, -14)
 	else
-		el.Rail.Size = UDim2.fromOffset(180, 304)
+		el.Rail.Size = UDim2.fromOffset(180, 414)
 		if railGrid then
 			railGrid.CellPadding = UDim2.fromOffset(12, 26)
 		end

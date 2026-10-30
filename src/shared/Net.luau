@@ -54,6 +54,7 @@ local FUNCTIONS: { [string]: number } = {
 	Inventory = 10, -- (action, arg?) -> ok, message: see InventoryService ACTIONS
 	Rewards = 6, -- (action, arg?) -> ok, message: see RewardService ACTIONS
 	BaseSkin = 4, -- ("Unlock" | "Equip" | "Preview", skinId) -> ok, message
+	RedeemCode = 2, -- (code) -> ok, message: CodeService
 	Admin = 8, -- (action, payload) -> ok, message: admins only, see AdminService
 }
 

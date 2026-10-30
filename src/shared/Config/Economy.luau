@@ -142,4 +142,9 @@ function Economy.rebirthCost(rebirths: number): number
 	return list[n] * Economy.RebirthCostGrowth ^ (rebirths - n + 1)
 end
 
+-- Friend boost: each friend in your server adds this much egg luck (BoostService), up to
+-- FriendLuckMaxFriends friends. Shown as a chip on the HUD.
+Economy.FriendLuckPerFriend = 0.1
+Economy.FriendLuckMaxFriends = 10
+
 return Economy

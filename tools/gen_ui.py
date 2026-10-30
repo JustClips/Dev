@@ -396,7 +396,7 @@ def auto_toggle(name, label, ico, order):
 
 
 def hud():
-    rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
+    rail = frame("Rail", U(0, 180, 0, 414), U(0, 14, 0.5, -30), (0, 0.5), children=[
         autoscale(),
         node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 26), "SortOrder": "LayoutOrder"}),
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
@@ -405,6 +405,8 @@ def hud():
         rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 4),
         rail_tile("RewardsButton", "Daily", "Daily", "#FF5FA2", 5),
         rail_tile("GiftsButton", "Gifts", "Gift", "#3DDC5A", 6),
+        # Codes from social posts (CodesController). Star icon until a ticket icon is made.
+        rail_tile("CodesButton", "Codes", "Star", "#4C8DFF", 7),
     ])
     pills = frame("Pills", U(0, 432, 0, 52), U(0.5, 0, 0, 6), (0.5, 0), children=[
         autoscale(), hlist(12),
@@ -1239,6 +1241,28 @@ def group_reward():
                                order=10, enabled=False))
 
 
+# ---------------------------------------------------------------- Codes
+def codes():
+    """Codes window (screen "Codes", CodesController), opened from the Codes tile on the
+    rail: one big box to type a code from our social posts, a big Redeem button and the
+    result under it. Big touch targets first (most players are on phones)."""
+    box = plate("Entry", U(1, -28, 0, 250), U(0, 14, 0, 78), tint=WHITE, stud=0.2, children=[
+        text("Title", "ENTER A CODE", U(1, -40, 0, 40), U(0.5, 0, 0, 14), (0.5, 0), ts=34, color=INK, display=True),
+        text("Text", "Find codes in our social posts and the group!", U(1, -40, 0, 26), U(0.5, 0, 0, 56), (0.5, 0), ts=20,
+             color=SUB, heavy=True),
+        node("Input", "TextBox", base(U(1, -60, 0, 80), U(0.5, 0, 0, 96), (0.5, 0), BackgroundColor3="#EEF1F7", Text="",
+                                      PlaceholderText="Type code here", PlaceholderColor3="#9AA3B8", TextColor3=INK, TextSize=36,
+                                      FontFace=DISPLAY, ClearTextOnFocus=False, TextXAlignment="Center", ZIndex=3,
+                                      TextScaled=False), [padding(14, 14, 0), border(INK, 4)]),
+        text("Status", "", U(1, -40, 0, 30), U(0.5, 0, 1, -12), (0.5, 1), ts=21, color=SUB, display=True),
+    ])
+    redeem = button("Redeem", U(0, 340, 0, 76), U(0.5, 0, 0, 344), (0.5, 0), color=SUCCESS, label="Redeem", ts=32)
+    note = text("Note", "Each code works once. Some codes run out, so use them fast!", U(1, -28, 0, 30), U(0, 14, 1, -14), (0, 1),
+                ts=17, color=SUB, heavy=True)
+    write("Codes", screen([dim(), window(WIN_W, WIN_H, "Codes", "Star", [box, redeem, note], header="#4C8DFF")],
+                         order=10, enabled=False))
+
+
 # ---------------------------------------------------------------- Garage
 def garage():
     """Gear window (screen "Garage", called "Tools" before 2026-10-30): a Tools tab (the tool ladder: buy the next one with
@@ -1467,6 +1491,7 @@ def main():
     garage()
     base_picker()
     group_reward()
+    codes()
     upgrades()
     loading()
     print("ui written to", OUT)

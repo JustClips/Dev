@@ -15,6 +15,8 @@
 --   Time       { Value = "day" | "night" }
 --   Announce   { Text, Seconds }
 --   PollStart  { Question, Options, Seconds } / PollEnd {}
+--   CodeAdd    { Code, Rewards, Days } / CodeRemove { Code }  (always every server)
+--   CodeList   {} -> ok, list  (see CodeService:List)
 --
 -- Global timed events are also kept in a MemoryStore hash map until they end, so servers
 -- that start later pick them up too.
@@ -705,6 +707,16 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		end
 		log(caller.Name, `announced "{text}"`)
 		return true, if p.Global then "Sent to every server" else "Sent to this server"
+	end,
+	-- Codes (CodeService). Codes always work in every server, whatever the switch says.
+	CodeAdd = function(caller, p)
+		return S.CodeService:Add(caller, p)
+	end,
+	CodeRemove = function(caller, p)
+		return S.CodeService:Remove(caller, p)
+	end,
+	CodeList = function()
+		return true, S.CodeService:List()
 	end,
 	PollStart = startPoll,
 	PollEnd = function(caller)

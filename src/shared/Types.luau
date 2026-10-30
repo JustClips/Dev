@@ -236,6 +236,7 @@ export type ProfileData = {
 	-- Passes a friend gifted (gift products); count as owned for good.
 	GiftedPasses: { [string]: boolean },
 	Daily: { Streak: number, LastDay: number, LastClaim: number? },
+	RedeemedCodes: { [string]: number },
 	ReceiptsGranted: { [string]: string },
 	ReceiptOrder: { string },
 	LastOnline: number,
@@ -278,6 +279,7 @@ export type PlayerSnapshot = {
 	Daily: { Streak: number, LastDay: number, LastClaim: number? },
 	-- RewardService:Snapshot (daily card, session playtime, stay offer, group, event)
 	Rewards: { [string]: any }?,
+	FriendsHere: number, -- friends in this server (friend luck boost)
 	Flags: { [string]: any },
 	Stats: { [string]: number },
 	Slots: number,
