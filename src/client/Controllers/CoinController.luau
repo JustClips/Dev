@@ -26,7 +26,7 @@ local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
 local FLY_OUT = 0.7 -- seconds from the slot to the ground
 local FLY_IN = 0.22 -- seconds from the ground into you
 local REPORT_EVERY = 0.15
-local MAX_COINS = 120
+local MAX_COINS = 180
 
 type Coin = {
 	id: number,
@@ -56,14 +56,15 @@ local function take(): BasePart
 	if part then
 		return part
 	end
-	-- Neon gold so coins pop against the orange leaves (Dev, 2026-10-30), with a golden
-	-- twinkle around each one.
+	-- Shiny metal gold (not Neon: Dev found that too bright, 2026-10-30), 1.5x smaller
+	-- than before, with a faint twinkle so they still read against the leaves.
 	local p = Instance.new("Part")
 	p.Name = "Coin"
 	p.Shape = Enum.PartType.Cylinder
-	p.Size = Vector3.new(0.4, 2.4, 2.4)
+	p.Size = Vector3.new(0.3, 1.6, 1.6)
 	p.Color = GOLD
-	p.Material = Enum.Material.Neon
+	p.Material = Enum.Material.Metal
+	p.Reflectance = 0.15
 	p.Anchored = true
 	p.CanCollide = false
 	p.CanQuery = false
@@ -73,15 +74,15 @@ local function take(): BasePart
 	twinkle.Name = "Twinkle"
 	twinkle.Texture = SPARKLE
 	twinkle.Color = ColorSequence.new(Color3.fromRGB(255, 255, 220), GOLD)
-	twinkle.LightEmission = 1
-	twinkle.LightInfluence = 0
-	twinkle.Rate = 4
+	twinkle.LightEmission = 0.5
+	twinkle.LightInfluence = 0.4
+	twinkle.Rate = 1.5
 	twinkle.Lifetime = NumberRange.new(0.5, 0.8)
 	twinkle.Speed = NumberRange.new(0.5, 1.5)
 	twinkle.SpreadAngle = Vector2.new(180, 180)
 	twinkle.Size = NumberSequence.new({
 		NumberSequenceKeypoint.new(0, 0),
-		NumberSequenceKeypoint.new(0.4, 1.2),
+		NumberSequenceKeypoint.new(0.4, 0.7),
 		NumberSequenceKeypoint.new(1, 0),
 	})
 	twinkle.Parent = p
@@ -141,7 +142,7 @@ local function pop(at: Vector3)
 	f.CFrame = CFrame.new(at)
 	f.Parent = folder
 	local tween = TweenService:Create(f, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		Size = Vector3.one * 3.2,
+		Size = Vector3.one * 2.2,
 		Transparency = 1,
 	})
 	tween.Completed:Once(function()
@@ -193,7 +194,7 @@ local function onDropped(origin: Vector3, list: any)
 			value = if type(item.Value) == "number" then item.Value else 0,
 			part = part,
 			from = origin,
-			to = item.Pos + Vector3.new(0, 1.1, 0),
+			to = item.Pos + Vector3.new(0, 0.8, 0),
 			start = now + (i - 1) * 0.04,
 			spin = math.random() * math.pi * 2,
 			state = "out",

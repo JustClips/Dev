@@ -69,8 +69,9 @@ local Economy = {
 		MagnetUpgrades = { "Cash", "Cash2", "Cash3" },
 		AutoCollectSeconds = 20,
 		DumpEvery = 0.6, -- seconds between coin bursts while pouring into a dump
-		PerDumpBurst = 3,
-		PerSellAll = 12, -- Sell Anywhere: coins in one burst around you
+		FullBagCoins = 60, -- coins a full bag turns into; a part of a bag gives its share
+		MinBurst = 2, -- fewest coins in one dump burst
+		MinSellAll = 8, -- Sell Anywhere: fewest coins in its one burst around you
 	},
 	EggDespawnSeconds = 60, -- eggs you found (only you see and can pick them up)
 	EggRainDespawnSeconds = 45, -- Egg Rain eggs (shared)

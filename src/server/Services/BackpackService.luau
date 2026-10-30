@@ -145,6 +145,12 @@ local function cashOut(player: Player, session, units: number): number
 	return cash
 end
 
+-- How many coins `units` of leaves turn into: a full bag is Economy.Coins.FullBagCoins.
+local function coinCount(player: Player, units: number): number
+	local capacity = math.max(1, S.ToolService:GetCapacity(player))
+	return math.clamp(math.round(units / capacity * Economy.Coins.FullBagCoins), 1, Economy.Coins.FullBagCoins * 2)
+end
+
 -- Sells the whole bag at once (Sell Anywhere). Returns the cash paid.
 local function sellAll(player: Player): number
 	local session = S.DataService:GetSession(player)
@@ -156,7 +162,8 @@ local function sellAll(player: Player): number
 		return 0
 	end
 	lastSell[player] = now
-	local cash = cashOut(player, session, session.Data.Backpack)
+	local units = session.Data.Backpack
+	local cash = cashOut(player, session, units)
 	session.Data.Stats.Sells += 1
 	S.AnalyticsService:Source(player, cash, Enum.AnalyticsEconomyTransactionType.Gameplay, "SellAnywhere")
 	S.AnalyticsService:Funnel(player, "FirstSell")
@@ -166,7 +173,7 @@ local function sellAll(player: Player): number
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if root then
 		local feet = root.Position - Vector3.new(0, (if humanoid then humanoid.HipHeight else 2) + root.Size.Y / 2, 0)
-		S.CoinService:Drop(player, cash, root.Position + Vector3.new(0, 2, 0), feet, Economy.Coins.PerSellAll, 5, 16)
+		S.CoinService:Drop(player, cash, root.Position + Vector3.new(0, 2, 0), feet, math.max(Economy.Coins.MinSellAll, coinCount(player, units)), 5, 16)
 	else
 		S.CoinService:Drop(player, cash, Vector3.zero, Vector3.zero, 1, 0, 0)
 	end
@@ -195,17 +202,19 @@ local function dumpAt(player: Player): number?
 	return nil
 end
 
-type Dump = { spot: number, rate: number, total: number, unpaid: number, nextDrop: number }
+type Dump = { spot: number, rate: number, total: number, unpaid: number, unpaidUnits: number, nextDrop: number }
 
 -- The cash poured so far comes out of the dump's coin slot as coins (CoinService).
-local function dropCoins(player: Player, dump: Dump, count: number)
+local function dropCoins(player: Player, dump: Dump)
 	if dump.unpaid <= 0 then
 		return
 	end
+	local count = math.max(Economy.Coins.MinBurst, coinCount(player, dump.unpaidUnits))
 	local cf = World.Dumps[dump.spot]
 	-- Out over the leaf field in front of the dump, well clear of the market hall.
 	S.CoinService:Drop(player, dump.unpaid, (cf * CFrame.new(0, 3, -3.8)).Position, World.dumpSpot(dump.spot), count, 7, 26, cf.LookVector)
 	dump.unpaid = 0
+	dump.unpaidUnits = 0
 end
 
 local function stopDump(player: Player, session)
@@ -215,7 +224,7 @@ local function stopDump(player: Player, session)
 	end
 	session.Runtime.Dump = nil
 	player:SetAttribute("Dumping", nil)
-	dropCoins(player, dump, Economy.Coins.PerDumpBurst)
+	dropCoins(player, dump)
 	if dump.total > 0 then
 		session.Data.Stats.Sells += 1
 		S.AnalyticsService:Source(player, BigNum.toNumber(dump.total), Enum.AnalyticsEconomyTransactionType.Gameplay, "SellDust")
@@ -239,18 +248,20 @@ local function dumpStep(player: Player, session, spot: number, dt: number)
 	if not dump then
 		local capacity = S.ToolService:GetCapacity(player)
 		local rate = math.max(1, math.min(capacity / Economy.DumpSeconds, data.Backpack / Economy.DumpMinSeconds))
-		dump = { spot = spot, rate = rate, total = 0, unpaid = 0, nextDrop = os.clock() + Economy.Coins.DumpEvery }
+		dump = { spot = spot, rate = rate, total = 0, unpaid = 0, unpaidUnits = 0, nextDrop = os.clock() + Economy.Coins.DumpEvery }
 		session.Runtime.Dump = dump
 		player:SetAttribute("Dumping", spot)
 	end
 	local d = dump :: Dump
 	local units = math.ceil(d.rate * dt)
+	local before = data.Backpack
 	local cash = cashOut(player, session, units)
 	d.total += cash
 	d.unpaid += cash
+	d.unpaidUnits += before - data.Backpack
 	if os.clock() >= d.nextDrop then
 		d.nextDrop = os.clock() + Economy.Coins.DumpEvery
-		dropCoins(player, d, Economy.Coins.PerDumpBurst)
+		dropCoins(player, d)
 	end
 	S.StateService:Mark(player)
 	local capacity = math.max(1, S.ToolService:GetCapacity(player))
