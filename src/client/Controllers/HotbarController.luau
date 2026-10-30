@@ -396,6 +396,13 @@ function HotbarController:Init(controllers)
 	for i = 1, SLOTS do
 		itemSlots[i] = Ui.find(hud, "Hotbar.Item" .. i)
 	end
+	-- Long names shrink to fit the slot ("Starlit Autumn Stag").
+	for _, slot in { toolSlot, carSlot, table.unpack(itemSlots) } do
+		local name = slot:FindFirstChild("Name") :: TextLabel?
+		if name then
+			Ui.fitText(name, 16, 7)
+		end
+	end
 end
 
 function HotbarController:Refresh()

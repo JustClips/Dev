@@ -42,6 +42,7 @@ local tiles: { [string]: { frame: TextButton, entry: BagItems.Entry } } = {}
 local lastSignature = ""
 local summary = ""
 local justDragged = 0
+local fresh: { [string]: boolean } = {} -- keys tagged NEW while the bag is open ("new" badge below)
 
 type Drag = { key: string, slot: number?, start: Vector2, ghost: Frame?, input: InputObject, name: string, color: Color3 }
 local drag: Drag? = nil
@@ -112,6 +113,12 @@ local function tileFor(entry: BagItems.Entry, data): TextButton
 	BagItems.show(viewport, icon, entry, data)
 	nameLabel.Text = entry.name
 	nameLabel.TextColor3 = entry.color
+	Ui.fitText(nameLabel, 16, 7)
+	Ui.fitText(passiveLabel, 14, 6)
+	local newTag = tile:FindFirstChild("New") :: Frame?
+	if newTag then
+		newTag.Visible = fresh[entry.key] == true
+	end
 	count.Visible = entry.count > 1
 	count.Text = `x{entry.count}`
 	if entry.kind == "Pet" then
@@ -297,27 +304,23 @@ end
 
 ------------------------------------------------------------------ "new" badge
 
--- "New in your bag" for the hotbar badge: what's in the bag now that wasn't there the
--- last time you opened it (eggs, pets not on your base, more of a potion). Whatever you
--- already had when you joined counts as seen.
+-- "New in your bag": things in the bag now that weren't there (or not that many) the last
+-- time you opened it. The Bag badge counts them and their tiles get a NEW tag (Dev,
+-- 2026-10-30: the badge showed but you couldn't tell what was new). Counted by hotbar key
+-- (P:uid, E:rarity, I:id). Things in the hotbar don't count: you can already see them.
+-- Whatever you had when you joined counts as seen.
 local seen: { [string]: number }? = nil
 
-local function bagKeys(data): { [string]: number }
-	local keys = {}
-	for uid in data.Eggs or {} do
-		keys["E" .. uid] = 1
+local function counts(data): { [string]: number }
+	local out = {}
+	for _, entry in BagItems.bagEntries(data, nil, nil) do
+		out[entry.key] = entry.count
 	end
-	for uid, pet in data.Pets or {} do
-		if not pet.Placed then
-			keys["P" .. uid] = 1
-		end
-	end
-	for id, n in data.Items or {} do
-		if n > 0 then
-			keys["I" .. id] = n
-		end
-	end
-	return keys
+	return out
+end
+
+local function inBag(key: string): boolean
+	return not C.HotbarController:InHotbar(key)
 end
 
 function InventoryController:NewCount(): number
@@ -325,29 +328,47 @@ function InventoryController:NewCount(): number
 	if not data then
 		return 0
 	end
-	local now = bagKeys(data)
+	local now = counts(data)
 	if not seen then
 		seen = now
 		return 0
 	end
 	local count = 0
 	for key, n in now do
-		count += math.max(0, n - ((seen :: any)[key] or 0))
+		if inBag(key) then
+			count += math.max(0, n - ((seen :: any)[key] or 0))
+		end
 	end
 	return count
 end
 
-local function markSeen()
-	if State.data then
-		seen = bagKeys(State.data)
+-- Moves what's new into `fresh` (tagged while the bag is open) and marks everything seen.
+-- True when the set of tagged tiles changed.
+local function markSeen(): boolean
+	local data = State.data
+	if not data then
+		return false
 	end
+	local now = counts(data)
+	local changed = false
+	if seen then
+		for key, n in now do
+			if n > ((seen :: any)[key] or 0) and inBag(key) and not fresh[key] then
+				fresh[key] = true
+				changed = true
+			end
+		end
+	end
+	seen = now
+	return changed
 end
 
 ------------------------------------------------------------------ public
 
 function InventoryController:Open(_tab: string?)
-	Ui.open("Inventory")
+	table.clear(fresh)
 	markSeen()
+	Ui.open("Inventory")
 	render(true)
 end
 
@@ -408,10 +429,9 @@ function InventoryController:Start()
 		end
 	end)
 	State.Changed:Connect(function()
-		render(false)
-		if gui.Enabled then
-			markSeen() -- you're looking at it, so nothing in it is new
-		end
+		-- You're looking at it, so what arrives now is tagged NEW and then counts as seen.
+		local tagged = gui.Enabled and markSeen()
+		render(tagged)
 	end)
 end
 

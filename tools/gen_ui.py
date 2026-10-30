@@ -763,6 +763,12 @@ def inventory():
              Visible=False, ZIndex=4, TextWrapped=False,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 13, "MinTextSize": 6})]),
         text("Count", "", U(0, 44, 0, 20), U(1, -4, 0, 2), (1, 0), ts=16, display=True, stroke=2, xa="Right", Visible=False, ZIndex=4),
+        # New since you last opened the bag (Dev: hard to tell what's new).
+        frame("New", U(0, 46, 0, 20), U(0, 3, 0, 3), bg=BADGE_RED, Visible=False, ZIndex=5, children=[
+            border(WHITE, 2),
+            text("Label", "NEW", U(1, -4, 1, 0), U(0, 2, 0, 0), ts=16, display=True, stroke=2, ZIndex=6,
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
+        ]),
     ])
     grid = scroller("Grid", U(1, -20, 1, -64), U(0, 10, 0, 56), [
         node("Layout", "UIGridLayout", {"CellSize": U(0, 96, 0, 96), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
