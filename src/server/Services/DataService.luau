@@ -203,7 +203,11 @@ end
 local function onPlayerAdded(player: Player)
 	local profile, reason = store:LoadAsync("Player_" .. player.UserId, function()
 		return player.Parent ~= nil
+	end, function(secondsLeft)
+		-- The loading screen shows "Finishing your last session..." with this countdown.
+		player:SetAttribute("SaveLockWait", secondsLeft)
 	end)
+	player:SetAttribute("SaveLockWait", nil)
 	if not profile then
 		if reason == "locked" then
 			kick(player, "Your save is still closing on another server. Please rejoin in a minute!")

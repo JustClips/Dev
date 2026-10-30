@@ -8,12 +8,8 @@
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
-local MAX_LOAD_ATTEMPTS = 8
-local STUDIO_LOAD_ATTEMPTS = 24 -- Studio waits long enough to outlast STUDIO_STALE
+local MAX_LOAD_ATTEMPTS = 30 -- long enough to outlast the stale time below
 local LOCKED_RETRY_SECONDS = 5
--- In Studio, a lock nobody has written to for this long is dead: a live server autosaves
--- (and so refreshes its lock) every Economy.AutosaveSeconds (60).
-local STUDIO_STALE = 100
 local MAX_WRITE_ATTEMPTS = 4
 
 export type Profile = {
@@ -64,12 +60,13 @@ end
 
 -- Loads and locks a profile. isActive() should return false once the player left.
 -- Returns the profile, or nil and a reason ("left", "locked", "error").
-function ProfileStore:LoadAsync(key: string, isActive: () -> boolean): (Profile?, string?)
+-- onLocked(secondsLeft) is called while it waits on someone else's lock.
+function ProfileStore:LoadAsync(key: string, isActive: () -> boolean, onLocked: ((number) -> ())?): (Profile?, string?)
 	local token = HttpService:GenerateGUID(false)
 	local studio = RunService:IsStudio()
-	local staleAfter = if studio then math.min(self._stale, STUDIO_STALE) else self._stale
+	local staleAfter = self._stale
 	local lockAge = 0
-	for _ = 1, if studio then STUDIO_LOAD_ATTEMPTS else MAX_LOAD_ATTEMPTS do
+	for _ = 1, MAX_LOAD_ATTEMPTS do
 		if not isActive() then
 			return nil, "left"
 		end
@@ -122,6 +119,9 @@ function ProfileStore:LoadAsync(key: string, isActive: () -> boolean): (Profile?
 		if locked then
 			-- Usually the player's previous server is still saving. Give it a moment.
 			warn(`[ProfileStore] {key} is still locked by another server (last saved {lockAge}s ago, taken over at {staleAfter}s), retrying in {LOCKED_RETRY_SECONDS}s`)
+			if onLocked then
+				onLocked(math.max(0, staleAfter - lockAge))
+			end
 			task.wait(LOCKED_RETRY_SECONDS)
 		end
 	end

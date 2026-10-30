@@ -159,9 +159,24 @@ local function run()
 	preloadImages(deadline, 0.55, 0.85)
 
 	setProgress(0.88, "Loading your save...")
-	waitFor(function()
-		return State.data ~= nil
-	end, deadline)
+	-- If the save is still held by the player's last server, the server says how long until
+	-- it takes it over: show that instead of a frozen bar, and wait it out.
+	local lastWait, lastAt = nil, 0
+	while State.data == nil do
+		local wait = player:GetAttribute("SaveLockWait")
+		if type(wait) == "number" then
+			if wait ~= lastWait then
+				lastWait, lastAt = wait, os.clock()
+			end
+			-- The server updates it every 5 s; count down smoothly in between.
+			local left = math.max(1, math.ceil(wait - (os.clock() - lastAt)))
+			setProgress(0.88, `Finishing your last session... {left}s`)
+			deadline = math.max(deadline, os.clock() + wait + 15)
+		elseif os.clock() >= deadline then
+			break
+		end
+		task.wait(0.2)
+	end
 
 	setProgress(0.95, "Getting your broom ready...")
 	waitFor(function()
