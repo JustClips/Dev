@@ -423,8 +423,9 @@ local SYNC_MAX = 600
 local syncEvery = SYNC_SECONDS
 local syncWarned = false
 
--- Adds (e) or removes (removeId) one global event in the shared key, dropping ended ones.
-local function updateStored(e: Event?, removeId: string?): boolean
+-- Adds a global event to the shared key, or marks it stopped (a stopped entry stays until
+-- the event would have ended, so every server sees the stop). Ended entries are dropped.
+local function updateStored(e: Event, stopped: boolean): boolean
 	local m = map()
 	if not m then
 		return false
@@ -435,18 +436,30 @@ local function updateStored(e: Event?, removeId: string?): boolean
 			local events = {}
 			if type(old) == "table" then
 				for id, item in old do
-					if type(item) == "table" and (tonumber(item.EndsAt) or 0) > now and id ~= removeId then
+					if type(item) == "table" and (tonumber(item.EndsAt) or 0) > now then
 						events[id] = item
 					end
 				end
 			end
-			if e then
-				events[e.Id] = e
-			end
+			events[e.Id] = if stopped then { Id = e.Id, EndsAt = e.EndsAt, Stopped = true } else e
 			return events
 		end, 60 * 60 * 24)
 	end)
 	return ok
+end
+
+-- Writes in the background until it works (a few tries), when the first write failed.
+local function storeLater(e: Event, stopped: boolean)
+	task.spawn(function()
+		local wait = 10
+		for _ = 1, 6 do
+			task.wait(wait)
+			if e.EndsAt <= os.time() or updateStored(e, stopped) then
+				return
+			end
+			wait *= 2
+		end
+	end)
 end
 
 -- Global events that started before this server did (or messages it missed).
@@ -469,24 +482,23 @@ local function syncGlobal()
 	syncEvery = SYNC_SECONDS
 	syncWarned = false
 	local now = os.time()
-	local seen = {}
 	if type(stored) == "table" then
 		for _, e in stored do
 			if type(e) == "table" and type(e.Id) == "string" and (tonumber(e.EndsAt) or 0) > now then
-				seen[e.Id] = true
-				if not active[e.Id] then
+				if e.Stopped then
+					-- Stopped elsewhere (in case this server missed the message).
+					if active[e.Id] then
+						removeEvent(e.Id)
+					end
+				elseif not active[e.Id] then
 					active[e.Id] = e :: any
 					runEvent(e :: any)
 				end
 			end
 		end
 	end
-	-- Global events stopped elsewhere.
-	for id, e in active do
-		if e.Global and not seen[id] then
-			removeEvent(id)
-		end
-	end
+	-- An event missing from the store is NOT stopped: its write may have failed (that ended
+	-- events a minute after they started, Dev 2026-10-30). Events end on their own at EndsAt.
 	publishEvents()
 end
 
@@ -516,7 +528,10 @@ local function startEvent(caller: Player, p: any): (boolean, string)
 		e.Rate = whole(p.Rate, 1, 120, 20)
 	end
 	if e.Global then
-		local stored = updateStored(e, nil)
+		local stored = updateStored(e, false)
+		if not stored then
+			storeLater(e, false)
+		end
 		local sent = broadcast({ Kind = "Event", Event = e })
 		if not stored and not sent then
 			log(caller.Name, "global event ran here only")
@@ -534,7 +549,9 @@ local function stopEvent(caller: Player, p: any): (boolean, string)
 		return false, "That event already ended"
 	end
 	if e.Global then
-		updateStored(nil, e.Id)
+		if not updateStored(e, true) then
+			storeLater(e, true)
+		end
 		broadcast({ Kind = "Stop", Id = e.Id })
 	end
 	removeEvent(e.Id)
