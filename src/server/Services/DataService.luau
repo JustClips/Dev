@@ -246,6 +246,11 @@ local function finalize(session: Session)
 	session.JoinedAt = os.time()
 end
 
+-- Saves being written and released right now. BindToClose waits for these: a server that
+-- shut down mid-release left the save locked, so rejoining after a shutdown got stuck on
+-- "Loading your save" (Dev, 2026-10-30).
+local releasing = 0
+
 local function release(player: Player)
 	local session = sessions[player]
 	if not session then
@@ -255,7 +260,14 @@ local function release(player: Player)
 	DataService.ProfileReleasing:Fire(player, session)
 	sessions[player] = nil
 	finalize(session)
-	session.Profile:ReleaseAsync()
+	releasing += 1
+	local ok, err = pcall(function()
+		session.Profile:ReleaseAsync()
+	end)
+	releasing -= 1
+	if not ok then
+		warn(`[DataService] could not release the save of {player.Name}: {err}`)
+	end
 end
 
 function DataService:GetSession(player: Player): Session?
@@ -335,16 +347,14 @@ function DataService:Start()
 	end)
 
 	game:BindToClose(function()
-		local pending = 0
+		-- Release everyone still here, and wait for releases already under way (players
+		-- who left as the server began shutting down).
 		for player in sessions do
-			pending += 1
-			task.spawn(function()
-				release(player)
-				pending -= 1
-			end)
+			task.spawn(release, player)
 		end
+		task.wait()
 		local deadline = os.clock() + 25
-		while pending > 0 and os.clock() < deadline do
+		while releasing > 0 and os.clock() < deadline do
 			task.wait(0.1)
 		end
 	end)
