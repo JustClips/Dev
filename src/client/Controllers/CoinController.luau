@@ -21,7 +21,8 @@ local Net = require(Shared.Net)
 
 local CoinController = {}
 
-local GOLD = Color3.fromRGB(255, 196, 40)
+local GOLD = Color3.fromRGB(255, 205, 40)
+local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
 local FLY_OUT = 0.7 -- seconds from the slot to the ground
 local FLY_IN = 0.22 -- seconds from the ground into you
 local REPORT_EVERY = 0.15
@@ -55,19 +56,99 @@ local function take(): BasePart
 	if part then
 		return part
 	end
+	-- Neon gold so coins pop against the orange leaves (Dev, 2026-10-30), with a golden
+	-- twinkle around each one.
 	local p = Instance.new("Part")
 	p.Name = "Coin"
 	p.Shape = Enum.PartType.Cylinder
-	p.Size = Vector3.new(0.35, 2, 2)
+	p.Size = Vector3.new(0.4, 2.4, 2.4)
 	p.Color = GOLD
-	p.Material = Enum.Material.Metal
-	p.Reflectance = 0.15
+	p.Material = Enum.Material.Neon
 	p.Anchored = true
 	p.CanCollide = false
 	p.CanQuery = false
 	p.CanTouch = false
 	p.CastShadow = false
+	local twinkle = Instance.new("ParticleEmitter")
+	twinkle.Name = "Twinkle"
+	twinkle.Texture = SPARKLE
+	twinkle.Color = ColorSequence.new(Color3.fromRGB(255, 255, 220), GOLD)
+	twinkle.LightEmission = 1
+	twinkle.LightInfluence = 0
+	twinkle.Rate = 4
+	twinkle.Lifetime = NumberRange.new(0.5, 0.8)
+	twinkle.Speed = NumberRange.new(0.5, 1.5)
+	twinkle.SpreadAngle = Vector2.new(180, 180)
+	twinkle.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(0.4, 1.2),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	twinkle.Parent = p
 	return p
+end
+
+-- Pickup pop: a burst of gold sparkles and a quick flash where the coin hits you.
+local popPart: BasePart
+local popSparks: ParticleEmitter
+local flashes: { BasePart } = {}
+
+local function makePop()
+	popPart = Instance.new("Part")
+	popPart.Name = "CoinPop"
+	popPart.Transparency = 1
+	popPart.Size = Vector3.one
+	popPart.Anchored = true
+	popPart.CanCollide = false
+	popPart.CanQuery = false
+	popPart.CanTouch = false
+	popSparks = Instance.new("ParticleEmitter")
+	popSparks.Texture = SPARKLE
+	popSparks.Enabled = false
+	popSparks.Color = ColorSequence.new(Color3.fromRGB(255, 255, 230), GOLD)
+	popSparks.LightEmission = 1
+	popSparks.LightInfluence = 0
+	popSparks.Lifetime = NumberRange.new(0.35, 0.6)
+	popSparks.Speed = NumberRange.new(7, 13)
+	popSparks.SpreadAngle = Vector2.new(180, 180)
+	popSparks.Drag = 4
+	popSparks.Acceleration = Vector3.new(0, 6, 0)
+	popSparks.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0) })
+	popSparks.Parent = popPart
+	popPart.Parent = folder
+end
+
+local function pop(at: Vector3)
+	popPart.CFrame = CFrame.new(at)
+	popSparks:Emit(6)
+	local flash = table.remove(flashes)
+	if not flash then
+		local f = Instance.new("Part")
+		f.Name = "CoinFlash"
+		f.Shape = Enum.PartType.Ball
+		f.Material = Enum.Material.Neon
+		f.Color = Color3.fromRGB(255, 240, 150)
+		f.Anchored = true
+		f.CanCollide = false
+		f.CanQuery = false
+		f.CanTouch = false
+		f.CastShadow = false
+		flash = f
+	end
+	local f = flash :: BasePart
+	f.Size = Vector3.one * 0.6
+	f.Transparency = 0.1
+	f.CFrame = CFrame.new(at)
+	f.Parent = folder
+	local tween = TweenService:Create(f, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.one * 3.2,
+		Transparency = 1,
+	})
+	tween.Completed:Once(function()
+		f.Parent = nil
+		table.insert(flashes, f)
+	end)
+	tween:Play()
 end
 
 local function give(part: BasePart)
@@ -280,6 +361,7 @@ local function step()
 				lastPickup = now
 				Ui.sound("Coin", 1 + streak * 0.05)
 				bump(coin.value, root)
+				pop(part.Position)
 				remove(coin)
 			end
 		end
@@ -299,6 +381,7 @@ function CoinController:Start()
 	folder = Instance.new("Folder")
 	folder.Name = "MyCoins"
 	folder.Parent = Workspace
+	makePop()
 	makeCounter()
 	Net.event("CoinsDropped").OnClientEvent:Connect(onDropped)
 	Net.event("CoinsAuto").OnClientEvent:Connect(onAuto)
