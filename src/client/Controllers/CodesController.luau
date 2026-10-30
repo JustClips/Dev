@@ -1,5 +1,5 @@
 --!strict
--- Codes window (screen "Codes"), opened from the Codes tile on the rail. Type a code from
+-- Codes window (screen "Codes"), opened from the Codes button in Settings. Type a code from
 -- a social post and press Redeem (or Enter). The server checks it (CodeService): each
 -- code works once per player, and some expire.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -76,8 +76,9 @@ function CodesController:Init(controllers)
 end
 
 function CodesController:Start()
-	Ui.button(Ui.find(Ui.screen("Hud"), "Rail.CodesButton"), function()
-		CodesController:Toggle()
+	Ui.button(Ui.find(Ui.screen("Settings"), "Window.Codes"), function()
+		Ui.open("Codes")
+		status.Text = ""
 	end)
 	Ui.button(Ui.find(gui, "Window.Close"), function()
 		Ui.close("Codes")

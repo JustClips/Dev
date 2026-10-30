@@ -396,8 +396,9 @@ def auto_toggle(name, label, ico, order):
 
 
 def hud():
-    rail = frame("Rail", U(0, 180, 0, 414), U(0, 14, 0.5, -30), (0, 0.5), children=[
-        autoscale(),
+    # Phones: tiles 12% smaller (Dev, 2026-10-30: a little oversized), same spot.
+    rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
+        autoscale(compact=0.88),
         node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 26), "SortOrder": "LayoutOrder"}),
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 2),
@@ -405,8 +406,6 @@ def hud():
         rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 4),
         rail_tile("RewardsButton", "Daily", "Daily", "#FF5FA2", 5),
         rail_tile("GiftsButton", "Gifts", "Gift", "#3DDC5A", 6),
-        # Codes from social posts (CodesController). Star icon until a ticket icon is made.
-        rail_tile("CodesButton", "Codes", "Star", "#4C8DFF", 7),
     ])
     pills = frame("Pills", U(0, 432, 0, 52), U(0.5, 0, 0, 6), (0.5, 0), children=[
         autoscale(), hlist(12),
@@ -842,7 +841,7 @@ def base_panels():
     # Eggs / Pets / Tools buttons on the right edge (BasePanelsController lays them out:
     # stacked on PC, a row at the top right on phones).
     buttons = frame("Buttons", U(0, 80, 0, 324), U(1, -14, 0.5, -130), (1, 1), children=[
-        autoscale(),
+        autoscale(compact=0.88),
         side_button("EggsButton", "Eggs", "Egg", DANGER, 1),
         side_button("PetsButton", "Pets", "Alien", "#FF9A3C", 2),
         side_button("ToolsButton", "Gear", "Tool", "#4C8DFF", 3),
@@ -1196,7 +1195,11 @@ def settings():
         row("Music", "Music", "Music", 80),
         row("Sfx", "Sound effects", "Speaker", 176),
         # Roblox's own feedback prompt (SocialService:PromptFeedbackSubmissionAsync).
-        button("Feedback", U(1, -28, 0, 52), U(0, 14, 0, 272), color=HEADER, label="Leave feedback", ts=22, ico="Star", ico_px=32),
+        button("Feedback", U(0.5, -20, 0, 52), U(0, 14, 0, 272), color=HEADER, label="Feedback", ts=22, ico="Star", ico_px=32),
+        # Codes from social posts (CodesController opens the Codes window). Moved here from
+        # the rail (Dev, 2026-10-30: it didn't fit on phones).
+        button("Codes", U(0.5, -20, 0, 52), U(1, -14, 0, 272), (1, 0), color="#4C8DFF", label="Codes", ts=22, ico="Gift",
+               ico_px=32),
         text("Track", "", U(1, -28, 0, 22), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True),
     ]
     write("Settings", screen([dim(), window(520, 350, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
@@ -1243,8 +1246,8 @@ def group_reward():
 
 # ---------------------------------------------------------------- Codes
 def codes():
-    """Codes window (screen "Codes", CodesController), opened from the Codes tile on the
-    rail: one big box to type a code from our social posts, a big Redeem button and the
+    """Codes window (screen "Codes", CodesController), opened from the Codes button in
+    Settings: one big box to type a code from our social posts, a big Redeem button and the
     result under it. Big touch targets first (most players are on phones)."""
     box = plate("Entry", U(1, -28, 0, 250), U(0, 14, 0, 78), tint=WHITE, stud=0.2, children=[
         text("Title", "ENTER A CODE", U(1, -40, 0, 40), U(0.5, 0, 0, 14), (0.5, 0), ts=34, color=INK, display=True),

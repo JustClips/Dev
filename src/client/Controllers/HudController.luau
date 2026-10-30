@@ -523,7 +523,7 @@ layout = function(s: number, compact: boolean)
 		end
 		el.Rail.AnchorPoint = Vector2.new(0, 0)
 		el.Rail.Position = UDim2.new(0, left, 0, 6)
-		el.Rail.Size = UDim2.fromOffset(180, 378) -- 4 rows of tiles
+		el.Rail.Size = UDim2.fromOffset(180, 280)
 		if railGrid then
 			railGrid.CellPadding = UDim2.fromOffset(12, 14)
 		end
@@ -535,7 +535,7 @@ layout = function(s: number, compact: boolean)
 		-- Clear of the hotbar's Bag slot and its badge, still left of the jump button.
 		el.SweepButton.Position = UDim2.new(1, -math.ceil(170 * s + 8), 1, -14)
 	else
-		el.Rail.Size = UDim2.fromOffset(180, 414)
+		el.Rail.Size = UDim2.fromOffset(180, 304)
 		if railGrid then
 			railGrid.CellPadding = UDim2.fromOffset(12, 26)
 		end
