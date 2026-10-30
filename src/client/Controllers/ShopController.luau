@@ -103,7 +103,7 @@ local giftList: ScrollingFrame
 local giftTemplate: TextButton
 local giftEmpty: TextLabel
 local shopBadge: Frame?
-local tabList: Frame
+local tabList: ScrollingFrame
 local tabTemplate: TextButton
 local tabs: { { key: string, button: TextButton } } = {}
 local litTab: string? = nil

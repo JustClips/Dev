@@ -553,12 +553,12 @@
       },
       {
        "name": "List",
-       "className": "Frame",
+       "className": "ScrollingFrame",
        "properties": {
         "Size": [
          [
           1,
-          -12
+          -6
          ],
          [
           1,
@@ -568,7 +568,7 @@
         "Position": [
          [
           0,
-          6
+          3
          ],
          [
           0,
@@ -580,7 +580,23 @@
          0
         ],
         "BorderSizePixel": 0,
-        "BackgroundTransparency": 1
+        "BackgroundTransparency": 1,
+        "ScrollBarThickness": 5,
+        "ScrollBarImageColor3": "#17191E",
+        "CanvasSize": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AutomaticCanvasSize": "Y",
+        "ScrollingDirection": "Y",
+        "ZIndex": 2,
+        "VerticalScrollBarInset": "ScrollBar"
        },
        "children": [
         {
@@ -595,6 +611,28 @@
           "HorizontalAlignment": "Center",
           "VerticalAlignment": "Top",
           "SortOrder": "LayoutOrder"
+         }
+        },
+        {
+         "name": "Padding",
+         "className": "UIPadding",
+         "properties": {
+          "PaddingLeft": [
+           0,
+           3
+          ],
+          "PaddingRight": [
+           0,
+           3
+          ],
+          "PaddingTop": [
+           0,
+           3
+          ],
+          "PaddingBottom": [
+           0,
+           3
+          ]
          }
         },
         {

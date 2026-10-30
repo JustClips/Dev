@@ -608,8 +608,11 @@ def shop():
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 19, "MinTextSize": 7})]),
         frame("Lit", U(0, 6, 1, 0), U(1, 0, 0, 0), (1, 0), bg=WHITE, Visible=False, ZIndex=4),
     ])
+    # Scrolls when the tabs don't fit (Dev, 2026-10-30: 7 tabs ran off the bottom).
+    tab_list = scroller("List", U(1, -6, 1, -12), U(0, 3, 0, 6), [vlist(8), padding(3, 3, 3, 3), tab])
+    tab_list["properties"].update(ScrollBarThickness=5, VerticalScrollBarInset="ScrollBar")
     tabs = plate("Tabs", U(0, SHOP_TABS_W, 1, -88), U(0, 12, 0, 76), tint="#E3E7EF", stroke=3, children=[
-        frame("List", U(1, -12, 1, -12), U(0, 6, 0, 6), children=[vlist(8), tab]),
+        tab_list,
     ])
     featured = plate("Featured", U(1, 0, 0, 150), tint=BG, LayoutOrder=1, Visible=False, children=[
         node("Banner", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("BannerStarter"), ScaleType="Crop", ZIndex=1)),
