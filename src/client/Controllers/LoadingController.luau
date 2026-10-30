@@ -28,8 +28,8 @@ local TIPS = {
 	"Tip: dump your leaves into the green bins by the market to get cash.",
 	"Tip: carry eggs to the pet park on your base.",
 	"Tip: pets on your base earn cash even while you sweep.",
-	"Tip: buy a car at the Garage and drive it from hotbar slot 2.",
-	"Tip: the Upgrade Station sells Running Shoes, Egg Luck and more.",
+	"Tip: buy a car in Gear and drive it from hotbar slot 2.",
+	"Tip: open Upgrades for Running Shoes, Egg Luck and more.",
 	"Tip: rebirth to earn a permanent cash multiplier.",
 }
 

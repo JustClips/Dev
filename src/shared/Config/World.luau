@@ -11,8 +11,8 @@
 --   z = -488 .. -452  corridor + Gate_DarkSide
 --   z = -452 .. -232  Crater (floor y = -8) (TileSize 5)
 --   z = -232 .. -196  corridor + Gate_Crater
---   z = -196 ..  150  Landing Site dust field, Rocket launch pad at the origin
---   z =  150 ..  198  South plaza: Garage (west) and Upgrade station (east)
+--   z = -196 ..  186  Landing Site dust field, Rocket launch pad at the origin
+--   z =  186 ..  198  South plaza: a paved strip with the big screen (leaves up to it)
 --   bases at x = +-62..150 on both sides of the field, on raised stud platforms
 --
 -- Base local frame: -Z points at the field (the entrance), +X is the base's right.
@@ -20,7 +20,8 @@
 
 local World = {}
 
-World.Field = { Min = Vector2.new(-56, -196), Max = Vector2.new(56, 150) }
+-- Max Z 186 since 2026-10-30: the plaza stalls went and the leaves reach the back wall.
+World.Field = { Min = Vector2.new(-56, -196), Max = Vector2.new(56, 186) }
 World.RocketPosition = Vector3.new(0, 0, 0)
 World.RocketClearRadius = 15
 World.LaunchPadRadius = 14
@@ -52,12 +53,10 @@ function World.nearestDump(position: Vector3): (number, Vector3)
 end
 World.Walkway = 6 -- paved strip between the dust field and the bases
 
--- South plaza (between the field and the hub's south wall).
-World.Plaza = { Min = Vector2.new(-62, 150), Max = Vector2.new(62, 198) }
--- Stations face the field (-Z). Garage cars spawn on its pad and drive north.
-World.Garage = CFrame.lookAt(Vector3.new(-34, 0, 178), Vector3.new(-34, 0, 100))
-World.GarageSpawn = CFrame.lookAt(Vector3.new(-34, 0, 158), Vector3.new(-34, 0, 100))
-World.UpgradeStation = CFrame.lookAt(Vector3.new(34, 0, 178), Vector3.new(34, 0, 100))
+-- South plaza: a paved strip along the hub's south wall with the big screen. The Garage
+-- and Upgrade stalls that stood here were removed on 2026-10-30 (Dev: the HUD buttons do
+-- the same), and the leaves now reach this strip.
+World.Plaza = { Min = Vector2.new(-62, 186), Max = Vector2.new(62, 198) }
 -- Global leaderboards (LeaderboardService): a three-sided tower north of the market hall,
 -- faces in this order: north, south-east, south-west.
 World.LeaderTower = Vector3.new(0, 0, -27)
@@ -66,8 +65,6 @@ World.Leaderboards = {
 	{ Key = "PerSec", Title = "BEST CASH / SEC", Color = Color3.fromRGB(255, 176, 32) },
 	{ Key = "Rebirths", Title = "MOST REBIRTHS", Color = Color3.fromRGB(155, 107, 255) },
 }
--- Event sign-up board in the middle of the plaza, facing the field.
-World.EventBoard = CFrame.lookAt(Vector3.new(0, 0, 170), Vector3.new(0, 0, 100))
 
 World.BaseCount = 8
 World.BaseSize = Vector2.new(92, 88) -- width (local X), depth (local Z)

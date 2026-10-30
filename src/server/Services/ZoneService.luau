@@ -137,12 +137,6 @@ local function teleportCFrame(player: Player, target: string): (CFrame?, string?
 	if target == "Rocket" then
 		return World.Teleports.Rocket, nil
 	end
-	if target == "Garage" then
-		-- A few steps in front of the Garage kiosk, facing it.
-		local kiosk = World.Garage.Position
-		local spot = kiosk + World.Garage.LookVector * 10
-		return CFrame.lookAt(spot, Vector3.new(kiosk.X, spot.Y, kiosk.Z)), nil
-	end
 	local zone = Zones.ById[target]
 	if not zone or not World.Teleports[target] then
 		return nil, nil

@@ -14,7 +14,6 @@ local Net = require(Shared.Net)
 local ToolGrips = require(Shared.Config.ToolGrips)
 local Tools = require(Shared.Config.Tools)
 local Upgrades = require(Shared.Config.Upgrades)
-local World = require(Shared.Config.World)
 local Avatar = require(script.Parent.Parent.Lib.Avatar)
 
 local ToolService = {}
@@ -393,9 +392,8 @@ local function buildVehicle(player: Player, def): Model
 	return model
 end
 
--- Spawns a car you own (best one if id is nil) and seats you in it. atGarage puts it on
--- the Garage spawn pad instead of where you stand.
-local function spawnVehicle(player: Player, id: string?, atGarage: boolean?): (boolean, string?)
+-- Spawns a car you own (best one if id is nil) where you stand and seats you in it.
+local function spawnVehicle(player: Player, id: string?): (boolean, string?)
 	local session = S.DataService:GetSession(player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -405,21 +403,16 @@ local function spawnVehicle(player: Player, id: string?, atGarage: boolean?): (b
 	end
 	local def = if id then Tools.vehicle(id) else ToolService:GetBestVehicle(player)
 	if not def then
-		return false, "Buy a car at the Garage first!"
+		return false, "Buy a car in Gear first!"
 	end
 	if not ToolService:OwnsVehicle(player, def.Id) then
 		return false, `You don't own the {def.Name}`
 	end
 	destroyVehicle(player)
 	local model = buildVehicle(player, def)
-	local spot: CFrame
-	if atGarage then
-		spot = World.GarageSpawn * CFrame.new(0, 3 * def.Scale, 0)
-	else
-		local look = root.CFrame.LookVector * Vector3.new(1, 0, 1)
-		local facing = if look.Magnitude > 0.01 then CFrame.lookAt(Vector3.zero, look.Unit) else CFrame.identity
-		spot = CFrame.new(root.Position + Vector3.new(0, 3 * def.Scale, 0)) * facing
-	end
+	local look = root.CFrame.LookVector * Vector3.new(1, 0, 1)
+	local facing = if look.Magnitude > 0.01 then CFrame.lookAt(Vector3.zero, look.Unit) else CFrame.identity
+	local spot = CFrame.new(root.Position + Vector3.new(0, 3 * def.Scale, 0)) * facing
 	model:PivotTo(spot)
 	local align = (model.PrimaryPart :: BasePart):FindFirstChild("Upright") :: AlignOrientation
 	align.CFrame = spot.Rotation
@@ -430,9 +423,6 @@ local function spawnVehicle(player: Player, id: string?, atGarage: boolean?): (b
 	chassis:SetNetworkOwner(player)
 
 	local seat = model:FindFirstChild("Seat") :: VehicleSeat
-	if atGarage then
-		character:PivotTo(seat.CFrame * CFrame.new(0, 3, 0))
-	end
 	-- The driver's body collides with nothing while seated (Avatar.DriverGroup).
 	local function driverGroup(group: string)
 		for _, d in character:GetDescendants() do
@@ -609,16 +599,14 @@ function ToolService:Init(services)
 			destroyVehicle(player)
 			return true, nil
 		end
-		return spawnVehicle(player, nil, false)
+		return spawnVehicle(player, nil)
 	end)
 	Net.onInvoke("SpawnVehicle", function(player, id)
 		if type(id) ~= "string" then
 			return false, "Unknown car"
 		end
-		-- From the Tools window: on the Garage pad when you're at the Garage, else at your feet.
-		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
-		local atGarage = root ~= nil and (root.Position - World.Garage.Position).Magnitude < 60
-		return spawnVehicle(player, id, atGarage)
+		-- From the Gear window: at your feet.
+		return spawnVehicle(player, id)
 	end)
 	Net.onInvoke("BuyVehicle", buyVehicle)
 	S.BaseService.CharacterReady:Connect(function(player: Player, character: Model)

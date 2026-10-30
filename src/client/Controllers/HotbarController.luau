@@ -1,7 +1,7 @@
 --!strict
 -- Our own hotbar, working like Roblox's backpack (the default one is hidden):
 --   1 = your sweeping tool (equip / put away)
---   2 = your car (spawn under you / put away). With no car it points you to the Garage.
+--   2 = your car (spawn under you / put away). With no car it opens the Cars tab in Gear.
 --   3-8 = pets and egg stacks (one slot per rarity; potions stay in the bag). Something
 --     new goes into the first free slot; when they're all full it goes in the bag. Open
 --     the bag to drag things between the bag and the hotbar, or between slots

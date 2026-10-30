@@ -1,11 +1,10 @@
 --!strict
--- Gear window (screen "Garage"; Dev renamed it from Tools), opened from the Gear button on the right or the Garage
--- kiosk on the south plaza:
+-- Gear window (screen "Garage"; Dev renamed it from Tools), opened from the Gear button on
+-- the right (the plaza Garage stall was removed on 2026-10-30):
 --   Tools tab: the tool ladder. Buy the next tool with cash or skip to it with Robux.
---   Cars tab: every car with its stats, buy with cash, spawn it (at the Garage pad when
---   you're there, else at your feet), unlock/rent with Robux, and Go to Garage.
+--   Cars tab: every car with its stats, buy with cash, spawn it at your feet, unlock/rent
+--   with Robux.
 -- Cars then live in hotbar slot 2.
-local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = script.Parent.Parent
@@ -35,7 +34,6 @@ local template: Frame
 local tabTools: TextButton
 local tabCars: TextButton
 local hint: TextLabel
-local goGarage: TextButton
 local tab = "Tools"
 
 local function toast(ok: boolean, message: string?)
@@ -192,7 +190,6 @@ local function render(keepScroll: boolean?)
 	end
 	tabTools.BackgroundTransparency = if tab == "Tools" then 0 else 0.45
 	tabCars.BackgroundTransparency = if tab == "Cars" then 0 else 0.45
-	goGarage.Visible = tab == "Cars"
 	if tab == "Tools" then
 		hint.Text = "Better tools sweep wider, faster and hold more leaves."
 		toolRows(data)
@@ -251,7 +248,6 @@ function GarageController:Init(controllers)
 	tabTools = Ui.find(gui, "Window.Tabs.TabTools")
 	tabCars = Ui.find(gui, "Window.Tabs.TabCars")
 	hint = Ui.find(gui, "Window.Hint")
-	goGarage = Ui.find(gui, "Window.GoGarage")
 end
 
 function GarageController:Start()
@@ -268,19 +264,6 @@ function GarageController:Start()
 	Ui.button(tabCars, function()
 		tab = "Cars"
 		render()
-	end)
-	Ui.button(goGarage, function()
-		local ok, message = Net.func("Teleport"):InvokeServer("Garage")
-		if ok then
-			Ui.close("Garage")
-		else
-			toast(false, message)
-		end
-	end)
-	ProximityPromptService.PromptTriggered:Connect(function(prompt)
-		if prompt:GetAttribute("Opens") == "Garage" then
-			GarageController:Open("Cars")
-		end
 	end)
 	local lastSignature = ""
 	State.Changed:Connect(function(data)

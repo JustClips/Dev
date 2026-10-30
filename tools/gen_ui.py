@@ -1302,10 +1302,8 @@ def garage():
         node("Layout", "UIGridLayout", {"CellSize": U(0, 182, 0, 282), "CellPadding": U(0, 10, 0, 10), "SortOrder": "LayoutOrder",
                                         "HorizontalAlignment": "Left"}),
         padding(4, 4, 4, 6), row])
-    hint = text("Hint", "", U(1, -260, 0, 44), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True, xa="Left")
-    go = button("GoGarage", U(0, 230, 0, 48), U(1, -14, 1, -10), (1, 1), color=SUCCESS, label="Go to Garage", ts=20,
-                ico="Base", ico_px=32)
-    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Gear", "Tools", [tabs, lst, hint, go], header="#4C8DFF")],
+    hint = text("Hint", "", U(1, -28, 0, 44), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True, xa="Left")
+    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Gear", "Tools", [tabs, lst, hint], header="#4C8DFF")],
                            order=10, enabled=False))
 
 

@@ -21,7 +21,6 @@ local M = Enum.Material
 local MONTSERRAT = "rbxasset://fonts/families/Montserrat.json"
 local INK = Color3.fromRGB(27, 31, 58)
 local WHITE = Color3.new(1, 1, 1)
-local SURFACE = Color3.fromRGB(233, 238, 247)
 local GOLD = Color3.fromRGB(255, 200, 60)
 
 -- Terrain ------------------------------------------------------------------------
@@ -242,21 +241,6 @@ end
 local function glow(parent: Instance, name: string, size: Vector3, cf: CFrame, color: Color3): BasePart
 	local material = if string.find(name, "Light") then M.Neon else M.SmoothPlastic
 	return block(parent, name, size, cf, color, material, { CanCollide = false, CanQuery = false, CanTouch = false, CastShadow = false })
-end
-
--- The UI's stud texture on a part's top face, so floors match the HUD.
-local function studs(p: BasePart, color: Color3, studsPerTile: number?)
-	local image = AssetLibrary.image("Stud")
-	if image == "" then
-		return
-	end
-	make("Texture", {
-		Texture = image,
-		Face = Enum.NormalId.Top,
-		StudsPerTileU = studsPerTile or 5,
-		StudsPerTileV = studsPerTile or 5,
-		Color3 = color,
-	}, p)
 end
 
 local WOOD = Color3.fromRGB(196, 142, 92)
@@ -600,73 +584,6 @@ function MapBuilder.getBaseSign(index: number): Sign?
 	return baseSigns[index]
 end
 
--- Open carport with a car on display, a kiosk and a spawn pad in front.
-local function garage()
-	local cf = World.Garage
-	local model = make("Model", { Name = "Garage" }, structures)
-	local orange = Color3.fromRGB(255, 154, 60)
-	local floor = block(model, "Floor", Vector3.new(28, 0.6, 22), cf * CFrame.new(0, 0.3, 0), WOOD, M.WoodPlanks)
-	floor.CanCollide = true
-	for _, x in { -13, 13 } do
-		for _, z in { -10, 10 } do
-			block(model, "Pillar", Vector3.new(1.4, 10, 1.4), cf * CFrame.new(x, 5.3, z), SURFACE)
-		end
-	end
-	block(model, "Roof", Vector3.new(30, 1.2, 24), cf * CFrame.new(0, 10.9, 0), orange)
-	glow(model, "RoofTrim", Vector3.new(30.4, 0.4, 0.4), cf * CFrame.new(0, 10.2, -12), WOOD_DARK)
-	local back = block(model, "BackWall", Vector3.new(26, 10, 0.8), cf * CFrame.new(0, 5.3, 10.6), SURFACE)
-	studs(back, SURFACE, 4)
-	local ceiling = glow(model, "CeilingLight", Vector3.new(18, 0.2, 2), cf * CFrame.new(0, 10.2, 0), WHITE)
-	light(ceiling, WHITE, 24, 1.4)
-	sign(model, "GarageSign", cf * CFrame.new(0, 13.6, -11.4), 18, 4.2, orange, "GARAGE", "Buy and spawn cars")
-	-- kiosk with the prompt
-	local kiosk = block(model, "Kiosk", Vector3.new(3, 4, 2), cf * CFrame.new(-9.5, 2.6, -7), SURFACE)
-	glow(model, "KioskScreen", Vector3.new(2.4, 1.6, 0.2), cf * CFrame.new(-9.5, 3.4, -8.05), Color3.fromRGB(76, 141, 255))
-	prompt(kiosk, "Garage", "Open Garage", "Cars")
-	-- spawn pad: neon square outline + floor text
-	local spawn = World.GarageSpawn
-	for _, x in { -7, 7 } do
-		glow(model, "SpawnEdge", Vector3.new(0.4, 0.12, 14), spawn * CFrame.new(x, 0.06, 0), orange)
-	end
-	for _, z in { -7, 7 } do
-		glow(model, "SpawnEdge", Vector3.new(14, 0.12, 0.4), spawn * CFrame.new(0, 0.06, z), orange)
-	end
-	floorText(model, spawn * CFrame.new(0, 0.1, 0) * CFrame.Angles(0, math.rad(180), 0), 12, 3, "CAR SPAWN", orange)
-end
-
--- Upgrade booth: canopy, counter with the prompt, big floating arrow icon.
-local function upgradeStation()
-	local cf = World.UpgradeStation
-	local model = make("Model", { Name = "UpgradeStation" }, structures)
-	local purple = Color3.fromRGB(150, 100, 255)
-	block(model, "Floor", Vector3.new(24, 0.6, 18), cf * CFrame.new(0, 0.3, 0), WOOD, M.WoodPlanks)
-	for _, x in { -11, 11 } do
-		for _, z in { -8, 8 } do
-			block(model, "Pillar", Vector3.new(1.4, 9, 1.4), cf * CFrame.new(x, 4.8, z), SURFACE)
-		end
-	end
-	block(model, "Roof", Vector3.new(26, 1.2, 20), cf * CFrame.new(0, 9.9, 0), purple)
-	glow(model, "RoofTrim", Vector3.new(26.4, 0.4, 0.4), cf * CFrame.new(0, 9.2, -10), GOLD)
-	local counter = block(model, "Counter", Vector3.new(14, 3.4, 3), cf * CFrame.new(0, 2.3, -1), SURFACE)
-	studs(counter, SURFACE, 3)
-	block(model, "CounterTop", Vector3.new(14.6, 0.4, 3.6), cf * CFrame.new(0, 4.2, -1), purple)
-	glow(model, "CounterStrip", Vector3.new(14.2, 0.3, 0.2), cf * CFrame.new(0, 3.4, -2.55), GOLD)
-	prompt(counter, "Upgrades", "Upgrade", "Upgrade Station")
-	local ceiling = glow(model, "CeilingLight", Vector3.new(14, 0.2, 2), cf * CFrame.new(0, 9.2, 0), WHITE)
-	light(ceiling, purple, 24, 1.4)
-	sign(model, "UpgradeSign", cf * CFrame.new(0, 12.6, -9.4), 18, 4.2, GOLD, "UPGRADES", "Backpack, speed, power, luck")
-	-- floating icon over the counter (the client spins it)
-	local holo = block(model, "Hologram", Vector3.new(1, 1, 1), cf * CFrame.new(0, 7, -1), WHITE, nil, {
-		Transparency = 1,
-		CanCollide = false,
-		CanQuery = false,
-		CanTouch = false,
-	})
-	local bb = make("BillboardGui", { Size = UDim2.fromScale(5, 5), LightInfluence = 0, MaxDistance = 160 }, holo)
-	make("ImageLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = AssetLibrary.image("Icon_Upgrade") }, bb)
-	holo:SetAttribute("Bob", true)
-end
-
 -- Big screen on the south wall with the game logo.
 local function plazaScreen()
 	local model = make("Model", { Name = "PlazaScreen" }, structures)
@@ -834,8 +751,6 @@ function MapBuilder.buildStructures()
 	leafDumps()
 	fieldEdges()
 	corridorRamps()
-	garage()
-	upgradeStation()
 	plazaScreen()
 	leaderboards()
 	for i = 1, World.BaseCount do
@@ -1065,15 +980,13 @@ function MapBuilder.buildProps()
 		place("Lamp", CFrame.new(f.Min.X - 1.5, 0, z) * yaw(90))
 		place("Lamp", CFrame.new(f.Max.X + 1.5, 0, z) * yaw(-90))
 	end
-	place("Flag", CFrame.new(-10, 0, 186) * yaw(20))
-	place("Flag", CFrame.new(10, 0, 186) * yaw(-20))
+	place("Flag", CFrame.new(-20, 0, 192) * yaw(20))
+	place("Flag", CFrame.new(20, 0, 192) * yaw(-20))
 	-- Windmills face the hub (front = -Z, sails on that side), and their sails turn.
 	for i, x in { -56, 56 } do
 		local pos = Vector3.new(x, 0, 194)
 		spinSails(place("Satellite", CFrame.lookAt(pos, Vector3.new(0, 0, 0)), 2.8), 0.4 + 0.08 * i)
 	end
-	-- a car on display in the garage
-	place("Vehicle_SweeperCart", World.Garage * CFrame.new(3, 0.6, 2) * yaw(-25))
 	-- zone gates (sign faces the hub)
 	for _, c in World.Corridors do
 		place("ZoneGate", CFrame.new(0, math.max(c.FromY, c.ToY), c.GateZ) * yaw(180))
