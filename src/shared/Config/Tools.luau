@@ -43,6 +43,16 @@ function Tools.get(tier: number): ToolDef
 	return List[math.clamp(tier, 1, #List)]
 end
 
+-- Tutorial (Dev, 2026-10-30: you could get stuck on "buy a better tool" without enough
+-- cash): until the tutorial is done, its first tool and first Sweep Power level cost at
+-- most the cash you have, so you can always continue. cash is a plain number here.
+function Tools.tutorialPrice(price: number, cash: number, tutorialDone: boolean): number
+	if tutorialDone then
+		return price
+	end
+	return math.max(0, math.min(price, math.floor(cash)))
+end
+
 function Tools.vehicle(id: string): VehicleDef?
 	return Tools.VehicleById[id]
 end

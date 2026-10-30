@@ -1199,7 +1199,8 @@ def settings():
                ico_px=32),
         text("Track", "", U(1, -28, 0, 22), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True),
     ]
-    write("Settings", screen([dim(), window(520, 350, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
+    # 370 tall so "Now playing" has its own line under the buttons.
+    write("Settings", screen([dim(), window(520, 370, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Group reward
@@ -1460,6 +1461,11 @@ def loading():
             ]),
             text("Status", "Loading...", U(1, 0, 0, 28), U(0.5, 0, 0, 380), (0.5, 0), ts=20, heavy=True, stroke=2.5),
             text("Tip", "", U(1, 0, 0, 44), U(0.5, 0, 0, 418), (0.5, 0), ts=16, color="#C8D0E8", heavy=True),
+        ]),
+        # Skip (LoadingController shows it after a moment): drops you in right away.
+        frame("SkipHolder", U(0, 200, 0, 70), U(1, -24, 1, -24), (1, 1), children=[
+            autoscale(),
+            button("Skip", U(1, 0, 1, 0), color=SUCCESS, label="Skip", ts=28, Visible=False, ZIndex=5),
         ]),
     ])
     tree = screen([root], order=100, enabled=False, inset=True)

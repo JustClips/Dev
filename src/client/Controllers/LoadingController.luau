@@ -3,6 +3,9 @@
 -- until the game is ready: the place has loaded, the terrain and map are built, the
 -- 3D models are in ReplicatedStorage.Assets, every UI image is downloaded, and our
 -- player data and character have arrived. Gives up after TIMEOUT so nobody is stuck.
+-- Dev (2026-10-30): it took too long. Models and props get MODELS_MAX / PROPS_MAX at most
+-- (they keep streaming in behind the game), UI images preload in the background after the
+-- screen is gone, and a Skip button shows after SKIP_AFTER seconds.
 local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -16,7 +19,10 @@ local State = require(Client.State)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Assets = require(Shared.Config.Assets)
 
-local TIMEOUT = 45
+local TIMEOUT = 25
+local MODELS_MAX = 6
+local PROPS_MAX = 4
+local SKIP_AFTER = 2
 local TIPS = {
 	"Tip: bigger tools sweep wider and hold more leaves.",
 	"Tip: dump your leaves into the green bins by the market to get cash.",
@@ -97,7 +103,9 @@ local function preloadImages(deadline: number, from: number, to: number)
 			ContentProvider:PreloadAsync(slice)
 		end)
 		loaded += #slice
-		setProgress(from + (to - from) * loaded / total, `Loading images ({loaded}/{total})`)
+		if not done then
+			setProgress(from + (to - from) * loaded / total, `Loading images ({loaded}/{total})`)
+		end
 	end
 end
 
@@ -139,7 +147,8 @@ local function run()
 
 	setProgress(0.2, "Loading 3D models...")
 	local wanted = modelCount()
-	while os.clock() < deadline do
+	local modelsBy = math.min(deadline, os.clock() + MODELS_MAX)
+	while os.clock() < modelsBy do
 		local f = assetsFolder()
 		if f and f:GetAttribute("Ready") == true then
 			break
@@ -154,9 +163,10 @@ local function run()
 	setProgress(0.5, "Placing rocks, bases and gates...")
 	waitFor(function()
 		return Workspace:GetAttribute("PropsReady") == true
-	end, deadline)
+	end, math.min(deadline, os.clock() + PROPS_MAX))
 
-	preloadImages(deadline, 0.55, 0.85)
+	-- UI images download in the background (buttons may pop in for a second).
+	task.spawn(preloadImages, os.clock() + 60, 0.55, 0.85)
 
 	setProgress(0.88, "Loading your save...")
 	-- If the save is still held by the player's last server, the server says how long until
@@ -184,10 +194,29 @@ local function run()
 		return character ~= nil and character:FindFirstChild("HumanoidRootPart") ~= nil
 	end, deadline)
 
+	if done then
+		return -- skipped
+	end
 	setProgress(1, "Ready!")
-	task.wait(0.35)
+	task.wait(0.2)
 	done = true
 	fadeOut()
+end
+
+-- Skip: shows after SKIP_AFTER seconds and drops you into the game right away.
+local function offerSkip()
+	task.wait(SKIP_AFTER)
+	local skip = find("Root.SkipHolder.Skip") :: GuiButton?
+	if done or not skip then
+		return
+	end
+	skip.Visible = true
+	skip.Activated:Once(function()
+		if not done then
+			done = true
+			fadeOut()
+		end
+	end)
 end
 
 local function cycleTips()
@@ -223,6 +252,7 @@ function LoadingController:Start()
 		return
 	end
 	task.spawn(cycleTips)
+	task.spawn(offerSkip)
 	local ok, err = pcall(run)
 	if not ok then
 		warn("loading screen:", err)

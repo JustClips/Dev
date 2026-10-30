@@ -565,8 +565,11 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 	-- The model's name ends in "Sign" so it stays visible under every skin.
 	local skinSign = make("Model", { Name = "SkinSign" }, model)
 	local at = cf * CFrame.new(World.Base.SkinSign)
-	for _, x in { -2.6, 2.6 } do
-		block(skinSign, "Post", Vector3.new(0.6, 4.4, 0.6), at * CFrame.new(x, 2.2, 0.1), WOOD_DARK, M.Wood)
+	-- Two slim posts behind the board, from the floor up to its top edge, on small feet
+	-- (Dev: posts poking out under the board looked odd).
+	for _, x in { -2.4, 2.4 } do
+		block(skinSign, "Post", Vector3.new(0.5, 7.1, 0.5), at * CFrame.new(x, 3.55, 0.65), WOOD_DARK, M.Wood)
+		block(skinSign, "Foot", Vector3.new(1.1, 0.3, 1.1), at * CFrame.new(x, 0.15, 0.65), WOOD_DARK, M.Wood)
 	end
 	local board = sign(skinSign, "BoardSign", at * CFrame.new(0, 5.6, 0), 7, 3, color, "CHANGE BASE", "Try on base skins").Board
 	prompt(board, "BasePicker", "Change Base", "Base Skins")
@@ -793,10 +796,12 @@ local function leaderboards()
 		Material = M.SmoothPlastic,
 	}, model)
 	light(cap, GOLD, 24, 1.2)
+	block(model, "Pole", Vector3.new(0.6, 6, 0.6), base * CFrame.new(0, 20.2, 0), GOLD, M.SmoothPlastic)
 	local top = make("BillboardGui", {
 		Name = "TopLabel",
-		Size = UDim2.fromScale(16, 7),
-		StudsOffsetWorldSpace = Vector3.new(0, 5, 0),
+		-- Well above the boards so it never covers their headers from below (Dev).
+		Size = UDim2.fromScale(14, 6),
+		StudsOffsetWorldSpace = Vector3.new(0, 11, 0),
 		LightInfluence = 0,
 		MaxDistance = 600,
 	}, cap)

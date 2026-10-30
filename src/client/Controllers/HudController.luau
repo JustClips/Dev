@@ -209,6 +209,31 @@ local function setToggle(button: GuiButton, owned: boolean, on: boolean)
 	button.BackgroundColor3 = if on then Color3.fromRGB(30, 120, 70) else NAVY
 end
 
+-- New players see the left rail fill in as the tutorial goes (Dev, 2026-10-30: too many
+-- buttons at once on phones). Shop is always there; Index after the first pet, Upgrades
+-- at the step that uses it, Rebirth / Daily / Gifts once the tutorial is done.
+local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10 }
+local function revealRail(data)
+	local step = STEP_ORDER[data.TutorialStep] or 99
+	local done = step == 99 or data.Rebirths > 0
+	local show = {
+		IndexButton = step >= 7,
+		UpgradesButton = step >= 10,
+		RebirthButton = done,
+		RewardsButton = done,
+		GiftsButton = done,
+	}
+	local changed = false
+	for name, visible in show do
+		local button = el.Rail:FindFirstChild(name) :: GuiObject?
+		if button and button.Visible ~= visible then
+			button.Visible = visible
+			changed = true
+		end
+	end
+	return changed
+end
+
 -- One line telling new players what to do next (server-confirmed tutorial steps).
 local function render(data)
 	el.Cash.Text = Format.cash(data.Cash)
@@ -224,6 +249,7 @@ local function render(data)
 
 	setToggle(el.AutoButton, data.Gamepasses.AutoSweep == true, data.AutoSweep)
 	setToggle(el.AutoSellButton, data.Gamepasses.SellAnywhere == true, data.AutoSell)
+	revealRail(data)
 
 	if el.ZonePicker.Visible then
 		renderZones(data)

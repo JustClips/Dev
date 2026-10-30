@@ -229,7 +229,9 @@ local function showCard(info)
 	local weight = info.Weight or petRarityKg
 	local mult = Weights.incomeMult(info.Rarity, info.Weight)
 	local class = Weights.classFor(mult)
-	rarityLabel.Text = string.upper((if info.Huge then "Huge " else "") .. info.Rarity)
+	-- Any egg can hatch any rarity: a pet above its egg gets a LUCKY! tag.
+	local lucky = info.EggRarity and Eggs.order(info.Rarity) > Eggs.order(info.EggRarity)
+	rarityLabel.Text = (if lucky then "LUCKY! " else "") .. string.upper((if info.Huge then "Huge " else "") .. info.Rarity)
 	rarityLabel.TextColor3 = rarity.Color
 	nameLabel.Text = "Hatched " .. (if info.Huge then "HUGE " else "") .. AlienModel.displayName(info.AlienId, info.Mutation) .. "!"
 	nameLabel.TextColor3 = rarity.Color
@@ -717,7 +719,7 @@ local function play(info)
 	end
 	if climbText then
 		local label = climbText :: TextLabel
-		label.Text = string.upper(rarity.Name) .. "!"
+		label.Text = (if order > Eggs.order(eggRarity) then "LUCKY " else "") .. string.upper(rarity.Name) .. "!"
 		label.TextColor3 = rarity.Color
 		label.TextTransparency = 0
 	end

@@ -5,8 +5,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
+local Tools = require(Shared.Config.Tools)
 local Upgrades = require(Shared.Config.Upgrades)
 
 local UpgradeService = {}
@@ -52,6 +54,9 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 			break
 		end
 		local cost = Upgrades.cost(def, level)
+		if def.Id == "Power" and level == 0 then
+			cost = Tools.tutorialPrice(cost, BigNum.toNumber(data.Cash), data.Flags.TutorialDone == true)
+		end
 		if not S.BackpackService:TrySpend(player, cost, "Upgrade_" .. def.Id, bought > 0) then
 			if bought == 0 then
 				return false, `Need {Format.cash(cost)}`
