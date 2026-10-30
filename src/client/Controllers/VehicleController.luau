@@ -137,6 +137,9 @@ rayParams.CollisionGroup = "Vehicles" -- skips players and other cars like the c
 
 local lean = 0
 local smoothUp = Vector3.yAxis
+local stuckTime = 0
+local UNSTICK_AFTER = 0.8 -- seconds of throttle without moving
+local UNSTICK_HOP = 3 -- studs up
 -- Corner order matters for the slope: 1 back-left, 2 back-right, 3 front-left, 4 front-right
 -- (x, z in half-sizes; -z is the front).
 local CORNERS = { Vector2.new(-0.8, 0.8), Vector2.new(0.8, 0.8), Vector2.new(-0.8, -0.8), Vector2.new(0.8, -0.8) }
@@ -290,8 +293,11 @@ local function drive(dt: number)
 		else
 			forward = moveToward(forward, 0, accel * COAST * dt)
 		end
-		-- Gravity along the slope: rolls you downhill and slows you uphill.
-		forward -= Workspace.Gravity * SLOPE_PULL * look.Y * dt
+		-- Gravity along the slope rolls you downhill. Uphill only when you let go: with
+		-- throttle the engine wins (Dev, 2026-10-30: the truck couldn't climb a ramp).
+		if look.Y < 0 or throttleIn == 0 then
+			forward -= Workspace.Gravity * SLOPE_PULL * look.Y * dt
+		end
 		forward = math.clamp(forward, -maxSpeed * DOWNHILL_MAX, maxSpeed * DOWNHILL_MAX)
 		side *= math.exp(-GRIP * dt)
 		-- Ride height: a small spring correction on top of following the slope.
@@ -300,6 +306,21 @@ local function drive(dt: number)
 		chassis.AssemblyLinearVelocity = look * forward + right * side + Vector3.new(0, lift, 0)
 	end
 	-- Airborne: the engine's gravity and momentum carry the car; only the heading changes.
+
+	-- Never stuck (Dev, 2026-10-30): pressing throttle but not moving for a moment (caught
+	-- on an edge, wedged on a slope) hops the car up and a little ahead.
+	local moving = math.abs(velocity:Dot(heading.LookVector))
+	if math.abs(throttleIn) > 0.5 and moving < 3 then
+		stuckTime += dt
+	else
+		stuckTime = 0
+	end
+	if stuckTime > UNSTICK_AFTER then
+		stuckTime = 0
+		local flat = heading.LookVector * math.sign(throttleIn)
+		chassis.CFrame = CFrame.new(Vector3.new(0, UNSTICK_HOP, 0) + flat * 2) * chassis.CFrame
+		chassis.AssemblyLinearVelocity = flat * maxSpeed * 0.3
+	end
 
 	-- Body: follows the ground's slope and leans out of corners.
 	local targetLean = if grounded then steerIn * direction * speedFrac * LEAN else 0
