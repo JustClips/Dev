@@ -14,6 +14,7 @@ local ORDER = {
 	"CoinController",
 	"DropController",
 	"MerchantController",
+	"ChatController",
 	"BackpackController",
 	"HoldPoseController",
 	"SweepController",

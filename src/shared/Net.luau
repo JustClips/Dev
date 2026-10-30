@@ -15,6 +15,7 @@ local EVENTS: { [string]: number } = {
 	PlayerState = 0, -- server -> owner: full PlayerSnapshot
 	Notify = 0, -- server -> one: short toast
 	Announce = 0, -- server -> all: server-wide message
+	ChatHatch = 0, -- server -> all: a rare hatch line for the chat window (text, rarity)
 	HatchCompleted = 0, -- server -> owner: cutscene payload
 	HatchShown = 0, -- server -> everyone else: a short version of someone's hatch at their base
 	WelcomeBack = 0, -- server -> owner: offline income payload

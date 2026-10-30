@@ -293,19 +293,8 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 			end
 		end
 	end
-	-- 3+ tiers above the egg: the whole server hears about it, the hatcher included.
-	local jackpot = Eggs.order(def.Rarity) - Eggs.order(entry.Rarity) >= 3
-	if jackpot then
-		Net.fireAll("Announce", `{player.DisplayName} hatched a {string.upper(def.Rarity)} {def.Name} from a {entry.Rarity} egg!`, "Hatch")
-	elseif huge or mutation or Eggs.order(def.Rarity) >= Eggs.order("Mythic") then
-		local label = (if huge then "HUGE " else "") .. (if mutation then Eggs.MutationByName[mutation].Label .. " " else "")
-		-- Everyone else hears about it; the hatcher already sees their own reveal.
-		for _, other in Players:GetPlayers() do
-			if other ~= player then
-				Net.fire("Announce", other, `{player.DisplayName} hatched a {label}{def.Name} ({def.Rarity})!`, "Hatch")
-			end
-		end
-	end
+	-- Rare hatches go to chat (this server, or every server when very rare), Sol's RNG
+	-- style. The on-screen "X hatched" strip was removed (Dev, 2026-10-30: annoying).
 	if not quiet then
 		S.HatchFeedService:Report(player, def, entry.Rarity, huge, mutation)
 	end
