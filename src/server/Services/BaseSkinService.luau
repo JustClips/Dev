@@ -108,6 +108,20 @@ local ACTIONS: { [string]: (Player, string) -> (boolean, string) } = {
 	end,
 }
 
+-- Admin gift: owns and equips a skin, requirements or not.
+function BaseSkinService:Grant(player: Player, skinId: string): boolean
+	local data = S.DataService:GetData(player)
+	if not data or not BaseSkins.ById[skinId] then
+		return false
+	end
+	local skins = skinData(data)
+	skins.Owned[skinId] = true
+	skins.Equipped = skinId
+	refresh(player)
+	S.StateService:Mark(player)
+	return true
+end
+
 function BaseSkinService:Init(services)
 	S = services
 	Net.onInvoke("BaseSkin", function(player, action: any, skinId: any)

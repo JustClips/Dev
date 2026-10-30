@@ -55,6 +55,8 @@ type Item = {
 	Tag: string?,
 	-- small square button on the right instead of the gift button (base skin Preview)
 	Alt: { Icon: string, Color: Color3, OnClick: () -> () }?,
+	-- requirement checkboxes instead of Desc: rows of { Ok, Text } (base skins)
+	Checks: { { { Ok: boolean, Text: string } } }?,
 }
 
 type Section = {
@@ -300,10 +302,6 @@ local function skinAction(action: string, id: string): boolean
 	return ok == true
 end
 
-local function mark(ok: boolean): string
-	return if ok then "✓" else "✗"
-end
-
 local function baseItems(data): { Item }
 	local items: { Item } = {}
 	local skins = data.BaseSkins or { Owned = { Classic = true }, Equipped = BaseSkins.Default }
@@ -314,6 +312,7 @@ local function baseItems(data): { Item }
 		local p = BaseSkins.progress(def, data.Rebirths, data.Index or {}, rarityOf)
 		local req = def.Requires
 		local desc = def.Desc
+		local checks: { { { Ok: boolean, Text: string } } }? = nil
 		if not owned then
 			local missing = {}
 			for _, petId in req.Pets do
@@ -324,8 +323,15 @@ local function baseItems(data): { Item }
 			if req.AnyCosmic and not p.HasCosmic then
 				table.insert(missing, "any Cosmic")
 			end
-			desc = `{mark(p.Rebirths >= req.Rebirths)} Rebirth {math.min(p.Rebirths, req.Rebirths)}/{req.Rebirths}   {mark(p.IndexCount >= req.IndexCount)} Index {math.min(p.IndexCount, req.IndexCount)}/{req.IndexCount}\n`
-				.. (if #missing == 0 then "✓ All pets found" else `✗ Find: {table.concat(missing, ", ")}`)
+			checks = {
+				{
+					{ Ok = p.Rebirths >= req.Rebirths, Text = `Rebirth {math.min(p.Rebirths, req.Rebirths)}/{req.Rebirths}` },
+					{ Ok = p.IndexCount >= req.IndexCount, Text = `Index {math.min(p.IndexCount, req.IndexCount)}/{req.IndexCount}` },
+				},
+				{
+					{ Ok = #missing == 0, Text = if #missing == 0 then "All pets found" else `Find: {table.concat(missing, ", ")}` },
+				},
+			}
 		end
 		local item: Item = {
 			Name = def.Name,
@@ -334,6 +340,7 @@ local function baseItems(data): { Item }
 			Color = GREY,
 			Enabled = true,
 			Icon = def.Image or "Icon_Base",
+			Checks = checks,
 		}
 		if equipped then
 			item.Price = "Equipped"
@@ -487,6 +494,115 @@ local function setPrice(buy: GuiButton, price: string, color: Color3)
 	end
 end
 
+-- Requirement checkboxes in place of the Desc text: a square box per requirement, green
+-- with a white check when it's met, empty when not (Dev, 2026-10-30).
+local CHECK_FONT = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+
+local function checkLabel(text: string, fixedWidth: number?): TextLabel
+	local label = Instance.new("TextLabel")
+	label.Name = "Label"
+	label.BackgroundTransparency = 1
+	label.FontFace = CHECK_FONT
+	label.Text = text
+	label.TextColor3 = Color3.fromRGB(241, 244, 250)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.LayoutOrder = 2
+	label.ZIndex = 4
+	if fixedWidth then
+		label.Size = UDim2.new(0, fixedWidth, 1, 0)
+		label.TextScaled = true
+		local fit = Instance.new("UITextSizeConstraint")
+		fit.MaxTextSize = 13
+		fit.MinTextSize = 7
+		fit.Parent = label
+	else
+		label.Size = UDim2.new(0, 0, 1, 0)
+		label.AutomaticSize = Enum.AutomaticSize.X
+		label.TextSize = 13
+	end
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = INK
+	stroke.Thickness = 1.5
+	stroke.Parent = label
+	return label
+end
+
+local function checkBox(ok: boolean): Frame
+	local box = Instance.new("Frame")
+	box.Name = "Box"
+	box.Size = UDim2.fromOffset(14, 14)
+	box.BackgroundColor3 = if ok then GREEN else WHITE
+	box.LayoutOrder = 1
+	box.ZIndex = 4
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = INK
+	stroke.Thickness = 2
+	stroke.Parent = box
+	if ok then
+		local tick = Instance.new("TextLabel")
+		tick.BackgroundTransparency = 1
+		tick.Size = UDim2.fromScale(1, 1)
+		tick.FontFace = CHECK_FONT
+		tick.Text = "✓"
+		tick.TextScaled = true
+		tick.TextColor3 = WHITE
+		tick.ZIndex = 5
+		tick.Parent = box
+	end
+	return box
+end
+
+local function addChecks(card: Frame, rows: { { { Ok: boolean, Text: string } } })
+	local desc = Ui.find(card, "Desc") :: TextLabel
+	desc.Text = ""
+	local holder = Instance.new("Frame")
+	holder.Name = "Checks"
+	holder.BackgroundTransparency = 1
+	holder.AnchorPoint = desc.AnchorPoint
+	holder.Position = desc.Position
+	holder.Size = UDim2.new(desc.Size.X.Scale, desc.Size.X.Offset, 0, 36)
+	holder.ZIndex = 4
+	local layout = Instance.new("UIListLayout")
+	layout.Padding = UDim.new(0, 4)
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Parent = holder
+	for r, row in rows do
+		local line = Instance.new("Frame")
+		line.Name = "Row"
+		line.BackgroundTransparency = 1
+		line.Size = UDim2.new(1, 0, 0, 16)
+		line.LayoutOrder = r
+		local rowLayout = Instance.new("UIListLayout")
+		rowLayout.FillDirection = Enum.FillDirection.Horizontal
+		rowLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+		rowLayout.Padding = UDim.new(0, 10)
+		rowLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		rowLayout.Parent = line
+		for i, check in row do
+			local cell = Instance.new("Frame")
+			cell.Name = "Check"
+			cell.BackgroundTransparency = 1
+			cell.Size = UDim2.new(0, 0, 1, 0)
+			cell.AutomaticSize = Enum.AutomaticSize.X
+			cell.LayoutOrder = i
+			local cellLayout = Instance.new("UIListLayout")
+			cellLayout.FillDirection = Enum.FillDirection.Horizontal
+			cellLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			cellLayout.Padding = UDim.new(0, 5)
+			cellLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			cellLayout.Parent = cell
+			checkBox(check.Ok).Parent = cell
+			-- A lone check (the pet list) gets the row's width and shrinks long text.
+			checkLabel(check.Text, if #row == 1 then 150 else nil).Parent = cell
+			cell.Parent = line
+		end
+		line.Parent = holder
+	end
+	holder.Parent = card
+end
+
 local function buildCard(item: Item, order: number, color: Color3): Frame
 	local card = cardTemplate:Clone()
 	card.Name = "Card"
@@ -496,6 +612,9 @@ local function buildCard(item: Item, order: number, color: Color3): Frame
 	tint(card, if item.Enabled then color else GREY)
 	Ui.find(card, "Name").Text = item.Name
 	Ui.find(card, "Desc").Text = item.Desc
+	if item.Checks then
+		addChecks(card, item.Checks)
+	end
 	Ui.find(card, "Icon").Image = AssetLibrary.image(item.Icon or "Icon_Shop")
 	local tag = Ui.find(card, "Tag") :: Frame
 	tag.Visible = item.Tag ~= nil

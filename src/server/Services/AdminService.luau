@@ -29,6 +29,7 @@ local TextService = game:GetService("TextService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Admin = require(Shared.Config.Admin)
 local Aliens = require(Shared.Config.Aliens)
+local BaseSkins = require(Shared.Config.BaseSkins)
 local BigNum = require(Shared.BigNum)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
@@ -205,6 +206,14 @@ local function prepareGift(p: any): (string?, ((Player) -> ())?)
 		end
 		return `the {car.Name}`, function(target)
 			S.ToolService:GrantVehicle(target, car.Id)
+		end
+	elseif kind == "BaseSkin" then
+		local skin = type(p.Id) == "string" and BaseSkins.ById[p.Id]
+		if not skin then
+			return "Pick a base", nil
+		end
+		return `the {skin.Name} base`, function(target)
+			S.BaseSkinService:Grant(target, skin.Id)
 		end
 	elseif kind == "Boost" then
 		if type(p.Id) ~= "string" or not table.find(Admin.Boosts, p.Id) then

@@ -30,6 +30,7 @@ local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
+local BaseSkins = require(Shared.Config.BaseSkins)
 local Tools = require(Shared.Config.Tools)
 local Weather = require(Shared.Config.Weather)
 
@@ -678,6 +679,19 @@ local function buildGive()
 			return { Kind = "Vehicle", Id = state.value }
 		end)
 	end
+	builders.BaseSkin = function(body)
+		local list: { Choice } = {}
+		for _, def in BaseSkins.List do
+			if def.Id ~= BaseSkins.Default then
+				table.insert(list, { label = def.Name, value = def.Id })
+			end
+		end
+		local pick, state = chips(body, list, Vector2.new(160, 38))
+		pick(list[1] and list[1].value)
+		giveButton(body, function()
+			return { Kind = "BaseSkin", Id = state.value }
+		end)
+	end
 	builders.Boost = function(body)
 		local list: { Choice } = {}
 		local names = { Luck2x = "2x Luck", Cash2x = "2x Cash", Speed = "Speed" }
@@ -701,6 +715,7 @@ local function buildGive()
 		{ label = "Potions", value = "Item" },
 		{ label = "Tools", value = "Tool" },
 		{ label = "Cars", value = "Vehicle" },
+		{ label = "Bases", value = "BaseSkin" },
 		{ label = "Boosts", value = "Boost" },
 	}
 	local pickKind = chips(kindBody, kinds, Vector2.new(86, 40), function(kind)
