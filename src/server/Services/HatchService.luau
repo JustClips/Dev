@@ -274,6 +274,9 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 		end
 	end
 	S.OfferService:OnHatch(player)
+	if not quiet and (huge or mutation or Eggs.order(def.Rarity) >= Eggs.order("Rare")) then
+		S.FavoriteService:Moment(player)
+	end
 	return true, nil
 end
 

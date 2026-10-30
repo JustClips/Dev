@@ -36,6 +36,8 @@ local EVENTS: { [string]: number } = {
 	Broadcast = 0, -- server -> all: admin announcement { Text, From, Seconds }
 	Poll = 0, -- server -> all: the running admin poll (or nil when it's gone)
 	PollVote = 4, -- client: (option index) vote in the running poll
+	AskFavorite = 0, -- server -> owner: a high moment (rare hatch, rebirth): ask to favorite the game
+	FavoriteDone = 2, -- client: (result) the favorite prompt was answered, or the game is already a favorite
 }
 
 local FUNCTIONS: { [string]: number } = {

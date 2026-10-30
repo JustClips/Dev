@@ -53,6 +53,7 @@ local TEMPLATE: Types.ProfileData = {
 		FreeSkips = 0,
 		GroupRewardClaimed = false,
 		EventSignups = {},
+		FavoriteAsked = false, -- the favorite-the-game prompt was answered once; never ask again
 	},
 	Stats = { EggsFound = 0, Hatches = 0, Playtime = 0, TilesCleared = 0, Sells = 0 },
 	Settings = { AutoSweep = true, AutoSell = true, Music = 0.6, Sfx = 0.8 },

@@ -39,6 +39,7 @@ local ORDER = {
 	"CodesController",
 	"RebirthController",
 	"OfferController",
+	"FavoriteController",
 	"FollowerController",
 	"VehicleController",
 	"PetController",

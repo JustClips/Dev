@@ -42,6 +42,7 @@ function RebirthService:DoRebirth(player: Player, paid: boolean): (boolean, stri
 	S.StateService:Mark(player)
 	local bonus = math.floor(data.Rebirths * Economy.RebirthCashBonus * 100)
 	Net.fireAll("Announce", `{player.DisplayName} reached Rebirth {data.Rebirths}!`, "Rebirth")
+	S.FavoriteService:Moment(player)
 	return true, `Rebirth {data.Rebirths}! Permanent +{bonus}% cash.`
 end
 
