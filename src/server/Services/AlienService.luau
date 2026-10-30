@@ -292,6 +292,7 @@ function AlienService:Start()
 				if base > 0 then
 					local amount = base * S.BoostService:GetCashMultiplier(player) * Economy.IncomeTickSeconds
 					session.Data.Cash = BigNum.add(session.Data.Cash, amount)
+					S.LeaderboardService:AddEarned(player, amount)
 					S.AnalyticsService:Income(player, amount)
 					S.StateService:Mark(player)
 				end

@@ -728,6 +728,44 @@ local function corridorRamps()
 	end
 end
 
+-- Global leaderboards: three boards in a row in front of the plaza screen, between the
+-- Garage and the Upgrade station, facing the field. LeaderboardService fills the "Rows"
+-- frame of each board's SurfaceGui (board part "Board_<Key>").
+local function leaderboards()
+	local model = make("Model", { Name = "Leaderboards" }, structures)
+	for i, board in World.Leaderboards do
+		local x = (i - 2) * 12
+		local cf = CFrame.lookAt(Vector3.new(x, 0, 186), Vector3.new(x, 0, 0))
+		for _, lx in { -4.4, 4.4 } do
+			block(model, "Leg", Vector3.new(0.8, 1.4, 0.8), cf * CFrame.new(lx, 0.7, 0.2), WOOD_DARK, M.Wood)
+		end
+		local part = block(model, "Board_" .. board.Key, Vector3.new(11, 8.4, 0.6), cf * CFrame.new(0, 5.4, 0), INK)
+		block(part, "Trim", Vector3.new(11.6, 9, 0.4), cf * CFrame.new(0, 5.4, 0.15), WOOD_DARK, M.Wood, { CanCollide = false, CanQuery = false, CanTouch = false })
+		local gui = make("SurfaceGui", {
+			Name = "BoardGui",
+			Face = Enum.NormalId.Front,
+			SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
+			PixelsPerStud = 40,
+			LightInfluence = 0,
+			Brightness = 1.2,
+			MaxDistance = 150,
+		}, part)
+		local header = make("Frame", { Name = "Header", Size = UDim2.new(1, 0, 0, 52), BackgroundColor3 = board.Color, BorderSizePixel = 0 }, gui)
+		local title = make("TextLabel", {
+			Size = UDim2.new(1, -16, 1, -8),
+			Position = UDim2.fromOffset(8, 4),
+			BackgroundTransparency = 1,
+			Text = board.Title,
+			TextScaled = true,
+			TextColor3 = WHITE,
+			FontFace = Font.new(MONTSERRAT, Enum.FontWeight.Heavy),
+		}, header)
+		make("UIStroke", { Color = Color3.new(0, 0, 0), Thickness = 3, Transparency = 0.2 }, title)
+		local rows = make("Frame", { Name = "Rows", Size = UDim2.new(1, -16, 1, -60), Position = UDim2.fromOffset(8, 56), BackgroundTransparency = 1 }, gui)
+		make("UIListLayout", { Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder }, rows)
+	end
+end
+
 -- Everything above, plus base platforms. Needs only images (no models), so it runs at boot.
 function MapBuilder.buildStructures()
 	structures = Instance.new("Folder")
@@ -740,6 +778,7 @@ function MapBuilder.buildStructures()
 	garage()
 	upgradeStation()
 	plazaScreen()
+	leaderboards()
 	for i = 1, World.BaseCount do
 		MapBuilder.buildBaseStructure(i)
 	end

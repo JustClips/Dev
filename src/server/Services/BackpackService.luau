@@ -36,6 +36,7 @@ function BackpackService:GiveCash(player: Player, amount: any, sku: string, tran
 		return
 	end
 	data.Cash = BigNum.add(data.Cash, amount)
+	S.LeaderboardService:AddEarned(player, amount)
 	S.AnalyticsService:Source(player, BigNum.toNumber(amount), transactionType or Enum.AnalyticsEconomyTransactionType.Gameplay, sku)
 	S.StateService:Mark(player)
 	-- Big one-off gains get the "you got" popup; selling and offline income have their own.

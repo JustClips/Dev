@@ -44,6 +44,7 @@ local function credit(player: Player, amount: number)
 		return
 	end
 	data.Cash = BigNum.add(data.Cash, amount)
+	S.LeaderboardService:AddEarned(player, amount)
 	S.StateService:Mark(player)
 end
 
