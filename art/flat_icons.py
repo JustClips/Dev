@@ -608,72 +608,211 @@ def _backpack():
     ]
 
 
-@icon("Tool")
-@icon("Tool_Broom")
+# Tools and the Gear button (redrawn 2026-10-30: Dev found the old ones weird). These are drawn upright on a
+# loose canvas, then turned and fitted (FIT), so they can be big and tilted like the ForgeUI icons.
+FIT = set()
+WOOD, STRAW, STRAW_D, MINT, STEEL = "#C98446", "#FFD15C", "#E2A93A", "#8FEBC8", "#C9D3E0"
+
+
+def turn(shapes, deg, cx=256, cy=256):
+    for s in shapes:
+        if s is None or getattr(s, "raw_svg", None):
+            continue
+        old = s.attrs.get("transform", "")
+        s.attrs["transform"] = ("rotate(%s %s %s) %s" % (deg, cx, cy, old)).strip()
+    return [s for s in shapes if s is not None]
+
+
+def fit_icon(name):
+    def deco(fn):
+        ICONS[name] = fn
+        FIT.add(name)
+        return fn
+    return deco
+
+
+def broom_parts(cx=256, top=0, bottom=500):
+    """Upright broom: wooden handle, red band, flared straw head with strand lines."""
+    neck = top + 290
+    return [
+        rect(cx - 28, top, 56, neck + 20 - top, WOOD, r=28),
+        path("M %s %s L %s %s C %s %s %s %s %s %s L %s %s Z" % (
+            cx - 70, neck + 40, cx + 70, neck + 40, cx + 150, bottom - 10, cx + 120, bottom + 6, cx, bottom - 6,
+            cx - 150, bottom - 10), STRAW),
+        stroke_line("M %s %s L %s %s" % (cx - 30, neck + 70, cx - 70, bottom - 26), width=12, color=STRAW_D),
+        stroke_line("M %s %s L %s %s" % (cx + 30, neck + 70, cx + 70, bottom - 26), width=12, color=STRAW_D),
+        stroke_line("M %s %s L %s %s" % (cx, neck + 70, cx, bottom - 30), width=12, color=STRAW_D),
+        rect(cx - 82, neck, 164, 56, RED, r=16),
+        stroke_line("M %s %s L %s %s" % (cx - 60, neck + 28, cx + 60, neck + 28), width=10, color=RED_D),
+        hl(cx - 8, top + 90, 7, 50, rot=0, opacity=0.5),
+        hl(cx - 60, neck + 20, 16, 7, rot=0, opacity=0.6),
+    ]
+
+
+@fit_icon("Tool")
+@fit_icon("Tool_Broom")
 def _broom():
-    return [
-        rect(236, 20, 40, 290, BROWN, r=16, rot=0),
-        path("M 150 300 L 362 300 L 420 470 L 92 470 Z", YELLOW),
-        rect(140, 280, 232, 50, RED, r=14),
-        stroke_line("M 190 360 L 170 460", width=W * 0.55), stroke_line("M 256 360 L 256 460", width=W * 0.55),
-        stroke_line("M 322 360 L 342 460", width=W * 0.55),
-        hl(250, 80, 8, 30, rot=0),
-    ]
+    return turn(broom_parts(), 32)
 
 
-@icon("Tool_Toothbrush")
+@fit_icon("Tool_Toothbrush")
 def _toothbrush():
-    return [
-        rect(60, 230, 330, 60, SKY, r=30, rot=-30),
-        rect(330, 90, 120, 64, WHITE, r=14, rot=-30),
-        rect(340, 140, 100, 34, BLUE, r=10, rot=-30),
-        hl(150, 300, 40, 10, rot=-30),
+    out = [
+        # handle: slim neck, fat grip
+        path("M 236 150 L 276 150 L 286 300 C 300 330 304 360 304 420 C 304 470 282 500 256 500 "
+             "C 230 500 208 470 208 420 C 208 360 212 330 226 300 Z", SKY),
+        rect(222, 340, 68, 110, BLUE, r=30),
+        circle(256, 470, 12, darker(SKY, 0.7), body=False, shade=False, line=False),
+        # head
+        rect(222, 20, 68, 180, SKY, r=30),
     ]
+    # bristle tufts sticking out to the left
+    for i, y in enumerate((36, 76, 116, 156)):
+        out.append(rect(132, y, 100, 34, WHITE if i % 2 == 0 else "#BFE8FF", r=12))
+    out += [
+        # toothpaste swirl on top of the bristles
+        path("M 110 40 C 110 0 170 -10 190 10 C 230 -20 270 10 250 40 C 260 70 220 80 200 66 "
+             "C 170 86 120 80 110 40 Z", MINT),
+        stroke_line("M 140 40 C 170 30 200 50 230 36", width=12, color=WHITE),
+        hl(240, 230, 6, 40, rot=0, opacity=0.6),
+        hl(236, 60, 6, 22, rot=0, opacity=0.6),
+    ]
+    return turn(out, 38)
 
 
-@icon("Tool_Mop")
+@fit_icon("Tool_Mop")
 def _mop():
-    out = [rect(236, 20, 40, 300, BROWN, r=16), rect(160, 300, 192, 56, BLUE, r=18)]
-    for x in (170, 210, 250, 290, 330):
-        out.append(rect(x - 16, 340, 34, 130, WHITE, r=17))
-    out.append(hl(250, 80, 8, 30, rot=0))
+    out = [rect(228, 0, 56, 300, WOOD, r=28)]
+    strands = []
+    for i, (dx, ang) in enumerate(((-88, 20), (-52, 11), (-18, 3), (18, -3), (52, -11), (88, -20))):
+        x = 256 + dx
+        strands.append(rect(x - 22, 300, 44, 190, MINT if i % 2 == 0 else WHITE, r=22, rot=0))
+        strands[-1].attrs["transform"] = "rotate(%s %s %s)" % (ang, x, 300)
+    out += strands
+    out += [
+        rect(170, 268, 172, 70, BLUE, r=22),
+        stroke_line("M 196 303 L 316 303", width=10, color=darker(BLUE, 0.75)),
+        hl(248, 80, 7, 50, rot=0, opacity=0.5),
+        hl(198, 290, 16, 7, rot=0, opacity=0.6),
+    ]
+    out = turn(out, 30)
+    # a water drop and a splash next to the mop head (not turned)
+    out += [
+        path("M 470 300 C 500 350 510 372 510 392 C 510 420 490 438 470 438 C 450 438 430 420 430 392 "
+             "C 430 372 440 350 470 300 Z", SKY),
+        hl(458, 392, 7, 14, rot=20, opacity=0.7),
+    ]
     return out
 
 
-@icon("Tool_LeafBlower")
+def leaf(cx, cy, s, rot, col):
+    d = ("M %s %s C %s %s %s %s %s %s C %s %s %s %s %s %s Z" % (
+        cx, cy - s, cx + s * 0.9, cy - s * 0.6, cx + s * 0.7, cy + s * 0.6, cx, cy + s,
+        cx - s * 0.7, cy + s * 0.6, cx - s * 0.9, cy - s * 0.6, cx, cy - s))
+    sh = path(d, col)
+    sh.attrs["transform"] = "rotate(%s %s %s)" % (rot, cx, cy)
+    vein = stroke_line("M %s %s L %s %s" % (cx, cy - s * 0.6, cx, cy + s * 0.8), width=9, color=darker(col, 0.7))
+    vein.attrs["transform"] = "rotate(%s %s %s)" % (rot, cx, cy)
+    return [sh, vein]
+
+
+@fit_icon("Tool_LeafBlower")
 def _blower():
-    return [
-        rect(250, 210, 240, 76, GREY, r=30, rot=-12),
-        rect(60, 160, 230, 200, ORANGE, r=50),
-        path("M 120 160 C 120 80 250 80 250 160 L 214 160 C 214 120 156 120 156 160 Z", DGREY),
-        circle(170, 262, 50, DGREY, body=False, shade=False),
-        hl(100, 210, 16, 30, rot=20),
+    out = [
+        # top handle loop (behind the body)
+        stroke_line("M 110 220 C 110 90 270 90 270 220", width=W * 3.2),
+        stroke_line("M 110 220 C 110 90 270 90 270 220", width=W * 1.4, color=DGREY),
+        # nozzle tube, angled down to the right
+        rect(260, 250, 170, 74, STEEL, r=30, rot=14),
+        rect(410, 270, 46, 96, DGREY, r=14, rot=14),
+        # motor body
+        rect(40, 190, 280, 210, ORANGE, r=80),
+        rect(40, 330, 280, 70, "#E57A1F", r=34, shade=False),
+        circle(150, 280, 62, DGREY, body=False, shade=False),
+        circle(150, 280, 34, GREY, body=False, shade=False, line=False),
+        stroke_line("M 150 230 L 150 330 M 100 280 L 200 280", width=10, color=DGREY),
+        rect(236, 230, 60, 30, YELLOW, r=10, shade=False),
+        hl(80, 240, 16, 34, rot=20),
     ]
+    # puffs of air and two leaves flying off the nozzle
+    out += [
+        stroke_line("M 470 250 C 490 230 520 230 540 240", width=W * 1.6),
+        stroke_line("M 470 250 C 490 230 520 230 540 240", width=W * 0.6, color=WHITE),
+        stroke_line("M 480 380 C 500 400 520 410 540 410", width=W * 1.6),
+        stroke_line("M 480 380 C 500 400 520 410 540 410", width=W * 0.6, color=WHITE),
+    ]
+    out += leaf(570, 200, 60, 50, ORANGE)
+    out += leaf(580, 400, 54, 120, RED)
+    return out
 
 
-@icon("Tool_ShopVac")
+@fit_icon("Tool_ShopVac")
 def _shopvac():
-    return [
-        stroke_line("M 330 160 C 420 120 470 200 440 300 L 420 430", width=W * 2.4),
-        stroke_line("M 330 160 C 420 120 470 200 440 300 L 420 430", width=W * 1.1, color=DGREY),
-        rect(380, 420, 100, 44, GREY, r=12),
-        rect(70, 170, 280, 280, YELLOW, r=50),
-        rect(60, 130, 300, 70, DGREY, r=24),
-        circle(120, 456, 26, LINE, body=False, shade=False), circle(300, 456, 26, LINE, body=False, shade=False),
-        hl(120, 250, 18, 46, rot=10),
+    hose = "M 330 200 C 420 160 470 230 440 320 C 425 380 430 430 450 450"
+    out = [
+        stroke_line(hose, width=W * 3.4),
+        stroke_line(hose, width=W * 1.6, color=GREY),
+        stroke_line(hose, width=W * 1.6, color=DGREY),
+        rect(410, 440, 110, 56, GREY, r=16),
+        # drum and wheels
+        circle(140, 470, 34, DGREY), circle(320, 470, 34, DGREY),
+        rect(80, 170, 300, 300, YELLOW, r=70),
+        rect(80, 300, 300, 40, GOLD, r=0, shade=False),
+        rect(68, 140, 324, 74, DGREY, r=30),
+        stroke_line("M 180 140 C 180 80 280 80 280 140", width=W * 3),
+        stroke_line("M 180 140 C 180 80 280 80 280 140", width=W * 1.2, color=GREY),
+        circle(230, 390, 42, RED, body=False, shade=False),
+        poly([(240, 362), (212, 396), (232, 396), (222, 422), (252, 386), (232, 386)], YELLOW, body=False, shade=False, line=False),
+        circle(140, 470, 12, GREY, body=False, shade=False, line=False),
+        circle(320, 470, 12, GREY, body=False, shade=False, line=False),
+        hl(124, 240, 18, 46, rot=10),
     ]
+    # ribs on the hose
+    for t in ((385, 176), (438, 222), (452, 280)):
+        out.append(circle(t[0], t[1], 6, LINE, body=False, shade=False, line=False))
+    return out
 
 
-@icon("Tool_TurboVacuum")
+@fit_icon("Tool_TurboVacuum")
 def _turbovac():
-    return [
-        rect(236, 30, 40, 280, DGREY, r=16),
-        rect(200, 150, 112, 170, RED, r=40),
-        rect(100, 310, 312, 100, RED, r=30),
-        rect(90, 390, 332, 40, DGREY, r=16),
-        poly([(270, 190), (230, 250), (262, 250), (240, 300), (292, 230), (258, 230)], YELLOW, shade=False),
-        hl(150, 330, 30, 10, rot=0),
+    out = [
+        # handle with a loop grip
+        stroke_line("M 256 30 L 256 200", width=W * 3),
+        stroke_line("M 256 30 L 256 200", width=W * 1.3, color=DGREY),
+        rect(206, -30, 100, 70, DGREY, r=30),
+        rect(232, -14, 48, 26, LINE, r=13, body=False, shade=False, line=False),
+        # body
+        rect(176, 150, 160, 250, PURPLE, r=60),
+        rect(202, 196, 108, 120, "#CDEBFF", r=30, shade=False),
+        circle(232, 286, 14, ORANGE, body=False, shade=False, line=False),
+        circle(268, 296, 12, LEAF, body=False, shade=False, line=False),
+        circle(250, 266, 10, YELLOW, body=False, shade=False, line=False),
+        hl(222, 220, 8, 20, rot=10, opacity=0.8),
+        # floor head
+        rect(110, 380, 292, 100, PINK, r=36),
+        rect(130, 452, 252, 30, "#46F0FF", r=14, shade=False),
+        poly([(270, 330), (238, 372), (260, 372), (246, 406), (284, 360), (262, 360)], YELLOW, shade=False),
+        hl(150, 404, 24, 9, rot=0),
     ]
+    out = turn(out, 18, 256, 300)
+    for y, x0 in ((190, 40), (270, 10), (350, 40)):
+        out.append(stroke_line("M %s %s L %s %s" % (x0, y, x0 + 80, y), width=W * 1.8))
+        out.append(stroke_line("M %s %s L %s %s" % (x0, y, x0 + 80, y), width=W * 0.7, color=SKY))
+    return out
+
+
+@fit_icon("Gear")
+def _gear():
+    wrench = [
+        rect(228, 120, 56, 360, STEEL, r=28),
+        path("M 231 0 L 231 56 L 281 56 L 281 0 A 76 76 0 1 1 231 0 Z", STEEL),
+        circle(256, 440, 14, DGREY, body=False, shade=False, line=False),
+        hl(244, 220, 6, 50, rot=0, opacity=0.7),
+    ]
+    # the wrench jaw centre sits at y ~ 66; nudge it so both tools cross in the middle
+    for s in wrench:
+        s.attrs["transform"] = "translate(0 30)"
+    return turn(wrench, -38, 256, 256) + turn(broom_parts(top=-10, bottom=500), 38, 256, 256)
 
 
 def vehicle(body, extra):
@@ -788,6 +927,11 @@ def image(name):
                 b = image(badge).resize((230, 230), Image.LANCZOS)
                 im.alpha_composite(b, (SIZE - 250, SIZE - 250))
             return im
+    if name in FIT:
+        svg = render_svg(ICONS[name]()).replace(
+            'width="%d" height="%d" viewBox="0 0 %d %d"' % (SIZE, SIZE, SIZE, SIZE),
+            'width="2048" height="2048" viewBox="-256 -256 1024 1024"', 1)
+        return fit(Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg.encode()))))
     return Image.open(io.BytesIO(cairosvg.svg2png(bytestring=render_svg(ICONS[name]()).encode(),
                                                   output_width=SIZE, output_height=SIZE))).convert("RGBA")
 
