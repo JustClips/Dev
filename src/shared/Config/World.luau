@@ -61,9 +61,9 @@ World.Plaza = { Min = Vector2.new(-62, 186), Max = Vector2.new(62, 198) }
 -- the big screen, facing the field.
 World.LeaderboardZ = 189
 World.Leaderboards = {
-	{ Key = "Earned", Title = "TOTAL CASH EARNED", Color = Color3.fromRGB(47, 191, 85), X = -30 },
-	{ Key = "PerSec", Title = "BEST CASH / SEC", Color = Color3.fromRGB(255, 176, 32), X = 0 },
-	{ Key = "Rebirths", Title = "MOST REBIRTHS", Color = Color3.fromRGB(155, 107, 255), X = 30 },
+	{ Key = "Earned", Title = "TOTAL CASH EARNED", Color = Color3.fromRGB(47, 191, 85), X = -42 },
+	{ Key = "PerSec", Title = "BEST CASH / SEC", Color = Color3.fromRGB(255, 176, 32), X = -24 },
+	{ Key = "Rebirths", Title = "MOST REBIRTHS", Color = Color3.fromRGB(155, 107, 255), X = 24 },
 }
 
 World.BaseCount = 8

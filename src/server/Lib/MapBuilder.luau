@@ -929,8 +929,8 @@ function MapBuilder.buildProps()
 		place("Lamp", CFrame.new(f.Min.X - 1.5, 0, z) * yaw(90))
 		place("Lamp", CFrame.new(f.Max.X + 1.5, 0, z) * yaw(-90))
 	end
-	place("Flag", CFrame.new(-20, 0, 192) * yaw(20))
-	place("Flag", CFrame.new(20, 0, 192) * yaw(-20))
+	place("Flag", CFrame.new(-56, 0, 192) * yaw(20))
+	place("Flag", CFrame.new(56, 0, 192) * yaw(-20))
 	-- Windmills face the hub (front = -Z, sails on that side), and their sails turn.
 	for i, x in { -56, 56 } do
 		local pos = Vector3.new(x, 0, 194)
