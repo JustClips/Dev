@@ -2,9 +2,9 @@
 -- Holding an egg to put it down in your pet park (Steal an Egg style). Hold(uid) asks the
 -- server to put the egg in your hands, then a see-through ghost egg follows the mouse (or
 -- your finger) with a ring that is green where the egg may go and red where it may not
--- (Shared/EggSpots, the same rules the server checks). Click or tap to place it. If you
--- still have eggs and room, the next best egg is in your hands right away. Q, Backspace,
--- Cancel or equipping a tool puts it away.
+-- (Shared/EggSpots, the same rules the server checks). Click or tap to place it; your sweeping
+-- tool goes back in your hands (Dev, 2026-10-30: no more auto-holding the next egg). Q,
+-- Backspace, Cancel or equipping a tool puts it away.
 -- Pets from the bag or hotbar can be held out too (HoldPet): carry it to your base, then
 -- click or tap anywhere to let it out in your park. Put away (Q) puts it back, and the
 -- Pet Trader buys what you hold.
@@ -215,19 +215,6 @@ local function update()
 	ghost:PivotTo(snapped * CFrame.new(0, ghostOffset + 1 + bob, 0))
 end
 
-local function nextEgg(data, skip: { [string]: boolean }): string?
-	local best, bestScore = nil, -math.huge
-	for uid, egg in data.Eggs or {} do
-		if not skip[uid] then
-			local score = Eggs.order(egg.Rarity) * 100 + Weights.eggMult(egg.Rarity, egg.Weight)
-			if score > bestScore then
-				best, bestScore = uid, score
-			end
-		end
-	end
-	return best
-end
-
 function PlacementController:IsHolding(): boolean
 	return holding ~= nil
 end
@@ -377,8 +364,6 @@ function PlacementController:Hold(uid: string)
 	end)
 end
 
-local placedThisRun: { [string]: boolean } = {}
-
 local function place()
 	local uid = holding
 	if not uid or busy then
@@ -396,24 +381,19 @@ local function place()
 		return
 	end
 	Ui.sound("Egg")
-	placedThisRun[uid] = true
 	PlacementController:Stop(true)
-	-- Keep going with the next best egg while there's room.
-	task.delay(0.35, function()
-		local data = State.data
-		if not data or holding then
-			return
+	-- Back to sweeping.
+	local character = Players.LocalPlayer.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local backpack = Players.LocalPlayer:FindFirstChildOfClass("Backpack")
+	if humanoid and backpack and not humanoid.SeatPart and not character:FindFirstChildOfClass("Tool") then
+		for _, tool in backpack:GetChildren() do
+			if tool:IsA("Tool") and tool:GetAttribute("SweepTool") and tool:FindFirstChild("Handle") then
+				humanoid:EquipTool(tool)
+				break
+			end
 		end
-		local growing = #data.Hatching
-		if growing >= data.Incubators then
-			toast(`Your park is growing {growing} eggs, that's the max! Open them when they're ready.`, "Info")
-			return
-		end
-		local nextUid = nextEgg(data, placedThisRun)
-		if nextUid then
-			PlacementController:Hold(nextUid)
-		end
-	end)
+	end
 end
 
 function PlacementController:Init(controllers)
