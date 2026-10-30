@@ -166,7 +166,7 @@ local function sellAll(player: Player): number
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if root then
 		local feet = root.Position - Vector3.new(0, (if humanoid then humanoid.HipHeight else 2) + root.Size.Y / 2, 0)
-		S.CoinService:Drop(player, cash, root.Position + Vector3.new(0, 2, 0), feet, Economy.Coins.PerSellAll, 3, 9)
+		S.CoinService:Drop(player, cash, root.Position + Vector3.new(0, 2, 0), feet, Economy.Coins.PerSellAll, 5, 16)
 	else
 		S.CoinService:Drop(player, cash, Vector3.zero, Vector3.zero, 1, 0, 0)
 	end
@@ -203,7 +203,8 @@ local function dropCoins(player: Player, dump: Dump, count: number)
 		return
 	end
 	local cf = World.Dumps[dump.spot]
-	S.CoinService:Drop(player, dump.unpaid, (cf * CFrame.new(0, 3, -3.8)).Position, World.dumpSpot(dump.spot), count, 4, 14)
+	-- Out over the leaf field in front of the dump, well clear of the market hall.
+	S.CoinService:Drop(player, dump.unpaid, (cf * CFrame.new(0, 3, -3.8)).Position, World.dumpSpot(dump.spot), count, 7, 26, cf.LookVector)
 	dump.unpaid = 0
 end
 

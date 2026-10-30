@@ -4,27 +4,32 @@
 -- Money Magnet upgrades make it bigger) and they zip into you with a chime that climbs in
 -- pitch. Only you see your own coins. Coins left too long are paid out by the server and
 -- fly to you on their own (CoinsAuto).
+-- Like Pet Simulator, a "+$123" counter over your head adds up every coin you scoop while
+-- you keep collecting: it counts up, punches bigger with each coin and fades when you stop.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 
 local CoinController = {}
 
 local GOLD = Color3.fromRGB(255, 196, 40)
-local FLY_OUT = 0.55 -- seconds from the slot to the ground
+local FLY_OUT = 0.7 -- seconds from the slot to the ground
 local FLY_IN = 0.22 -- seconds from the ground into you
 local REPORT_EVERY = 0.15
 local MAX_COINS = 120
 
 type Coin = {
 	id: number,
+	value: number,
 	part: BasePart,
 	from: Vector3,
 	to: Vector3,
@@ -104,6 +109,7 @@ local function onDropped(origin: Vector3, list: any)
 		local part = take()
 		local coin: Coin = {
 			id = item.Id,
+			value = if type(item.Value) == "number" then item.Value else 0,
 			part = part,
 			from = origin,
 			to = item.Pos + Vector3.new(0, 1.1, 0),
@@ -135,8 +141,108 @@ local function onAuto(ids: any)
 	end
 end
 
+-- The "+$123" counter over your head ------------------------------------------------------
+
+local COUNTER_HOLD = 1.4 -- seconds after the last coin before it fades
+local counter: BillboardGui
+local counterLabel: TextLabel
+local counterScale: UIScale
+local counterTotal = 0 -- cash collected this streak
+local counterShown = 0 -- what the label shows (counts up to counterTotal)
+local counterLast = -math.huge
+local counterFading = false
+local fadeTweens: { Tween } = {}
+
+local function makeCounter()
+	counter = Instance.new("BillboardGui")
+	counter.Name = "CoinCounter"
+	counter.Size = UDim2.fromOffset(240, 64)
+	counter.StudsOffset = Vector3.new(0, 4.2, 0)
+	counter.AlwaysOnTop = true
+	counter.LightInfluence = 0
+	counter.MaxDistance = 200
+	counter.Enabled = false
+	counter.ResetOnSpawn = false
+	counterLabel = Instance.new("TextLabel")
+	counterLabel.BackgroundTransparency = 1
+	counterLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+	counterLabel.Position = UDim2.fromScale(0.5, 0.5)
+	counterLabel.Size = UDim2.fromScale(1, 1)
+	counterLabel.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+	counterLabel.TextScaled = true
+	counterLabel.TextColor3 = Color3.new(1, 1, 1)
+	counterLabel.Parent = counter
+	local stroke = Instance.new("UIStroke")
+	stroke.Thickness = 3
+	stroke.Color = Color3.fromRGB(70, 40, 0)
+	stroke.Parent = counterLabel
+	local gradient = Instance.new("UIGradient")
+	gradient.Rotation = 90
+	gradient.Color = ColorSequence.new(Color3.fromRGB(255, 250, 200), Color3.fromRGB(255, 170, 20))
+	gradient.Parent = counterLabel
+	counterScale = Instance.new("UIScale")
+	counterScale.Parent = counterLabel
+	counter.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local function bump(value: number, root: BasePart?)
+	if not root then
+		return
+	end
+	local now = os.clock()
+	if now - counterLast > COUNTER_HOLD or counterFading then
+		counterTotal, counterShown = 0, 0
+	end
+	counterFading = false
+	for _, tween in fadeTweens do
+		tween:Cancel()
+	end
+	table.clear(fadeTweens)
+	counterLast = now
+	counterTotal += value
+	counter.Adornee = root
+	counter.StudsOffset = Vector3.new(0, 4.2, 0)
+	counterLabel.TextTransparency = 0
+	counter.Enabled = true
+	-- Punch: bigger the longer the streak.
+	counterScale.Scale = 1.35 + math.min(streak, 12) * 0.03
+	TweenService:Create(counterScale, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Scale = 1 + math.min(streak, 12) * 0.02,
+	}):Play()
+end
+
+local function stepCounter(now: number, dt: number)
+	if not counter.Enabled then
+		return
+	end
+	if counterShown < counterTotal then
+		-- Counts up quickly: catches up in about a quarter second.
+		counterShown = math.min(counterTotal, counterShown + math.max((counterTotal - counterShown) * dt * 10, counterTotal * dt * 2))
+		counterLabel.Text = "+" .. Format.cash(math.floor(counterShown + 0.5))
+	end
+	if not counterFading and now - counterLast > COUNTER_HOLD then
+		counterFading = true
+		local info = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+		fadeTweens = {
+			TweenService:Create(counterLabel, info, { TextTransparency = 1 }),
+			TweenService:Create(counter, info, { StudsOffset = Vector3.new(0, 6, 0) }),
+		}
+		for _, tween in fadeTweens do
+			tween:Play()
+		end
+		task.delay(0.45, function()
+			if counterFading then
+				counter.Enabled = false
+			end
+		end)
+	end
+end
+
+local lastStep = os.clock()
 local function step()
 	local now = os.clock()
+	local dt = math.min(now - lastStep, 0.1)
+	lastStep = now
 	local root = rootPart()
 	local magnet = Players.LocalPlayer:GetAttribute("CoinMagnet")
 	local range = if type(magnet) == "number" then magnet else 7
@@ -145,7 +251,8 @@ local function step()
 		local part = coin.part
 		if coin.state == "out" then
 			local t = math.clamp((now - coin.start) / FLY_OUT, 0, 1)
-			local pos = coin.from:Lerp(coin.to, t) + Vector3.new(0, math.sin(t * math.pi) * 5, 0)
+			local arc = 4 + (coin.to - coin.from).Magnitude * 0.25
+			local pos = coin.from:Lerp(coin.to, t) + Vector3.new(0, math.sin(t * math.pi) * arc, 0)
 			part.CFrame = CFrame.new(pos) * CFrame.Angles(0, t * 12, math.pi / 2)
 			if t >= 1 then
 				coin.state = "ground"
@@ -172,10 +279,12 @@ local function step()
 				streak = if now - lastPickup < 0.6 then math.min(streak + 1, 12) else 0
 				lastPickup = now
 				Ui.sound("Coin", 1 + streak * 0.05)
+				bump(coin.value, root)
 				remove(coin)
 			end
 		end
 	end
+	stepCounter(now, dt)
 	if #toReport > 0 and now - lastReport >= REPORT_EVERY then
 		lastReport = now
 		local batch = toReport
@@ -190,6 +299,7 @@ function CoinController:Start()
 	folder = Instance.new("Folder")
 	folder.Name = "MyCoins"
 	folder.Parent = Workspace
+	makeCounter()
 	Net.event("CoinsDropped").OnClientEvent:Connect(onDropped)
 	Net.event("CoinsAuto").OnClientEvent:Connect(onAuto)
 	RunService.RenderStepped:Connect(step)

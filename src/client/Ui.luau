@@ -620,9 +620,9 @@ function Ui.edges(gui: ScreenGui): (number, number)
 		if inset < 1 then
 			return 14
 		end
-		-- Distance from the real screen edge: a small gap, and at least 8 inside the
-		-- device safe area.
-		local fromEdge = math.max(math.clamp(inset - 30, 10, 24), safe + 8)
+		-- Distance from the real screen edge: right up against the device safe area
+		-- (2 px in), measured on each phone, so no notch clips it and no gap is wasted.
+		local fromEdge = math.max(math.clamp(inset - 30, 10, 24), safe + 2)
 		return math.floor(math.min(fromEdge, inset + 14) - inset)
 	end
 	return pull(insetL, deviceL), pull(insetR, deviceR)
@@ -672,6 +672,15 @@ function Ui.initScaling()
 	end
 	if camera then
 		camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+			task.spawn(relayout)
+		end)
+	end
+	-- And whenever the measured safe areas change (rotation, notch side, Roblox top bar).
+	for _, probeGui in { fullScreen(), deviceSafe() } do
+		probeGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+			task.spawn(relayout)
+		end)
+		probeGui:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
 			task.spawn(relayout)
 		end)
 	end

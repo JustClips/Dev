@@ -11,7 +11,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
+local Grid = require(Shared.Grid)
 local Net = require(Shared.Net)
+local World = require(Shared.Config.World)
 
 local CoinService = {}
 
@@ -45,9 +47,34 @@ local function credit(player: Player, amount: number)
 	S.StateService:Mark(player)
 end
 
--- Drops `amount` cash as `count` coins flying out of `origin` and landing around `center`
--- (between minR and maxR studs away).
-function CoinService:Drop(player: Player, amount: number, origin: Vector3, center: Vector3, count: number, minR: number, maxR: number)
+-- Leaf tiles between minR and maxR studs from center (and, with facing, only in front of
+-- it) where coins may land: only on the leaf field, never on the market hall or the dumps
+-- (Dev, 2026-10-30).
+local HALL_CLEAR = World.RocketClearRadius + 5
+local function landingTiles(center: Vector3, minR: number, maxR: number, facing: Vector3?): { number }
+	local tiles = {}
+	local hall = Vector2.new(World.RocketPosition.X, World.RocketPosition.Z)
+	Grid.forEachInRadius(center, maxR, function(id)
+		local pos = Grid.tilePosition(id)
+		if not pos then
+			return
+		end
+		local d = Vector3.new(pos.X - center.X, 0, pos.Z - center.Z)
+		if d.Magnitude < minR or (Vector2.new(pos.X, pos.Z) - hall).Magnitude < HALL_CLEAR then
+			return
+		end
+		if facing and d.Magnitude > 0 and d.Unit:Dot(facing) < 0.3 then
+			return
+		end
+		table.insert(tiles, id)
+	end)
+	return tiles
+end
+
+-- Drops `amount` cash as `count` coins flying out of `origin` and landing on leaf tiles
+-- around `center` (between minR and maxR studs away; with `facing`, only in front). With no
+-- leaf tiles nearby (Sell Anywhere at your base) they land in a ring around center.
+function CoinService:Drop(player: Player, amount: number, origin: Vector3, center: Vector3, count: number, minR: number, maxR: number, facing: Vector3?)
 	if amount <= 0 then
 		return
 	end
@@ -64,12 +91,22 @@ function CoinService:Drop(player: Player, amount: number, origin: Vector3, cente
 	count = math.max(1, count)
 	local each = amount / count
 	local expires = os.clock() + Economy.Coins.AutoCollectSeconds
+	local flat = if facing then Vector3.new(facing.X, 0, facing.Z) else nil
+	local tiles = landingTiles(center, minR, maxR, if flat and flat.Magnitude > 0 then flat.Unit else nil)
 	local sent = {}
 	for _ = 1, count do
 		nextId += 1
-		local a = rng:NextNumber(0, math.pi * 2)
-		local r = rng:NextNumber(minR, maxR)
-		local pos = Vector3.new(center.X + math.cos(a) * r, center.Y, center.Z + math.sin(a) * r)
+		local pos: Vector3
+		local tile = if #tiles > 0 then Grid.tilePosition(tiles[rng:NextInteger(1, #tiles)]) else nil
+		if tile then
+			local zone = Grid.zoneAt(tile)
+			local jitter = (if zone then zone.TileSize else 4) * 0.35
+			pos = tile + Vector3.new(rng:NextNumber(-jitter, jitter), 0, rng:NextNumber(-jitter, jitter))
+		else
+			local a = rng:NextNumber(0, math.pi * 2)
+			local r = rng:NextNumber(math.min(minR, 3), math.min(maxR, 9))
+			pos = Vector3.new(center.X + math.cos(a) * r, center.Y, center.Z + math.sin(a) * r)
+		end
 		mine[nextId] = { value = each, pos = pos, expires = expires }
 		table.insert(sent, { Id = nextId, Pos = pos, Value = each })
 	end
