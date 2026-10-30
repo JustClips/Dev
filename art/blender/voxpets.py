@@ -1176,7 +1176,7 @@ def fishlike(name, top, belly, length, radius, fin=None, dorsal=3, fluke_vertica
 
     def r_at(j):
         t = (j + half) / length                    # 0 at the nose, 1 at the tail
-        return max(1.0, radius * (1 - abs(t - 0.35) * 1.3))
+        return max(1.6, radius * (1 - abs(t - 0.35) * 1.3))
     body = Part("Body")
     for j in range(-half + snout, half - 3):
         rr = r_at(j)
@@ -1184,10 +1184,12 @@ def fishlike(name, top, belly, length, radius, fin=None, dorsal=3, fluke_vertica
             for k in range(-radius, radius):
                 if (i + 0.5) ** 2 + ((k + 0.5) * 1.15) ** 2 <= rr * rr:
                     body.cells[(i, j, k + radius + 2)] = belly if k < -rr * 0.25 else top
-    for d in range(dorsal):                         # dorsal fin
+    for d in range(dorsal):                         # dorsal fin, filled down to the back
         for j in range(-1 - d, 2 - d * 2 + dorsal):
-            body.cells[(0, j, 2 * radius + 2 + d)] = top if not fin else fin
-            body.cells[(-1, j, 2 * radius + 2 + d)] = top if not fin else fin
+            for i in (-1, 0):
+                back = max([c[2] for c in body.cells if c[0] == i and c[1] == j] or [2 * radius + 1])
+                for z in range(back + 1, 2 * radius + 3 + d):
+                    body.cells.setdefault((i, j, z), top if not fin else fin)
     parts.append(body)
     head = Part("Head", "Body", joint=(0, -half + snout, radius + 2))
     for j in range(-half, -half + snout):
@@ -1206,8 +1208,9 @@ def fishlike(name, top, belly, length, radius, fin=None, dorsal=3, fluke_vertica
     parts += [flip, flip.mirror("WingR")]
     tail = Part("Tail", "Body", joint=(0, half - 3, radius + 2))
     tail.box(-1, 1, half - 3, half + 1, radius + 1, radius + 3, top)
-    if fluke_vertical:
-        tail.box(-1, 1, half, half + 2, radius - 2, radius + 7, top)
+    if fluke_vertical:                              # shark tail: big upper lobe, small lower lobe, swept back
+        for n in range(4):
+            tail.box(-1, 1, half + n, half + n + 1, radius + 1 - min(n, 2), radius + 4 + 2 * n, top)
     else:
         tail.box(-4, 4, half + 1, half + 3, radius + 1, radius + 2, top)
     parts.append(tail)

@@ -2382,80 +2382,80 @@
   "voxel": true
  },
  "Alien_Dolphin": {
-  "anims": {
-   "idle": "Pet_Dolphin_Idle",
-   "walk": "Pet_Dolphin_Walk"
-  },
-  "bounds": {
-   "max": [
-    1.183,
-    2.197,
-    2.366
-   ],
-   "min": [
-    -1.183,
-    0.507,
-    -1.859
-   ]
-  },
-  "float": true,
-  "kind": "alien",
   "name": "Alien_Dolphin",
+  "kind": "alien",
   "parts": {
    "Body": {
-    "collide": false,
-    "glow": null,
+    "parent": null,
     "joint": null,
+    "glow": null,
     "material": null,
-    "parent": null
+    "collide": false
    },
    "Head": {
-    "collide": false,
-    "glow": null,
+    "parent": "Body",
     "joint": [
      -0.0,
      1.014,
      -1.352
     ],
-    "material": null,
-    "parent": "Body"
-   },
-   "Tail": {
-    "collide": false,
     "glow": null,
-    "joint": [
-     -0.0,
-     1.014,
-     1.352
-    ],
     "material": null,
-    "parent": "Body"
+    "collide": false
    },
    "WingL": {
-    "collide": false,
-    "glow": null,
+    "parent": "Body",
     "joint": [
      -0.507,
      0.845,
      -0.845
     ],
+    "glow": null,
     "material": null,
-    "parent": "Body"
+    "collide": false
    },
    "WingR": {
-    "collide": false,
-    "glow": null,
+    "parent": "Body",
     "joint": [
      0.507,
      0.845,
      -0.845
     ],
+    "glow": null,
     "material": null,
-    "parent": "Body"
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.014,
+     1.352
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
    }
   },
-  "tris": 1428,
-  "voxel": true
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_Dolphin_Idle",
+   "walk": "Pet_Dolphin_Walk"
+  },
+  "float": true,
+  "bounds": {
+   "min": [
+    -1.183,
+    0.507,
+    -1.859
+   ],
+   "max": [
+    1.183,
+    2.197,
+    2.366
+   ]
+  },
+  "tris": 1428
  },
  "Alien_Dragon": {
   "anims": {
@@ -8622,80 +8622,80 @@
   "tris": 11022
  },
  "Alien_Shark": {
-  "anims": {
-   "idle": "Pet_Shark_Idle",
-   "walk": "Pet_Shark_Walk"
-  },
-  "bounds": {
-   "max": [
-    1.456,
-    3.094,
-    2.73
-   ],
-   "min": [
-    -1.456,
-    0.546,
-    -2.366
-   ]
-  },
-  "float": true,
-  "kind": "alien",
   "name": "Alien_Shark",
+  "kind": "alien",
   "parts": {
    "Body": {
-    "collide": false,
-    "glow": null,
+    "parent": null,
     "joint": null,
+    "glow": null,
     "material": null,
-    "parent": null
+    "collide": false
    },
    "Head": {
-    "collide": false,
-    "glow": null,
+    "parent": "Body",
     "joint": [
      -0.0,
      1.274,
      -2.002
     ],
-    "material": null,
-    "parent": "Body"
-   },
-   "Tail": {
-    "collide": false,
     "glow": null,
-    "joint": [
-     -0.0,
-     1.274,
-     1.82
-    ],
     "material": null,
-    "parent": "Body"
+    "collide": false
    },
    "WingL": {
-    "collide": false,
-    "glow": null,
+    "parent": "Body",
     "joint": [
      -0.728,
      1.092,
      -1.456
     ],
+    "glow": null,
     "material": null,
-    "parent": "Body"
+    "collide": false
    },
    "WingR": {
-    "collide": false,
-    "glow": null,
+    "parent": "Body",
     "joint": [
      0.728,
      1.092,
      -1.456
     ],
+    "glow": null,
     "material": null,
-    "parent": "Body"
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.274,
+     1.82
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
    }
   },
-  "tris": 2088,
-  "voxel": true
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_Shark_Idle",
+   "walk": "Pet_Shark_Walk"
+  },
+  "float": true,
+  "bounds": {
+   "min": [
+    -1.456,
+    0.546,
+    -2.366
+   ],
+   "max": [
+    1.456,
+    3.094,
+    3.094
+   ]
+  },
+  "tris": 2200
  },
  "Alien_SnowHare": {
   "anims": {

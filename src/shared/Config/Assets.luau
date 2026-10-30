@@ -1199,7 +1199,7 @@ Assets.Models = {
 			min = Vector3.new(-1.183, 0.507, -1.859),
 		},
 		float = true,
-		id = 136576781668760,
+		id = 131702081211803,
 		kind = "alien",
 		parts = {
 			Body = {
@@ -4294,11 +4294,11 @@ Assets.Models = {
 			walk = "Pet_Shark_Walk",
 		},
 		bounds = {
-			max = Vector3.new(1.456, 3.094, 2.73),
+			max = Vector3.new(1.456, 3.094, 3.094),
 			min = Vector3.new(-1.456, 0.546, -2.366),
 		},
 		float = true,
-		id = 81703928304948,
+		id = 100039730280100,
 		kind = "alien",
 		parts = {
 			Body = {
