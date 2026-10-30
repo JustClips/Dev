@@ -34,7 +34,7 @@ local yaw: number? = nil
 -- client animates every car it can see.
 local MAX_STEER = math.rad(28)
 local ANIM_DISTANCE = 250
-type Wheel = { motor: Motor6D, radius: number, steer: boolean, brush: boolean, angle: number }
+type Wheel = { motor: Motor6D, radius: number, steer: boolean, brush: boolean, angle: number, hub: Vector3, dy: number }
 local cars: { [Model]: { wheels: { Wheel }, steer: number } } = {}
 
 local function collect(model: Model)
@@ -47,10 +47,32 @@ local function collect(model: Model)
 				steer = d:GetAttribute("Steer") == true,
 				brush = d:GetAttribute("Brush") == true,
 				angle = 0,
+				hub = d.C0.Position, -- in the chassis' space
+				dy = 0,
 			})
 		end
 	end
 	return wheels
+end
+
+-- Each wheel reaches for the ground on its own (Dev, 2026-10-30: front wheels floated and
+-- back ones sank on ramps): a ray under the hub moves the wheel up or down within its travel.
+local wheelRay = RaycastParams.new()
+wheelRay.FilterType = Enum.RaycastFilterType.Exclude
+wheelRay.RespectCanCollide = true
+wheelRay.CollisionGroup = "Vehicles" -- skips players and cars
+
+local function wheelDrop(chassis: BasePart, w: Wheel, dt: number)
+	local cf = chassis.CFrame
+	local up = cf.UpVector
+	local travel = w.radius * 0.6
+	local hub = cf * w.hub
+	local hit = Workspace:Raycast(hub + up * travel, Vector3.new(0, -(travel * 2 + w.radius), 0), wheelRay)
+	local target = -travel
+	if hit then
+		target = math.clamp((hit.Position.Y + w.radius - hub.Y) / math.max(up.Y, 0.5), -travel, travel)
+	end
+	w.dy += (target - w.dy) * math.min(1, dt * 20)
 end
 
 local function animateCars(dt: number)
@@ -81,6 +103,7 @@ local function animateCars(dt: number)
 		end
 		local c = car :: { wheels: { Wheel }, steer: number }
 		c.steer += (steerInput * MAX_STEER - c.steer) * math.min(1, dt * 10)
+		wheelRay.FilterDescendantsInstances = { model }
 		for _, w in c.wheels do
 			if w.brush then
 				w.angle = (w.angle + dt * (4 + math.abs(forward) * 0.6)) % (2 * math.pi)
@@ -88,7 +111,8 @@ local function animateCars(dt: number)
 			else
 				w.angle = (w.angle - forward / w.radius * dt) % (2 * math.pi)
 				local steer = if w.steer then -c.steer else 0
-				w.motor.Transform = CFrame.Angles(0, steer, 0) * CFrame.Angles(w.angle, 0, 0)
+				wheelDrop(chassis, w, dt)
+				w.motor.Transform = CFrame.new(0, w.dy, 0) * CFrame.Angles(0, steer, 0) * CFrame.Angles(w.angle, 0, 0)
 			end
 		end
 	end
@@ -116,6 +140,38 @@ local smoothUp = Vector3.yAxis
 -- Corner order matters for the slope: 1 back-left, 2 back-right, 3 front-left, 4 front-right
 -- (x, z in half-sizes; -z is the front).
 local CORNERS = { Vector2.new(-0.8, 0.8), Vector2.new(0.8, 0.8), Vector2.new(-0.8, -0.8), Vector2.new(0.8, -0.8) }
+
+-- Where the suspension feels for the ground, in the chassis' space (x, z), in CORNERS
+-- order: under the real wheels when the car has them, so the body tilts the way its wheels
+-- sit; else near the chassis corners.
+local function groundSpots(model: Model, half: Vector3): { Vector2 }
+	local car = cars[model]
+	local hubs = {}
+	for _, w in (car and car.wheels or {}) do
+		if not w.brush then
+			table.insert(hubs, w.hub)
+		end
+	end
+	local spots = {}
+	if #hubs == 4 then
+		for i, corner in CORNERS do
+			-- The wheel on the same side and end as this corner.
+			for _, hub in hubs do
+				if (hub.X < 0) == (corner.X < 0) and (hub.Z < 0) == (corner.Y < 0) then
+					spots[i] = Vector2.new(hub.X, hub.Z)
+				end
+			end
+		end
+		if #spots == 4 then
+			return spots
+		end
+	end
+	table.clear(spots)
+	for i, corner in CORNERS do
+		spots[i] = Vector2.new(half.X * corner.X, half.Z * corner.Y)
+	end
+	return spots
+end
 
 -- Throttle and steer. The VehicleSeat gets them from Roblox's controls, but read the raw
 -- move input too (keyboard, thumbstick, gamepad) in case the seat's values don't come through.
@@ -178,8 +234,8 @@ local function drive(dt: number)
 	local reach = half.Y + clearance + STEP_REACH
 	local points: { [number]: Vector3 } = {}
 	local groundY, normalSum, hits = 0, Vector3.zero, 0
-	for i, corner in CORNERS do
-		local origin = (cf * CFrame.new(half.X * corner.X, 0, half.Z * corner.Y)).Position
+	for i, spot in groundSpots(model, half) do
+		local origin = (cf * CFrame.new(spot.X, 0, spot.Y)).Position
 		local hit = Workspace:Raycast(origin, Vector3.new(0, -reach, 0), rayParams)
 		if hit and hit.Normal.Y > 0.55 then
 			points[i] = hit.Position
@@ -206,7 +262,7 @@ local function drive(dt: number)
 	if tilt > MAX_TILT then
 		ground = Vector3.yAxis:Lerp(ground, MAX_TILT / tilt).Unit
 	end
-	smoothUp = smoothUp:Lerp(if grounded then ground else Vector3.yAxis, math.min(1, dt * (if grounded then 10 else 2))).Unit
+	smoothUp = smoothUp:Lerp(if grounded then ground else Vector3.yAxis, math.min(1, dt * (if grounded then 16 else 2))).Unit
 
 	-- Steering: only while rolling (reversing turns the other way), a bit less at top speed.
 	local velocity = chassis.AssemblyLinearVelocity

@@ -320,7 +320,7 @@ local function buildVehicle(player: Player, def): Model
 	align.Mode = Enum.OrientationAlignmentMode.OneAttachment
 	align.Attachment0 = rootAttachment
 	align.MaxTorque = math.huge
-	align.Responsiveness = 18 -- softer, so the body leans into slopes and corners
+	align.Responsiveness = 30 -- quick enough to follow ramps, soft enough to lean in corners
 	align.Parent = chassis
 
 	-- Blender body on top of the physics box. Its origin sits on the ground under the wheels.
