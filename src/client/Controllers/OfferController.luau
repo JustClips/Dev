@@ -62,7 +62,7 @@ end
 
 local TAG_TEXT = { StarterPack = "BEST DEAL!" }
 -- A short line under the icons (the icons already say what's inside).
-local LINE_TEXT = { StarterPack = "One time only! Huge value!" }
+local LINE_TEXT = { StarterPack = "Leaving soon! Huge value!" }
 
 -- The card slides in next to the left rail (on phones the rail sits under the wallet).
 local function placeCard(window: GuiObject)

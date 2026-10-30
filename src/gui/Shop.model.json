@@ -1379,11 +1379,11 @@
           "Size": [
            [
             0,
-            170
+            220
            ],
            [
             0,
-            22
+            24
            ]
           ],
           "Position": [
@@ -1402,9 +1402,9 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "One time only",
+          "Text": "Leaves soon",
           "TextColor3": "#FFC83C",
-          "TextSize": 16,
+          "TextSize": 19,
           "TextXAlignment": "Right",
           "TextYAlignment": "Center",
           "TextWrapped": true,

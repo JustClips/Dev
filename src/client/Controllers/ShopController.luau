@@ -149,9 +149,12 @@ local function robuxItem(key: string, desc: string?, iconName: string?): Item?
 	}
 end
 
+-- The Starter Pack leaves the shop a while after you first join, or once you're past the
+-- early game (Products.starterPackEnds).
+local featuredEnds: number? = nil
+
 local function starterPackOnSale(data): boolean
-	local def = Products.ProductByKey.StarterPack
-	return def ~= nil and def.Id ~= 0 and not data.Flags.StarterPackBought
+	return Products.starterPackEnds(data, workspace:GetServerTimeNow()) ~= nil
 end
 
 -------------------------------------------------------------------------- sections
@@ -655,7 +658,8 @@ local function buildCard(item: Item, order: number, color: Color3): Frame
 end
 
 local function renderFeatured(data): boolean
-	local show = starterPackOnSale(data)
+	featuredEnds = Products.starterPackEnds(data, workspace:GetServerTimeNow())
+	local show = featuredEnds ~= nil
 	featured.Visible = show
 	if show then
 		local def = Products.ProductByKey.StarterPack
@@ -816,6 +820,11 @@ local function tickTimers()
 	for _, timer in offerTimers do
 		local left = timer.Expires - now
 		timer.Label.Text = if left > 0 then `Ends in {Format.time(left)}` else "Ended"
+		expired = expired or left <= 0
+	end
+	if featuredEnds and featured.Visible then
+		local left = featuredEnds - workspace:GetServerTimeNow()
+		Ui.find(featured, "Note").Text = if left > 0 then `Leaves in {Format.time(left)}` else "Gone!"
 		expired = expired or left <= 0
 	end
 	return expired

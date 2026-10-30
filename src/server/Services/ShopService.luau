@@ -324,6 +324,8 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 
 	if product.Kind == "StarterPack" and targetData.Flags.StarterPackBought then
 		return false, "Already bought"
+	elseif product.Kind == "StarterPack" and not Products.starterPackEnds(targetData, os.time()) then
+		return false, "The Starter Pack has left the shop"
 	elseif product.Kind == "ToolSkip" and targetData.ToolTier + 1 ~= product.Tier then
 		return false, "Not the next tool"
 	elseif (product.Kind == "VehicleRental" or product.Kind == "VehicleUnlock") and S.ToolService:OwnsVehicle(recipient, product.Vehicle) then
@@ -366,8 +368,14 @@ function ShopService:Init(services)
 		end
 		return promptPurchase(player, key, giftToUserId)
 	end)
-	S.DataService.ProfileLoaded:Connect(function(player)
+	S.DataService.ProfileLoaded:Connect(function(player, session)
 		checkPasses(player)
+		-- The Starter Pack's clock starts the first time you load in while still new to it.
+		local data = session.Data
+		local pack = Economy.StarterPack
+		if data.Flags.StarterPackEnds == nil and not data.Flags.StarterPackBought and data.ToolTier < pack.HideAtToolTier and data.Rebirths == 0 then
+			data.Flags.StarterPackEnds = os.time() + pack.Hours * 3600
+		end
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		pendingGifts[player] = nil

@@ -3,6 +3,7 @@
 -- Created through Open Cloud by tools/create_products.py (universe 10773346969).
 -- An Id of 0 means "not created yet": its button is hidden and the server logs a warning once.
 local Types = require(script.Parent.Parent.Types)
+local Economy = require(script.Parent.Economy)
 
 type ProductDef = Types.ProductDef
 type GamepassDef = Types.GamepassDef
@@ -122,6 +123,20 @@ end
 function Config.passGift(passKey: string): ProductDef?
 	local def = Config.ProductByKey["Gift" .. passKey]
 	return if def and def.Id ~= 0 and def.Kind == "GiftPass" then def else nil
+end
+
+-- When the Starter Pack stops being on sale for this player (unix seconds), or nil if it
+-- isn't on sale for them at all (bought, past the early game, or its time ran out).
+function Config.starterPackEnds(data: any, now: number): number?
+	local def = Config.ProductByKey.StarterPack
+	local pack = Economy.StarterPack
+	local ends = data.Flags.StarterPackEnds
+	if not def or def.Id == 0 or data.Flags.StarterPackBought or type(ends) ~= "number" then
+		return nil
+	elseif data.ToolTier >= pack.HideAtToolTier or data.Rebirths > 0 or now >= ends then
+		return nil
+	end
+	return ends
 end
 
 -- The Skip Rebirth product for a player who has `rebirths` rebirths now.

@@ -81,7 +81,9 @@ local Economy = {
 	CarryLimitPass = 3,
 
 	-- Products
-	StarterPack = { Cash = 500, EggRarity = "Uncommon", Cash2xMinutes = 10 },
+	-- On sale for Hours after you first see it (a "Leaves in" timer shows), and never once
+	-- you reach tool HideAtToolTier or rebirth.
+	StarterPack = { Cash = 500, EggRarity = "Uncommon", Cash2xMinutes = 10, Hours = 2, HideAtToolTier = 5 },
 	ServerLuckMinutes = 15,
 
 	-- Meteor Shower (GAME_PLAN §5.8)

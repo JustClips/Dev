@@ -55,7 +55,7 @@ end
 
 function OfferService:OnHatch(player: Player)
 	local data = S.DataService:GetData(player)
-	if not data or data.Flags.StarterPackBought or data.Flags.StarterOfferShown then
+	if not data or data.Flags.StarterOfferShown or not Products.starterPackEnds(data, os.time()) then
 		return
 	end
 	if show(player, "StarterPack", "StarterPack", "Starter Pack!", "$500 + an Uncommon egg + 10 min of 2x cash", true) then

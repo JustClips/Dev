@@ -623,7 +623,7 @@ def shop():
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 34, "MinTextSize": 10})]),
         text("Desc", "", U(0.55, 0, 0, 44), U(0, 14, 0, 84), ts=18, heavy=True, stroke=2.5, xa="Left", ya="Top", ZIndex=3,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 8})]),
-        text("Note", "One time only", U(0, 170, 0, 22), U(1, -12, 0, 12), (1, 0), ts=16, display=True, stroke=2.5, xa="Right",
+        text("Note", "Leaves soon", U(0, 220, 0, 24), U(1, -12, 0, 12), (1, 0), ts=19, display=True, stroke=2.5, xa="Right",
              color=PREMIUM, ZIndex=3),
         button("Buy", U(0, 170, 0, 54), U(1, -12, 1, -12), (1, 1), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
     ])
