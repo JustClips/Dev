@@ -561,6 +561,19 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 	local arch = World.Base.Arch
 	local s = sign(model, "NameSign", cf * CFrame.new(arch + Vector3.new(0, 15.4, 0)), 19, 4.6, color, "Free Base", "Claim it by joining!", true)
 	baseSigns[index] = s
+	-- "Change Base" sign by the entrance (BasePickerController opens the picker, owner only).
+	-- The model's name ends in "Sign" so it stays visible under every skin.
+	local skinSign = make("Model", { Name = "SkinSign" }, model)
+	local at = cf * CFrame.new(World.Base.SkinSign)
+	for _, x in { -2.6, 2.6 } do
+		block(skinSign, "Post", Vector3.new(0.6, 4.4, 0.6), at * CFrame.new(x, 2.2, 0.1), WOOD_DARK, M.Wood)
+	end
+	local board = sign(skinSign, "BoardSign", at * CFrame.new(0, 5.6, 0), 7, 3, color, "CHANGE BASE", "Try on base skins").Board
+	prompt(board, "BasePicker", "Change Base", "Base Skins")
+	local basePrompt = board:FindFirstChild("BasePickerPrompt")
+	if basePrompt then
+		basePrompt:SetAttribute("Base", index)
+	end
 	return s
 end
 

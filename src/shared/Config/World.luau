@@ -98,6 +98,7 @@ World.Base = {
 	Hatchery = Vector3.new(0, 0, -28),
 	HatcheryRadius = 9,
 	Spawn = Vector3.new(-18, 0, -31),
+	SkinSign = Vector3.new(-12, 0, -39), -- the "Change Base" sign, left of the entrance path
 	Lamps = { Vector3.new(-40, 0, -40), Vector3.new(40, 0, -40) },
 	Incubators = { Vector3.new(-13, 0, -24), Vector3.new(13, 0, -24) },
 	-- The Pet Trader's stall (TraderService): the NPC stands here facing the path (-X).

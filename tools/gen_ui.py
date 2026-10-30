@@ -843,7 +843,7 @@ def base_panels():
         autoscale(),
         side_button("EggsButton", "Eggs", "Egg", DANGER, 1),
         side_button("PetsButton", "Pets", "Alien", "#FF9A3C", 2),
-        side_button("ToolsButton", "Tools", "Tool", "#4C8DFF", 3),
+        side_button("ToolsButton", "Gear", "Tool", "#4C8DFF", 3),
     ])
     write("BasePanels", screen([buttons], order=4))
     head = dict(size=U(0, 132, 0, 40), pos=U(1, -50, 0, 28), anchor=(1, 0.5))
@@ -1241,7 +1241,7 @@ def group_reward():
 
 # ---------------------------------------------------------------- Garage
 def garage():
-    """Tools window (screen "Garage"): a Tools tab (the tool ladder: buy the next one with
+    """Gear window (screen "Garage", called "Tools" before 2026-10-30): a Tools tab (the tool ladder: buy the next one with
     cash or skip with Robux) and a Cars tab (buy, spawn, Robux unlock / rent, and a button
     that teleports you to the Garage). Opened from the Tools button on the right."""
     # A shop card per tool / car (Dev: the price hid in small text under the name). The
@@ -1280,8 +1280,53 @@ def garage():
     hint = text("Hint", "", U(1, -260, 0, 44), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True, xa="Left")
     go = button("GoGarage", U(0, 230, 0, 48), U(1, -14, 1, -10), (1, 1), color=SUCCESS, label="Go to Garage", ts=20,
                 ico="Base", ico_px=32)
-    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Tools", "Tool", [tabs, lst, hint, go], header="#4C8DFF")],
+    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Gear", "Tool", [tabs, lst, hint, go], header="#4C8DFF")],
                            order=10, enabled=False))
+
+
+# ---------------------------------------------------------------- Base picker
+def base_picker():
+    """Base skins (BasePickerController). Opened from the "Change Base" sign at your base:
+    a window with one card per base (picture, name, where you stand). Tapping a card closes
+    it, shows that skin on your base with the camera on it, and opens the bar above the
+    hotbar: what it needs (ticks for rebirths and Index, a tile per pet), < > to flip
+    through bases, and one button (Unlock / Equip / Equipped / Locked)."""
+    card = plate("Template", U(0, 0, 0, 0), tint=WHITE, stud=0.2, Visible=False, children=[
+        node("Image", "ImageLabel", base(U(1, -12, 0, 118), U(0.5, 0, 0, 6), (0.5, 0), BackgroundColor3="#2A3260",
+                                         ScaleType="Crop", ZIndex=2)),
+        frame("Status", U(0, 104, 0, 26), U(0, 4, 0, 4), bg=SUCCESS, ZIndex=4, children=[
+            border(INK, 2),
+            text("Label", "OWNED", U(1, -6, 1, 0), U(0.5, 0, 0, 0), (0.5, 0), ts=16, display=True, stroke=2, ZIndex=5,
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+        ]),
+        text("Name", "Base", U(1, -12, 0, 28), U(0.5, 0, 0, 130), (0.5, 0), ts=21, color=INK, display=True,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 21, "MinTextSize": 10})]),
+        text("Sub", "", U(1, -12, 0, 22), U(0.5, 0, 0, 160), (0.5, 0), ts=16, color=SUB, heavy=True,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
+        node("Hit", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", AutoButtonColor=False, ZIndex=6)),
+    ])
+    lst = scroller("List", U(1, -28, 1, -128), U(0, 14, 0, 116), [
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 182, 0, 194), "CellPadding": U(0, 12, 0, 12), "SortOrder": "LayoutOrder",
+                                        "HorizontalAlignment": "Left"}),
+        padding(4, 4, 4, 6), card])
+    hint = text("Hint", "Tap a base to try it on", U(1, -28, 0, 34), U(0, 14, 0, 74), ts=20, color=SUB, heavy=True, xa="Left")
+    write("BasePicker", screen([dim(), window(WIN_W, WIN_H, "Change Base", "Base", [hint, lst], header="#F28C28")],
+                               order=10, enabled=False))
+
+    bar_ = plate("Bar", U(0, 680, 0, 184), U(0.5, 0, 1, -112), (0.5, 1), BG, stud=0.5, children=[
+        autoscale(),
+        button("Prev", U(0, 46, 0, 110), U(0, 8, 0.5, 0), (0, 0.5), color="#4C8DFF", label="<", ts=30),
+        button("Next", U(0, 46, 0, 110), U(1, -8, 0.5, 0), (1, 0.5), color="#4C8DFF", label=">", ts=30),
+        text("Title", "Base", U(1, -300, 0, 32), U(0, 64, 0, 8), ts=26, display=True, stroke=2.5, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 26, "MinTextSize": 12})]),
+        text("Status", "", U(1, -300, 0, 22), U(0, 64, 0, 40), ts=17, color=ACCENT, heavy=True, stroke=2, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 8})]),
+        frame("Checks", U(1, -300, 0, 26), U(0, 64, 0, 66), children=[hlist(12, "Left", "Center")]),
+        frame("Pets", U(1, -300, 0, 82), U(0, 64, 0, 96), children=[hlist(8, "Left", "Center")]),
+        button("Close", U(0, 44, 0, 44), U(1, -62, 0, 8), (1, 0), color=DANGER, label="X", ts=24),
+        button("Main", U(0, 168, 0, 60), U(1, -62, 1, -10), (1, 1), color=SUCCESS, label="Unlock", ts=22),
+    ])
+    write("BasePreview", screen([bar_], order=8, enabled=False))
 
 
 # ---------------------------------------------------------------- Upgrades
@@ -1420,6 +1465,7 @@ def main():
     settings()
     tutorial_done()
     garage()
+    base_picker()
     group_reward()
     upgrades()
     loading()

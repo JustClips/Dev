@@ -1,5 +1,5 @@
 --!strict
--- Tools window (screen "Garage"), opened from the Tools button on the right or the Garage
+-- Gear window (screen "Garage"; Dev renamed it from Tools), opened from the Gear button on the right or the Garage
 -- kiosk on the south plaza:
 --   Tools tab: the tool ladder. Buy the next tool with cash or skip to it with Robux.
 --   Cars tab: every car with its stats, buy with cash, spawn it (at the Garage pad when

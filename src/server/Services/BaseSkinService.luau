@@ -4,7 +4,8 @@
 -- Net.func("BaseSkin"):InvokeServer(action, skinId) -> ok, message
 --   "Unlock"   requirements met -> owned
 --   "Equip"    owned -> shown on your base
---   "Preview"  shows any skin on your base for PREVIEW_SECONDS, then puts yours back
+--   "Preview"  shows any skin on your base (base picker) for up to PREVIEW_SECONDS
+--   "EndPreview" puts your own skin back (skinId is ignored)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -17,7 +18,7 @@ local MapBuilder = require(script.Parent.Parent.Lib.MapBuilder)
 local BaseSkinService = {}
 
 local S: any
-local PREVIEW_SECONDS = 10
+local PREVIEW_SECONDS = 120
 
 local function rarityOf(id: string): string?
 	local def = Aliens.ById[id]
@@ -104,7 +105,15 @@ local ACTIONS: { [string]: (Player, string) -> (boolean, string) } = {
 				refresh(player)
 			end
 		end)
-		return true, `Previewing {BaseSkins.ById[skinId].Name}`
+		return true, ""
+	end,
+	EndPreview = function(player, _skinId)
+		local session = S.DataService:GetSession(player)
+		if session and session.Runtime.SkinPreview then
+			session.Runtime.SkinPreview = nil
+			refresh(player)
+		end
+		return true, ""
 	end,
 }
 
