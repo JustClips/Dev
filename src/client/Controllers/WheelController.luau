@@ -24,9 +24,8 @@ local GREEN = Color3.fromRGB(61, 220, 90)
 local GOLD = Color3.fromRGB(255, 200, 60)
 local GREY = Color3.fromRGB(166, 174, 194)
 local WHITE = Color3.new(1, 1, 1)
-local INK = Color3.fromRGB(23, 25, 30)
 local STEP = 360 / 8
-local BUYS = { Buy1 = "WheelSpin1", Buy5 = "WheelSpin5", Buy10 = "WheelSpin10" }
+local BUYS = { Buy1 = "WheelSpin1", Buy5 = "WheelSpin5" }
 
 local WheelController = {}
 
@@ -48,7 +47,9 @@ local function available(r): number
 	return (r.Spins or 0) + (if r.FreeSpin then 1 else 0)
 end
 
-local function setButton(button: GuiButton, text: string, color: Color3, labelColor: Color3?)
+-- White text with the dark outline on every colour (dark text on the gold button blurred
+-- into its outline).
+local function setButton(button: GuiButton, text: string, color: Color3)
 	Ui.setText(button, text)
 	button.BackgroundColor3 = color
 	local studs = button:FindFirstChild("Studs") :: ImageLabel?
@@ -57,7 +58,7 @@ local function setButton(button: GuiButton, text: string, color: Color3, labelCo
 	end
 	local label = button:FindFirstChild("Label") :: TextLabel?
 	if label then
-		label.TextColor3 = labelColor or WHITE
+		label.TextColor3 = WHITE
 	end
 end
 
@@ -93,32 +94,34 @@ local function render()
 		setButton(spinButton, "SPIN!", GREEN)
 	else
 		local def = Products.ProductByKey.WheelSpin1
-		setButton(spinButton, if def and def.Id ~= 0 then `SPIN  {Ui.ROBUX} {def.Price}` else "No spins", GOLD, INK)
+		setButton(spinButton, if def and def.Id ~= 0 then `SPIN {Ui.ROBUX}{def.Price}` else "No spins", GOLD)
 	end
 end
 
--- Icon, label and tint for one wedge (the same words the Gifts window uses).
-local function describe(seg: Rewards.WheelSegment): (string, string, Color3?)
-	local image, label, tint = C.RewardsController.Describe(seg.Reward)
-	return image, seg.Label or label, tint
+local function percent(weight: number): string
+	local pct = weight / Rewards.wheelTotal() * 100
+	return if pct >= 1 then `{math.floor(pct + 0.5)}%` else `{string.format("%.1f", pct)}%`
 end
 
+-- On the wheel: just the prize icon and its chance (names didn't fit). The full names are
+-- in the Prize chances list.
 local function fill()
-	local total = Rewards.wheelTotal()
 	for i, seg in Rewards.Wheel.Segments do
-		local image, label, tint = describe(seg)
+		local image, name, tint = C.RewardsController.Describe(seg.Reward)
 		local slot = Ui.find(gui, `Window.WheelArea.Spinner.Seg{i}`)
 		local icon = slot:FindFirstChild("Icon") :: ImageLabel
 		icon.Image = AssetLibrary.image(image)
 		icon.ImageColor3 = tint or WHITE
-		;(slot:FindFirstChild("Label") :: TextLabel).Text = label
+		local chance = slot:FindFirstChild("Label") :: TextLabel
+		chance.Text = percent(seg.Weight)
 		local row = Ui.find(gui, `Window.Side.Odds.List.Odds{i}`)
 		local rowIcon = row:FindFirstChild("Icon") :: ImageLabel
 		rowIcon.Image = AssetLibrary.image(image)
 		rowIcon.ImageColor3 = tint or WHITE
-		local _, fullName = C.RewardsController.Describe(seg.Reward)
-		local pct = seg.Weight / total * 100
-		;(row:FindFirstChild("Label") :: TextLabel).Text = `{fullName}  {if pct >= 1 then string.format("%d", pct) else string.format("%.1f", pct)}%`
+		local nameLabel = row:FindFirstChild("Name") :: TextLabel
+		nameLabel.Text = if seg.Weight <= 1 then `{name} (JACKPOT)` else name
+		local chanceLabel = row:FindFirstChild("Chance") :: TextLabel
+		chanceLabel.Text = percent(seg.Weight)
 	end
 	for name, key in BUYS do
 		local button = Ui.find(gui, `Window.Side.Buy.{name}`) :: GuiButton
@@ -247,6 +250,15 @@ function WheelController:Start()
 		Ui.close("Wheel")
 	end)
 	Ui.button(spinButton, spin)
+	-- Prize chances: swaps the spin packs for the list of prizes and back.
+	local odds = Ui.find(gui, "Window.Side.Odds") :: Frame
+	local packs = Ui.find(gui, "Window.Side.Buy") :: Frame
+	local oddsButton = Ui.find(gui, "Window.Side.OddsButton") :: GuiButton
+	Ui.button(oddsButton, function()
+		odds.Visible = not odds.Visible
+		packs.Visible = not odds.Visible
+		Ui.setText(oddsButton, if odds.Visible then "Back to spins" else "Prize chances")
+	end)
 	for name, key in BUYS do
 		Ui.button(Ui.find(gui, `Window.Side.Buy.{name}`), function()
 			buy(key)

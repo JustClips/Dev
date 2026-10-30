@@ -1246,23 +1246,24 @@ def group_reward():
 # ---------------------------------------------------------------- Lucky Wheel
 def wheel():
     """Lucky Wheel window (screen "Wheel", WheelController). Left: the wheel. "Spinner"
-    turns (its Rotation) and carries the face image and one "Seg<i>" icon + label per wedge
+    turns (its Rotation) and carries the face image and one "Seg<i>" icon + chance per wedge
     (wedge i spans (i-1)*45..i*45 degrees clockwise from the top, like art/wheel_art.py);
-    the pointer stays on top. Right: spins you have, the big SPIN button, three Robux spin
-    packs and the chance of every prize (paid random rewards must show their odds)."""
+    the pointer stays on top. Right, kept simple (Dev, 2026-10-30: the first one was too
+    busy): spins you have, the big SPIN button, two Robux spin packs and a "Prize chances"
+    button that swaps the packs for the full list of prizes (paid random rewards must show
+    their odds)."""
     import math
     size = 400
     segs = []
     for i in range(1, 9):
         a = math.radians((i - 0.5) * 45)
-        r = 0.6 * size / 2
+        r = 0.58 * size / 2
         x, y = math.sin(a) * r, -math.cos(a) * r
-        segs.append(frame(f"Seg{i}", U(0, 92, 0, 92), U(0.5, round(x, 1), 0.5, round(y, 1)), (0.5, 0.5), Rotation=(i - 0.5) * 45,
+        segs.append(frame(f"Seg{i}", U(0, 84, 0, 96), U(0.5, round(x, 1), 0.5, round(y, 1)), (0.5, 0.5), Rotation=(i - 0.5) * 45,
                           ZIndex=3, children=[
-                              icon("Icon", "Gift", 62, U(0.5, 0, 0, 0), (0.5, 0), ZIndex=4),
-                              text("Label", "", U(1, 10, 0, 26), U(0.5, 0, 1, 0), (0.5, 1), ts=18, display=True, stroke=2.5, ZIndex=5,
-                                   TextScaled=True, TextWrapped=False,
-                                   children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 9})]),
+                              icon("Icon", "Gift", 66, U(0.5, 0, 0, 0), (0.5, 0), ZIndex=4),
+                              text("Label", "", U(1, 0, 0, 26), U(0.5, 0, 1, 0), (0.5, 1), ts=20, display=True, stroke=3, ZIndex=5,
+                                   TextWrapped=False),
                           ]))
     spinner = frame("Spinner", U(0, size, 0, size), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=2, children=[
         node("Face", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("SpinWheel"), ScaleType="Fit", ZIndex=2)),
@@ -1274,34 +1275,35 @@ def wheel():
     ])
 
     def buy(name, count, order):
-        return button(name, U(0, 108, 0, 82), color=PREMIUM, LayoutOrder=order, children=[
-            text("Count", count, U(1, -8, 0, 30), U(0.5, 0, 0, 8), (0.5, 0), ts=20, color=INK, display=True, ZIndex=4),
-            text("Price", "", U(1, -8, 0, 30), U(0.5, 0, 1, -8), (0.5, 1), ts=22, color=INK, display=True, ZIndex=4),
+        return button(name, U(0, 170, 0, 78), color=PREMIUM, LayoutOrder=order, children=[
+            text("Count", count, U(1, -8, 0, 32), U(0.5, 0, 0, 6), (0.5, 0), ts=24, display=True, stroke=2.5, ZIndex=4),
+            text("Price", "", U(1, -8, 0, 30), U(0.5, 0, 1, -6), (0.5, 1), ts=24, display=True, stroke=2.5, ZIndex=4),
         ])
 
     def odds_row(i):
-        return frame(f"Odds{i}", U(0, 160, 0, 30), LayoutOrder=i, children=[
-            icon("Icon", "Gift", 30, U(0, 0, 0.5, 0), (0, 0.5)),
-            text("Label", "", U(1, -36, 1, 0), U(0, 36, 0, 0), ts=16, color=INK, heavy=True, xa="Left", TextScaled=True,
-                 TextWrapped=False, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
+        return frame(f"Odds{i}", U(0, 160, 0, 38), LayoutOrder=i, children=[
+            icon("Icon", "Gift", 34, U(0, 0, 0.5, 0), (0, 0.5)),
+            text("Name", "", U(1, -40, 0, 20), U(0, 40, 0, 1), ts=16, color=INK, heavy=True, xa="Left", TextScaled=True,
+                 TextWrapped=False, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 9})]),
+            text("Chance", "", U(1, -40, 0, 18), U(0, 40, 0, 20), ts=16, color=SUB, display=True, xa="Left"),
         ])
 
     right = frame("Side", U(0, 350, 0, 432), U(1, -14, 0, 76), (1, 0), children=[
-        text("Spins", "Spins: 0", U(1, 0, 0, 40), U(0, 0, 0, 2), ts=34, color=INK, display=True),
-        text("FreeNote", "", U(1, 0, 0, 26), U(0, 0, 0, 42), ts=18, color=SUB, heavy=True),
-        button("SpinButton", U(1, 0, 0, 74), U(0, 0, 0, 74), color=SUCCESS, label="SPIN!", ts=36),
-        text("BuyTitle", "Get more spins", U(1, 0, 0, 24), U(0, 0, 0, 158), ts=18, color=SUB, heavy=True),
-        frame("Buy", U(1, 0, 0, 84), U(0, 0, 0, 184), children=[
+        text("Spins", "Spins: 0", U(1, 0, 0, 44), U(0, 0, 0, 0), ts=38, color=INK, display=True),
+        text("FreeNote", "", U(1, 0, 0, 26), U(0, 0, 0, 44), ts=19, color=SUB, heavy=True),
+        button("SpinButton", U(1, 0, 0, 92), U(0, 0, 0, 82), color=SUCCESS, label="SPIN!", ts=40),
+        frame("Buy", U(1, 0, 0, 78), U(0, 0, 0, 200), children=[
             hlist(10, "Center", "Center"),
-            buy("Buy1", "1 Spin", 1), buy("Buy5", "5 Spins", 2), buy("Buy10", "10 Spins", 3),
+            buy("Buy1", "+1 Spin", 1), buy("Buy5", "+5 Spins", 2),
         ]),
-        plate("Odds", U(1, 0, 0, 158), U(0, 0, 1, 0), (0, 1), tint="#EEF1F7", stroke=3, children=[
-            text("Title", "Chances", U(1, -16, 0, 22), U(0, 10, 0, 4), ts=17, color=SUB, display=True, xa="Left"),
-            frame("List", U(1, -16, 0, 126), U(0, 10, 0, 28), children=[
-                node("Layout", "UIGridLayout", {"CellSize": U(0, 160, 0, 30), "CellPadding": U(0, 8, 0, 2),
+        plate("Odds", U(1, 0, 0, 196), U(0, 0, 0, 176), tint="#EEF1F7", stroke=3, Visible=False, ZIndex=6, children=[
+            frame("List", U(1, -16, 1, -12), U(0, 10, 0, 6), ZIndex=6, children=[
+                node("Layout", "UIGridLayout", {"CellSize": U(0, 160, 0, 44), "CellPadding": U(0, 6, 0, 2),
                                                 "SortOrder": "LayoutOrder", "FillDirection": "Vertical"}),
             ] + [odds_row(i) for i in range(1, 9)]),
         ]),
+        button("OddsButton", U(1, 0, 0, 52), U(0, 0, 1, 0), (0, 1), color="#4C8DFF", label="Prize chances", ts=22, ico="Star",
+               ico_px=34),
     ])
     write("Wheel", screen([dim(), window(WIN_W, WIN_H, "Lucky Wheel", "Spin", [area, right], header="#4C8DFF")],
                          order=10, enabled=False))

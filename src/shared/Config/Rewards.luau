@@ -57,6 +57,10 @@ Rewards.Playtime = {
 -- Lucky Wheel. Segment i is the wedge from (i-1)*45 to i*45 degrees clockwise from the top
 -- (art/wheel_art.py draws the wedges in these colours). Weights add up to 100, so each one
 -- is its chance in percent (shown in the wheel window: paid random rewards must show odds).
+-- Balance (2026-10-30): a spin costs R$19 when bought. The common half (cash, potions) is
+-- worth about 10 minutes of income, like a R$24 cash pack or a Cash Potion (2x for 10 min).
+-- Eggs match the daily streak (Rare = day 5, Epic = day 7); the Legendary jackpot is 1 in
+-- 100, while a Cosmic egg costs R$99, so spins speed you up without skipping progression.
 -- FreeEvery: seconds between free spins, or nil for one free spin ever (Dev, 2026-10-30).
 export type WheelSegment = { Reward: Reward, Weight: number, Label: string?, Color: Color3 }
 
@@ -64,13 +68,13 @@ Rewards.Wheel = {
 	FreeEvery = nil :: number?,
 	SpinSeconds = 4.6, -- how long the wheel turns before the prize shows
 	Segments = {
-		{ Reward = { Kind = "Cash", Seconds = 300, Floor = 0.3 }, Weight = 25, Label = "Cash", Color = Color3.fromRGB(92, 214, 92) },
-		{ Reward = { Kind = "Item", Item = "LuckPotion", Amount = 1 }, Weight = 17, Color = Color3.fromRGB(76, 168, 255) },
-		{ Reward = { Kind = "Egg", Rarity = "Rare" }, Weight = 11, Color = Color3.fromRGB(155, 107, 255) },
-		{ Reward = { Kind = "Item", Item = "CashPotion", Amount = 1 }, Weight = 15, Color = Color3.fromRGB(255, 154, 60) },
-		{ Reward = { Kind = "Egg", Rarity = "Legendary" }, Weight = 1, Label = "JACKPOT", Color = Color3.fromRGB(255, 194, 46) },
-		{ Reward = { Kind = "Item", Item = "HatchPotion", Amount = 2 }, Weight = 11, Color = Color3.fromRGB(127, 211, 255) },
-		{ Reward = { Kind = "Cash", Seconds = 900, Floor = 0.6 }, Weight = 15, Label = "Big Cash", Color = Color3.fromRGB(255, 126, 182) },
+		{ Reward = { Kind = "Cash", Seconds = 600, Floor = 0.4 }, Weight = 26, Color = Color3.fromRGB(92, 214, 92) },
+		{ Reward = { Kind = "Item", Item = "LuckPotion", Amount = 1 }, Weight = 16, Color = Color3.fromRGB(76, 168, 255) },
+		{ Reward = { Kind = "Egg", Rarity = "Rare" }, Weight = 12, Color = Color3.fromRGB(155, 107, 255) },
+		{ Reward = { Kind = "Item", Item = "CashPotion", Amount = 1 }, Weight = 14, Color = Color3.fromRGB(255, 154, 60) },
+		{ Reward = { Kind = "Egg", Rarity = "Legendary" }, Weight = 1, Color = Color3.fromRGB(255, 194, 46) },
+		{ Reward = { Kind = "Item", Item = "HatchPotion", Amount = 2 }, Weight = 12, Color = Color3.fromRGB(127, 211, 255) },
+		{ Reward = { Kind = "Item", Item = "SpeedPotion", Amount = 1 }, Weight = 14, Color = Color3.fromRGB(255, 126, 182) },
 		{ Reward = { Kind = "Egg", Rarity = "Epic" }, Weight = 5, Color = Color3.fromRGB(255, 75, 85) },
 	} :: { WheelSegment },
 }
