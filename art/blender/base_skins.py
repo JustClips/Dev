@@ -83,7 +83,10 @@ def put(fn, x=0.0, y=0.0, yaw=0.0, s=1.0, **kw):
 CATS = {"platform": ("Body", False), "wall": ("Walls", False), "pillar": ("Pillars", False),
         "fence": ("Fences", False), "arch": ("Arch", False), "hatchery": ("Hatchery", False),
         "incubator": ("Incubators", False), "lamp": ("Lamps", False), "house": ("House", False),
-        "stall": ("Stall", False)}
+        "stall": ("Stall", False),
+        # Castle Keep's front wall either side of the gatehouse really blocks (the classic
+        # base has no front wall), so each side is its own simple colliding part
+        "frontl": ("FrontWallL", True), "frontr": ("FrontWallR", True)}
 
 
 def category(fn_name):
@@ -1236,12 +1239,270 @@ def cas_decor(c):
                       box(c["gold"], loc=(0.8, -0.05, 4.8), size=(0.6, 0.06, 0.6), rot=(0, 45, 0))], []), x, y)
 
 
+def cas_wall_frontl(c, L):
+    return cas_wall(c, L)
+
+
+def cas_wall_frontr(c, L):
+    return cas_wall(c, L)
+
+
 @theme("castle")
 def castle():
     layout(CAS, dict(wall=cas_wall, fence=cas_fence, pillar=cas_pillar, arch=cas_arch, hatchery=cas_hatchery,
                      incubator=cas_incubator, lamp=cas_lamp, house=cas_house, stall=cas_stall, decor=cas_decor))
+    # front wall from the corner towers to the gatehouse (its towers span x = 5..10)
+    w, d = W / 2 - 0.6, D / 2 - 0.6
+    line(cas_wall_frontl, (-w + 3, -d), (-10.2, -d), c=CAS)
+    line(cas_wall_frontr, (10.2, -d), (w - 3, -d), c=CAS)
     return dict(ground="7FC25A", sky=(0.60, 0.78, 0.98))
 
+
+
+# ============================================================ 6. HALLOWEEN NIGHT
+HAL = dict(floor="planks", deck=["4A3B5C", "40334F", "554566"], trim="2A2238", park="3F5C3B", path="5A4A3A",
+           wood="5A4636", dark="2A2238", iron="1E1A26", stone="8A8798", sdark="6A6778", orange="FF8A1E",
+           purple="8E44D9", green="7CFF6B", bone="EDE6D3", ghost="F4F2FF", glow="FFB13D")
+
+
+def jack(c, r=1.0, loc=(0, 0, 0), face=-1):
+    """Jack-o-lantern: a pumpkin with a glowing face on the -Y side (face=-1) or +Y."""
+    x, y, z = loc
+    p = pumpkin(c["orange"], r, loc)
+    fy = y + face * r * 0.55
+    g = [box(c["glow"], loc=(x + dx * r, fy, z + r * 0.85), size=(r * 0.24, 0.1, r * 0.24), rot=(0, 45, 0)) for dx in (-0.3, 0.3)]
+    g.append(box(c["glow"], loc=(x, fy, z + r * 0.5), size=(r * 0.62, 0.1, r * 0.14)))
+    return p, g
+
+
+def hal_wall(c, L):
+    """Wrought-iron fence: posts with spear tips, two rails, a stone footing."""
+    p = [box(c["sdark"], loc=(0, 0, 0.3), size=(L, 1.0, 0.6))]
+    n = max(2, int(L // 1.4))
+    for i in range(n + 1):
+        x = -L / 2 + i * L / n
+        p.append(cyl(c["iron"], loc=(x, 0, 2.0), r=0.09, h=2.8, verts=6))
+        p.append(cone(c["iron"], loc=(x, 0, 3.55), r=0.2, h=0.5, verts=4))
+    for z in (1.2, 2.9):
+        p.append(box(c["iron"], loc=(0, 0, z), size=(L, 0.14, 0.14)))
+    return p, []
+
+
+def hal_fence(c, L):
+    """Crooked old picket fence."""
+    rnd = random.Random(int(L * 100))
+    p = [box(c["dark"], loc=(x, 0, 1.2), size=(0.45, 0.45, 2.4)) for x in (-L / 2, L / 2)]
+    for z in (0.8, 1.7):
+        p.append(box(c["wood"], loc=(0, 0, z), size=(L, 0.25, 0.3), rot=(0, rnd.uniform(-2, 2), 0)))
+    for i in range(int(L // 1.6)):
+        x = -L / 2 + 0.8 + i * 1.6
+        h = rnd.uniform(1.8, 2.4)
+        p.append(box(shade(c["wood"], rnd.uniform(-0.15, 0.1)), loc=(x, 0.16, h / 2), size=(0.5, 0.1, h), rot=(0, rnd.uniform(-9, 9), 0)))
+    return p, []
+
+
+def hal_pillar(c):
+    p = [box(c["stone"], loc=(0, 0, 3.4), size=(2.2, 2.2, 6.8), bevel=0.12),
+         box(c["sdark"], loc=(0, 0, 6.95), size=(2.7, 2.7, 0.4), bevel=0.08),
+         box(c["sdark"], loc=(0, 0, 0.4), size=(2.7, 2.7, 0.8), bevel=0.08)]
+    jp, jg = jack(c, 0.9, (0, 0, 7.1))
+    return p + jp, jg
+
+
+def bat(c, x, y, z, s=1.0, yaw=0):
+    a = math.radians(yaw)
+    p = [sphere(c["iron"], loc=(x, y, z), scale=(0.35 * s, 0.3 * s, 0.3 * s))]
+    for sgn in (-1, 1):
+        wx, wy = x + math.cos(a) * sgn * 0.75 * s, y + math.sin(a) * sgn * 0.75 * s
+        p.append(cone(c["iron"], loc=(wx, wy, z + 0.1 * s), r=0.55 * s, h=0.12 * s, verts=3,
+                      rot=(0, 0, yaw + (0 if sgn > 0 else 180)), smooth=False))
+    return p
+
+
+def hal_arch(c):
+    p, g = [], []
+    for x in (-7, 7):
+        p.append(box(c["stone"], loc=(x, 0, 5), size=(2.2, 2.2, 10), bevel=0.15))
+        p.append(box(c["sdark"], loc=(x, 0, 10.2), size=(2.8, 2.8, 0.5), bevel=0.08))
+        p.append(box(c["sdark"], loc=(x, 0, 0.5), size=(2.8, 2.8, 1.0), bevel=0.08))
+        jp, jg = jack(c, 1.1, (x, 0, 10.4))
+        p += jp
+        g += jg
+        jp, jg = jack(c, 0.8, (x + (1.9 if x > 0 else -1.9), -1.2, 0))
+        p += jp
+        g += jg
+    # iron arch over the gate, with curls, and a hanging sign board
+    for R in (6.2, 5.6):
+        p.append(lib.arc(c["iron"], loc=(0, 0, 10.4), R=R, r=0.16, rot=(90, 0, 0), keep="above", seg=32))
+    for x in (-6.2, 6.2):
+        p.append(torus(c["iron"], loc=(x * 0.75, 0, 11.4), R=0.6, r=0.1, rot=(90, 0, 0), seg=12, mseg=4))
+    for x in (-3.5, 3.5):
+        p.append(cyl(c["iron"], loc=(x, 0, 12.1), r=0.04, h=1.6, verts=4))
+    p.append(box(c["wood"], loc=(0, 0, 10.9), size=(8.4, 0.4, 1.4), rot=(0, 3, 0)))
+    for i, x in enumerate((-3.2, 0.2, 3.0)):
+        p += bat(c, x, -0.6, 15.0 + (i % 2) * 0.8, 1.0, 10 * i)
+    # cobweb in the corner of the arch: rings + spokes
+    for k in range(3):
+        p.append(torus(c["bone"], loc=(-5.6, -0.3, 11.2), R=0.5 + k * 0.45, r=0.035, rot=(90, 0, 0), seg=10, mseg=3))
+    for k in range(5):
+        a = math.radians(-90 + k * 22)
+        p.append(box(c["bone"], loc=(-5.6 + math.cos(a) * 0.8, -0.3, 11.2 + math.sin(a) * 0.8), size=(1.6, 0.04, 0.04),
+                     rot=(0, -math.degrees(a), 0)))
+    return p, g
+
+
+def hal_hatchery(c):
+    p = [cyl(c["sdark"], loc=(0, 0, 0.3), r=9, h=0.6, verts=32),
+         cyl(c["stone"], loc=(0, 0, 0.72), r=8.5, h=0.3, verts=32),
+         torus(c["purple"], loc=(0, 0, 0.95), R=5.6, r=0.7, seg=40, mseg=6),
+         cyl(shade(c["purple"], 0.3), loc=(0, 0, 0.9), r=2.2, h=0.12, verts=20)]
+    g = []
+    for i, (x, y) in enumerate(ring(10, 8.0, 0.3)):
+        h = 0.8 + (i % 3) * 0.35
+        p.append(cyl(c["bone"], loc=(x, y, 0.85 + h / 2), r=0.22, h=h, verts=8))
+        g.append(sphere(c["glow"], loc=(x, y, 0.95 + h + 0.15), scale=(0.16, 0.16, 0.28)))
+    return p, g
+
+
+def hal_incubator(c):
+    """Bubbling cauldron on three legs over a little fire pit."""
+    p = [sphere(c["iron"], loc=(0, 0, 1.5), scale=(1.4, 1.4, 1.1)),
+         torus(c["iron"], loc=(0, 0, 2.3), R=1.2, r=0.18, seg=20, mseg=6)]
+    for k in range(3):
+        a = k * 2 * math.pi / 3
+        p.append(cyl(c["iron"], loc=(math.cos(a) * 0.9, math.sin(a) * 0.9, 0.35), r=0.15, h=0.7, verts=6))
+    for k in range(5):
+        a = k * 2 * math.pi / 5
+        p.append(ico("6A4B3A", loc=(math.cos(a) * 1.0, math.sin(a) * 1.0, 0.15), scale=(0.35, 0.25, 0.15), sub=1))
+    g = [cyl(c["green"], loc=(0, 0, 2.2), r=1.1, h=0.15, verts=20)]
+    for (x, y, r) in ((0.3, 0.2, 0.3), (-0.4, -0.1, 0.22), (0.1, -0.5, 0.18)):
+        g.append(sphere(c["green"], loc=(x, y, 2.4), scale=r))
+    return p, g
+
+
+def hal_lamp(c):
+    p = [box(c["iron"], loc=(0, 0, 0.3), size=(1.2, 1.2, 0.6)),
+         cyl(c["iron"], loc=(0, 0, 3.6), r=0.18, h=6.6, verts=8),
+         box(c["iron"], loc=(0, -0.5, 6.95), size=(0.2, 1.2, 0.2)),
+         box(c["iron"], loc=(0, -1.0, 6.6), size=(1.1, 1.1, 0.12))]
+    for x in (-0.45, 0.45):
+        for y in (-0.55, -1.45):
+            p.append(box(c["iron"], loc=(x, y, 6.15), size=(0.1, 0.1, 0.9)))
+    # witch hat on the lantern
+    p.append(cyl(c["iron"], loc=(0, -1.0, 6.75), r=0.95, h=0.1, verts=14))
+    p.append(cone(c["iron"], loc=(0.1, -1.0, 7.55), r=0.55, h=1.6, verts=10, rot=(0, 12, 0)))
+    p.append(cyl(c["purple"], loc=(0, -1.0, 6.9), r=0.57, h=0.18, verts=12))
+    g = [box(c["purple"], loc=(0, -1.0, 6.1), size=(0.8, 0.8, 0.85))]
+    return p, g
+
+
+def hal_house(c):
+    wall, roof, roof2 = "5B4A7A", "2A2238", "352B47"
+    p = gable(wall, roof, roof2, 12, 10, 6.5, 6.0, z0=0.5)
+    p.insert(0, box(c["sdark"], loc=(0, 0, 0.25), size=(13, 11, 0.5), bevel=0.15))
+    g = []
+    for x in (-6, 6):
+        for y in (-5, 5):
+            p.append(box(c["dark"], loc=(x, y, 3.75), size=(0.6, 0.6, 6.5)))
+    # door + step
+    p.append(box(c["dark"], loc=(0, -5.15, 2.2), size=(2.6, 0.3, 3.6)))
+    p.append(cyl(c["dark"], loc=(0, -5.15, 4.0), r=1.3, h=0.3, rot=(90, 0, 0), verts=14))
+    p.append(box(c["sdark"], loc=(0, -6.0, 0.25), size=(3.6, 1.6, 0.5)))
+    # glowing windows and a round attic window
+    for x in (-3.8, 3.8):
+        p.append(box(c["dark"], loc=(x, -5.2, 4.2), size=(2.0, 0.3, 2.2)))
+        g.append(box(c["glow"], loc=(x, -5.3, 4.2), size=(1.5, 0.2, 1.7)))
+        p.append(box(c["dark"], loc=(x, -5.4, 4.2), size=(1.6, 0.2, 0.15)))
+        p.append(box(c["dark"], loc=(x, -5.4, 4.2), size=(0.15, 0.2, 1.8)))
+    p.append(torus(c["dark"], loc=(0, -5.2, 9.0), R=0.9, r=0.18, rot=(90, 0, 0), seg=16, mseg=4))
+    g.append(cyl(c["green"], loc=(0, -5.15, 9.0), r=0.8, h=0.2, rot=(90, 0, 0), verts=16))
+    # crooked tower at the back corner
+    p.append(cyl(wall, loc=(4.8, 3.6, 5.5), r=2.0, h=11, verts=12))
+    p.append(cone(roof, loc=(4.8, 3.6, 13.0), r=2.7, h=4.0, verts=12, rot=(0, 8, 0)))
+    g.append(box(c["glow"], loc=(4.8, 1.55, 8.4), size=(0.9, 0.2, 1.3)))
+    # chimney + bats
+    p.append(box(c["sdark"], loc=(-3.5, 2.0, 11.5), size=(1.2, 1.2, 4)))
+    p += bat(c, -1.5, -2, 15.5, 1.2, 20) + bat(c, 2.0, -3, 16.5, 1.0, -15)
+    jp, jg = jack(c, 0.8, (-2.2, -6.4, 0))
+    return p + jp, g + jg
+
+
+def hal_stall(c):
+    # not exported (the game keeps its own Pet Trader stall); a simple crate for the preview
+    return [], []
+
+
+def tombstone(c, kind=0, s=1.0, x=0.0, y=0.0):
+    p = []
+    if kind == 0:
+        p.append(box(c["stone"], loc=(x, y, 1.0 * s), size=(1.6 * s, 0.5 * s, 2.0 * s)))
+        p.append(cyl(c["stone"], loc=(x, y, 2.0 * s), r=0.8 * s, h=0.5 * s, rot=(90, 0, 0), verts=12))
+        for z in (1.5, 1.1):
+            p.append(box(c["sdark"], loc=(x, y - 0.27 * s, z * s), size=(0.9 * s, 0.05, 0.12 * s)))
+    else:
+        p.append(box(c["stone"], loc=(x, y, 1.3 * s), size=(0.45 * s, 0.45 * s, 2.6 * s)))
+        p.append(box(c["stone"], loc=(x, y, 1.9 * s), size=(1.6 * s, 0.45 * s, 0.45 * s)))
+    p.append(box("3A3046", loc=(x, y - 0.9 * s, 0.32), size=(1.4 * s, 1.8 * s, 0.12)))
+    return p
+
+
+def dead_tree(c, h=8, seed=1):
+    rnd = random.Random(seed)
+    p = [cyl(c["dark"], loc=(0, 0, h / 2), r=0.7, r2=0.35, h=h, verts=8)]
+    for i in range(5):
+        a = i * 2 * math.pi / 5 + rnd.uniform(-0.3, 0.3)
+        z = h * rnd.uniform(0.5, 0.9)
+        L = rnd.uniform(2.0, 3.4)
+        tilt = rnd.uniform(35, 60)
+        reach = L / 2 * math.sin(math.radians(tilt))
+        mid = (math.cos(a) * reach, math.sin(a) * reach, z + L / 2 * math.cos(math.radians(tilt)))
+        p.append(cyl(c["dark"], loc=mid, r=0.22, r2=0.08, h=L, verts=6, rot=(0, tilt, math.degrees(a))))
+    return p
+
+
+def ghost(c, s=1.0):
+    p = [sphere(c["ghost"], loc=(0, 0, 2.6 * s), scale=0.9 * s),
+         cyl(c["ghost"], loc=(0, 0, 1.7 * s), r=1.15 * s, r2=0.9 * s, h=1.8 * s, verts=12)]
+    for x in (-0.3, 0.3):
+        p.append(sphere(c["iron"], loc=(x * s, -0.8 * s, 2.7 * s), scale=(0.14 * s, 0.08 * s, 0.22 * s)))
+    p.append(sphere(c["iron"], loc=(0, -0.85 * s, 2.25 * s), scale=(0.18 * s, 0.08 * s, 0.14 * s)))
+    return p
+
+
+def hal_decor(c):
+    for (x, y, h, sd) in [(-36, -6, 8, 1), (37, 2, 9, 2), (-4, 37, 10, 3), (12, 34, 7, 4), (-38, 30, 8, 5)]:
+        put(lambda h=h, sd=sd: (dead_tree(c, h, sd), []), x, y, sd * 40)
+
+    def swamp(c):
+        p = [oval("4A7A3A", 7, 5, 0.3, 0.3)]
+        for (x, y) in ring(14, 1, 0.2):
+            p.append(ico(c["sdark"], loc=(x * 7.4, y * 5.4, 0.45), scale=(0.9, 0.8, 0.5), sub=1))
+        g = [sphere(c["green"], loc=(x, y, 0.5), scale=r) for (x, y, r) in ((-2, 1, 0.4), (1.5, -1, 0.3), (3, 1.5, 0.25), (-3.5, -1.5, 0.3))]
+        return p, g
+    put(swamp, -19, 22, c=c)
+
+    def graveyard(c):
+        p = []
+        rnd = random.Random(8)
+        for i in range(7):
+            p += tombstone(c, i % 2, rnd.uniform(0.8, 1.1), (i % 4) * 3.0 - 4.5, (i // 4) * 3.5)
+        return p, []
+    put(graveyard, 22, 10, -10, c=c)
+    put(lambda: (ghost(c, 1.2), []), 8, 20, 20)
+    put(lambda: (ghost(c, 0.9), []), -30, 12, -30)
+    rnd = random.Random(13)
+    for (x, y) in [(-25, -40), (25, -40), (38, -30), (-38, -30), (-10, 4), (30, -8), (-26, 36)]:
+        r = rnd.uniform(0.6, 1.1)
+        put(lambda r=r: jack(c, r, (0, 0, 0)), x, y, rnd.uniform(-30, 30))
+    for i in range(6):
+        put(lambda i=i: (bat(c, 0, 0, rnd.uniform(14, 20), 1.3, i * 50), []), rnd.uniform(-35, 35), rnd.uniform(-10, 38))
+
+
+@theme("halloween")
+def halloween():
+    layout(HAL, dict(wall=hal_wall, fence=hal_fence, pillar=hal_pillar, arch=hal_arch, hatchery=hal_hatchery,
+                     incubator=hal_incubator, lamp=hal_lamp, house=hal_house, stall=hal_stall, decor=hal_decor))
+    return dict(ground="3A3348", sky=(0.32, 0.24, 0.48))
 
 # =============================================================================== build + render
 def build(name):

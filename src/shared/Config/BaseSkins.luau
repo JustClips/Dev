@@ -58,6 +58,16 @@ local List: { SkinDef } = {
 		Requires = { Rebirths = 2, Pets = { "Crab", "Seagull", "Dolphin" }, IndexCount = 18 },
 	},
 	{
+		Id = "Halloween",
+		Name = "Halloween Night",
+		Desc = "Haunted house, glowing cauldrons, graveyard, ghosts and jack-o-lanterns.",
+		Asset = "Skin_Halloween",
+		Color = Color3.fromRGB(142, 68, 217),
+		SignLift = 4.0,
+		Image = "BaseSkin_Halloween",
+		Requires = { Rebirths = 3, Pets = { "Raccoon", "Owl", "Rat" }, IndexCount = 22 },
+	},
+	{
 		Id = "Winter",
 		Name = "Winter Lodge",
 		Desc = "Snowy log cabin, icicle arch, frozen pond and snowmen with lanterns.",

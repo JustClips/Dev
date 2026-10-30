@@ -12682,6 +12682,20 @@
     "material": null,
     "parent": null
    },
+   "FrontWallL": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "FrontWallR": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
    "Hatchery": {
     "collide": false,
     "glow": null,
@@ -12739,7 +12753,124 @@
     "parent": null
    }
   },
-  "tris": 51982
+  "tris": 57358
+ },
+ "Skin_Halloween": {
+  "bounds": {
+   "max": [
+    46.0,
+    19.618,
+    44.0
+   ],
+   "min": [
+    -46.0,
+    -2.1,
+    -47.116
+   ]
+  },
+  "kind": "prop",
+  "name": "Skin_Halloween",
+  "parts": {
+   "Arch": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Body_Glow1": {
+    "collide": false,
+    "glow": "7CFF6B",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Body_Glow2": {
+    "collide": false,
+    "glow": "8E44D9",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Body_Glow3": {
+    "collide": false,
+    "glow": "FFB13D",
+    "joint": null,
+    "material": null,
+    "parent": "Body"
+   },
+   "Decor": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Decor2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fences": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Hatchery": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "House": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Incubators": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamps": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Pillars": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Walls": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 37390
  },
  "Skin_Tiki": {
   "bounds": {
