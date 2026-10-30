@@ -69,6 +69,10 @@ local function grant(player: Player, reward: Rewards.Reward, sku: string): strin
 		local rarity = reward.Rarity or "Common"
 		S.InventoryService:AddEgg(player, rarity, eggZone(data, rarity), true)
 		return `{rarity} Egg`
+	elseif reward.Kind == "Spin" then
+		local amount = reward.Amount or 1
+		data.Spins = (data.Spins or 0) + amount
+		return if amount > 1 then `{amount} Wheel Spins` else "Wheel Spin"
 	end
 	return ""
 end
@@ -148,6 +152,78 @@ local function claimPlaytime(player: Player, index: any): (boolean, string?)
 	local got = grant(player, entry.Reward, "Playtime" .. index)
 	S.StateService:Mark(player)
 	return true, `Gift: {got}!`
+end
+
+-------------------------------------------------------------------------- lucky wheel
+
+local wheelRng = Random.new()
+
+-- Whether the free spin can be used now, and when the next one opens (nil = never again).
+local function freeSpin(data): (boolean, number?)
+	local at = data.Flags.FreeSpinAt
+	if type(at) ~= "number" then
+		return true, nil
+	end
+	local every = Rewards.Wheel.FreeEvery
+	if not every then
+		return false, nil
+	end
+	return now() - at >= every, at + every
+end
+
+function RewardService:AddSpins(player: Player, count: number): number
+	local data = S.DataService:GetData(player)
+	if not data then
+		return 0
+	end
+	data.Spins = (data.Spins or 0) + count
+	S.StateService:Mark(player)
+	return data.Spins
+end
+
+local function rollSegment(): number
+	local pick = wheelRng:NextNumber() * Rewards.wheelTotal()
+	for i, seg in Rewards.Wheel.Segments do
+		pick -= seg.Weight
+		if pick < 0 then
+			return i
+		end
+	end
+	return 1
+end
+
+local function spin(player: Player): (boolean, string?, number?)
+	local data = S.DataService:GetData(player)
+	local rt = runtime(player)
+	if not data or not rt then
+		return false, "Still loading"
+	end
+	-- One spin at a time: the next one waits for the wheel to stop.
+	if (rt.WheelBusyUntil or 0) > os.clock() then
+		return false, nil
+	end
+	local free = freeSpin(data)
+	if free then
+		data.Flags.FreeSpinAt = now()
+	elseif (data.Spins or 0) > 0 then
+		data.Spins -= 1
+	else
+		return false, "No spins left. Get more below!"
+	end
+	rt.WheelBusyUntil = os.clock() + Rewards.Wheel.SpinSeconds - 0.4
+	local index = rollSegment()
+	local seg = Rewards.Wheel.Segments[index]
+	local got = grant(player, seg.Reward, "Wheel" .. index)
+	S.StateService:Mark(player)
+	S.AnalyticsService:Custom(player, "WheelSpin", index, { Free = tostring(free) })
+	if seg.Weight <= 1 then
+		-- After the wheel stops, so the spinner sees it land first.
+		local name = player.DisplayName
+		task.delay(Rewards.Wheel.SpinSeconds, function()
+			Net.fireAll("Announce", `{name} hit the JACKPOT on the Lucky Wheel: {got}!`, "Event")
+		end)
+	end
+	return true, `You won {got}!`, index
 end
 
 -------------------------------------------------------------------------- stay
@@ -282,19 +358,23 @@ function RewardService:Snapshot(player: Player): { [string]: any }?
 		GroupClaimed = data.Flags.GroupRewardClaimed == true,
 		EventId = if event then event.Id else nil,
 		EventSignedUp = if event then data.Flags.EventSignups[event.Id] ~= nil else false,
+		Spins = data.Spins or 0,
+		FreeSpin = (freeSpin(data)),
+		FreeSpinAt = select(2, freeSpin(data)),
 		Now = now(),
 	}
 end
 
-local ACTIONS: { [string]: (Player, any) -> (boolean, string?) } = {
+local ACTIONS: { [string]: (Player, any) -> (boolean, string?, any) } = {
 	ClaimDaily = claimDaily,
 	ClaimPlaytime = claimPlaytime,
 	StartStay = startStay,
 	ClaimGroup = claimGroup,
 	SignUp = signUp,
+	Spin = spin,
 }
 
-function RewardService:Do(player: Player, action: string, arg: any): (boolean, string?)
+function RewardService:Do(player: Player, action: string, arg: any): (boolean, string?, any)
 	local handler = ACTIONS[action]
 	if not handler then
 		return false, nil

@@ -12,6 +12,9 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local BaseSkins = require(Shared.Config.BaseSkins)
+local Eggs = require(Shared.Config.Eggs)
+local Items = require(Shared.Config.Items)
+local Rewards = require(Shared.Config.Rewards)
 local World = require(Shared.Config.World)
 local Zones = require(Shared.Config.Zones)
 
@@ -610,6 +613,88 @@ local function plazaScreen()
 	}, gui)
 end
 
+-- Lucky Wheel stand (World.Wheel, front = -Z toward the field): a 15-stud wheel on two wooden
+-- posts with the same face, prizes and pointer as the wheel window, a sign on top and the
+-- prompt that opens the window. The face turns slowly on each client (SpinController).
+local function luckyWheel()
+	local cf = World.Wheel
+	local model = make("Model", { Name = "LuckyWheel" }, structures)
+	local blue = Color3.fromRGB(76, 141, 255)
+	local axle = cf * CFrame.new(0, 8.4, 0)
+	local plinth = block(model, "Plinth", Vector3.new(12, 0.8, 4.4), cf * CFrame.new(0, 0.4, 0.4), WOOD, M.WoodPlanks)
+	for _, x in { -4.5, 4.5 } do
+		block(model, "Post", Vector3.new(1.2, 8, 1.2), cf * CFrame.new(x, 4.4, 1.4), WOOD_DARK, M.Wood)
+	end
+	block(model, "Axle", Vector3.new(10.2, 0.9, 0.9), axle * CFrame.new(0, 0, 1.4), WOOD_DARK, M.Wood)
+	-- Back disc (cylinder axis turned to face the field) and a dark rim behind the face.
+	make("Part", {
+		Name = "Disc",
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(0.8, 15.4, 15.4),
+		CFrame = axle * CFrame.new(0, 0, 0.5) * CFrame.Angles(0, math.rad(90), 0),
+		Color = INK,
+		Material = M.SmoothPlastic,
+		Anchored = true,
+	}, model)
+	local face = block(model, "Face", Vector3.new(15, 15, 0.1), axle * CFrame.new(0, 0, 0), WHITE, nil, {
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+	})
+	local gui = make("SurfaceGui", {
+		Face = Enum.NormalId.Front,
+		SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
+		PixelsPerStud = 32,
+		LightInfluence = 0.2,
+		MaxDistance = 400,
+	}, face)
+	make("ImageLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = AssetLibrary.image("SpinWheel") }, gui)
+	for i, seg in Rewards.Wheel.Segments do
+		local reward = seg.Reward
+		local image, tint = "Icon_Gift", WHITE
+		if reward.Kind == "Cash" then
+			image = "Icon_Cash"
+		elseif reward.Kind == "Item" then
+			local item = Items.ById[reward.Item or ""]
+			image = if item then item.Icon else image
+		elseif reward.Kind == "Egg" then
+			local rarity = Eggs.ByName[reward.Rarity or "Common"]
+			image, tint = "Icon_Egg", if rarity then rarity.Color else WHITE
+		end
+		local a = math.rad((i - 0.5) * 45)
+		make("ImageLabel", {
+			Name = "Seg" .. i,
+			Size = UDim2.fromScale(0.17, 0.17),
+			Position = UDim2.fromScale(0.5 + math.sin(a) * 0.3, 0.5 - math.cos(a) * 0.3),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Rotation = (i - 0.5) * 45,
+			BackgroundTransparency = 1,
+			Image = AssetLibrary.image(image),
+			ImageColor3 = tint,
+		}, gui)
+	end
+	face:SetAttribute("SpinHub", face.CFrame)
+	face:SetAttribute("SpinBase", face.CFrame)
+	face:SetAttribute("SpinSpeed", 0.06 * math.pi * 2)
+	face:AddTag("SpinPart")
+	-- Pointer over the top of the wheel (doesn't turn).
+	local pointer = block(model, "Pointer", Vector3.new(3, 3, 0.1), axle * CFrame.new(0, 7.5, -0.3), WHITE, nil, {
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+	})
+	local pgui = make("SurfaceGui", { Face = Enum.NormalId.Front, SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud, PixelsPerStud = 32, LightInfluence = 0.2 }, pointer)
+	make("ImageLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Image = AssetLibrary.image("SpinPointer") }, pgui)
+	-- Name board low on the front of the stand (the big screen is right above the wheel).
+	sign(model, "WheelSign", cf * CFrame.new(0, 1.3, -2.1), 9, 1.8, blue, "LUCKY WHEEL", "Eggs, potions and cash!")
+	local lamp = glow(model, "WheelLight", Vector3.new(0.2, 0.2, 0.2), axle * CFrame.new(0, 0, -5), WHITE)
+	lamp.Transparency = 1
+	light(lamp, Color3.fromRGB(255, 230, 170), 26, 1.2)
+	prompt(plinth, "Wheel", "Spin", "Lucky Wheel")
+end
+
 -- Ramps where a corridor changes height (terrain under them is carved by buildTerrain).
 local function corridorRamps()
 	local model = make("Model", { Name = "Ramps" }, structures)
@@ -701,6 +786,7 @@ function MapBuilder.buildStructures()
 	fieldEdges()
 	corridorRamps()
 	plazaScreen()
+	luckyWheel()
 	leaderboards()
 	for i = 1, World.BaseCount do
 		MapBuilder.buildBaseStructure(i)

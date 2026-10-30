@@ -397,7 +397,7 @@ def auto_toggle(name, label, ico, order):
 
 def hud():
     # Phones: tiles 12% smaller (Dev, 2026-10-30: a little oversized), same spot.
-    rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
+    rail = frame("Rail", U(0, 180, 0, 414), U(0, 14, 0.5, -30), (0, 0.5), children=[
         autoscale(compact=0.88),
         node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 26), "SortOrder": "LayoutOrder"}),
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
@@ -406,6 +406,7 @@ def hud():
         rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 4),
         rail_tile("RewardsButton", "Daily", "Daily", "#FF5FA2", 5),
         rail_tile("GiftsButton", "Gifts", "Gift", "#3DDC5A", 6),
+        rail_tile("SpinButton", "Spin", "Spin", "#4C8DFF", 7),
     ])
     pills = frame("Pills", U(0, 432, 0, 52), U(0.5, 0, 0, 6), (0.5, 0), children=[
         autoscale(), hlist(12),
@@ -1242,6 +1243,70 @@ def group_reward():
                                order=10, enabled=False))
 
 
+# ---------------------------------------------------------------- Lucky Wheel
+def wheel():
+    """Lucky Wheel window (screen "Wheel", WheelController). Left: the wheel. "Spinner"
+    turns (its Rotation) and carries the face image and one "Seg<i>" icon + label per wedge
+    (wedge i spans (i-1)*45..i*45 degrees clockwise from the top, like art/wheel_art.py);
+    the pointer stays on top. Right: spins you have, the big SPIN button, three Robux spin
+    packs and the chance of every prize (paid random rewards must show their odds)."""
+    import math
+    size = 400
+    segs = []
+    for i in range(1, 9):
+        a = math.radians((i - 0.5) * 45)
+        r = 0.6 * size / 2
+        x, y = math.sin(a) * r, -math.cos(a) * r
+        segs.append(frame(f"Seg{i}", U(0, 92, 0, 92), U(0.5, round(x, 1), 0.5, round(y, 1)), (0.5, 0.5), Rotation=(i - 0.5) * 45,
+                          ZIndex=3, children=[
+                              icon("Icon", "Gift", 62, U(0.5, 0, 0, 0), (0.5, 0), ZIndex=4),
+                              text("Label", "", U(1, 10, 0, 26), U(0.5, 0, 1, 0), (0.5, 1), ts=18, display=True, stroke=2.5, ZIndex=5,
+                                   TextScaled=True, TextWrapped=False,
+                                   children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 9})]),
+                          ]))
+    spinner = frame("Spinner", U(0, size, 0, size), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=2, children=[
+        node("Face", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("SpinWheel"), ScaleType="Fit", ZIndex=2)),
+    ] + segs)
+    area = frame("WheelArea", U(0, 420, 0, 430), U(0, 18, 0, 76), children=[
+        spinner,
+        node("Pointer", "ImageLabel", base(U(0, 84, 0, 84), U(0.5, 0, 0, -6), (0.5, 0), BackgroundTransparency=1,
+                                            Image=img("SpinPointer"), ScaleType="Fit", ZIndex=8)),
+    ])
+
+    def buy(name, count, order):
+        return button(name, U(0, 108, 0, 82), color=PREMIUM, LayoutOrder=order, children=[
+            text("Count", count, U(1, -8, 0, 30), U(0.5, 0, 0, 8), (0.5, 0), ts=20, color=INK, display=True, ZIndex=4),
+            text("Price", "", U(1, -8, 0, 30), U(0.5, 0, 1, -8), (0.5, 1), ts=22, color=INK, display=True, ZIndex=4),
+        ])
+
+    def odds_row(i):
+        return frame(f"Odds{i}", U(0, 160, 0, 30), LayoutOrder=i, children=[
+            icon("Icon", "Gift", 30, U(0, 0, 0.5, 0), (0, 0.5)),
+            text("Label", "", U(1, -36, 1, 0), U(0, 36, 0, 0), ts=16, color=INK, heavy=True, xa="Left", TextScaled=True,
+                 TextWrapped=False, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
+        ])
+
+    right = frame("Side", U(0, 350, 0, 432), U(1, -14, 0, 76), (1, 0), children=[
+        text("Spins", "Spins: 0", U(1, 0, 0, 40), U(0, 0, 0, 2), ts=34, color=INK, display=True),
+        text("FreeNote", "", U(1, 0, 0, 26), U(0, 0, 0, 42), ts=18, color=SUB, heavy=True),
+        button("SpinButton", U(1, 0, 0, 74), U(0, 0, 0, 74), color=SUCCESS, label="SPIN!", ts=36),
+        text("BuyTitle", "Get more spins", U(1, 0, 0, 24), U(0, 0, 0, 158), ts=18, color=SUB, heavy=True),
+        frame("Buy", U(1, 0, 0, 84), U(0, 0, 0, 184), children=[
+            hlist(10, "Center", "Center"),
+            buy("Buy1", "1 Spin", 1), buy("Buy5", "5 Spins", 2), buy("Buy10", "10 Spins", 3),
+        ]),
+        plate("Odds", U(1, 0, 0, 158), U(0, 0, 1, 0), (0, 1), tint="#EEF1F7", stroke=3, children=[
+            text("Title", "Chances", U(1, -16, 0, 22), U(0, 10, 0, 4), ts=17, color=SUB, display=True, xa="Left"),
+            frame("List", U(1, -16, 0, 126), U(0, 10, 0, 28), children=[
+                node("Layout", "UIGridLayout", {"CellSize": U(0, 160, 0, 30), "CellPadding": U(0, 8, 0, 2),
+                                                "SortOrder": "LayoutOrder", "FillDirection": "Vertical"}),
+            ] + [odds_row(i) for i in range(1, 9)]),
+        ]),
+    ])
+    write("Wheel", screen([dim(), window(WIN_W, WIN_H, "Lucky Wheel", "Spin", [area, right], header="#4C8DFF")],
+                         order=10, enabled=False))
+
+
 # ---------------------------------------------------------------- Codes
 def codes():
     """Codes window (screen "Codes", CodesController), opened from the Codes button in
@@ -1495,6 +1560,7 @@ def main():
     garage()
     base_picker()
     group_reward()
+    wheel()
     codes()
     upgrades()
     loading()

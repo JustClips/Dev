@@ -211,7 +211,7 @@ end
 
 -- New players see the left rail fill in as the tutorial goes (Dev, 2026-10-30: too many
 -- buttons at once on phones). Shop is always there; Index after the first pet, Upgrades
--- at the step that uses it, Rebirth / Daily / Gifts once the tutorial is done.
+-- at the step that uses it, Rebirth / Daily / Gifts / Spin once the tutorial is done.
 local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10 }
 local function revealRail(data)
 	local step = STEP_ORDER[data.TutorialStep] or 99
@@ -222,6 +222,7 @@ local function revealRail(data)
 		RebirthButton = done,
 		RewardsButton = done,
 		GiftsButton = done,
+		SpinButton = done,
 	}
 	local changed = false
 	for name, visible in show do
@@ -553,7 +554,7 @@ layout = function(s: number, compact: boolean)
 		el.Rail.AnchorPoint = Vector2.new(0, 0)
 		-- A bit lower than right under the top bar (Dev, 2026-10-30).
 		el.Rail.Position = UDim2.new(0, left, 0, 6 + math.ceil(SIDE_DROP * s))
-		el.Rail.Size = UDim2.fromOffset(180, 280)
+		el.Rail.Size = UDim2.fromOffset(180, 378)
 		if railGrid then
 			railGrid.CellPadding = UDim2.fromOffset(12, 14)
 		end
@@ -563,7 +564,7 @@ layout = function(s: number, compact: boolean)
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 		end
 	else
-		el.Rail.Size = UDim2.fromOffset(180, 304)
+		el.Rail.Size = UDim2.fromOffset(180, 414)
 		if railGrid then
 			railGrid.CellPadding = UDim2.fromOffset(12, 26)
 		end

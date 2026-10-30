@@ -57,6 +57,11 @@ World.Walkway = 6 -- paved strip between the dust field and the bases
 -- and Upgrade stalls that stood here were removed on 2026-10-30 (Dev: the HUD buttons do
 -- the same), and the leaves now reach this strip.
 World.Plaza = { Min = Vector2.new(-62, 186), Max = Vector2.new(62, 198) }
+-- The Lucky Wheel stand in the middle of the plaza strip, in front of the big screen and
+-- between the leaderboard stands, facing the field. Kept low (about 17 studs) so it only
+-- covers the bottom edge of the screen. Keep x -11..11 clear of other stands.
+-- (MapBuilder.luckyWheel; WheelController opens the window from its prompt.)
+World.Wheel = CFrame.lookAt(Vector3.new(0, 0, 191), Vector3.new(0, 0, 0))
 -- Global leaderboards (LeaderboardService): one stand each on the plaza strip in front of
 -- the big screen, facing the field.
 World.LeaderboardZ = 189

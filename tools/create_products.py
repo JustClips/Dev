@@ -29,7 +29,7 @@ PASS_ICONS = {"Cash2x": "Cash", "AutoSweep": "Auto", "ExtraSlots": "Alien", "Car
               "VIP": "Star", "FasterHatch": "Timer", "SellAnywhere": "Sell"}
 KIND_ICONS = {"StarterPack": "Gift", "ServerLuck": "Luck", "MeteorShower": "Meteor", "SkipHatch": "Timer",
               "EggPack": "Egg", "ToolSkip": "Tool", "VehicleUnlock": "Vehicle", "VehicleRental": "Vehicle",
-              "CashPack": "Cash", "SkipRebirth": "Rebirth", "DoubleOffline": "Cash", "GiftPass": "Gift"}
+              "CashPack": "Cash", "SkipRebirth": "Rebirth", "DoubleOffline": "Cash", "GiftPass": "Gift", "WheelSpins": "Spin"}
 KIND_TEXT = {
     "StarterPack": "A bundle to kick off your sweeping run.",
     "ServerLuck": "Boosts egg luck for everyone in the server.",
@@ -43,6 +43,7 @@ KIND_TEXT = {
     "SkipRebirth": "Rebirth now without meeting the cash goal.",
     "DoubleOffline": "Doubles your welcome-back offline earnings.",
     "GiftPass": "Gifts this gamepass to a friend in your server. It unlocks for them for good.",
+    "WheelSpins": "Spins for the Lucky Wheel: cash, potions and eggs, up to a Legendary Egg.",
 }
 
 LINE = re.compile(r'\{ Key = "(?P<key>\w+)", Id = (?P<id>\d+), Price = (?P<price>\d+), Name = "(?P<name>[^"]*)"(?P<rest>[^\n]*)')

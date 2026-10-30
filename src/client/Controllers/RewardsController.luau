@@ -68,9 +68,15 @@ local function describe(reward: Rewards.Reward): (string, string, Color3?)
 	elseif reward.Kind == "Egg" then
 		local rarity = Eggs.ByName[reward.Rarity or "Common"]
 		return "Icon_Egg", `{reward.Rarity} Egg`, rarity and rarity.Color
+	elseif reward.Kind == "Spin" then
+		local amount = reward.Amount or 1
+		return "Icon_Spin", if amount > 1 then `{amount} Wheel Spins` else "Wheel Spin", nil
 	end
 	return "Icon_Gift", "", nil
 end
+
+-- The wheel window labels its prizes the same way (WheelController).
+RewardsController.Describe = describe
 
 local function fillCard(card: GuiButton, reward: Rewards.Reward)
 	local image, label, tint = describe(reward)
@@ -294,9 +300,13 @@ function RewardsController:Start()
 	Ui.button(Ui.find(giftsGui, "Dim"), function()
 		Ui.close("Playtime")
 	end)
-	for i in Rewards.Playtime do
+	for i, entry in Rewards.Playtime do
 		Ui.button(Ui.find(giftsGui, `Window.Gifts.Gift{i}`), function()
-			act("ClaimPlaytime", i)
+			-- A wheel spin gift takes you straight to the wheel to use it.
+			if act("ClaimPlaytime", i) and entry.Reward.Kind == "Spin" then
+				Ui.close("Playtime")
+				C.WheelController:Open()
+			end
 		end)
 	end
 	Ui.button(Ui.find(gui, "Window.Group.Claim"), function()

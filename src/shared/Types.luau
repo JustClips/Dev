@@ -148,6 +148,7 @@ export type ProductKind =
 	| "DoubleOffline"
 	| "MeteorShower"
 	| "GiftPass"
+	| "WheelSpins"
 
 export type ProductDef = {
 	Key: string,
@@ -238,6 +239,7 @@ export type ProfileData = {
 	-- Passes a friend gifted (gift products); count as owned for good.
 	GiftedPasses: { [string]: boolean },
 	Daily: { Streak: number, LastDay: number, LastClaim: number? },
+	Spins: number,
 	RedeemedCodes: { [string]: number },
 	ReceiptsGranted: { [string]: string },
 	ReceiptOrder: { string },

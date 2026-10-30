@@ -191,6 +191,10 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 		data.Gamepasses[pass.Key] = true
 		applyPassEffects(recipient)
 	end,
+	WheelSpins = function(product, _buyer, recipient)
+		local got = S.RewardService:AddSpins(recipient, product.Count or 1)
+		notify(recipient, `+{product.Count or 1} wheel spin{if (product.Count or 1) == 1 then "" else "s"}! You have {got} now.`)
+	end,
 	DoubleOffline = function(_product, _buyer, recipient)
 		local session = S.DataService:GetSession(recipient)
 		local amount = session.Runtime.OfflineReward or (S.AlienService:GetIncomePerSec(recipient) * 600)

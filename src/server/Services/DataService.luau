@@ -41,6 +41,7 @@ local TEMPLATE: Types.ProfileData = {
 	Gamepasses = {},
 	GiftedPasses = {},
 	Daily = { Streak = 0, LastDay = 0, LastClaim = 0 },
+	Spins = 0, -- Lucky Wheel spins owned (bought or from gifts); the free one is Flags.FreeSpinAt
 	RedeemedCodes = {}, -- code -> unix time it was used (CodeService)
 	ReceiptsGranted = {},
 	ReceiptOrder = {},

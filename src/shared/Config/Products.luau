@@ -78,6 +78,10 @@ local Products: { ProductDef } = {
 	{ Key = "SkipRebirth5", Id = 3723367627, Price = 599, Name = "Skip to Rebirth 5", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 5 },
 	{ Key = "SkipRebirth6", Id = 3723367635, Price = 849, Name = "Skip to Rebirth 6", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 6 },
 	{ Key = "SkipRebirth7", Id = 3723367645, Price = 1199, Name = "Skip to Rebirth 7+", Kind = "SkipRebirth", Category = "Special", Giftable = true, Rebirth = 7 },
+	-- Lucky Wheel spins (sold in the wheel window, not the Shop). Count = spins.
+	{ Key = "WheelSpin1", Id = 3724118622, Price = 19, Name = "1 Wheel Spin", Kind = "WheelSpins", Category = "Wheel", Giftable = true, Count = 1 },
+	{ Key = "WheelSpin5", Id = 3724118638, Price = 79, Name = "5 Wheel Spins", Kind = "WheelSpins", Category = "Wheel", Giftable = true, Count = 5 },
+	{ Key = "WheelSpin10", Id = 3724118654, Price = 149, Name = "10 Wheel Spins", Kind = "WheelSpins", Category = "Wheel", Giftable = true, Count = 10 },
 	{ Key = "DoubleOffline", Id = 3723359071, Price = 49, Name = "Double Offline Reward", Kind = "DoubleOffline", Category = "Special", Giftable = false },
 
 	-- Gamepass gifts: Roblox can't gift a gamepass, so each pass has a product you buy for a
