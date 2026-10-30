@@ -1185,7 +1185,7 @@ end
 -- version at their base: the egg shakes and rises, bursts with a few shards and a ring
 -- (a light pillar for Legendary+), and the pet pops out with its name for a moment.
 -- Only near you, and at most a few at once, so it stays easy on phones.
-local OTHER_RANGE = 160
+local OTHER_RANGE = 70 -- studs from you (Dev, 2026-10-30: others' hatches showed from far away)
 local OTHER_MAX = 3
 local othersPlaying = 0
 
@@ -1200,7 +1200,10 @@ local function playOther(info)
 		return
 	end
 	local spot = World.baseCFrame(index) * CFrame.new(info.X, 0.2, info.Z)
-	if (camera.CFrame.Position - spot.Position).Magnitude > OTHER_RANGE then
+	local me = Players.LocalPlayer.Character
+	local myRoot = me and me:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local from = if myRoot then myRoot.Position else camera.CFrame.Position
+	if (from - spot.Position).Magnitude > OTHER_RANGE then
 		return
 	end
 	othersPlaying += 1
@@ -1253,9 +1256,10 @@ local function playOther(info)
 		end, true)
 		local _, size = model:GetBoundingBox()
 		local board = Instance.new("BillboardGui")
-		board.Size = UDim2.fromOffset(220, 46)
-		board.StudsOffsetWorldSpace = Vector3.new(0, size.Y + 1.5, 0)
-		board.AlwaysOnTop = true
+		-- Sized in studs, so it's small from afar instead of a fixed big label.
+		board.Size = UDim2.fromScale(7, 1.4)
+		board.StudsOffsetWorldSpace = Vector3.new(0, size.Y + 1.2, 0)
+		board.AlwaysOnTop = false
 		board.LightInfluence = 0
 		board.MaxDistance = OTHER_RANGE
 		board.Adornee = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")

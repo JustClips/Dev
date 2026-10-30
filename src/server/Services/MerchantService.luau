@@ -301,15 +301,14 @@ function MerchantService:Start()
 						local def = best.Item and Items.ById[best.Item]
 						tease = ` He has a {if def then def.Name else `{best.Egg} Egg`}!`
 					end
-					Net.fireAll("Announce", `The Traveling Merchant is in the plaza for {Merchant.StaySeconds // 60} min!{tease}`, "Event")
-					-- A toast for everyone too, so nobody misses him (Dev, 2026-10-30).
-					Net.fireAll("Notify", `The Traveling Merchant has arrived in the plaza!{tease}`, "Rare")
+					-- One toast for everyone (Dev, 2026-10-30: an announcement plus a toast showed
+					-- the same news twice).
+					Net.fireAll("Notify", `The Traveling Merchant is in the plaza for {Merchant.StaySeconds // 60} min!{tease}`, "Rare")
 				end
 				lastHere = here
 			end
 			if here and changesAt - os.time() <= 60 and warned ~= visit then
 				warned = visit
-				Net.fireAll("Announce", "The Traveling Merchant leaves in 1 minute!", "Event")
 				Net.fireAll("Notify", "The Traveling Merchant leaves in 1 minute!", "Good")
 			end
 			task.wait(1)

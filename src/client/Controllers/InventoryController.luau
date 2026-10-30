@@ -40,7 +40,11 @@ local infoLabel: TextLabel
 local searchBox: TextBox
 local tiles: { [string]: { frame: TextButton, entry: BagItems.Entry } } = {}
 local lastSignature = ""
-local summary = ""
+local tabsFrame: Frame
+local filter = "All" -- All / Pets / Eggs / Items (the buttons at the top)
+local FILTER_KIND = { Pets = "Pet", Eggs = "Egg", Items = "Item" }
+local TAB_ON = Color3.fromRGB(47, 191, 85)
+local TAB_OFF = Color3.fromRGB(76, 141, 255)
 local justDragged = 0
 local fresh: { [string]: boolean } = {} -- keys tagged NEW while the bag is open ("new" badge below)
 
@@ -72,8 +76,11 @@ local function describe(entry: BagItems.Entry, data): string
 	return `{entry.name} x{entry.count} · tap to use`
 end
 
+-- The tile under the pointer (PC) shows in place of the filter buttons.
 local function showInfo(text: string?)
-	infoLabel.Text = text or summary
+	infoLabel.Text = text or ""
+	infoLabel.Visible = text ~= nil
+	tabsFrame.Visible = text == nil
 end
 
 ------------------------------------------------------------------ tiles
@@ -158,7 +165,7 @@ local function signature(data): string
 	for i = 1, 6 do
 		table.insert(hot, C.HotbarController:SlotKey(i))
 	end
-	return table.concat({ searchBox.Text, data.InvVersion or 0, table.concat(hot, ","), tostring(Ui.compact()) }, "|")
+	return table.concat({ filter, searchBox.Text, data.InvVersion or 0, table.concat(hot, ","), tostring(Ui.compact()) }, "|")
 end
 
 local function render(force: boolean?)
@@ -179,7 +186,13 @@ local function render(force: boolean?)
 	local inHotbar = function(key: string): boolean
 		return C.HotbarController:InHotbar(key)
 	end
-	local list = BagItems.bagEntries(data, searchBox.Text, inHotbar)
+	local list = {}
+	local kind = FILTER_KIND[filter]
+	for _, entry in BagItems.bagEntries(data, searchBox.Text, inHotbar) do
+		if not kind or entry.kind == kind then
+			table.insert(list, entry)
+		end
+	end
 	for i, entry in list do
 		local tile = tileFor(entry, data)
 		tile.LayoutOrder = i
@@ -197,21 +210,18 @@ local function render(force: boolean?)
 			items += entry.count
 		end
 	end
-	local parts = {}
-	if pets > 0 then
-		table.insert(parts, `{pets} pet{if pets == 1 then "" else "s"}`)
+	local counts = { Pets = pets, Eggs = eggs, Items = items }
+	for _, name in { "All", "Pets", "Eggs", "Items" } do
+		local tab = tabsFrame:FindFirstChild(name) :: TextButton
+		tab.BackgroundColor3 = if name == filter then TAB_ON else TAB_OFF
+		local n = counts[name]
+		Ui.setText(tab, if n and n > 0 then `{name} {n}` else name)
 	end
-	if eggs > 0 then
-		table.insert(parts, `{eggs} egg{if eggs == 1 then "" else "s"}`)
-	end
-	if items > 0 then
-		table.insert(parts, `{items} potion{if items == 1 then "" else "s"}`)
-	end
-	summary = if #parts > 0 then table.concat(parts, " · ") else ""
 	showInfo(nil)
 	emptyLabel.Visible = #list == 0
 	emptyLabel.Text = if searchBox.Text ~= ""
 		then "Nothing matches."
+		elseif kind then `No {string.lower(filter)} in your bag.`
 		else "Your bag is empty. New pets and eggs go to the hotbar first, then here."
 	markHeld()
 end
@@ -395,6 +405,7 @@ function InventoryController:Init(controllers)
 	template = Ui.find(gui, "Window.Grid.Template")
 	emptyLabel = Ui.find(gui, "Window.Empty")
 	infoLabel = Ui.find(gui, "Window.Info")
+	tabsFrame = Ui.find(gui, "Window.Tabs")
 	searchBox = Ui.find(gui, "Window.Search")
 end
 
@@ -407,6 +418,14 @@ function InventoryController:Start()
 	Ui.button(Ui.find(window, "Close"), function()
 		Ui.close("Inventory")
 	end)
+	for _, name in { "All", "Pets", "Eggs", "Items" } do
+		local tab = tabsFrame:FindFirstChild(name) :: TextButton
+		Ui.fitText(tab:FindFirstChild("Label") :: TextLabel, 16, 8)
+		Ui.button(tab, function()
+			filter = name
+			render(true)
+		end)
+	end
 	searchBox:GetPropertyChangedSignal("Text"):Connect(function()
 		render(false)
 	end)
