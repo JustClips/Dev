@@ -265,7 +265,8 @@ def garbage_truck(color):
         for x in (-1, 1):
             for k in range(5):
                 b.append(box(shade(green, -0.2), loc=(x * 1.57, -0.85 + k * 0.8, 2.4), size=(0.06, 0.14, 2.2)))
-            b.append(box(shade(color, 0), loc=(x * 1.57, 0.75, 1.5), size=(0.06, 4.1, 0.18)))
+            # stripe sits just outside the ribs (ribs end at 1.60) so the faces never overlap
+            b.append(box(shade(color, 0), loc=(x * 1.635, 0.75, 1.5), size=(0.05, 4.1, 0.18)))
         b.append(box(shade(green, -0.1), loc=(0, 3.2, 2.2), size=(3.0, 0.9, 2.0), bevel=0.15))
         b.append(box("1A1A22", loc=(0, 3.66, 2.55), size=(2.4, 0.04, 0.9)))
         for x in (-1, 1):

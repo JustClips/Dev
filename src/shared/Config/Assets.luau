@@ -6864,7 +6864,7 @@ Assets.Models = {
 			max = Vector3.new(2.7, 5.67, 5.231),
 			min = Vector3.new(-2.7, -0.027, -6.305),
 		},
-		id = 73169112087461,
+		id = 80630171538578,
 		kind = "vehicle",
 		parts = {
 			Body = {
