@@ -251,6 +251,10 @@ local function buildVehicle(player: Player, def): Model
 	chassis.Color = def.Color
 	chassis.Material = Enum.Material.SmoothPlastic
 	chassis.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0, 0, 100, 1)
+	-- The box rides `clearance` above the ground on ray suspension (VehicleController), so
+	-- it never scrapes floor seams or small steps; the wheels reach down to the ground.
+	local clearance = 0.9 * s
+	chassis:SetAttribute("Clearance", clearance)
 	chassis.Parent = model
 	model.PrimaryPart = chassis
 
@@ -281,7 +285,7 @@ local function buildVehicle(player: Player, def): Model
 	brush.Color = Color3.fromRGB(255, 230, 120)
 	brush.Material = Enum.Material.Fabric
 	brush.CanCollide = false
-	attach(brush, CFrame.new(0, -0.1 * s, -5 * s)) -- bottom level with the chassis bottom
+	attach(brush, CFrame.new(0, -0.1 * s - clearance, -5 * s)) -- bottom on the ground
 
 	for _, x in { -1, 1 } do
 		for _, z in { -1, 1 } do
@@ -291,7 +295,7 @@ local function buildVehicle(player: Player, def): Model
 			wheel.Size = Vector3.new(0.8 * s, 2 * s, 2 * s)
 			wheel.Color = Color3.fromRGB(30, 30, 35)
 			wheel.CanCollide = false
-			attach(wheel, CFrame.new(x * 3.1 * s, 0.2 * s, z * 3 * s)) -- resting on the ground
+			attach(wheel, CFrame.new(x * 3.1 * s, 0.2 * s - clearance, z * 3 * s)) -- resting on the ground
 		end
 	end
 
@@ -304,7 +308,7 @@ local function buildVehicle(player: Player, def): Model
 	align.Mode = Enum.OrientationAlignmentMode.OneAttachment
 	align.Attachment0 = rootAttachment
 	align.MaxTorque = math.huge
-	align.Responsiveness = 40
+	align.Responsiveness = 18 -- softer, so the body leans into slopes and corners
 	align.Parent = chassis
 
 	-- Blender body on top of the physics box. Its origin sits on the ground under the wheels.
@@ -319,8 +323,8 @@ local function buildVehicle(player: Player, def): Model
 			visual:ScaleTo(k)
 		end
 		visual:SetAttribute("VisualScale", k)
-		-- The body stands where the chassis box rests on the ground (its bottom face).
-		local base = chassis.CFrame * CFrame.new(0, -chassis.Size.Y / 2, 0)
+		-- The body stands on the ground, `clearance` under the riding chassis box.
+		local base = chassis.CFrame * CFrame.new(0, -chassis.Size.Y / 2 - clearance, 0)
 		visual:PivotTo(base)
 		local parts = meta and meta.parts or {}
 		for _, part in visual:GetDescendants() do
