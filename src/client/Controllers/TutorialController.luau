@@ -3,12 +3,12 @@
 --   * The step card above the hotbar: "STEP 3/9", what to do, a progress bar. Finishing a
 --     step flashes it green ("Nice!") with a chime before the next one shows.
 --   * Spotlight: for button steps the screen dims except a cut-out around the button, which
---     gets a pulsing ring and a bouncing arrow (your Bag for placing your pet, Next Tool for
---     the first upgrade). For world steps the target glows with an outline you can see
+--     gets a pulsing ring and a bouncing arrow (Place for me while you hold your first egg,
+--     the hotbar slot your new pet went to, Gear for the first tool). For world steps the target glows with an outline you can see
 --     through walls (the egg, your pad, your growing egg, the Rocket's sell pad), and
 --     ArrowController draws the guide path to it.
 --   * Planting the first egg: walk into your pet park and the egg is already in your
---     hands, just click a green spot.
+--     hands; click a green spot or press Place for me.
 --   * When it's done the server gives a reward and the "Tutorial done!" window shows it.
 -- After the tutorial the same card pops up for a few seconds, once, when something needs
 -- you (an egg just got ready).
@@ -53,9 +53,9 @@ local STEPS: { Step } = {
 	{ key = "Base", text = "Carry the egg home to your base!", icon = "Icon_Base" },
 	{
 		key = "Place",
-		text = "Walk into your pet park and click a green spot to plant your egg!",
-		touch = "Walk into your pet park and tap a green spot to plant your egg!",
-		pad = "Walk into your pet park, face a green spot and press R2 to plant your egg!",
+		text = "Walk into your pet park. Click a green spot, or press Place for me!",
+		touch = "Walk into your pet park. Tap a green spot, or press Place for me!",
+		pad = "Walk into your pet park. Face a green spot and press R2, or press Place for me!",
 		icon = "Icon_Egg",
 	},
 	{ key = "Hatching", text = "Your egg is growing... watch it get bigger!", icon = "Icon_Timer" },
@@ -68,8 +68,9 @@ local STEPS: { Step } = {
 	},
 	{
 		key = "PlacePet",
-		text = "Put your pet in your park: hold it from your hotbar, go to your base and tap anywhere.",
-		pad = "Put your pet in your park: pick it with LB/RB, go to your base and press R2.",
+		text = "Your pet is in your hotbar! Click it, then click anywhere at your base to let it out.",
+		touch = "Your pet is in your hotbar! Tap it, then tap anywhere at your base to let it out.",
+		pad = "Your pet is in your hotbar! Pick it with LB/RB, then press R2 at your base to let it out.",
 		icon = "Icon_Alien",
 	},
 	{ key = "Sell", text = "Dump your leaves at the market for cash!", icon = "Icon_Sell" },
@@ -178,7 +179,10 @@ local function cardLift(onHotbar: boolean): number
 	return if onHotbar then lift + math.ceil(62 * s) else lift
 end
 
-local function pointAt(target: GuiObject?)
+local pointerDim = true -- dim the rest of the screen (not while placing, so the park shows)
+
+local function pointAt(target: GuiObject?, dim: boolean?)
+	pointerDim = dim ~= false
 	if target ~= pointerTarget and target then
 		spot.Visible = true
 		for _, name in { "Top", "Bottom", "Left", "Right" } do
@@ -236,6 +240,8 @@ local function worldTarget(data): Instance?
 		return best
 	elseif key == "Base" and base then
 		return base:FindFirstChild("Pad")
+	elseif key == "Place" and base then
+		return base:FindFirstChild("Park")
 	elseif (key == "Hatching" or key == "Open") and base then
 		local hatching = base:FindFirstChild("Hatching")
 		return hatching and hatching:GetChildren()[1]
@@ -295,6 +301,25 @@ local function checkReadyEggs(data)
 	readyPrimed = true
 end
 
+-- Where the newly hatched pet is: its hotbar slot (new pets go there first), or the Bag
+-- when the hotbar was full.
+local function petSlot(data): GuiObject?
+	for i = 1, 6 do
+		local key = C.HotbarController:SlotKey(i)
+		local uid = string.match(key, "^P:(.+)$")
+		local pet = uid and data.Pets and data.Pets[uid]
+		if pet and not pet.Placed and C.HotbarController:InHotbar(key) then
+			return C.HotbarController:SlotButton(i)
+		end
+	end
+	for _, pet in data.Pets or {} do
+		if not pet.Placed then
+			return Ui.find(hud, "Hotbar.BagSlot")
+		end
+	end
+	return nil
+end
+
 local function update()
 	local data = State.data
 	if not data then
@@ -327,9 +352,13 @@ local function update()
 		glow.Adornee = worldTarget(data)
 		glow.Enabled = glow.Adornee ~= nil
 		local inventoryOpen = Ui.isOpen(Ui.screen("Inventory"))
-		local onHotbar = key == "PlacePet" and not inventoryOpen
-		if onHotbar then
-			pointAt(Ui.find(hud, "Hotbar.BagSlot"))
+		local petTarget = if key == "PlacePet" and not inventoryOpen and not C.PlacementController:HeldPet() then petSlot(data) else nil
+		local onHotbar = petTarget ~= nil
+		local autoPlace = Ui.find(Ui.screen("Placing"), "Bar.AutoPlace") :: GuiObject
+		if petTarget then
+			pointAt(petTarget)
+		elseif key == "Place" and C.PlacementController:IsHolding() and autoPlace.Visible then
+			pointAt(autoPlace, false)
 		elseif key == "Shop" and not Ui.isOpen(Ui.screen("Garage")) then
 			pointAt(Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton"))
 		elseif key == "Upgrade" and not C.UpgradeController:IsOpen() then
@@ -457,7 +486,7 @@ function TutorialController:Start()
 			return
 		end
 		pointer.Visible = true
-		spot.Visible = true
+		spot.Visible = pointerDim
 		layoutSpot(target)
 		local bob = math.abs(math.sin(os.clock() * 5)) * 12 * Ui.scale()
 		local size = 56 * Ui.scale()

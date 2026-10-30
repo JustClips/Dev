@@ -905,6 +905,9 @@ def placing():
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 7})]),
         button("GoBase", U(0, 140, 0, 44), U(1, -10, 0, 8), (1, 0), color=SUCCESS, label="Go to Base", ts=18, Visible=False),
         button("PlacePet", U(0, 140, 0, 44), U(1, -10, 0, 8), (1, 0), color=SUCCESS, label="Place in park", ts=17, Visible=False),
+        # Egg in hand at your park: puts it on a free spot for you (Dev: new players found
+        # aiming at a spot hard).
+        button("AutoPlace", U(0, 140, 0, 44), U(1, -10, 0, 8), (1, 0), color=SUCCESS, label="Place for me", ts=17, Visible=False),
         button("Cancel", U(0, 140, 0, 34), U(1, -10, 1, -8), (1, 1), color=DANGER, label="Cancel (Q)", ts=16),
     ])
     write("Placing", screen([bar_], order=8, enabled=False))

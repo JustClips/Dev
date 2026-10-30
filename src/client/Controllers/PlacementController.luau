@@ -50,6 +50,7 @@ local modelView: ViewportFrame
 local holding: string? = nil
 local heldPet: string? = nil
 local placePet: GuiButton
+local autoPlace: GuiButton
 local cancelButton: GuiButton
 local ghost: Model? = nil
 local ring: BasePart? = nil
@@ -178,6 +179,7 @@ local function update()
 	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	local far = root == nil or (root.Position - parkCentre(cf)).Magnitude > NEAR_BASE
 	goBase.Visible = far
+	autoPlace.Visible = not far
 	if far then
 		titleLabel.Text = "Go to your base to place it"
 	else
@@ -278,6 +280,7 @@ function PlacementController:HoldPet(uid: string)
 	modelView.Visible = true
 	ModelView.show(modelView, AssetLibrary.alien(pet.Id, pet.Mutation), "Alien_" .. pet.Id)
 	goBase.Visible = false
+	autoPlace.Visible = false
 	placePet.Visible = false -- tap anywhere at your base instead (Dev)
 	Ui.setText(cancelButton, if Ui.gamepad() then "Put away (B)" else "Put away (Q)")
 	gui.Enabled = true
@@ -364,6 +367,39 @@ function PlacementController:Hold(uid: string)
 	end)
 end
 
+-- After an egg goes down: put the ghost away and go back to sweeping.
+local function placed()
+	Ui.sound("Egg")
+	PlacementController:Stop(true)
+	local character = Players.LocalPlayer.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local backpack = Players.LocalPlayer:FindFirstChildOfClass("Backpack")
+	if humanoid and backpack and not humanoid.SeatPart and not character:FindFirstChildOfClass("Tool") then
+		for _, tool in backpack:GetChildren() do
+			if tool:IsA("Tool") and tool:GetAttribute("SweepTool") and tool:FindFirstChild("Handle") then
+				humanoid:EquipTool(tool)
+				break
+			end
+		end
+	end
+end
+
+-- "Place for me": the server picks a free spot in your park.
+local function placeAuto()
+	local uid = holding
+	if not uid or busy then
+		return
+	end
+	busy = true
+	local ok, message = invoke("PlaceEgg", uid)
+	busy = false
+	if ok then
+		placed()
+	else
+		toast(message or "Can't place it right now", "Bad")
+	end
+end
+
 local function place()
 	local uid = holding
 	if not uid or busy then
@@ -380,20 +416,7 @@ local function place()
 		toast(message or "Can't place it there", "Bad")
 		return
 	end
-	Ui.sound("Egg")
-	PlacementController:Stop(true)
-	-- Back to sweeping.
-	local character = Players.LocalPlayer.Character
-	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-	local backpack = Players.LocalPlayer:FindFirstChildOfClass("Backpack")
-	if humanoid and backpack and not humanoid.SeatPart and not character:FindFirstChildOfClass("Tool") then
-		for _, tool in backpack:GetChildren() do
-			if tool:IsA("Tool") and tool:GetAttribute("SweepTool") and tool:FindFirstChild("Handle") then
-				humanoid:EquipTool(tool)
-				break
-			end
-		end
-	end
+	placed()
 end
 
 function PlacementController:Init(controllers)
@@ -405,6 +428,7 @@ function PlacementController:Init(controllers)
 	icon = Ui.find(gui, "Bar.Icon")
 	modelView = Ui.find(gui, "Bar.Model")
 	placePet = Ui.find(gui, "Bar.PlacePet")
+	autoPlace = Ui.find(gui, "Bar.AutoPlace")
 	cancelButton = Ui.find(gui, "Bar.Cancel")
 end
 
@@ -451,6 +475,9 @@ function PlacementController:Start()
 		end
 	end)
 	local petTouch: Vector2? = nil
+	Ui.button(autoPlace, function()
+		task.spawn(placeAuto)
+	end)
 	Ui.button(goBase, function()
 		Net.func("Teleport"):InvokeServer("Base")
 	end)
