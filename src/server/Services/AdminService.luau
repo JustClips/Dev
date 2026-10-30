@@ -19,7 +19,10 @@
 --   CodeList   {} -> ok, list  (see CodeService:List)
 --
 -- Global timed events are also kept in a MemoryStore hash map until they end, so servers
--- that start later pick them up too.
+-- that start later pick them up too. They all live under ONE key ("Active", a table of
+-- events by id): servers read that key once a minute (one request unit each). Listing the
+-- map (ListItemsAsync) every 20 s blew the universe's MemoryStore limit and flooded the
+-- console (2026-10-30). Throttled reads back off up to 10 minutes and warn once.
 local HttpService = game:GetService("HttpService")
 local MemoryStoreService = game:GetService("MemoryStoreService")
 local MessagingService = game:GetService("MessagingService")
@@ -414,23 +417,61 @@ local function map(): MemoryStoreHashMap?
 	return globalMap
 end
 
+local ACTIVE_KEY = "Active"
+local SYNC_SECONDS = 60
+local SYNC_MAX = 600
+local syncEvery = SYNC_SECONDS
+local syncWarned = false
+
+-- Adds (e) or removes (removeId) one global event in the shared key, dropping ended ones.
+local function updateStored(e: Event?, removeId: string?): boolean
+	local m = map()
+	if not m then
+		return false
+	end
+	local ok = pcall(function()
+		(m :: any):UpdateAsync(ACTIVE_KEY, function(old)
+			local now = os.time()
+			local events = {}
+			if type(old) == "table" then
+				for id, item in old do
+					if type(item) == "table" and (tonumber(item.EndsAt) or 0) > now and id ~= removeId then
+						events[id] = item
+					end
+				end
+			end
+			if e then
+				events[e.Id] = e
+			end
+			return events
+		end, 60 * 60 * 24)
+	end)
+	return ok
+end
+
 -- Global events that started before this server did (or messages it missed).
 local function syncGlobal()
 	local m = map()
 	if not m then
 		return
 	end
-	local ok, pages = pcall(function()
-		return (m :: any):ListItemsAsync(50)
+	local ok, stored = pcall(function()
+		return (m :: any):GetAsync(ACTIVE_KEY)
 	end)
-	if not ok or not pages then
+	if not ok then
+		syncEvery = math.min(syncEvery * 2, SYNC_MAX)
+		if not syncWarned then
+			syncWarned = true
+			warn(`[Admin] can't read global events right now, retrying less often: {stored}`)
+		end
 		return
 	end
+	syncEvery = SYNC_SECONDS
+	syncWarned = false
 	local now = os.time()
 	local seen = {}
-	while true do
-		for _, item in pages:GetCurrentPage() do
-			local e = item.value
+	if type(stored) == "table" then
+		for _, e in stored do
 			if type(e) == "table" and type(e.Id) == "string" and (tonumber(e.EndsAt) or 0) > now then
 				seen[e.Id] = true
 				if not active[e.Id] then
@@ -438,15 +479,6 @@ local function syncGlobal()
 					runEvent(e :: any)
 				end
 			end
-		end
-		if pages.IsFinished then
-			break
-		end
-		local more = pcall(function()
-			pages:AdvanceToNextPageAsync()
-		end)
-		if not more then
-			break
 		end
 	end
 	-- Global events stopped elsewhere.
@@ -484,10 +516,7 @@ local function startEvent(caller: Player, p: any): (boolean, string)
 		e.Rate = whole(p.Rate, 1, 120, 20)
 	end
 	if e.Global then
-		local m = map()
-		local stored = m and pcall(function()
-			(m :: any):SetAsync(e.Id, e, math.max(60, e.EndsAt - os.time() + 30))
-		end)
+		local stored = updateStored(e, nil)
 		local sent = broadcast({ Kind = "Event", Event = e })
 		if not stored and not sent then
 			log(caller.Name, "global event ran here only")
@@ -505,12 +534,7 @@ local function stopEvent(caller: Player, p: any): (boolean, string)
 		return false, "That event already ended"
 	end
 	if e.Global then
-		local m = map()
-		if m then
-			pcall(function()
-				(m :: any):RemoveAsync(e.Id)
-			end)
-		end
+		updateStored(nil, e.Id)
 		broadcast({ Kind = "Stop", Id = e.Id })
 	end
 	removeEvent(e.Id)
@@ -791,7 +815,7 @@ function AdminService:Start()
 				sharedDirty = false
 				broadcast({ Kind = "Votes", Id = poll.Id, Votes = localVotes })
 			end
-			if os.clock() - lastSync > 20 and not RunService:IsStudio() then
+			if os.clock() - lastSync > syncEvery and not RunService:IsStudio() then
 				lastSync = os.clock()
 				task.spawn(syncGlobal)
 			end
