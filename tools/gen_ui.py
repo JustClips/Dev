@@ -590,8 +590,17 @@ def hud():
     # wallet on phones).
     spin = button("SpinButton", U(0, 104, 0, 38), U(1, -10, 0, 6), (1, 0), color="#4C8DFF", label="Spin", ts=20, ico="Spin",
                   ico_px=30, stroke=3, Visible=False, children=[badge(px=24)])
+    # Tutorial, phones: where to hold a finger to sweep (the right half of the screen,
+    # SweepController). TutorialController shows it and pulses the square.
+    hold = frame("HoldHint", U(0, 180, 0, 160), U(0.75, 0, 0.5, 0), (0.5, 0.5), Visible=False, ZIndex=17, children=[
+        autoscale(),
+        frame("Pulse", U(0, 92, 0, 92), U(0.5, 0, 0, 46), (0.5, 0.5), bg=WHITE, BackgroundTransparency=0.55, ZIndex=17,
+              children=[border(ACCENT, 4)]),
+        text("Label", "HOLD HERE", U(1, 0, 0, 30), U(0.5, 0, 1, -24), (0.5, 1), ts=26, display=True, stroke=3, ZIndex=18),
+        text("Sub", "to sweep", U(1, 0, 0, 22), U(0.5, 0, 1, 0), (0.5, 1), ts=19, color=ACCENT, display=True, stroke=2.5, ZIndex=18),
+    ])
     write("Hud", screen([rail, spin, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, picker,
-                         spot, pointer], order=1))
+                         spot, pointer, hold], order=1))
 
 
 # ---------------------------------------------------------------- Shop

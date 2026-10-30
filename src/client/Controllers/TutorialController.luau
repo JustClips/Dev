@@ -117,6 +117,8 @@ local spot: Frame
 local ring: Frame
 local ringStroke: UIStroke
 local glow: Highlight
+local holdHint: Frame
+local holdPulse: Frame
 
 local shownStep: string? = nil
 local celebrating = false
@@ -128,7 +130,24 @@ local wasHolding = false
 local holdCooldown = 0
 local pointerTarget: GuiObject? = nil
 
+-- True while the sweeping tool is in your hands (the first step needs it).
+local function toolInHand(): boolean
+	local character = Players.LocalPlayer.Character
+	local tool = character and character:FindFirstChildOfClass("Tool")
+	return tool ~= nil and tool:GetAttribute("SweepTool") == true
+end
+
 local function stepText(step: Step): string
+	-- First step without the tool in hand: equip it first (Dev, 2026-10-30: new players
+	-- held the screen with nothing in their hands and got nothing).
+	if step.key == "Sweep" and not toolInHand() then
+		if Ui.gamepad() then
+			return "Press LB or RB to pick your Toothbrush!"
+		elseif UserInputService.TouchEnabled then
+			return "Tap your Toothbrush in slot 1 to hold it!"
+		end
+		return "Press 1 or click your Toothbrush to hold it!"
+	end
 	if Ui.gamepad() and step.pad then
 		return step.pad
 	end
@@ -355,7 +374,19 @@ local function update()
 		local petTarget = if key == "PlacePet" and not inventoryOpen and not C.PlacementController:HeldPet() then petSlot(data) else nil
 		local onHotbar = petTarget ~= nil
 		local autoPlace = Ui.find(Ui.screen("Placing"), "Bar.AutoPlace") :: GuiObject
-		if petTarget then
+		local needTool = key == "Sweep" and not toolInHand()
+		if key == "Sweep" and not celebrating then
+			local want = stepText(step)
+			if textLabel.Text ~= want then
+				textLabel.Text = want
+			end
+		end
+		-- Phones: show where to hold a finger once the tool is out.
+		holdHint.Visible = key == "Sweep" and not needTool and not celebrating and UserInputService.TouchEnabled and not Ui.gamepad()
+		if needTool then
+			onHotbar = true
+			pointAt(Ui.find(hud, "Hotbar.ToolSlot"))
+		elseif petTarget then
 			pointAt(petTarget)
 		elseif key == "Place" and C.PlacementController:IsHolding() and autoPlace.Visible then
 			pointAt(autoPlace, false)
@@ -380,6 +411,7 @@ local function update()
 
 	-- Tutorial finished.
 	pointAt(nil)
+	holdHint.Visible = false
 	card.Position = UDim2.new(0.5, 0, 1, -cardLift(false))
 	glow.Enabled = false
 	glow.Adornee = nil
@@ -444,6 +476,8 @@ function TutorialController:Init(controllers)
 	doneFrame = Ui.find(card, "Done")
 	doneLabel = Ui.find(card, "Done.Label")
 	pointer = Ui.find(hud, "Pointer")
+	holdHint = Ui.find(hud, "HoldHint")
+	holdPulse = Ui.find(holdHint, "Pulse")
 	spot = Ui.find(hud, "Spot")
 	ring = Ui.find(spot, "Ring")
 	ringStroke = Ui.find(ring, "Stroke")
@@ -478,6 +512,13 @@ function TutorialController:Start()
 	RunService.RenderStepped:Connect(function()
 		if glow.Enabled then
 			glow.FillTransparency = 0.6 + math.abs(math.sin(os.clock() * 3)) * 0.3
+		end
+		if holdHint.Visible then
+			-- A finger pressing down: the square shrinks and fills, then lets go.
+			local t = (math.sin(os.clock() * 4) + 1) / 2
+			local px = 92 - t * 18
+			holdPulse.Size = UDim2.fromOffset(px, px)
+			holdPulse.BackgroundTransparency = 0.75 - t * 0.35
 		end
 		local target = pointerTarget
 		if not target or not target.Visible then

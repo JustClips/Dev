@@ -152,7 +152,15 @@ local function onSweep(player: Player, position: any)
 	-- Every client shows this player's tool effects while ticks keep coming (ToolFxController).
 	(character :: Model):SetAttribute("SweepAt", Workspace:GetServerTimeNow())
 	local zone = Grid.zoneAt(position)
-	if not zone or not S.ZoneService:IsUnlocked(player, zone.Id) then
+	if not zone then
+		return
+	end
+	if not S.ZoneService:IsUnlocked(player, zone.Id) then
+		-- Say why nothing happens (Dev, 2026-10-30: new players swept locked leaves).
+		if now - (runtime.LockedWarnAt or 0) > 6 then
+			runtime.LockedWarnAt = now
+			Net.fire("Notify", player, `These leaves are locked! Unlock {zone.Name or "this area"} first.`, "Bad")
+		end
 		return
 	end
 
