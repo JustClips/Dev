@@ -57,13 +57,13 @@ World.Walkway = 6 -- paved strip between the dust field and the bases
 -- and Upgrade stalls that stood here were removed on 2026-10-30 (Dev: the HUD buttons do
 -- the same), and the leaves now reach this strip.
 World.Plaza = { Min = Vector2.new(-62, 186), Max = Vector2.new(62, 198) }
--- Global leaderboards (LeaderboardService): a three-sided tower north of the market hall,
--- faces in this order: north, south-east, south-west.
-World.LeaderTower = Vector3.new(0, 0, -27)
+-- Global leaderboards (LeaderboardService): one stand each on the plaza strip in front of
+-- the big screen, facing the field.
+World.LeaderboardZ = 189
 World.Leaderboards = {
-	{ Key = "Earned", Title = "TOTAL CASH EARNED", Color = Color3.fromRGB(47, 191, 85) },
-	{ Key = "PerSec", Title = "BEST CASH / SEC", Color = Color3.fromRGB(255, 176, 32) },
-	{ Key = "Rebirths", Title = "MOST REBIRTHS", Color = Color3.fromRGB(155, 107, 255) },
+	{ Key = "Earned", Title = "TOTAL CASH EARNED", Color = Color3.fromRGB(47, 191, 85), X = -30 },
+	{ Key = "PerSec", Title = "BEST CASH / SEC", Color = Color3.fromRGB(255, 176, 32), X = 0 },
+	{ Key = "Rebirths", Title = "MOST REBIRTHS", Color = Color3.fromRGB(155, 107, 255), X = 30 },
 }
 
 World.BaseCount = 8
