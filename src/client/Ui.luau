@@ -583,25 +583,49 @@ local function fullScreen(): ScreenGui
 	return probe :: ScreenGui
 end
 
+-- Same, but kept inside the device safe area (notch / camera hole). HUD drawn past it is
+-- clipped off, so pieces may move out of the Roblox UI inset only as far as this.
+local deviceProbe: ScreenGui? = nil
+local function deviceSafe(): ScreenGui
+	if not deviceProbe or not deviceProbe.Parent then
+		local g = Instance.new("ScreenGui")
+		g.Name = "DeviceSafeProbe"
+		g.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
+		g.IgnoreGuiInset = true
+		g.ResetOnSpawn = false
+		g.Parent = playerGui
+		deviceProbe = g
+	end
+	return deviceProbe :: ScreenGui
+end
+
 -- How far from the left / right screen edge HUD pieces sit, as offsets inside a ScreenGui
--- that keeps out of the safe-area insets (negative = out into the inset). On phones the
--- safe area leaves a wide empty band beside the camera hole; Dev wanted the HUD hugging
--- the edges, so we only keep a small part of the inset clear. Each side is measured on
--- its own (the camera hole is often on one side only).
+-- that keeps out of the Roblox UI safe-area insets (negative = out into the inset). Dev
+-- wanted the HUD hugging the edges, so pieces move out into that inset, but never past the
+-- device safe area (notch / camera hole): anything there is clipped off (Dev, 2026-10-30).
+-- Each side is measured on its own (the camera hole is often on one side only).
 function Ui.edges(gui: ScreenGui): (number, number)
 	local full = fullScreen()
-	if gui.AbsoluteSize.X < 2 or full.AbsoluteSize.X < 2 then
+	local device = deviceSafe()
+	if gui.AbsoluteSize.X < 2 or full.AbsoluteSize.X < 2 or device.AbsoluteSize.X < 2 then
 		return 14, 14
 	end
-	local insetL = math.max(0, gui.AbsolutePosition.X - full.AbsolutePosition.X)
-	local insetR = math.max(0, (full.AbsolutePosition.X + full.AbsoluteSize.X) - (gui.AbsolutePosition.X + gui.AbsoluteSize.X))
-	local function pull(inset: number): number
+	local fullL = full.AbsolutePosition.X
+	local fullR = full.AbsolutePosition.X + full.AbsoluteSize.X
+	local insetL = math.max(0, gui.AbsolutePosition.X - fullL)
+	local insetR = math.max(0, fullR - (gui.AbsolutePosition.X + gui.AbsoluteSize.X))
+	local deviceL = math.max(0, device.AbsolutePosition.X - fullL)
+	local deviceR = math.max(0, fullR - (device.AbsolutePosition.X + device.AbsoluteSize.X))
+	local function pull(inset: number, safe: number): number
 		if inset < 1 then
 			return 14
 		end
-		return math.floor(math.clamp(inset - 30, 10, 24) - inset)
+		-- Distance from the real screen edge: a small gap, and at least 8 inside the
+		-- device safe area.
+		local fromEdge = math.max(math.clamp(inset - 30, 10, 24), safe + 8)
+		return math.floor(math.min(fromEdge, inset + 14) - inset)
 	end
-	return pull(insetL), pull(insetR)
+	return pull(insetL, deviceL), pull(insetR, deviceR)
 end
 
 -- Buttons carry a tinted "Studs" texture (gen_ui.py). Controllers recolour buttons
