@@ -583,8 +583,7 @@ local function fullScreen(): ScreenGui
 	return probe :: ScreenGui
 end
 
--- Same, but kept inside the device safe area (notch / camera hole). HUD drawn past it is
--- clipped off, so pieces may move out of the Roblox UI inset only as far as this.
+-- Same, but kept inside the device safe area (notch / camera hole), to measure that band.
 local deviceProbe: ScreenGui? = nil
 local function deviceSafe(): ScreenGui
 	if not deviceProbe or not deviceProbe.Parent then
@@ -601,12 +600,15 @@ end
 
 -- How far from the left / right screen edge HUD pieces sit, as offsets inside a ScreenGui
 -- that keeps out of the Roblox UI safe-area insets (negative = out into the inset). Dev
--- wanted the HUD hugging the edges, so pieces move out into that inset, but never past the
--- device safe area (notch / camera hole): anything there is clipped off (Dev, 2026-10-30).
+-- wanted the HUD hugging the edges (2026-10-30), so pieces move out into that inset and a
+-- little into the device safe band, stopping short of where a notch / camera hole sits.
 -- Each side is measured on its own (the camera hole is often on one side only).
 function Ui.edges(gui: ScreenGui): (number, number)
 	local full = fullScreen()
 	local device = deviceSafe()
+	-- We place pieces into the device safe band ourselves (see pull), so don't let Roblox
+	-- clip them there.
+	gui.ClipToDeviceSafeArea = false
 	if gui.AbsoluteSize.X < 2 or full.AbsoluteSize.X < 2 or device.AbsoluteSize.X < 2 then
 		return 14, 14
 	end
@@ -620,9 +622,11 @@ function Ui.edges(gui: ScreenGui): (number, number)
 		if inset < 1 then
 			return 14
 		end
-		-- Distance from the real screen edge: right up against the device safe area
-		-- (2 px in), measured on each phone, so no notch clips it and no gap is wasted.
-		local fromEdge = math.max(math.clamp(inset - 30, 10, 24), safe + 2)
+		-- Distance from the real screen edge: 12 px into the device safe area. Phones
+		-- report the same safe band on both sides, but the notch / camera hole only needs
+		-- about 3/4 of it (iPhone notch ~30 of 47, Dynamic Island ~48 of 59), so this
+		-- still clears it while sitting close to the edge. Measured on each phone.
+		local fromEdge = math.max(math.clamp(inset - 30, 10, 24), safe - 12)
 		return math.floor(math.min(fromEdge, inset + 14) - inset)
 	end
 	return pull(insetL, deviceL), pull(insetR, deviceR)

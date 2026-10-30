@@ -417,11 +417,30 @@ function HotbarController:Start()
 			render()
 		end
 	end)
+	-- You spawn holding your sweeping tool (Dev, 2026-10-30: after a rejoin it sat in the
+	-- bag). The server equips it too, but that can land before the character is ready, so
+	-- the client makes sure: for the first seconds after spawning, a tool in the backpack
+	-- goes into your hands unless you're already holding something or sitting in a car.
+	local function autoEquip(character: Model)
+		local deadline = os.clock() + 15
+		while os.clock() < deadline and character.Parent and player.Character == character do
+			local h = character:FindFirstChildOfClass("Humanoid")
+			if sweepTool(character) or character:FindFirstChildOfClass("Tool") then
+				return
+			end
+			local tool = sweepTool(player:FindFirstChildOfClass("Backpack"))
+			if h and h.Health > 0 and not h.SeatPart and tool and character:IsDescendantOf(game:GetService("Workspace")) then
+				h:EquipTool(tool)
+			end
+			task.wait(0.5)
+		end
+	end
 	-- Equipping happens on the character; refresh the highlight when tools move.
 	local function watch(character: Model)
 		character.ChildAdded:Connect(render)
 		character.ChildRemoved:Connect(render)
 		render()
+		task.spawn(autoEquip, character)
 	end
 	if player.Character then
 		watch(player.Character)

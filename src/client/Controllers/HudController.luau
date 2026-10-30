@@ -520,7 +520,8 @@ layout = function(s: number, compact: boolean)
 		if boostLayout then
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 		end
-		el.SweepButton.Position = UDim2.new(1, -math.ceil(170 * s + 40), 1, -14)
+		-- Clear of the hotbar's Bag slot and its badge, still left of the jump button.
+		el.SweepButton.Position = UDim2.new(1, -math.ceil(170 * s + 8), 1, -14)
 	else
 		el.Rail.Size = UDim2.fromOffset(180, 304)
 		if railGrid then
