@@ -110,7 +110,8 @@ local function toolRows(data)
 		local row = newRow(tool.Tier, tool.Id)
 		local owned = tool.Tier <= data.ToolTier
 		local isNext = tool.Tier == data.ToolTier + 1
-		local afford = BigNum.gte(data.Cash, tool.Price)
+		local toolPrice = if tool.Tier == 2 then Tools.tutorialPrice(tool.Price, BigNum.toNumber(data.Cash), data.Flags.TutorialDone == true) else tool.Price
+		local afford = BigNum.gte(data.Cash, toolPrice)
 		;(row:FindFirstChild("Name") :: TextLabel).Text = tool.Name
 		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.toolIcon(tool.Id)
 		setStats(row, tool.Radius, tool.Power, tool.Capacity)
@@ -125,7 +126,7 @@ local function toolRows(data)
 		elseif isNext then
 			setStatus(row, "NEXT", GOLD)
 			-- The price is on the button (Dev: it was easy to miss under the name).
-			setMain(row, `Buy {Format.cash(tool.Price)}`, if afford then GREEN else GREY, function()
+			setMain(row, if toolPrice == 0 then "Get it FREE" else `Buy {Format.cash(toolPrice)}`, if afford then GREEN else GREY, function()
 				toast(Net.func("BuyNextTool"):InvokeServer())
 			end)
 		else

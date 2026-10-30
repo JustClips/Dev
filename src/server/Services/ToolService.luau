@@ -566,12 +566,16 @@ local function buyNext(player: Player): (boolean, string)
 		return false, "You have the best tool!"
 	end
 	local def = Tools.get(nextTier)
-	if BigNum.lt(data.Cash, def.Price) then
-		S.ShopService:OfferCashFor(player, BigNum.sub(def.Price, data.Cash))
-		return false, `Need {Format.cash(def.Price)}`
+	local price = def.Price
+	if nextTier == 2 then
+		price = Tools.tutorialPrice(price, BigNum.toNumber(data.Cash), data.Flags.TutorialDone == true)
 	end
-	data.Cash = BigNum.sub(data.Cash, def.Price)
-	S.AnalyticsService:Sink(player, def.Price, Enum.AnalyticsEconomyTransactionType.Shop, "Tool_" .. def.Id)
+	if BigNum.lt(data.Cash, price) then
+		S.ShopService:OfferCashFor(player, BigNum.sub(price, data.Cash))
+		return false, `Need {Format.cash(price)}`
+	end
+	data.Cash = BigNum.sub(data.Cash, price)
+	S.AnalyticsService:Sink(player, price, Enum.AnalyticsEconomyTransactionType.Shop, "Tool_" .. def.Id)
 	ToolService:SetTier(player, nextTier)
 	S.OfferService:OnToolBought(player)
 	return true, `Got the {def.Name}!`

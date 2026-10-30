@@ -26,6 +26,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
+local Tools = require(Shared.Config.Tools)
 local Upgrades = require(Shared.Config.Upgrades)
 local Types = require(Shared.Types)
 
@@ -107,7 +108,12 @@ local function computeStates(data): { [string]: string }
 end
 
 local function price(def: UpgradeDef, data): number
-	return Upgrades.cost(def, data.Upgrades[def.Id] or 0)
+	local level = data.Upgrades[def.Id] or 0
+	local cost = Upgrades.cost(def, level)
+	if def.Id == "Power" and level == 0 then
+		return Tools.tutorialPrice(cost, BigNum.toNumber(data.Cash), data.Flags.TutorialDone == true)
+	end
+	return cost
 end
 
 -- Can be bought right now (sub-tree roots also need their lab).
@@ -700,7 +706,7 @@ function UpgradeController:Start()
 		local parts = { tostring(data.Rebirths or 0) }
 		for _, def in Upgrades.List do
 			local level = data.Upgrades[def.Id] or 0
-			table.insert(parts, `{level}:{BigNum.gte(data.Cash, Upgrades.cost(def, level))}`)
+			table.insert(parts, `{level}:{BigNum.gte(data.Cash, price(def, data))}`)
 		end
 		local signature = table.concat(parts, "|")
 		if signature ~= lastSignature then
