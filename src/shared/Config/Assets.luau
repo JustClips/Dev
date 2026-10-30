@@ -6310,7 +6310,7 @@ Assets.Models = {
 			max = Vector3.new(46.307, 21.67, 44.4),
 			min = Vector3.new(-46.307, -2.1, -47.116),
 		},
-		id = 106695625130279,
+		id = 86367270527892,
 		kind = "prop",
 		parts = {
 			Arch = {
@@ -6338,6 +6338,12 @@ Assets.Models = {
 			Fences2 = {
 				collide = false,
 			},
+			FrontWallL = {
+				collide = true,
+			},
+			FrontWallR = {
+				collide = true,
+			},
 			Hatchery = {
 				collide = false,
 			},
@@ -6360,6 +6366,64 @@ Assets.Models = {
 				collide = false,
 			},
 			Walls3 = {
+				collide = false,
+			},
+		},
+	},
+	Skin_Halloween = {
+		bounds = {
+			max = Vector3.new(46.0, 19.618, 44.0),
+			min = Vector3.new(-46.0, -2.1, -47.116),
+		},
+		id = 91396999038661,
+		kind = "prop",
+		parts = {
+			Arch = {
+				collide = false,
+			},
+			Body = {
+				collide = false,
+			},
+			Body_Glow1 = {
+				collide = false,
+				glow = "7CFF6B",
+				parent = "Body",
+			},
+			Body_Glow2 = {
+				collide = false,
+				glow = "8E44D9",
+				parent = "Body",
+			},
+			Body_Glow3 = {
+				collide = false,
+				glow = "FFB13D",
+				parent = "Body",
+			},
+			Decor = {
+				collide = false,
+			},
+			Decor2 = {
+				collide = false,
+			},
+			Fences = {
+				collide = false,
+			},
+			Hatchery = {
+				collide = false,
+			},
+			House = {
+				collide = false,
+			},
+			Incubators = {
+				collide = false,
+			},
+			Lamps = {
+				collide = false,
+			},
+			Pillars = {
+				collide = false,
+			},
+			Walls = {
 				collide = false,
 			},
 		},
@@ -7421,6 +7485,7 @@ Assets.Images = {
 	BaseSkin_Autumn = "rbxassetid://83462786728330",
 	BaseSkin_Candy = "rbxassetid://137098554057298",
 	BaseSkin_Castle = "rbxassetid://95709317278734",
+	BaseSkin_Halloween = "rbxassetid://82285050542266",
 	BaseSkin_Tiki = "rbxassetid://125069349482373",
 	BaseSkin_Winter = "rbxassetid://81254928174997",
 	Chevron = "rbxassetid://114720155624899",

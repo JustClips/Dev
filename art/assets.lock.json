@@ -494,6 +494,10 @@
    "id": 95709317278734,
    "sha": "82934f1b894464a8c7c43b3f068b314a71b52e70c6a17b7a90407998ebb7d1fc"
   },
+  "BaseSkin_Halloween": {
+   "id": 82285050542266,
+   "sha": "63609942cf6d73539d9a7d8e44b0dc70e3c9db29434faf3c193b0768bfa418ef"
+  },
   "BaseSkin_Tiki": {
    "id": 125069349482373,
    "sha": "9df504a4f300ae5cac70ab909b230f0271f9472931d6eef326d1874121ae325e"
@@ -5169,8 +5173,12 @@
    "sha": "d5df6f0bd0b792abf049c057d6c070661c18bec92477daef39481723cccae9ac"
   },
   "Skin_Castle": {
-   "id": 106695625130279,
-   "sha": "5244c5c889fdfe65646a2ce7dd1a124cc0f69ac3f7396d9900ea98937ff32f1a"
+   "id": 86367270527892,
+   "sha": "d5ef7162dcc5ac0f1c4400f6fa0a1a8d71c7ce3a010ce386b843d249ee9df01a"
+  },
+  "Skin_Halloween": {
+   "id": 91396999038661,
+   "sha": "22d4f5017e79d2233c4cd98ad82f44ceb90f6f9fb20cd4ad632a04165e66e342"
   },
   "Skin_Tiki": {
    "id": 129773936435294,
