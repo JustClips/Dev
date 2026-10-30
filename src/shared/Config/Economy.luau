@@ -112,7 +112,7 @@ local Economy = {
 	TileBatchInterval = 0.1,
 	IncomeTickSeconds = 1,
 	AutosaveSeconds = 60,
-	SessionStaleSeconds = 30 * 60,
+	SessionStaleSeconds = 5 * 60, -- a save lock not refreshed (autosave) for this long is dead
 	FullMessageCooldown = 4,
 }
 

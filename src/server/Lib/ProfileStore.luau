@@ -9,7 +9,11 @@ local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
 local MAX_LOAD_ATTEMPTS = 8
+local STUDIO_LOAD_ATTEMPTS = 24 -- Studio waits long enough to outlast STUDIO_STALE
 local LOCKED_RETRY_SECONDS = 5
+-- In Studio, a lock nobody has written to for this long is dead: a live server autosaves
+-- (and so refreshes its lock) every Economy.AutosaveSeconds (60).
+local STUDIO_STALE = 100
 local MAX_WRITE_ATTEMPTS = 4
 
 export type Profile = {
@@ -62,7 +66,10 @@ end
 -- Returns the profile, or nil and a reason ("left", "locked", "error").
 function ProfileStore:LoadAsync(key: string, isActive: () -> boolean): (Profile?, string?)
 	local token = HttpService:GenerateGUID(false)
-	for _ = 1, MAX_LOAD_ATTEMPTS do
+	local studio = RunService:IsStudio()
+	local staleAfter = if studio then math.min(self._stale, STUDIO_STALE) else self._stale
+	local lockAge = 0
+	for _ = 1, if studio then STUDIO_LOAD_ATTEMPTS else MAX_LOAD_ATTEMPTS do
 		if not isActive() then
 			return nil, "left"
 		end
@@ -77,13 +84,14 @@ function ProfileStore:LoadAsync(key: string, isActive: () -> boolean): (Profile?
 			local session = record.Meta.Session
 			local now = os.time()
 			if session and session.Token ~= token then
-				local stale = now - (record.Meta.LastUpdate or 0) >= self._stale
+				lockAge = now - (record.Meta.LastUpdate or 0)
+				local stale = lockAge >= staleAfter
 				-- Same JobId but not one of our live sessions: a dead Studio run. Safe to take.
 				local deadLocal = session.JobId == game.JobId and not activeTokens[session.Token]
 				-- A Studio test run takes over a lock left by an earlier Studio run (a stopped
 				-- run often can't release it, and waiting left the loading screen stuck), but
 				-- never one held by a live server: that kicked a player out of the real game.
-				local oldStudioRun = RunService:IsStudio() and session.Studio == true
+				local oldStudioRun = studio and session.Studio == true
 				if not stale and not deadLocal and not oldStudioRun then
 					locked = true
 					return nil -- cancel the write
@@ -113,7 +121,7 @@ function ProfileStore:LoadAsync(key: string, isActive: () -> boolean): (Profile?
 		end
 		if locked then
 			-- Usually the player's previous server is still saving. Give it a moment.
-			warn(`[ProfileStore] {key} is still locked by another server, retrying in {LOCKED_RETRY_SECONDS}s`)
+			warn(`[ProfileStore] {key} is still locked by another server (last saved {lockAge}s ago, taken over at {staleAfter}s), retrying in {LOCKED_RETRY_SECONDS}s`)
 			task.wait(LOCKED_RETRY_SECONDS)
 		end
 	end
