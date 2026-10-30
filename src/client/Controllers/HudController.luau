@@ -212,7 +212,7 @@ end
 -- New players see the left rail fill in as the tutorial goes (Dev, 2026-10-30: too many
 -- buttons at once on phones). Shop is always there; Index after the first pet, Upgrades
 -- at the step that uses it, Rebirth / Daily / Gifts / Spin once the tutorial is done.
-local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10 }
+local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10, Wheel = 11 }
 local function revealRail(data)
 	local step = STEP_ORDER[data.TutorialStep] or 99
 	local done = step == 99 or data.Rebirths > 0

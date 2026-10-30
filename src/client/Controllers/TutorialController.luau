@@ -71,6 +71,12 @@ local STEPS: { Step } = {
 		touch = "Open Upgrades and double-tap Sweep Power to buy it!",
 		icon = "Icon_Upgrade",
 	},
+	{
+		key = "Wheel",
+		text = "Go to the Lucky Wheel in the plaza and press E for your FREE spin!",
+		touch = "Go to the Lucky Wheel in the plaza and tap it for your FREE spin!",
+		icon = "Icon_Spin",
+	},
 }
 local STEP_INDEX: { [string]: number } = {}
 for i, step in STEPS do
@@ -221,6 +227,9 @@ local function worldTarget(data): Instance?
 		local index = World.nearestDump(if root then root.Position else World.RocketPosition)
 		local structures = Workspace:FindFirstChild("Structures")
 		return structures and structures:FindFirstChild("LeafDump" .. index)
+	elseif key == "Wheel" then
+		local structures = Workspace:FindFirstChild("Structures")
+		return structures and structures:FindFirstChild("LuckyWheel")
 	end
 	return nil
 end
@@ -306,6 +315,8 @@ local function update()
 			pointAt(Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton"))
 		elseif key == "Upgrade" and not C.UpgradeController:IsOpen() then
 			pointAt(Ui.find(hud, "Rail.UpgradesButton"))
+		elseif key == "Wheel" and Ui.isOpen(Ui.screen("Wheel")) and not C.WheelController:IsSpinning() then
+			pointAt(Ui.find(Ui.screen("Wheel"), "Window.Side.SpinButton"))
 		else
 			pointAt(nil)
 		end

@@ -85,6 +85,13 @@ local function tutorialStep(player: Player, session: any): string
 	if (data.Upgrades.Power or 0) < 1 then
 		return "Upgrade"
 	end
+	-- Last: walk to the Lucky Wheel in the plaza and use the free spin (Dev, 2026-10-30: so
+	-- players learn it's there). Counts as done once the wheel has stopped, so the
+	-- "Tutorial done" window doesn't cover the spin (RewardService re-marks after it).
+	local spunAt = data.Flags.FreeSpinAt
+	if type(spunAt) ~= "number" or os.time() - spunAt < Rewards.Wheel.SpinSeconds + 0.5 then
+		return "Wheel"
+	end
 	data.Flags.TutorialDone = true
 	if not data.Flags.TutorialRewarded then
 		data.Flags.TutorialRewarded = true

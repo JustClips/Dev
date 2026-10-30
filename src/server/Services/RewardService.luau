@@ -215,6 +215,14 @@ local function spin(player: Player): (boolean, string?, number?)
 	local seg = Rewards.Wheel.Segments[index]
 	local got = grant(player, seg.Reward, "Wheel" .. index)
 	S.StateService:Mark(player)
+	if free then
+		-- The tutorial's wheel step finishes once the wheel has stopped (StateService).
+		task.delay(Rewards.Wheel.SpinSeconds + 1, function()
+			if player.Parent then
+				S.StateService:Mark(player)
+			end
+		end)
+	end
 	S.AnalyticsService:Custom(player, "WheelSpin", index, { Free = tostring(free) })
 	if seg.Weight <= 1 then
 		-- After the wheel stops, so the spinner sees it land first.

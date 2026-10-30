@@ -212,6 +212,10 @@ local function spin()
 	end)
 end
 
+function WheelController:IsSpinning(): boolean
+	return spinning
+end
+
 function WheelController:Open()
 	if not Ui.isOpen(gui) then
 		Ui.open("Wheel")
