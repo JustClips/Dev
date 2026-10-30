@@ -33,6 +33,18 @@ local player = Players.LocalPlayer
 local holding = false
 local touchHolding = false
 local touches: { [InputObject]: boolean } = {}
+-- Which half of the screen a held finger sweeps on: "Right" keeps it away from the
+-- thumbstick on the left (Dev, 2026-10-30), "Left", or "Any".
+local SWEEP_SIDE = "Right"
+
+local function onSweepSide(x: number): boolean
+	if SWEEP_SIDE == "Any" then
+		return true
+	end
+	local camera = Workspace.CurrentCamera
+	local mid = if camera then camera.ViewportSize.X / 2 else 0
+	return if SWEEP_SIDE == "Right" then x >= mid else x < mid
+end
 local emitter: ParticleEmitter
 local emitterPart: Part
 local numberPool: { { attachment: Attachment, gui: BillboardGui, label: TextLabel } } = {}
@@ -312,11 +324,11 @@ function SweepController:Start()
 			holding = false
 		end
 	end)
-	-- Phones: hold a finger anywhere on the screen to sweep (Dev, 2026-10-30: no Sweep
+	-- Phones: hold a finger on the SWEEP_SIDE half of the screen to sweep (Dev, 2026-10-30: no Sweep
 	-- button). Touches on buttons and the thumbstick are "processed" and don't count;
 	-- dragging the camera does, so you can turn while you sweep.
 	UserInputService.TouchStarted:Connect(function(touch, processed)
-		if not processed then
+		if not processed and onSweepSide(touch.Position.X) then
 			touches[touch] = true
 			touchHolding = true
 		end

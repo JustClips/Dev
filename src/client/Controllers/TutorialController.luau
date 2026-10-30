@@ -39,7 +39,7 @@ local STEPS: { Step } = {
 	{
 		key = "Sweep",
 		text = "Hold the mouse to sweep the leaves and find an egg!",
-		touch = "Hold your finger on the screen to sweep the leaves and find an egg!",
+		touch = "Hold your finger on the right side of the screen to sweep the leaves and find an egg!",
 		icon = "Icon_Dust",
 	},
 	{
