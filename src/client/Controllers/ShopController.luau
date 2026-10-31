@@ -75,8 +75,10 @@ local SECTIONS: { Section } = {
 	{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Heading = Color3.fromRGB(255, 126, 182), Card = Color3.fromRGB(255, 95, 162) },
 	{ Key = "Passes", Title = "Passes", Icon = "Icon_Star", Heading = Color3.fromRGB(197, 155, 255), Card = Color3.fromRGB(155, 107, 255) },
 	{ Key = "Boosts", Title = "Boosts", Icon = "Icon_Luck", Heading = Color3.fromRGB(255, 154, 60), Card = Color3.fromRGB(255, 128, 48) },
-	{ Key = "Potions", Title = "Potions", Icon = "Icon_PotionLuck", Heading = Color3.fromRGB(94, 230, 200), Card = Color3.fromRGB(46, 184, 160) },
+	{ Key = "Potions", Title = "Items", Icon = "Icon_PotionLuck", Heading = Color3.fromRGB(94, 230, 200), Card = Color3.fromRGB(46, 184, 160) },
 	{ Key = "Money", Title = "Money", Icon = "Icon_Cash", Heading = Color3.fromRGB(107, 227, 74), Card = Color3.fromRGB(76, 209, 55) },
+	-- Codes: a fixed box at the end of the list (gen_ui shop(), CodesController).
+	{ Key = "Codes", Title = "Codes", Icon = "Icon_Quest", Heading = Color3.fromRGB(127, 200, 255), Card = Color3.fromRGB(62, 142, 240) },
 }
 -- Old section names other code may still open.
 local ALIAS = { Deals = "Featured", Offers = "Featured", Cash = "Money", Tools = "Money" }
@@ -830,6 +832,10 @@ local function render()
 	luckCard = nil
 	nextOrder = 0
 	for _, section in SECTIONS do
+		if section.Key == "Codes" then
+			headings.Codes = list:FindFirstChild("CodesBox") :: any
+			continue
+		end
 		local before = nextOrder
 		addHeading(section)
 		BUILDERS[section.Key](data, section.Card)
@@ -872,7 +878,8 @@ function ShopController:Toggle()
 	end
 end
 
--- Opens the shop at a section ("Featured", "Eggs", "Passes", "Boosts", "Potions", "Money").
+-- Opens the shop at a section ("Featured", "Eggs", "Passes", "Boosts", "Potions", "Money",
+-- "Codes").
 function ShopController:Open(section: string?)
 	Ui.open("Shop")
 	open(section)

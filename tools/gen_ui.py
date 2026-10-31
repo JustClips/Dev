@@ -719,7 +719,22 @@ def shop():
         text("Title", "Shop", U(0, 300, 1, 0), U(0, 18, 0, 0), ts=44, display=True, stroke=4, xa="Left", ZIndex=4),
         button("Close", U(0, 58, 0, 54), U(1, -8, 0.5, 0), (1, 0.5), color=DANGER, label="X", ts=34, ZIndex=5),
     ])
-    lst = scroller("List", U(1, -12, 1, -80), U(0, 6, 0, 74), [vlist(12), padding(6, 10, 8, 14)])
+    # Codes box at the very end, no heading (Dev, 2026-10-31: moved here from Settings, styled
+    # after his reference). Built once, not rebuilt with the list; CodesController wires it.
+    codes_box = frame("CodesBox", U(1, 0, 0, 150), bg="#2F5BFF", LayoutOrder=100001, children=[
+        border(INK, 4),
+        node("Shine", "UIGradient", {"Color": {"keypoints": [[0, "#1A3CFF"], [0.5, "#B8C8FF"], [1, "#1A3CFF"]]}, "Rotation": 0}),
+        text("Title", "Follow socials for codes!", U(1, -24, 0, 26), U(0.5, 0, 0, 10), (0.5, 0), ts=22, display=True, stroke=2.5,
+             ZIndex=3),
+        node("Input", "TextBox", base(U(1, -236, 0, 56), U(0, 22, 0, 52), BackgroundColor3="#13248A", BackgroundTransparency=0.35,
+                                      Text="", PlaceholderText="Enter code here...", PlaceholderColor3="#B8C4F0", TextColor3=WHITE,
+                                      TextSize=26, FontFace=DISPLAY, ClearTextOnFocus=False, TextXAlignment="Center", ZIndex=3,
+                                      TextScaled=False), [padding(12, 12, 0), border("#0B1660", 2)]),
+        button("Redeem", U(0, 180, 0, 56), U(1, -18, 0, 52), (1, 0), color=SHOP_GREEN, label="Redeem", ts=30, stroke=3, ZIndex=3),
+        text("Status", "", U(1, -24, 0, 22), U(0.5, 0, 1, -8), (0.5, 1), ts=18, display=True, stroke=2, ZIndex=3,
+             TextScaled=True, children=[fit(18)]),
+    ])
+    lst = scroller("List", U(1, -12, 1, -80), U(0, 6, 0, 74), [vlist(12), padding(6, 10, 8, 14), codes_box])
     lst["properties"].update(ScrollBarThickness=8, ScrollBarImageColor3="#9AA3B8", VerticalScrollBarInset="ScrollBar")
     panel = frame("Panel", U(0, W, 1, 0), bg=SHOP_BODY, children=[
         border(INK, 4), studs("#4A4F5C", 0, 40), head, lst,
@@ -864,14 +879,14 @@ def shop():
     ])
 
     # Section buttons right of the panel: icon + name, tap to jump there.
-    nav_button = node("NavButton", "TextButton", base(U(1, 0, 0, 66), BackgroundTransparency=1, Text="", AutoButtonColor=False,
+    nav_button = node("NavButton", "TextButton", base(U(1, 0, 0, 60), BackgroundTransparency=1, Text="", AutoButtonColor=False,
                                                       Visible=False, ZIndex=3), [
-        icon("Icon", "Cash", 46, U(0.5, 0, 0, 0), (0.5, 0), ZIndex=3),
-        text("Label", "Money", U(1, 10, 0, 20), U(0.5, 0, 1, 0), (0.5, 1), ts=19, display=True, stroke=3, ZIndex=4,
-             TextScaled=True, children=[fit(19)]),
+        icon("Icon", "Cash", 42, U(0.5, 0, 0, 0), (0.5, 0), ZIndex=3),
+        text("Label", "Money", U(1, 10, 0, 18), U(0.5, 0, 1, 0), (0.5, 1), ts=18, display=True, stroke=3, ZIndex=4,
+             TextScaled=True, children=[fit(18)]),
     ])
-    # 6 x 66 + 5 x 4 = 416: all six fit beside the 440 px list.
-    nav = frame("Nav", U(0, SHOP_NAV_W, 1, -80), U(0, W + 4, 0, 76), children=[vlist(4), nav_button])
+    # 7 x 60 + 6 x 2 = 432: all seven fit beside the 440 px list.
+    nav = frame("Nav", U(0, SHOP_NAV_W, 1, -80), U(0, W + 4, 0, 76), children=[vlist(2), nav_button])
 
     gift_row = button("Template", U(1, -10, 0, 46), color=HEADER, label="Player", ts=18, stroke=3, Visible=False)
     gift = frame("GiftPicker", U(0, 380, 0, 330), U(0, W / 2, 0.5, 20), (0.5, 0.5), bg=SHOP_BODY, Visible=False, ZIndex=10, children=[
@@ -1565,11 +1580,8 @@ def settings():
         row("Music", "Music", "Music", 80),
         row("Sfx", "Sound effects", "Speaker", 176),
         # Roblox's own feedback prompt (SocialService:PromptFeedbackSubmissionAsync).
-        button("Feedback", U(0.5, -20, 0, 52), U(0, 14, 0, 272), color=HEADER, label="Feedback", ts=22, ico="Star", ico_px=32),
-        # Codes from social posts (CodesController opens the Codes window). Moved here from
-        # the rail (Dev, 2026-10-30: it didn't fit on phones).
-        button("Codes", U(0.5, -20, 0, 52), U(1, -14, 0, 272), (1, 0), color="#4C8DFF", label="Codes", ts=22, ico="Gift",
-               ico_px=32),
+        # Codes moved to the end of the Shop (Dev, 2026-10-31).
+        button("Feedback", U(1, -28, 0, 52), U(0, 14, 0, 272), color=HEADER, label="Feedback", ts=22, ico="Star", ico_px=32),
         text("Track", "", U(1, -28, 0, 22), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True),
     ]
     # 370 tall so "Now playing" has its own line under the buttons.
@@ -1821,29 +1833,6 @@ def quests():
                           order=10, enabled=False))
 
 
-# ---------------------------------------------------------------- Codes
-def codes():
-    """Codes window (screen "Codes", CodesController), opened from the Codes button in
-    Settings: a box to type a code from our social posts, a big Redeem button and the result
-    under it. Fitted to its content (Dev, 2026-10-31: it was huge for no reason)."""
-    W, H = 480, 352
-    box = plate("Entry", U(1, -28, 0, 168), U(0, 14, 0, 76), tint=WHITE, stud=0.2, children=[
-        text("Title", "ENTER A CODE", U(1, -30, 0, 30), U(0.5, 0, 0, 10), (0.5, 0), ts=28, color=INK, display=True),
-        text("Text", "Find codes in our social posts and the group!", U(1, -30, 0, 22), U(0.5, 0, 0, 40), (0.5, 0), ts=16,
-             color=SUB, heavy=True),
-        node("Input", "TextBox", base(U(1, -40, 0, 58), U(0.5, 0, 0, 68), (0.5, 0), BackgroundColor3="#EEF1F7", Text="",
-                                      PlaceholderText="Type code here", PlaceholderColor3="#9AA3B8", TextColor3=INK, TextSize=30,
-                                      FontFace=DISPLAY, ClearTextOnFocus=False, TextXAlignment="Center", ZIndex=3,
-                                      TextScaled=False), [padding(12, 12, 0), border(INK, 4)]),
-        text("Status", "", U(1, -30, 0, 26), U(0.5, 0, 1, -8), (0.5, 1), ts=18, color=SUB, display=True),
-    ])
-    redeem = button("Redeem", U(0, 280, 0, 62), U(0.5, 0, 0, 254), (0.5, 0), color=SUCCESS, label="Redeem", ts=30)
-    note = text("Note", "Each code works once. Some codes run out, so use them fast!", U(1, -28, 0, 22), U(0, 14, 1, -8), (0, 1),
-                ts=16, color=SUB, heavy=True)
-    write("Codes", screen([dim(), window(W, H, "Codes", "Star", [box, redeem, note], header="#4C8DFF", size=(W, H))],
-                         order=10, enabled=False))
-
-
 # ---------------------------------------------------------------- Garage
 def garage():
     """Gear window (screen "Garage", called "Tools" before 2026-10-30): a Tools tab (the tool ladder: buy the next one with
@@ -2076,7 +2065,6 @@ def main():
     base_picker()
     group_reward()
     wheel()
-    codes()
     quests()
     merchant()
     upgrades()
