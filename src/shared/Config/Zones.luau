@@ -20,6 +20,14 @@ for i, dump in World.Dumps do
 	table.insert(landingExclusions, { Center = Vector2.new(spot.X, spot.Z), Radius = World.DumpRadius + 1 })
 end
 
+-- The Traveling Merchant's cart and the path under it (no leaves grow through them).
+do
+	local path = World.MerchantPath
+	local m = World.Merchant.Position
+	table.insert(landingExclusions, { Center = Vector2.new(m.X, m.Z), Radius = 10 })
+	table.insert(landingExclusions, { Center = Vector2.new(m.X, (path.FromZ + m.Z) / 2), Radius = path.Width / 2 + 3 })
+end
+
 local List: { ZoneDef } = {
 	{
 		Id = "Landing",

@@ -2,9 +2,9 @@
 -- leaderstats (Cash as a formatted string, Rebirths). No overhead tag (Dev: clutter).
 --
 -- Global leaderboards (Dev, 2026-10-30): total cash earned (all time), best cash per second
--- ever reached, and most rebirths, each the top 10 across every server. Scores go to
--- OrderedDataStores every SAVE_SECONDS and the plaza leaderboard stands (MapBuilder leaderboards)
--- reload every LOAD_SECONDS. OrderedDataStores only hold whole numbers, so cash values are
+-- ever reached, most rebirths and (2026-10-31) most time played, each the top 10 across
+-- every server. Scores go to OrderedDataStores every SAVE_SECONDS and the plaza leaderboard
+-- stands (MapBuilder leaderboards) reload every LOAD_SECONDS. Time played is whole seconds. OrderedDataStores only hold whole numbers, so cash values are
 -- stored as round(log10(value + 1) * SCALE) and turned back for display.
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
@@ -86,8 +86,11 @@ local function decodeCash(score: number): any
 	return { m = 10 ^ (log - e), e = e }
 end
 
-local function scoresOf(data): { [string]: number }
+local function scoresOf(session): { [string]: number }
+	local data = session.Data
 	return {
+		-- Saved play time plus this visit so far (DataService adds the visit on release).
+		Playtime = math.max(0, math.floor((data.Stats.Playtime or 0) + os.time() - session.JoinedAt)),
 		Earned = encodeCash(data.Stats.CashEarned or 0),
 		PerSec = encodeCash(data.Stats.BestPerSec or 0),
 		Rebirths = data.Rebirths,
@@ -109,11 +112,11 @@ local function nameOf(userId: number): string
 	return names[userId]
 end
 
-local function save(player: Player, data)
-	if not data or player.UserId <= 0 then
+local function save(player: Player, session)
+	if not session or not session.Data or player.UserId <= 0 then
 		return
 	end
-	for key, score in scoresOf(data) do
+	for key, score in scoresOf(session) do
 		local store = stores[key]
 		if store and score > 0 then
 			pcall(store.SetAsync, store, tostring(player.UserId), score)
@@ -181,7 +184,7 @@ local function load()
 			local userId = tonumber(entry.key)
 			if userId then
 				local score = entry.value
-				local value = if def.Key == "Rebirths" then tostring(score) elseif def.Key == "PerSec" then `{Format.cash(decodeCash(score))}/s` else Format.cash(decodeCash(score))
+				local value = if def.Key == "Rebirths" then tostring(score) elseif def.Key == "Playtime" then Format.duration(score) elseif def.Key == "PerSec" then `{Format.cash(decodeCash(score))}/s` else Format.cash(decodeCash(score))
 				row(rows, rank, userId, value)
 			end
 		end
@@ -219,7 +222,7 @@ function LeaderboardService:Start()
 		while true do
 			task.wait(SAVE_SECONDS)
 			for player, session in S.DataService:GetSessions() do
-				save(player, session.Data)
+				save(player, session)
 				task.wait(0.5)
 			end
 		end
@@ -232,7 +235,7 @@ function LeaderboardService:Start()
 		end
 	end)
 	S.DataService.ProfileReleasing:Connect(function(player, session)
-		save(player, session.Data)
+		save(player, session)
 	end)
 end
 

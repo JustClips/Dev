@@ -763,6 +763,12 @@ end
 local function merchantCart()
 	local cf = World.Merchant
 	local model = make("Model", { Name = "MerchantCart" }, structures)
+	-- Cobblestone path from the market hall's round pad out under the cart, same height and
+	-- look as the pad (top at y 0.5), so the cart stands on paving joined to the hall.
+	local path = World.MerchantPath
+	local x = cf.Position.X
+	block(model, "Path", Vector3.new(path.Width, 1, path.FromZ - path.ToZ), CFrame.new(x, -0.02, (path.FromZ + path.ToZ) / 2), Color3.fromRGB(200, 192, 178), M.Cobblestone)
+	block(model, "PathRim", Vector3.new(path.Width + 2, 0.8, path.FromZ - path.ToZ + 1), CFrame.new(x, -0.15, (path.FromZ + path.ToZ) / 2 - 0.5), WOOD_DARK, M.Wood)
 	local red = Color3.fromRGB(230, 70, 70)
 	local cream = Color3.fromRGB(255, 240, 210)
 	block(model, "Bed", Vector3.new(9, 0.8, 4.6), cf * CFrame.new(0, 1.9, 0.6), WOOD, M.WoodPlanks)

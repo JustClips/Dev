@@ -64,14 +64,19 @@ World.Plaza = { Min = Vector2.new(-62, 186), Max = Vector2.new(62, 198) }
 World.Wheel = CFrame.lookAt(Vector3.new(0, 0, 191), Vector3.new(0, 0, 0))
 -- Global leaderboards (LeaderboardService): one stand each on the plaza strip in front of
 -- the big screen, facing the field.
--- The Traveling Merchant's cart (MerchantService, Config/Merchant) on the plaza strip,
--- right of the leaderboard stands, facing the field. Keep x 36..48 clear.
-World.Merchant = CFrame.lookAt(Vector3.new(42, 0, 191), Vector3.new(42, 0, 0))
+-- The Traveling Merchant's cart (MerchantService, Config/Merchant) in the middle of the
+-- field, just north of the market hall and its leaf dumps (Dev, 2026-10-31; it stood on the
+-- plaza strip at x 42 before, where the Time Played board is now). It faces north, away
+-- from the hall, on a cobblestone path joined to the hall's round pad (MapBuilder). y 0.5
+-- is the top of that pad and path.
+World.Merchant = CFrame.lookAt(Vector3.new(0, 0.5, -26), Vector3.new(0, 0.5, -100))
+World.MerchantPath = { Width = 14, FromZ = -12, ToZ = -32 } -- cobblestone strip under the cart
 World.LeaderboardZ = 189
 World.Leaderboards = {
 	{ Key = "Earned", Title = "TOTAL CASH EARNED", Color = Color3.fromRGB(47, 191, 85), X = -42 },
 	{ Key = "PerSec", Title = "BEST CASH / SEC", Color = Color3.fromRGB(255, 176, 32), X = -24 },
 	{ Key = "Rebirths", Title = "MOST REBIRTHS", Color = Color3.fromRGB(155, 107, 255), X = 24 },
+	{ Key = "Playtime", Title = "MOST TIME PLAYED", Color = Color3.fromRGB(60, 160, 255), X = 42 },
 }
 
 World.BaseCount = 8
