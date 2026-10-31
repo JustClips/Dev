@@ -1,4 +1,4 @@
-"""Cartoon skyboxes for the default (clear weather) sky.
+"""Sky gradient skyboxes for the clear-weather sky, one per zone look (Config/SkyLooks).
 
   python3 art/sky/skybox.py            # writes art/out/ui/Sky_<Look>_<Face>.png + previews
 
@@ -25,27 +25,26 @@ def c(*rgb):
 
 # Sky stops are (elevation in degrees, colour). Clouds: lit, shade, and the far haze rim.
 LOOKS = {
-    "CozyAutumn": {
-        "stops": [(-90, c(236, 196, 160)), (0, c(255, 222, 186)), (6, c(252, 225, 196)), (20, c(178, 210, 236)), (55, c(112, 168, 226)), (90, c(92, 150, 214))],
-        "lit": c(255, 252, 244), "shade": c(250, 210, 186), "edge": c(255, 236, 214),
-    },
-    "GoldenHour": {
-        "stops": [(-90, c(232, 168, 120)), (0, c(255, 196, 140)), (7, c(255, 210, 160)), (22, c(196, 196, 214)), (55, c(122, 156, 214)), (90, c(98, 132, 200))],
-        "lit": c(255, 244, 222), "shade": c(246, 170, 140), "edge": c(255, 220, 180),
-    },
     "Clear": {
-        "stops": [(-90, c(190, 214, 236)), (0, c(214, 236, 252)), (6, c(200, 228, 250)), (20, c(140, 196, 242)), (55, c(86, 156, 230)), (90, c(70, 140, 222))],
-        "lit": c(255, 255, 255), "shade": c(204, 220, 244), "edge": c(240, 248, 255),
+        "stops": [(-90, c(150, 186, 222)), (0, c(178, 212, 240)), (8, c(150, 196, 238)), (25, c(98, 160, 228)), (60, c(60, 128, 214)), (90, c(48, 114, 206))],
+    },
+    "CozyAutumn": {
+        "stops": [(-90, c(196, 182, 176)), (0, c(226, 206, 188)), (8, c(176, 196, 226)), (25, c(108, 160, 222)), (60, c(68, 128, 208)), (90, c(56, 114, 200))],
     },
     "Tropical": {
-        "stops": [(-90, c(170, 226, 236)), (0, c(196, 242, 246)), (6, c(170, 232, 246)), (20, c(100, 196, 244)), (55, c(44, 152, 236)), (90, c(30, 132, 226))],
-        "lit": c(255, 255, 255), "shade": c(188, 228, 244), "edge": c(236, 252, 255),
+        "stops": [(-90, c(140, 200, 220)), (0, c(160, 222, 240)), (8, c(118, 196, 240)), (25, c(64, 160, 236)), (60, c(28, 122, 222)), (90, c(20, 106, 214))],
+    },
+    "GoldenHour": {
+        "stops": [(-90, c(210, 160, 128)), (0, c(240, 188, 140)), (8, c(214, 186, 170)), (25, c(132, 156, 206)), (60, c(84, 120, 196)), (90, c(70, 104, 188))],
     },
     "Frosty": {
-        "stops": [(-90, c(212, 220, 238)), (0, c(232, 238, 250)), (6, c(222, 232, 250)), (20, c(176, 204, 240)), (55, c(124, 166, 226)), (90, c(108, 150, 218))],
-        "lit": c(255, 255, 255), "shade": c(206, 206, 238), "edge": c(244, 246, 255),
+        "stops": [(-90, c(180, 196, 220)), (0, c(204, 218, 238)), (8, c(170, 198, 236)), (25, c(118, 162, 224)), (60, c(84, 132, 212)), (90, c(72, 120, 206))],
     },
 }
+
+# Painted clouds are off: Roblox's own volumetric Terrain.Clouds draw the clouds (Dev
+# wanted real clouds, 2026-10-31). The shapes stay in case a look wants them back.
+PAINT_CLOUDS = False
 
 # Puffs per cloud: (dx, dy, r) in units of the cloud's scale, flat bottom at dy=0.
 SHAPES = [
@@ -138,7 +137,7 @@ def main():
     prev_dir = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "art", "out", "sky_preview")
     os.makedirs(prev_dir, exist_ok=True)
     for name, look in LOOKS.items():
-        faces = {f: side_face(look, cl) for f, cl in FACES.items()}
+        faces = {f: side_face(look, cl if PAINT_CLOUDS else []) for f, cl in FACES.items()}
         faces["Up"] = cap_face(look, True)
         faces["Dn"] = cap_face(look, False)
         for f, arr in faces.items():

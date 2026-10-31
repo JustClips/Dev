@@ -1,6 +1,7 @@
 --!strict
 -- How the sky looks on a clear day, per zone: lighting, atmosphere, colour grade and a
--- painted cartoon skybox (art/sky/skybox.py -> Sky_<Skybox>_<Face>).
+-- sky gradient skybox (art/sky/skybox.py -> Sky_<Skybox>_<Face>) under Roblox's own
+-- moving Terrain.Clouds.
 --
 -- The server sets SkyLooks.Default (MapBuilder.setupLighting). Each client then fades to
 -- the look of the zone its player is in (WeatherController), and every weather, moon and
@@ -42,7 +43,7 @@ SkyLooks.ByZone = {
 } :: { [string]: string }
 
 SkyLooks.ById = {
-	-- Bright cartoon blue, pale horizon, white clouds with soft blue shading.
+	-- Clear blue sky with white clouds.
 	Clear = {
 		Name = "Clear",
 		Skybox = "Clear",
@@ -55,14 +56,14 @@ SkyLooks.ById = {
 			EnvironmentDiffuseScale = 0.6,
 			EnvironmentSpecularScale = 0.35,
 		},
-		Atmosphere = { Density = 0.26, Offset = 0.15, Color = rgb(214, 234, 252), Decay = rgb(130, 170, 214), Glare = 0.15, Haze = 1.1 },
-		Grade = { Saturation = 0.2, Contrast = 0.06, Brightness = 0.02, TintColor = rgb(255, 252, 248) },
-		Bloom = { Intensity = 0.3, Size = 24, Threshold = 2 },
+		Atmosphere = { Density = 0.24, Offset = 0.25, Color = rgb(190, 214, 240), Decay = rgb(92, 128, 176), Glare = 0.05, Haze = 0.5 },
+		Grade = { Saturation = 0.15, Contrast = 0.08, Brightness = 0, TintColor = rgb(255, 253, 250) },
+		Bloom = { Intensity = 0.2, Size = 24, Threshold = 2.4 },
 		SunRays = { Intensity = 0.06, Spread = 0.6 },
-		Clouds = { Cover = 0, Density = 0.6, Color = rgb(255, 255, 255) },
+		Clouds = { Cover = 0.55, Density = 0.55, Color = rgb(255, 255, 255) },
 		Sky = SKY,
 	},
-	-- Backyard (autumn leaves): soft blue over a warm cream horizon, peach cloud shading.
+	-- Backyard (autumn leaves): blue sky, slightly warm horizon and light.
 	Backyard = {
 		Name = "Backyard",
 		Skybox = "CozyAutumn",
@@ -75,11 +76,11 @@ SkyLooks.ById = {
 			EnvironmentDiffuseScale = 0.6,
 			EnvironmentSpecularScale = 0.35,
 		},
-		Atmosphere = { Density = 0.28, Offset = 0.15, Color = rgb(255, 228, 200), Decay = rgb(210, 165, 130), Glare = 0.2, Haze = 1.3 },
-		Grade = { Saturation = 0.18, Contrast = 0.05, Brightness = 0.02, TintColor = rgb(255, 247, 236) },
-		Bloom = { Intensity = 0.32, Size = 24, Threshold = 1.9 },
+		Atmosphere = { Density = 0.25, Offset = 0.25, Color = rgb(222, 214, 210), Decay = rgb(120, 122, 150), Glare = 0.08, Haze = 0.6 },
+		Grade = { Saturation = 0.16, Contrast = 0.08, Brightness = 0, TintColor = rgb(255, 249, 240) },
+		Bloom = { Intensity = 0.2, Size = 24, Threshold = 2.4 },
 		SunRays = { Intensity = 0.08, Spread = 0.6 },
-		Clouds = { Cover = 0, Density = 0.6, Color = rgb(255, 240, 225) },
+		Clouds = { Cover = 0.58, Density = 0.55, Color = rgb(255, 250, 244) },
 		Sky = SKY,
 	},
 	-- Beach: deep tropical blue, aqua horizon, crisp bright light.
@@ -95,14 +96,14 @@ SkyLooks.ById = {
 			EnvironmentDiffuseScale = 0.6,
 			EnvironmentSpecularScale = 0.45,
 		},
-		Atmosphere = { Density = 0.24, Offset = 0.15, Color = rgb(196, 240, 248), Decay = rgb(110, 190, 220), Glare = 0.3, Haze = 1 },
-		Grade = { Saturation = 0.25, Contrast = 0.07, Brightness = 0.03, TintColor = rgb(250, 255, 255) },
-		Bloom = { Intensity = 0.35, Size = 24, Threshold = 1.9 },
+		Atmosphere = { Density = 0.22, Offset = 0.25, Color = rgb(176, 220, 240), Decay = rgb(80, 140, 180), Glare = 0.08, Haze = 0.4 },
+		Grade = { Saturation = 0.2, Contrast = 0.08, Brightness = 0.01, TintColor = rgb(250, 255, 255) },
+		Bloom = { Intensity = 0.22, Size = 24, Threshold = 2.3 },
 		SunRays = { Intensity = 0.08, Spread = 0.6 },
-		Clouds = { Cover = 0, Density = 0.6, Color = rgb(255, 255, 255) },
+		Clouds = { Cover = 0.5, Density = 0.5, Color = rgb(255, 255, 255) },
 		Sky = { StarCount = 0, CelestialBodiesShown = true, SunAngularSize = 16, MoonAngularSize = 8 },
 	},
-	-- City: late-afternoon gold, orange horizon, cream clouds with coral shading.
+	-- City: late-afternoon gold horizon, warm clouds.
 	City = {
 		Name = "City",
 		Skybox = "GoldenHour",
@@ -115,14 +116,14 @@ SkyLooks.ById = {
 			EnvironmentDiffuseScale = 0.6,
 			EnvironmentSpecularScale = 0.4,
 		},
-		Atmosphere = { Density = 0.32, Offset = 0.15, Color = rgb(255, 212, 170), Decay = rgb(215, 140, 100), Glare = 0.4, Haze = 1.6 },
-		Grade = { Saturation = 0.18, Contrast = 0.07, Brightness = 0.02, TintColor = rgb(255, 238, 216) },
-		Bloom = { Intensity = 0.45, Size = 26, Threshold = 1.8 },
+		Atmosphere = { Density = 0.28, Offset = 0.25, Color = rgb(232, 200, 172), Decay = rgb(140, 110, 120), Glare = 0.15, Haze = 0.8 },
+		Grade = { Saturation = 0.15, Contrast = 0.09, Brightness = 0, TintColor = rgb(255, 240, 222) },
+		Bloom = { Intensity = 0.28, Size = 26, Threshold = 2.2 },
 		SunRays = { Intensity = 0.12, Spread = 0.7 },
-		Clouds = { Cover = 0, Density = 0.6, Color = rgb(255, 222, 190) },
+		Clouds = { Cover = 0.6, Density = 0.55, Color = rgb(255, 228, 200) },
 		Sky = { StarCount = 0, CelestialBodiesShown = true, SunAngularSize = 16, MoonAngularSize = 8 },
 	},
-	-- Snowy Peaks: crisp cool blue, white horizon, lilac cloud shading.
+	-- Snowy Peaks: crisp cool blue, more cloud.
 	Snow = {
 		Name = "Snowy Peaks",
 		Skybox = "Frosty",
@@ -135,11 +136,11 @@ SkyLooks.ById = {
 			EnvironmentDiffuseScale = 0.6,
 			EnvironmentSpecularScale = 0.5,
 		},
-		Atmosphere = { Density = 0.3, Offset = 0.15, Color = rgb(230, 238, 252), Decay = rgb(160, 176, 214), Glare = 0.15, Haze = 1.4 },
-		Grade = { Saturation = 0.1, Contrast = 0.05, Brightness = 0.03, TintColor = rgb(244, 248, 255) },
-		Bloom = { Intensity = 0.35, Size = 24, Threshold = 1.9 },
+		Atmosphere = { Density = 0.27, Offset = 0.25, Color = rgb(206, 220, 240), Decay = rgb(110, 128, 170), Glare = 0.05, Haze = 0.7 },
+		Grade = { Saturation = 0.08, Contrast = 0.07, Brightness = 0, TintColor = rgb(244, 248, 255) },
+		Bloom = { Intensity = 0.22, Size = 24, Threshold = 2.3 },
 		SunRays = { Intensity = 0.06, Spread = 0.6 },
-		Clouds = { Cover = 0, Density = 0.6, Color = rgb(250, 250, 255) },
+		Clouds = { Cover = 0.62, Density = 0.6, Color = rgb(248, 250, 255) },
 		Sky = SKY,
 	},
 } :: { [string]: Look }
