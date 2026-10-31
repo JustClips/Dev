@@ -464,12 +464,6 @@ local function traderStall(parent: Instance, cf: CFrame)
 			if k % 2 == 0 then green else WHITE, nil, { CanCollide = false })
 	end
 	sign(model, "TraderSign", cf * CFrame.new(0, 10.2, -0.4), 8, 2.2, Color3.fromRGB(255, 200, 60), "PET TRADER", "Sell your pets")
-	-- A few coins on the counter.
-	for k, x in { -2.2, -1.4, 2.4 } do
-		local coin = block(model, "Coin", Vector3.new(0.18, 0.8, 0.8), cf * CFrame.new(x, 3.4 + (k % 2) * 0.1, -2.4) * CFrame.Angles(0, 0, math.rad(90)),
-			Color3.fromRGB(255, 205, 60), M.Metal, { CanCollide = false })
-		coin.Shape = Enum.PartType.Cylinder
-	end
 end
 
 -- Raised stud-plate platform in the base colour, corner lights, low walls and a name sign.

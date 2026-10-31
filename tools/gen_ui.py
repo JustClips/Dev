@@ -510,8 +510,7 @@ def hud():
     # Wallet: two dark strips with big outlined numbers (readable on a phone at 60% size).
     # Cash: coin, amount, income under it, green + for the cash shop. Bag: leaf bag icon and
     # a thick bar with "310 / 500" inside; it turns red with FULL when the bag is full.
-    # Wallet (Dev, 2026-10-31, from a reference): rebirth count, cash with its +, Friend Boost
-    # with a + that invites friends, the bag bar. One icon column on the left, one text column,
+    # Wallet (Dev, 2026-10-31, from a reference): rebirth count, cash with its +, the bag bar. One icon column on the left, one text column,
     # the same 34 px + buttons on the right, thin lines between rows.
     def row(name, y, h, children, line=True):
         kids = list(children)
@@ -522,7 +521,8 @@ def hud():
     def plus(name, color=SUCCESS):
         return button(name, U(0, 34, 0, 34), U(1, -8, 0.5, 0), (1, 0.5), color=color, label="+", ts=28, stroke=3)
 
-    wallet = plate("Wallet", U(0, 264, 0, 164), U(0, 14, 1, -14), (0, 1), tint=BG, stroke=3, children=[
+    # The Friend Boost moved to the boost chips at the bottom right (Dev, 2026-10-31).
+    wallet = plate("Wallet", U(0, 264, 0, 130), U(0, 14, 1, -14), (0, 1), tint=BG, stroke=3, children=[
         autoscale(compact=0.85),
         row("RebirthRow", 4, 34, [
             icon("Icon", "Rebirth", 30, U(0, 26, 0.5, 0), (0.5, 0.5)),
@@ -536,14 +536,7 @@ def hud():
             text("Income", "+$0/s", U(1, -100, 0, 16), U(0, 50, 0, 32), ts=16, color=ACCENT, display=True, xa="Left", stroke=2),
             plus("PlusButton"),
         ]),
-        row("FriendRow", 90, 34, [
-            icon("Icon", "Group", 30, U(0, 26, 0.5, 0), (0.5, 0.5)),
-            text("Value", "Friend Boost +0%", U(1, -100, 1, 0), U(0, 50, 0, 0), ts=17, color="#7FD3FF", display=True, xa="Left",
-                 stroke=2, TextScaled=True,
-                 children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
-            plus("InviteButton", "#4C8DFF"),
-        ]),
-        row("BackpackPanel", 124, 38, [
+        row("BackpackPanel", 90, 38, [
             icon("Icon", "Backpack", 32, U(0, 26, 0.5, 0), (0.5, 0.5), ZIndex=4),
             frame("Bar", U(1, -58, 0, 24), U(0, 50, 0.5, 0), (0, 0.5), bg="#14171D", children=[
                 border(INK, 2),

@@ -389,8 +389,6 @@ local function render(data)
 	-- Rebirth count, Friend Boost and the % to the next rebirth on the Rebirth tile (Dev,
 	-- 2026-10-31).
 	el.RebirthCount.Text = `{Format.number(data.Rebirths)} Rebirth{if data.Rebirths == 1 then "" else "s"}`
-	local friends = math.min(data.FriendsHere or 0, Economy.FriendLuckMaxFriends)
-	el.FriendValue.Text = `Friend Boost +{math.floor(friends * Economy.FriendLuckPerFriend * 100 + 0.5)}%`
 	local progress = el.RebirthProgress :: TextLabel
 	local cost = data.RebirthCost
 	if cost and BigNum.gte(cost, 1) then
@@ -502,6 +500,23 @@ local function renderTip()
 	end
 end
 
+-- Roblox's invite friends prompt (each friend here adds egg luck), from the Friend chip.
+local function inviteFriends()
+	task.spawn(function()
+		local player = Players.LocalPlayer
+		local ok, can = pcall(function()
+			return SocialService:CanSendGameInviteAsync(player)
+		end)
+		if ok and can then
+			pcall(function()
+				SocialService:PromptGameInvite(player)
+			end)
+		else
+			HudController:Toast("Invites aren't available right now", "Info")
+		end
+	end)
+end
+
 local function renderBoosts()
 	local template = el.BoostTemplate :: TextButton
 	local now = State.now()
@@ -589,7 +604,15 @@ local function renderBoosts()
 	if data and (data.Boosts.Speed or 0) > now then
 		add("Speed", "Icon_PotionSpeed", `+{Items.SpeedBonus}`, data.Boosts.Speed, "Speed Potion", `You run {Items.SpeedBonus} faster.`)
 	end
-	-- The friend boost shows in the wallet (FriendRow), not as a chip.
+	-- Friend Boost (Dev, 2026-10-31: a chip here, not a wallet row): always shown so players
+	-- see that friends help. Tapping it also brings up the invite prompt.
+	if data then
+		local friends = math.min(data.FriendsHere or 0, Economy.FriendLuckMaxFriends)
+		local pct = math.floor(friends * Economy.FriendLuckPerFriend * 100 + 0.5)
+		local per = math.floor(Economy.FriendLuckPerFriend * 100 + 0.5)
+		add("Friends", "Icon_Group", `+{pct}%`, 0, "Friend Boost",
+			`Each friend on this server gives +{per}% egg luck (up to +{per * Economy.FriendLuckMaxFriends}%). Tap to invite friends!`)
+	end
 	local seen = {}
 	for i, entry in entries do
 		seen[entry.key] = true
@@ -611,6 +634,9 @@ local function renderBoosts()
 				end
 			end)
 			newChip.Activated:Connect(function()
+				if key == "Friends" then
+					inviteFriends()
+				end
 				-- Tap on phones: show for a few seconds (tap again to hide).
 				if tipKey == key and tipUntil > 0 then
 					tipKey = nil
@@ -812,8 +838,11 @@ function HudController:Init(controllers)
 	el.Income = Ui.find(hud, "Wallet.CashPanel.Income")
 	el.PlusButton = Ui.find(hud, "Wallet.CashPanel.PlusButton")
 	el.RebirthCount = Ui.find(hud, "Wallet.RebirthRow.Value")
-	el.FriendValue = Ui.find(hud, "Wallet.FriendRow.Value")
-	el.InviteButton = Ui.find(hud, "Wallet.FriendRow.InviteButton")
+	-- Studio places synced before 2026-10-31 still hold the old Friend Boost wallet row.
+	local staleFriend = hud:FindFirstChild("FriendRow", true)
+	if staleFriend then
+		staleFriend:Destroy()
+	end
 	el.RebirthProgress = Ui.find(hud, "Rail.RebirthButton.Progress")
 	el.BackpackFill = Ui.find(hud, "Wallet.BackpackPanel.Bar.Fill")
 	el.BackpackAmount = Ui.find(hud, "Wallet.BackpackPanel.Bar.Amount")
@@ -1110,20 +1139,6 @@ function HudController:Start()
 	end)
 	Ui.button(el.PlusButton, function()
 		C.ShopController:Open("Cash")
-	end)
-	-- Friend Boost +: Roblox's invite friends prompt (each friend here adds egg luck).
-	Ui.button(el.InviteButton, function()
-		local player = Players.LocalPlayer
-		local ok, can = pcall(function()
-			return SocialService:CanSendGameInviteAsync(player)
-		end)
-		if ok and can then
-			pcall(function()
-				SocialService:PromptGameInvite(player)
-			end)
-		else
-			HudController:Toast("Invites aren't available right now", "Info")
-		end
 	end)
 	Ui.button(Ui.find(hud, "Pills.BaseButton"), function()
 		teleport("Base")
