@@ -86,9 +86,9 @@ local STEPS: { Step } = {
 	},
 	{
 		key = "Upgrade",
-		text = "Open Upgrades and double-click Sweep Power. FREE!",
+		text = "Open Upgrades and click Sweep Power. FREE!",
 		touch = "Open Upgrades and double-tap Sweep Power. FREE!",
-		pad = "Press d-pad left, open Upgrades, press A twice on Sweep Power. FREE!",
+		pad = "Press d-pad left, open Upgrades, press A on Sweep Power. FREE!",
 		icon = "Icon_Upgrade",
 	},
 	{
@@ -120,6 +120,7 @@ local card: Frame
 local cardIcon: ImageLabel
 local stepLabel: TextLabel
 local textLabel: TextLabel
+local cardSpin: GuiButton
 local barFill: Frame
 local doneFrame: Frame
 local doneLabel: TextLabel
@@ -146,6 +147,11 @@ local STILL_SECONDS = 4
 local STILL_STUDS = 6
 local stillFrom: Vector3? = nil
 local stillSince = 0
+local leavesReached = false
+local sawArrow = false
+local lastNeedTool = false
+local textChangedAt = 0
+local TEXT_MIN_SECONDS = 4
 
 -- True while the sweeping tool is in your hands (the first step needs it).
 local function toolInHand(): boolean
@@ -409,7 +415,17 @@ local function update()
 		local needTool = key == "Sweep" and not toolInHand()
 		-- Sweep in two parts (Dev: "first show go here with the arrow"): walk to the leaves,
 		-- then hold and walk.
-		local goThere = key == "Sweep" and not needTool and C.ArrowController:HasTarget()
+		-- Once you've reached the leaves the "go there" line never comes back (the arrow
+		-- hides and shows again as you walk around, which flipped the text; Dev, 2026-10-31).
+		local arrowOn = C.ArrowController:HasTarget()
+		if key == "Sweep" and not needTool then
+			if arrowOn then
+				sawArrow = true
+			elseif sawArrow then
+				leavesReached = true
+			end
+		end
+		local goThere = key == "Sweep" and not needTool and arrowOn and not leavesReached
 		if key == "Sweep" and not celebrating then
 			local want = stepText(step)
 			if goThere then
@@ -419,9 +435,20 @@ local function update()
 					then "Keep moving! Use the joystick to walk onto new leaves while you sweep."
 					else "Keep moving! Walk onto new leaves while you sweep."
 			end
-			if textLabel.Text ~= want then
+			-- A line stays up for a few seconds before it can change (unless the tool
+			-- went in or out of your hands), so the card doesn't flicker.
+			local toolChanged = needTool ~= lastNeedTool
+			if textLabel.Text ~= want and (toolChanged or os.clock() - textChangedAt >= TEXT_MIN_SECONDS) then
 				textLabel.Text = want
+				textChangedAt = os.clock()
 			end
+			lastNeedTool = needTool
+		end
+		-- Lucky Wheel step: a SPIN button right on the card, the text making room for it.
+		local showSpin = key == "Wheel" and not celebrating and not Ui.isOpen(Ui.screen("Wheel"))
+		if cardSpin.Visible ~= showSpin then
+			cardSpin.Visible = showSpin
+			textLabel.Size = UDim2.new(1, if showSpin then -206 else -84, 0, 36)
 		end
 		-- Phones: show where to hold a finger once the tool is out.
 		holdHint.Visible = key == "Sweep" and not needTool and not goThere and not celebrating and UserInputService.TouchEnabled and not Ui.gamepad()
@@ -440,7 +467,7 @@ local function update()
 		elseif key == "Upgrade" and not C.UpgradeController:IsOpen() then
 			pointAt(Ui.find(hud, "Rail.UpgradesButton"))
 		elseif key == "Wheel" and not Ui.isOpen(Ui.screen("Wheel")) then
-			pointAt(Ui.find(hud, "SpinButton"))
+			pointAt(cardSpin, false)
 		elseif key == "Wheel" and not C.WheelController:IsSpinning() then
 			pointAt(Ui.find(Ui.screen("Wheel"), "Window.Side.SpinButton"))
 		else
@@ -458,6 +485,10 @@ local function update()
 
 	-- Tutorial finished.
 	pointAt(nil)
+	if cardSpin.Visible then
+		cardSpin.Visible = false
+		textLabel.Size = UDim2.new(1, -84, 0, 36)
+	end
 	holdHint.Visible = false
 	card.Position = UDim2.new(0.5, 0, 1, -cardLift(false))
 	glow.Enabled = false
@@ -519,6 +550,7 @@ function TutorialController:Init(controllers)
 	cardIcon = Ui.find(card, "Icon")
 	stepLabel = Ui.find(card, "Step")
 	textLabel = Ui.find(card, "Text")
+	cardSpin = Ui.find(card, "Spin")
 	barFill = Ui.find(card, "Bar.Fill")
 	doneFrame = Ui.find(card, "Done")
 	doneLabel = Ui.find(card, "Done.Label")
@@ -545,7 +577,8 @@ function TutorialController:Start()
 	UserInputService.LastInputTypeChanged:Connect(function()
 		task.defer(function()
 			local step = shownStep and STEPS[STEP_INDEX[shownStep] or 0]
-			if step and not celebrating then
+			-- The sweep step picks its own line in update().
+			if step and step.key ~= "Sweep" and not celebrating then
 				textLabel.Text = stepText(step)
 			end
 		end)
@@ -553,6 +586,9 @@ function TutorialController:Start()
 	local function close()
 		Ui.close("TutorialDone")
 	end
+	Ui.button(cardSpin, function()
+		C.WheelController:Open()
+	end)
 	Ui.button(Ui.find(doneGui, "Window.Ok"), close)
 	Ui.button(Ui.find(doneGui, "Window.Close"), close)
 	Ui.button(Ui.find(doneGui, "Dim"), close)

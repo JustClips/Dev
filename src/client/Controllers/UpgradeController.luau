@@ -72,6 +72,13 @@ local current = "Main"
 local views: { [string]: { zoom: number, pan: Vector2 } } = {}
 local hovered: string? = nil -- mouse is over this hex
 local selected: string? = nil -- tapped once: tooltip stays, the next tap buys
+
+-- Phones: the first tap shows the tooltip, so buying takes a second tap. With a mouse or a
+-- controller the tooltip is already up from hovering, so one click buys (Dev, 2026-10-31).
+local function twoTaps(): boolean
+	return UserInputService:GetLastInputType() == Enum.UserInputType.Touch
+end
+
 local flashText: string? = nil -- a short message in the tooltip (e.g. "Need $50 more")
 local flashUntil = 0
 local pan = Vector2.zero
@@ -283,9 +290,9 @@ local function setTip(id: string?)
 	local def = Upgrades.ById[id]
 	local state = computeStates(data)[id]
 	local level = data.Upgrades[id] or 0
-	local touch = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+	local touch = twoTaps()
 	local pad = Ui.gamepad()
-	local again = if pad then "Press A again to buy" elseif touch then "Tap again to buy" else "Click again to buy"
+	local again = if touch then "Tap again to buy" elseif pad then "Press A to buy" else "Click to buy"
 	tip.Visible = true
 	info.TextColor3 = INFO_GREEN
 	hint.TextColor3 = GOLD_TEXT
@@ -321,7 +328,7 @@ local function setTip(id: string?)
 			elseif selected == id then
 				hint.Text = again
 			else
-				hint.Text = if pad then "Press A twice to buy" elseif touch then "Tap to select" else "Double-click to buy"
+				hint.Text = if touch then "Tap to select" elseif pad then "Press A to buy" else "Click to buy"
 			end
 		end
 	end
@@ -487,7 +494,8 @@ local function flash(text: string)
 	flashUntil = os.clock() + 2.5
 end
 
--- First tap selects a hex (tooltip), the next tap on it buys. Owned labs open at once.
+-- First tap selects a hex (tooltip), the next tap on it buys (phones only, see twoTaps).
+-- Owned labs open at once.
 local function onNodeTapped(def: UpgradeDef)
 	local data = State.data
 	if not data then
@@ -503,9 +511,11 @@ local function onNodeTapped(def: UpgradeDef)
 	if selected ~= def.Id then
 		selected = def.Id
 		flashText = nil
-		Ui.sound("Click")
-		renderBoard()
-		return
+		if twoTaps() or state == "Mystery" then
+			Ui.sound("Click")
+			renderBoard()
+			return
+		end
 	end
 	if state == "Mystery" or state == "Rebirth" or state == "Max" then
 		Ui.sound("Error")
@@ -702,11 +712,12 @@ function UpgradeController:Start()
 		tutorialHint.Visible = teaching
 		local root = nodes[Upgrades.Root]
 		if teaching and root then
-			local touch = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+			local touch = twoTaps()
 			local pad = Ui.gamepad()
-			tutorialHint.Text = if selected == Upgrades.Root
-				then (if pad then "Press A again to buy!" elseif touch then "Tap it again to buy!" else "Click it again to buy!")
-				else (if pad then "Press A twice on Sweep Power to buy it!" elseif touch then "Double-tap Sweep Power to buy it!" else "Double-click Sweep Power to buy it!")
+			tutorialHint.Text = if not touch
+				then (if pad then "Press A on Sweep Power to buy it!" else "Click Sweep Power to buy it!")
+				elseif selected == Upgrades.Root then "Tap it again to buy!"
+				else "Double-tap Sweep Power to buy it!"
 			local k = 1 + math.abs(math.sin(os.clock() * 4)) * 0.08
 			root.Size = UDim2.fromOffset(nodeSize.X.Offset * k, nodeSize.Y.Offset * k)
 			;(root:FindFirstChild("Glow") :: Frame).Visible = true

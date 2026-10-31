@@ -22,6 +22,10 @@ function FavoriteService:Moment(player: Player)
 	if not data or data.Flags.FavoriteAsked or askedThisSession[player] then
 		return
 	end
+	-- Never during the tutorial (Dev, 2026-10-31): a later high moment asks instead.
+	if not data.Flags.TutorialDone then
+		return
+	end
 	askedThisSession[player] = true
 	Net.fire("AskFavorite", player)
 end

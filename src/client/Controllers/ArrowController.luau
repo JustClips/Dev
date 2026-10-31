@@ -1,7 +1,7 @@
 --!strict
--- Guide path (tutorial and helpful nudges): a big arrow over your head that turns toward
--- the target, a trail of arrows on the ground from your feet sliding forward, and a big
--- bouncing arrow over the target with the distance. Steps come from the server
+-- Guide path (tutorial and helpful nudges): a path of glowing 3D arrows from your feet to
+-- the target, sliding toward it (Dev, 2026-10-31: one path instead of two arrows), with
+-- the distance shown over the target. Steps come from the server
 -- (State.data.TutorialStep): dust -> egg -> home -> plant the egg in your pet park -> open
 -- it -> rocket. After the tutorial it still points home when you carry an egg, at a
 -- ready egg in your park, and at the Rocket when your backpack is full.
@@ -14,17 +14,19 @@ local Client = script.Parent.Parent
 local State = require(Client.State)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local AssetLibrary = require(Shared.AssetLibrary)
 local World = require(Shared.Config.World)
 
 local FIELD_INSET = 14 -- studs into the leaf field for the "sweep" guide
 local REACHED = 9 -- hide the guide this close to the target
 local COLOR = Color3.fromRGB(255, 226, 92)
-local TRAIL_ARROWS = 12 -- arrows on the ground
-local TRAIL_GAP = 5 -- studs between them
-local TRAIL_START = 4 -- studs in front of you to the first one
-local TRAIL_SPEED = 4 -- studs per second they slide toward the target
-local ARROW_SIZE = 3.6
+local TRAIL_ARROWS = 16 -- arrows in the path
+local TRAIL_GAP = 4.5 -- studs between them
+local TRAIL_START = 3 -- studs in front of you to the first one
+local TRAIL_SPEED = 6 -- studs per second they slide toward the target
+local TRAIL_HEIGHT = 1.4 -- studs above the ground (over the leaf piles)
+local ARM_LENGTH = 2.6 -- each side of the ">" chevron
+local ARM_WIDTH = 0.7
+local ARM_HEIGHT = 0.4
 
 local ArrowController = {}
 
@@ -32,13 +34,9 @@ local C: any
 local player = Players.LocalPlayer
 local targetPart: Part
 local trail: Folder
-local arrows: { BasePart } = {}
+local arrows: { Model } = {}
 local board: BillboardGui
 local distanceLabel: TextLabel
--- A big arrow floating over your own head that turns toward the target (Dev, 2026-10-31:
--- kids don't look at the floor).
-local headBoard: BillboardGui
-local headArrow: ImageLabel
 local moon: Instance
 local current: Vector3? = nil
 
@@ -146,34 +144,39 @@ local function update()
 	board.Enabled = true
 end
 
--- One flat arrow: an invisible thin part lying down with the arrow image on its front
--- face (which faces the sky). Its UpVector is where the arrow points.
-local function makeArrow(): BasePart
-	local part = Instance.new("Part")
-	part.Name = "PathArrow"
-	part.Size = Vector3.new(ARROW_SIZE, ARROW_SIZE, 0.05)
-	part.Anchored = true
-	part.CanCollide = false
-	part.CanQuery = false
-	part.CanTouch = false
-	part.CastShadow = false
-	part.Transparency = 1
-	local gui = Instance.new("SurfaceGui")
-	gui.Face = Enum.NormalId.Front
-	gui.LightInfluence = 0
-	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-	gui.PixelsPerStud = 40
-	gui.Parent = part
-	local image = Instance.new("ImageLabel")
-	image.Name = "Arrow"
-	image.BackgroundTransparency = 1
-	image.Size = UDim2.fromScale(1, 1)
-	image.Image = AssetLibrary.image("ArrowDown")
-	image.Rotation = 180 -- the image points down; turn it to point ahead
-	image.ImageColor3 = COLOR
-	image.Parent = gui
-	part.Parent = trail
-	return part
+-- One 3D chevron (">"), two glowing bars meeting at the tip. placeArrow moves it.
+local function makeArrow(): Model
+	local model = Instance.new("Model")
+	model.Name = "PathArrow"
+	for _, side in { "Left", "Right" } do
+		local part = Instance.new("Part")
+		part.Name = side
+		part.Size = Vector3.new(ARM_WIDTH, ARM_HEIGHT, ARM_LENGTH)
+		part.Anchored = true
+		part.CanCollide = false
+		part.CanQuery = false
+		part.CanTouch = false
+		part.CastShadow = false
+		part.Material = Enum.Material.Neon
+		part.Color = COLOR
+		part.Parent = model
+	end
+	model.Parent = trail
+	return model
+end
+
+-- Local spots of the two bars: the tip is at the origin pointing -Z (forward).
+local HALF = ARM_LENGTH / 2 / math.sqrt(2)
+local LEFT_ARM = CFrame.lookAt(Vector3.new(-HALF, 0, HALF), Vector3.new(-HALF, 0, HALF) + Vector3.new(-1, 0, 1))
+local RIGHT_ARM = CFrame.lookAt(Vector3.new(HALF, 0, HALF), Vector3.new(HALF, 0, HALF) + Vector3.new(1, 0, 1))
+
+local function placeArrow(model: Model, tip: CFrame, transparency: number)
+	local left = model:FindFirstChild("Left") :: BasePart
+	local right = model:FindFirstChild("Right") :: BasePart
+	left.CFrame = tip * LEFT_ARM
+	right.CFrame = tip * RIGHT_ARM
+	left.Transparency = transparency
+	right.Transparency = transparency
 end
 
 local rayParams = RaycastParams.new()
@@ -210,8 +213,7 @@ local function drawTrail()
 	rayParams.FilterDescendantsInstances = exclude
 	local feet = root.Position.Y - 3
 	local slide = (os.clock() * TRAIL_SPEED) % TRAIL_GAP
-	-- Lying flat: front face (LookVector) up, UpVector along the path.
-	local right = dir:Cross(Vector3.new(0, -1, 0))
+	local reach = TRAIL_START + (TRAIL_ARROWS - 1) * TRAIL_GAP
 	for i = 1, TRAIL_ARROWS do
 		local arrow = arrows[i]
 		if not arrow then
@@ -219,18 +221,17 @@ local function drawTrail()
 			arrows[i] = arrow
 		end
 		local along = TRAIL_START + (i - 1) * TRAIL_GAP + slide
-		if along > length - 3 then
+		if along > length - 2 then
 			arrow.Parent = nil
 			continue
 		end
 		local spot = root.Position + dir * along
-		local y = groundAt(spot, feet) + 0.3
-		arrow.CFrame = CFrame.fromMatrix(Vector3.new(spot.X, y, spot.Z), right, dir, Vector3.new(0, -1, 0))
-		-- Fade in near you and out at the far end of the trail.
-		local reach = TRAIL_START + (TRAIL_ARROWS - 1) * TRAIL_GAP
+		local bob = math.sin(os.clock() * 4 - along * 0.4) * 0.25
+		local y = groundAt(spot, feet) + TRAIL_HEIGHT + bob
+		local at = Vector3.new(spot.X, y, spot.Z)
+		-- Fade in near you and out at the far end of the path.
 		local fade = math.max(1 - (along - TRAIL_START) / 2, (along - reach) / TRAIL_GAP, 0)
-		local image = (arrow:FindFirstChildOfClass("SurfaceGui") :: SurfaceGui):FindFirstChild("Arrow") :: ImageLabel
-		image.ImageTransparency = math.clamp(0.1 + fade, 0.1, 1)
+		placeArrow(arrow, CFrame.lookAt(at, at + dir), math.clamp(0.05 + fade, 0.05, 1))
 		arrow.Parent = trail
 	end
 end
@@ -256,23 +257,7 @@ function ArrowController:Init(controllers)
 	trail.Name = "GuideTrail"
 	trail.Parent = Workspace
 
-	headBoard = Instance.new("BillboardGui")
-	headBoard.Name = "HeadArrow"
-	headBoard.Size = UDim2.fromOffset(96, 96)
-	headBoard.AlwaysOnTop = true
-	headBoard.LightInfluence = 0
-	headBoard.StudsOffsetWorldSpace = Vector3.new(0, 5, 0)
-	headBoard.Enabled = false
-	headBoard.Parent = trail
-	headArrow = Instance.new("ImageLabel")
-	headArrow.Name = "Arrow"
-	headArrow.BackgroundTransparency = 1
-	headArrow.Size = UDim2.fromScale(1, 1)
-	headArrow.Image = AssetLibrary.image("ArrowDown")
-	headArrow.ImageColor3 = COLOR
-	headArrow.Parent = headBoard
-
-	-- Big bouncing arrow over the target, with how far it is.
+	-- How far the target is, floating over it (the path does the pointing).
 	board = Instance.new("BillboardGui")
 	board.Name = "GuideArrow"
 	board.Size = UDim2.fromOffset(84, 110)
@@ -283,19 +268,10 @@ function ArrowController:Init(controllers)
 	board.Adornee = targetPart
 	board.Enabled = false
 	board.Parent = targetPart
-	local arrow = Instance.new("ImageLabel")
-	arrow.Name = "Arrow"
-	arrow.BackgroundTransparency = 1
-	arrow.Size = UDim2.fromOffset(72, 72)
-	arrow.Position = UDim2.new(0.5, 0, 0, 0)
-	arrow.AnchorPoint = Vector2.new(0.5, 0)
-	arrow.Image = AssetLibrary.image("ArrowDown")
-	arrow.ImageColor3 = Color3.fromRGB(255, 240, 160)
-	arrow.Parent = board
 	distanceLabel = Instance.new("TextLabel")
 	distanceLabel.BackgroundTransparency = 1
 	distanceLabel.Size = UDim2.new(1, 0, 0, 30)
-	distanceLabel.Position = UDim2.new(0, 0, 0, 74)
+	distanceLabel.Position = UDim2.new(0, 0, 1, -30)
 	distanceLabel.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
 	distanceLabel.TextSize = 22
 	distanceLabel.TextColor3 = Color3.new(1, 1, 1)
@@ -311,22 +287,6 @@ function ArrowController:Start()
 	State.Changed:Connect(update)
 	RunService.RenderStepped:Connect(function()
 		drawTrail()
-		local character0 = player.Character
-		local root0 = character0 and character0:FindFirstChild("HumanoidRootPart") :: BasePart?
-		local camera = Workspace.CurrentCamera
-		if board.Enabled and current and root0 and camera then
-			-- Turn the head arrow toward the target as seen from the camera: straight
-			-- ahead of the camera is up on screen.
-			local dir = (current - root0.Position) * Vector3.new(1, 0, 1)
-			local x = dir:Dot(camera.CFrame.RightVector)
-			local z = dir:Dot(camera.CFrame.LookVector * Vector3.new(1, 0, 1))
-			headBoard.Adornee = root0
-			headBoard.StudsOffsetWorldSpace = Vector3.new(0, 5 + math.abs(math.sin(os.clock() * 5)) * 0.6, 0)
-			headArrow.Rotation = 180 + math.deg(math.atan2(x, z))
-			headBoard.Enabled = true
-		else
-			headBoard.Enabled = false
-		end
 		if not board.Enabled or not current then
 			return
 		end

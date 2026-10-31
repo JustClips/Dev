@@ -601,6 +601,10 @@ def hud():
         frame("Done", U(1, 0, 1, 0), bg=SUCCESS, BackgroundTransparency=1, Visible=False, ZIndex=5, children=[
             text("Label", "✓  Nice!", U(1, 0, 1, 0), ts=30, display=True, stroke=3, TextTransparency=1, ZIndex=6),
         ]),
+        # The Lucky Wheel step: a SPIN button right on the card (Dev, 2026-10-31: the corner
+        # Spin button was too far up to notice).
+        button("Spin", U(0, 112, 0, 52), U(1, -10, 0.5, 0), (1, 0.5), color="#4C8DFF", label="SPIN!", ts=22, ico="Spin",
+               ico_px=30, stroke=3, Visible=False, ZIndex=22),
     ])
     # Tutorial spotlight: the screen dims except a cut-out around one button (four dark
     # frames around it), a pulsing ring on the button and a bouncing arrow above it.
