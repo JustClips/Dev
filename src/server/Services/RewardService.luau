@@ -212,6 +212,17 @@ local function spin(player: Player): (boolean, string?, number?)
 	end
 	rt.WheelBusyUntil = os.clock() + Rewards.Wheel.SpinSeconds - 0.4
 	local index = rollSegment()
+	-- The very first spin always lands on the Rare Egg (Dev, 2026-10-31: a sure win for new
+	-- players). Free, so the shown odds for bought spins don't change.
+	if free and not data.Flags.FirstSpinDone then
+		data.Flags.FirstSpinDone = true
+		for i, s in Rewards.Wheel.Segments do
+			if s.Reward.Kind == "Egg" and s.Reward.Rarity == "Rare" then
+				index = i
+				break
+			end
+		end
+	end
 	local seg = Rewards.Wheel.Segments[index]
 	local got = grant(player, seg.Reward, "Wheel" .. index)
 	S.StateService:Mark(player)

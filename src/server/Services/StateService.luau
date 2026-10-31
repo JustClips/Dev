@@ -26,29 +26,6 @@ function StateService:GetServerState(): Folder
 	return serverState
 end
 
--- First sell during the tutorial: the Broom goes straight into your hands and Sweep Power
--- gets its first level, free.
-local function giveTutorialGifts(player: Player)
-	local data = S.DataService:GetData(player)
-	if not data or data.Flags.TutorialDone then
-		return
-	end
-	local gifts = {}
-	if data.ToolTier < 2 then
-		S.ToolService:SetTier(player, 2)
-		table.insert(gifts, "a Broom")
-	end
-	if (data.Upgrades.Power or 0) < 1 then
-		data.Upgrades.Power = 1
-		S.AnalyticsService:Custom(player, "UpgradeBought", 1, { Upgrade = "Power" })
-		table.insert(gifts, "+1 Sweep Power")
-	end
-	if #gifts > 0 then
-		Net.fire("Notify", player, `First sale! You got {table.concat(gifts, " and ")} for free. You sweep faster now!`, "Rare")
-	end
-	S.StateService:Mark(player)
-end
-
 -- Server-confirmed tutorial step (GAME_PLAN §4).
 -- One-time reward for finishing the tutorial (Config/Rewards.Tutorial).
 local function rewardTutorial(player: Player)
@@ -91,26 +68,18 @@ local function tutorialStep(player: Player, session: any): string
 		end
 		return "Sweep"
 	end
-	local anyPlaced = false
-	for _, pet in data.Pets do
-		if pet.Placed then
-			anyPlaced = true
-			break
-		end
-	end
-	if not anyPlaced and next(data.Pets) ~= nil then
-		return "PlacePet"
-	end
+	-- No "place your pet" step: the first hatched pet goes on your base by itself
+	-- (HatchService, 3 s after the hatch). The Broom and the first Sweep Power level are
+	-- bought in the Gear window / upgrade tree, FREE until the tutorial is done
+	-- (Tools.tutorialPrice).
 	if data.Stats.Sells == 0 then
 		return "Sell"
 	end
-	-- The Broom and the first Sweep Power level are gifts for the first sell, not purchases
-	-- (Dev, 2026-10-31: 40% of new players quit at the old "buy a Broom" step).
-	if data.ToolTier < 2 or (data.Upgrades.Power or 0) < 1 then
-		if not session.Runtime.TutorialGifted then
-			session.Runtime.TutorialGifted = true
-			task.defer(giveTutorialGifts, player)
-		end
+	if data.ToolTier < 2 then
+		return "Shop"
+	end
+	if (data.Upgrades.Power or 0) < 1 then
+		return "Upgrade"
 	end
 	-- Last: walk to the Lucky Wheel in the plaza and use the free spin (Dev, 2026-10-30: so
 	-- players learn it's there). Counts as done once the wheel has stopped, so the

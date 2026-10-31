@@ -32,10 +32,10 @@ local ONBOARDING: { { key: string, name: string } } = {
 	{ key = "Hatching", name = "Placed egg" },
 	{ key = "Open", name = "Egg ready to open" },
 	{ key = "PlacePet", name = "Hatched egg" },
-	{ key = "Sell", name = "Placed pet" },
+	{ key = "Sell", name = "Pet placed (auto)" },
 	{ key = "Shop", name = "First sell" },
-	{ key = "Upgrade", name = "Got Broom" },
-	{ key = "Wheel", name = "Got Sweep Power" },
+	{ key = "Upgrade", name = "Got free Broom" },
+	{ key = "Wheel", name = "Got free Sweep Power" },
 	{ key = "Done", name = "Spun wheel / tutorial done" },
 }
 local ONBOARDING_INDEX: { [string]: number } = {}

@@ -130,6 +130,7 @@ local function update()
 		current = nil
 		return
 	end
+	C.HudController:Highlight(if data.TutorialStep == "Shop" then "Tools" else nil)
 	local target = targetFor(data)
 	if not target or (target - root.Position).Magnitude < REACHED then
 		board.Enabled = false

@@ -421,9 +421,14 @@ local function renderBoard()
 			priceLabel.Text = `Rebirth {wait}`
 		else
 			local cost = price(def, data)
-			coin.Visible = true
-			priceLabel.Text = Format.big(cost)
-			priceLabel.TextColor3 = if BigNum.gte(data.Cash, cost) then WHITE else RED
+			if cost == 0 then
+				priceLabel.Text = "FREE"
+				priceLabel.TextColor3 = Color3.fromRGB(61, 220, 90)
+			else
+				coin.Visible = true
+				priceLabel.Text = Format.big(cost)
+				priceLabel.TextColor3 = if BigNum.gte(data.Cash, cost) then WHITE else RED
+			end
 		end
 		local glow = node:FindFirstChild("Glow") :: Frame
 		local isSelected = selected == def.Id and state ~= "Hidden"

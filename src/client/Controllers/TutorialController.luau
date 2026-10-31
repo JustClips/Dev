@@ -66,15 +66,26 @@ local STEPS: { Step } = {
 		pad = "It's ready! Walk up to your egg and press X to open it.",
 		icon = "Icon_Egg",
 	},
+	-- No "place your pet" step: the first pet goes on your base by itself after the hatch.
 	{
-		key = "PlacePet",
-		text = "Your pet is in your hotbar! Click it, then click anywhere at your base to let it out.",
-		touch = "Your pet is in your hotbar! Tap it, then tap anywhere at your base to let it out.",
-		pad = "Your pet is in your hotbar! Pick it with LB/RB, then press R2 at your base to let it out.",
-		icon = "Icon_Alien",
+		key = "Sell",
+		text = "Your pet is earning! Now press SELL (or walk to the market) to cash in your leaves!",
+		pad = "Your pet is earning! Now walk to the market to cash in your leaves!",
+		icon = "Icon_Sell",
 	},
-	{ key = "Sell", text = "Dump your leaves at the market for cash!", icon = "Icon_Sell" },
-	-- No Gear / Upgrades steps: the first sell gifts the Broom and Sweep Power 1 (server).
+	{
+		key = "Shop",
+		text = "Open Gear and get the Broom. It's FREE and sweeps faster!",
+		pad = "Press d-pad right, open Gear and get the Broom. It's FREE!",
+		icon = "Icon_Tools",
+	},
+	{
+		key = "Upgrade",
+		text = "Open Upgrades and double-click Sweep Power. It's FREE!",
+		touch = "Open Upgrades and double-tap Sweep Power. It's FREE!",
+		pad = "Press d-pad left, open Upgrades and press A twice on Sweep Power. It's FREE!",
+		icon = "Icon_Upgrade",
+	},
 	{
 		key = "Wheel",
 		text = "Click SPIN at the top right for your FREE Lucky Wheel spin!",
@@ -401,6 +412,12 @@ local function update()
 			pointAt(petTarget)
 		elseif key == "Place" and C.PlacementController:IsHolding() and autoPlace.Visible then
 			pointAt(autoPlace, false)
+		elseif key == "Sell" and data.Backpack > 0 and not Ui.gamepad() then
+			pointAt(Ui.find(hud, "Pills.SellButton"), false)
+		elseif key == "Shop" and not Ui.isOpen(Ui.screen("Garage")) then
+			pointAt(Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton"))
+		elseif key == "Upgrade" and not C.UpgradeController:IsOpen() then
+			pointAt(Ui.find(hud, "Rail.UpgradesButton"))
 		elseif key == "Wheel" and not Ui.isOpen(Ui.screen("Wheel")) then
 			pointAt(Ui.find(hud, "SpinButton"))
 		elseif key == "Wheel" and not C.WheelController:IsSpinning() then

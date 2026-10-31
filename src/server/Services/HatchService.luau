@@ -252,6 +252,15 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	local pet = { Id = def.Id, Mutation = mutation, Huge = if huge then true else nil, Weight = weight }
 	data.Pets[petUid] = pet
 	data.Stats.Hatches += 1
+	-- Tutorial: the first pet goes on your base by itself once the hatch show has played.
+	if data.Stats.Hatches == 1 and not data.Flags.TutorialDone then
+		task.delay(3, function()
+			if player.Parent and data.Pets[petUid] and not data.Pets[petUid].Placed then
+				S.InventoryService:PlacePet(player, petUid)
+				changed(player)
+			end
+		end)
+	end
 
 	S.AnalyticsService:Custom(player, "EggHatched", 1, { Pet = def.Rarity, Egg = entry.Rarity })
 	changed(player)

@@ -43,14 +43,13 @@ function Tools.get(tier: number): ToolDef
 	return List[math.clamp(tier, 1, #List)]
 end
 
--- Tutorial (Dev, 2026-10-30: you could get stuck on "buy a better tool" without enough
--- cash): until the tutorial is done, its first tool and first Sweep Power level cost at
--- most the cash you have, so you can always continue. cash is a plain number here.
-function Tools.tutorialPrice(price: number, cash: number, tutorialDone: boolean): number
+-- Tutorial: until it's done, its first tool (Broom) and first Sweep Power level are FREE
+-- (Dev, 2026-10-31: players learn the Gear window and the upgrade tree without paying).
+function Tools.tutorialPrice(price: number, _cash: number, tutorialDone: boolean): number
 	if tutorialDone then
 		return price
 	end
-	return math.max(0, math.min(price, math.floor(cash)))
+	return 0
 end
 
 function Tools.vehicle(id: string): VehicleDef?
