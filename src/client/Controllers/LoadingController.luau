@@ -3,9 +3,10 @@
 -- until the game is ready: the place has loaded, the terrain and map are built, the
 -- 3D models are in ReplicatedStorage.Assets, every UI image is downloaded, and our
 -- player data and character have arrived. Gives up after TIMEOUT so nobody is stuck.
--- Dev (2026-10-30): it took too long. Models and props get MODELS_MAX / PROPS_MAX at most
--- (they keep streaming in behind the game), UI images preload in the background after the
--- screen is gone, and a Skip button shows after SKIP_AFTER seconds.
+-- Dev (2026-10-31): it closed at about 50% and assets were often not loaded yet. Now every
+-- step waits for the real thing (caps only so nobody is stuck forever): models, props, every
+-- UI image and the models' meshes/textures download before it closes, then the content
+-- queue drains. The bar never goes backwards. Skip shows after SKIP_AFTER seconds.
 -- Look (remade 2026-10-31, Dev: "make it better"): sky gradient with scrolling studs, autumn
 -- leaves drifting down, the logo bobbing, a light sweep over the bar and a broom riding the
 -- end of the fill. Root is a TextButton so clicks never reach the HUD behind it.
@@ -24,10 +25,12 @@ local Ui = require(Client.Ui)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Assets = require(Shared.Config.Assets)
 
-local TIMEOUT = 25
-local MODELS_MAX = 6
-local PROPS_MAX = 4
-local SKIP_AFTER = 2
+local TIMEOUT = 60
+local TERRAIN_MAX = 15
+local MODELS_MAX = 25
+local PROPS_MAX = 15
+local QUEUE_MAX = 6
+local SKIP_AFTER = 10
 local TIPS = {
 	"Bigger tools sweep wider and hold more leaves.",
 	"Dump your trash into the green bins by the market to get cash.",
@@ -51,6 +54,7 @@ local LoadingController = {}
 local player = Players.LocalPlayer
 local gui: ScreenGui?
 local done = false
+local shown = 0
 
 local function find(path: string): any
 	local current: Instance? = gui
@@ -65,7 +69,9 @@ local function setProgress(fraction: number, status: string)
 	local rider = find("Root.Center.Bar.Rider") :: ImageLabel?
 	local percent = find("Root.Center.Bar.Percent") :: TextLabel?
 	local label = find("Root.Center.Status") :: TextLabel?
-	fraction = math.clamp(fraction, 0.02, 1)
+	-- Never moves backwards.
+	fraction = math.max(shown, math.clamp(fraction, 0.02, 1))
+	shown = fraction
 	if fill then
 		TweenService:Create(fill, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
 			Size = UDim2.fromScale(fraction, 1),
@@ -102,32 +108,6 @@ local function modelCount(): number
 	return count
 end
 
-local function preloadImages(deadline: number, from: number, to: number)
-	local ids = {}
-	for _, id in Assets.Images do
-		if type(id) == "string" and id ~= "" then
-			table.insert(ids, id)
-		end
-	end
-	local total = math.max(#ids, 1)
-	local loaded = 0
-	-- Preload in small batches so the bar moves and the timeout still applies.
-	local batch = 8
-	for i = 1, #ids, batch do
-		if os.clock() >= deadline then
-			return
-		end
-		local slice = table.move(ids, i, math.min(i + batch - 1, #ids), 1, {})
-		pcall(function()
-			ContentProvider:PreloadAsync(slice)
-		end)
-		loaded += #slice
-		if not done then
-			setProgress(from + (to - from) * loaded / total, `Loading images ({loaded}/{total})`)
-		end
-	end
-end
-
 local function fadeOut()
 	local root = find("Root") :: GuiObject?
 	if not gui or not root then
@@ -161,41 +141,83 @@ local function fadeOut()
 	gui = nil
 end
 
+local function stepWait(check: () -> boolean, cap: number, deadline: number)
+	waitFor(check, math.min(deadline, os.clock() + cap))
+end
+
+-- Downloads a list of content (ids or instances) in small batches, moving the bar from
+-- `from` to `to` as each batch finishes.
+local function preloadList(list: { any }, from: number, to: number, label: string, deadline: number)
+	local total = #list
+	if total == 0 then
+		setProgress(to, label)
+		return
+	end
+	local batch = 6
+	for i = 1, total, batch do
+		if os.clock() >= deadline or done then
+			return
+		end
+		local slice = table.move(list, i, math.min(i + batch - 1, total), 1, {})
+		pcall(function()
+			ContentProvider:PreloadAsync(slice)
+		end)
+		local loaded = math.min(i + batch - 1, total)
+		setProgress(from + (to - from) * loaded / total, `{label} ({loaded}/{total})`)
+	end
+end
+
+local function imageIds(): { string }
+	local ids = {}
+	for _, id in Assets.Images do
+		if type(id) == "string" and id ~= "" then
+			table.insert(ids, id)
+		end
+	end
+	return ids
+end
+
+-- Every step waits for the real thing (with a cap so nobody is stuck) and the bar only
+-- moves when that step's work is actually done. Images and model meshes are downloaded
+-- before the screen closes, so nothing pops in afterwards.
 local function run()
 	local deadline = os.clock() + TIMEOUT
 
-	setProgress(0.03, "Connecting to the world...")
+	setProgress(0.02, "Connecting to the world...")
 	if not game:IsLoaded() then
 		game.Loaded:Wait()
 	end
 
-	setProgress(0.1, "Raking up the leaves...")
-	waitFor(function()
+	setProgress(0.05, "Raking up the leaves...")
+	stepWait(function()
 		return Workspace:GetAttribute("TerrainReady") == true
-	end, deadline)
+	end, TERRAIN_MAX, deadline)
 
-	setProgress(0.2, "Loading 3D models...")
+	setProgress(0.12, "Loading 3D models...")
+	local f = assetsFolder() or ReplicatedStorage:WaitForChild("Assets", math.max(1, deadline - os.clock()))
 	local wanted = modelCount()
 	local modelsBy = math.min(deadline, os.clock() + MODELS_MAX)
 	while os.clock() < modelsBy do
-		local f = assetsFolder()
+		f = f or assetsFolder()
 		if f and f:GetAttribute("Ready") == true then
 			break
 		end
 		local have = if f then #f:GetChildren() else 0
 		if wanted > 0 then
-			setProgress(0.2 + 0.3 * math.min(have / wanted, 1), `Loading 3D models ({have}/{wanted})`)
+			setProgress(0.12 + 0.26 * math.min(have / wanted, 1), `Loading 3D models ({have}/{wanted})`)
 		end
 		task.wait(0.2)
 	end
 
-	setProgress(0.5, "Placing rocks, bases and gates...")
-	waitFor(function()
+	setProgress(0.38, "Placing rocks, bases and gates...")
+	stepWait(function()
 		return Workspace:GetAttribute("PropsReady") == true
-	end, math.min(deadline, os.clock() + PROPS_MAX))
+	end, PROPS_MAX, deadline)
 
-	-- UI images download in the background (buttons may pop in for a second).
-	task.spawn(preloadImages, os.clock() + 60, 0.55, 0.85)
+	preloadList(imageIds(), 0.45, 0.72, "Loading pictures", deadline)
+
+	local models = if f then f:GetChildren() else {}
+	preloadList(models, 0.72, 0.86, "Loading textures", deadline)
 
 	setProgress(0.88, "Loading your save...")
 	-- If the save is still held by the player's last server, the server says how long until
@@ -217,17 +239,23 @@ local function run()
 		task.wait(0.2)
 	end
 
-	setProgress(0.95, "Getting your broom ready...")
-	waitFor(function()
+	setProgress(0.93, "Getting your broom ready...")
+	stepWait(function()
 		local character = player.Character
 		return character ~= nil and character:FindFirstChild("HumanoidRootPart") ~= nil
-	end, deadline)
+	end, 15, deadline)
+
+	-- Whatever is still downloading (map textures, sounds) gets a few more seconds.
+	setProgress(0.96, "Almost there...")
+	stepWait(function()
+		return ContentProvider.RequestQueueSize == 0
+	end, QUEUE_MAX, deadline + QUEUE_MAX)
 
 	if done then
 		return -- skipped
 	end
 	setProgress(1, "Ready!")
-	task.wait(0.2)
+	task.wait(0.3)
 	done = true
 	fadeOut()
 end
