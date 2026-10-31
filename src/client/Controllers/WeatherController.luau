@@ -253,6 +253,22 @@ local function skyValue(group: string, prop: string): any
 	return baseline[group] and baseline[group][prop]
 end
 
+-- Cartoon cloud meshes drifting over the map (built once the models load, see below).
+local skyClouds: { MeshPart } = {}
+
+-- Mesh clouds take the sky's cloud colour, lightened, since Roblox lighting shades them too.
+local function tintSkyClouds(instant: boolean?)
+	local wanted = skyValue("Clouds", "Color")
+	local color = if typeof(wanted) == "Color3" then Color3.new(1, 1, 1):Lerp(wanted, 0.65) else Color3.new(1, 1, 1)
+	for _, cloud in skyClouds do
+		if instant then
+			cloud.Color = color
+		else
+			TweenService:Create(cloud, SKY_TWEEN, { Color = color }):Play()
+		end
+	end
+end
+
 local function applySky(preset: Preset?)
 	capture()
 	overlayLook()
@@ -284,6 +300,84 @@ local function applySky(preset: Preset?)
 		end
 		TweenService:Create(target, SKY_TWEEN, goal):Play()
 	end
+	tintSkyClouds()
+end
+
+-- Drifting cartoon clouds -----------------------------------------------------------------
+-- Cloud1..Cloud5 (art/blender/clouds.py), scattered high over the whole map and a margin
+-- around it. Positions come from server time, so every player sees the same sky. They
+-- wrap around the area and fade out near its edges.
+
+local CLOUD_COUNT = 46
+local CLOUD_MARGIN = Vector2.new(700, 500)
+local CLOUD_ALTITUDE = NumberRange.new(230, 400)
+local CLOUD_FADE = 220
+type SkyCloud = { part: MeshPart, start: Vector2, speed: number, y: number, yaw: number }
+local cloudList: { SkyCloud } = {}
+local cloudMin = MAP_MIN - CLOUD_MARGIN
+local cloudSize = (MAP_MAX + CLOUD_MARGIN) - cloudMin
+
+local function buildSkyClouds(): boolean
+	for i = 1, 5 do
+		if not AssetLibrary.has("Cloud" .. i) then
+			return false
+		end
+	end
+	local cloudFolder = Instance.new("Folder")
+	cloudFolder.Name = "SkyClouds"
+	cloudFolder.Parent = Workspace
+	local seeded = Random.new(20261031)
+	for i = 1, CLOUD_COUNT do
+		local model = AssetLibrary.get("Cloud" .. seeded:NextInteger(1, 5))
+		local part = model and model:FindFirstChildWhichIsA("MeshPart")
+		if not (model and part) then
+			continue
+		end
+		part.Parent = nil
+		model:Destroy()
+		local scale = seeded:NextNumber(9, 22)
+		part.Size *= scale
+		part.Anchored = true
+		part.CanCollide = false
+		part.CanQuery = false
+		part.CanTouch = false
+		part.CastShadow = false
+		part.Material = Enum.Material.SmoothPlastic
+		part.TextureID = ""
+		part.Name = "SkyCloud" .. i
+		part.Parent = cloudFolder
+		table.insert(skyClouds, part)
+		table.insert(cloudList, {
+			part = part,
+			start = Vector2.new(seeded:NextNumber(0, cloudSize.X), seeded:NextNumber(0, cloudSize.Y)),
+			speed = seeded:NextNumber(3, 7),
+			y = seeded:NextNumber(CLOUD_ALTITUDE.Min, CLOUD_ALTITUDE.Max),
+			yaw = seeded:NextNumber(-0.5, 0.5),
+		})
+	end
+	tintSkyClouds(true)
+	return true
+end
+
+local cloudParts: { BasePart } = {}
+local cloudFrames: { CFrame } = {}
+local function updateSkyClouds()
+	local now = Workspace:GetServerTimeNow()
+	local wind = Vector2.new(WIND.X, WIND.Z)
+	table.clear(cloudParts)
+	table.clear(cloudFrames)
+	for _, c in cloudList do
+		local p = c.start + wind * (c.speed * now)
+		local x, z = p.X % cloudSize.X, p.Y % cloudSize.Y
+		local edge = math.min(x, cloudSize.X - x, z, cloudSize.Y - z)
+		local fade = math.clamp(1 - edge / CLOUD_FADE, 0, 1)
+		if c.part.Transparency ~= fade then
+			c.part.Transparency = fade
+		end
+		table.insert(cloudParts, c.part)
+		table.insert(cloudFrames, CFrame.new(cloudMin.X + x, c.y, cloudMin.Y + z) * CFrame.Angles(0, c.yaw, 0))
+	end
+	Workspace:BulkMoveTo(cloudParts, cloudFrames, Enum.BulkMoveMode.FireCFrameChanged)
 end
 
 -- Helpers ------------------------------------------------------------------------------------
@@ -2127,6 +2221,7 @@ function WeatherController:Start()
 
 	local lastGround = Vector3.zero
 	local groundCheck = 0
+	local cloudsBuilt = false
 	RunService.RenderStepped:Connect(function(dt)
 		-- Day/night: the clock follows the server's cycle.
 		local start = State.server("CycleStart")
@@ -2139,8 +2234,12 @@ function WeatherController:Start()
 			groundCheck = 0.2
 			lastGround = groundAt(at)
 			refreshLook() -- walked into another zone
+			if not cloudsBuilt then
+				cloudsBuilt = buildSkyClouds()
+			end
 			refreshSky() -- night starts / ends
 		end
+		updateSkyClouds()
 		local floor = Vector3.new(at.X, lastGround.Y, at.Z)
 		for _, slot in slots do
 			local scene = slot.scene

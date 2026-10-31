@@ -1,7 +1,8 @@
 --!strict
 -- How the sky looks on a clear day, per zone: lighting, atmosphere, colour grade and a
--- sky gradient skybox (art/sky/skybox.py -> Sky_<Skybox>_<Face>) under Roblox's own
--- moving Terrain.Clouds.
+-- sky gradient skybox (art/sky/skybox.py -> Sky_<Skybox>_<Face>). The clouds are cartoon
+-- meshes drifting over the map (WeatherController, tinted by Clouds.Color); Roblox's own
+-- Terrain.Clouds stay off (Cover 0) on clear days and only come in with rain and storms.
 --
 -- The server sets SkyLooks.Default (MapBuilder.setupLighting). Each client then fades to
 -- the look of the zone its player is in (WeatherController), and every weather, moon and
@@ -60,7 +61,7 @@ SkyLooks.ById = {
 		Grade = { Saturation = 0.15, Contrast = 0.08, Brightness = 0, TintColor = rgb(255, 253, 250) },
 		Bloom = { Intensity = 0.2, Size = 24, Threshold = 2.4 },
 		SunRays = { Intensity = 0.06, Spread = 0.6 },
-		Clouds = { Cover = 0.55, Density = 0.55, Color = rgb(255, 255, 255) },
+		Clouds = { Cover = 0, Density = 0.55, Color = rgb(255, 255, 255) },
 		Sky = SKY,
 	},
 	-- Backyard (autumn leaves): blue sky, slightly warm horizon and light.
@@ -80,7 +81,7 @@ SkyLooks.ById = {
 		Grade = { Saturation = 0.16, Contrast = 0.08, Brightness = 0, TintColor = rgb(255, 249, 240) },
 		Bloom = { Intensity = 0.2, Size = 24, Threshold = 2.4 },
 		SunRays = { Intensity = 0.08, Spread = 0.6 },
-		Clouds = { Cover = 0.58, Density = 0.55, Color = rgb(255, 250, 244) },
+		Clouds = { Cover = 0, Density = 0.55, Color = rgb(255, 250, 244) },
 		Sky = SKY,
 	},
 	-- Beach: deep tropical blue, aqua horizon, crisp bright light.
@@ -100,7 +101,7 @@ SkyLooks.ById = {
 		Grade = { Saturation = 0.2, Contrast = 0.08, Brightness = 0.01, TintColor = rgb(250, 255, 255) },
 		Bloom = { Intensity = 0.22, Size = 24, Threshold = 2.3 },
 		SunRays = { Intensity = 0.08, Spread = 0.6 },
-		Clouds = { Cover = 0.5, Density = 0.5, Color = rgb(255, 255, 255) },
+		Clouds = { Cover = 0, Density = 0.55, Color = rgb(255, 255, 255) },
 		Sky = { StarCount = 0, CelestialBodiesShown = true, SunAngularSize = 16, MoonAngularSize = 8 },
 	},
 	-- City: late-afternoon gold horizon, warm clouds.
@@ -120,10 +121,10 @@ SkyLooks.ById = {
 		Grade = { Saturation = 0.15, Contrast = 0.09, Brightness = 0, TintColor = rgb(255, 240, 222) },
 		Bloom = { Intensity = 0.28, Size = 26, Threshold = 2.2 },
 		SunRays = { Intensity = 0.12, Spread = 0.7 },
-		Clouds = { Cover = 0.6, Density = 0.55, Color = rgb(255, 228, 200) },
+		Clouds = { Cover = 0, Density = 0.55, Color = rgb(255, 228, 200) },
 		Sky = { StarCount = 0, CelestialBodiesShown = true, SunAngularSize = 16, MoonAngularSize = 8 },
 	},
-	-- Snowy Peaks: crisp cool blue, more cloud.
+	-- Snowy Peaks: crisp cool blue.
 	Snow = {
 		Name = "Snowy Peaks",
 		Skybox = "Frosty",
@@ -140,7 +141,7 @@ SkyLooks.ById = {
 		Grade = { Saturation = 0.08, Contrast = 0.07, Brightness = 0, TintColor = rgb(244, 248, 255) },
 		Bloom = { Intensity = 0.22, Size = 24, Threshold = 2.3 },
 		SunRays = { Intensity = 0.06, Spread = 0.6 },
-		Clouds = { Cover = 0.62, Density = 0.6, Color = rgb(248, 250, 255) },
+		Clouds = { Cover = 0, Density = 0.55, Color = rgb(248, 250, 255) },
 		Sky = SKY,
 	},
 } :: { [string]: Look }

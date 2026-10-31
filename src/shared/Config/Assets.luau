@@ -9441,6 +9441,71 @@ Assets.Models = {
 			length = 24.0,
 		},
 	},
+	Cloud1 = {
+		bounds = {
+			max = Vector3.new(4.703, 3.845, 2.548),
+			min = Vector3.new(-4.703, -0.0, -2.548),
+		},
+		id = 127242872742455,
+		kind = "vfx",
+		parts = {
+			Cloud1 = {
+				collide = false,
+			},
+		},
+	},
+	Cloud2 = {
+		bounds = {
+			max = Vector3.new(3.473, 3.492, 2.155),
+			min = Vector3.new(-3.473, -0.0, -2.155),
+		},
+		id = 119625556846494,
+		kind = "vfx",
+		parts = {
+			Cloud2 = {
+				collide = false,
+			},
+		},
+	},
+	Cloud3 = {
+		bounds = {
+			max = Vector3.new(2.766, 2.779, 1.709),
+			min = Vector3.new(-2.766, -0.0, -1.709),
+		},
+		id = 86460794121346,
+		kind = "vfx",
+		parts = {
+			Cloud3 = {
+				collide = false,
+			},
+		},
+	},
+	Cloud4 = {
+		bounds = {
+			max = Vector3.new(5.508, 3.87, 2.336),
+			min = Vector3.new(-5.508, -0.0, -2.336),
+		},
+		id = 74855783170853,
+		kind = "vfx",
+		parts = {
+			Cloud4 = {
+				collide = false,
+			},
+		},
+	},
+	Cloud5 = {
+		bounds = {
+			max = Vector3.new(3.293, 3.73, 1.83),
+			min = Vector3.new(-3.293, -0.0, -1.83),
+		},
+		id = 82620890317863,
+		kind = "vfx",
+		parts = {
+			Cloud5 = {
+				collide = false,
+			},
+		},
+	},
 	Clump_Autumn1 = {
 		atlas = "PileAtlas_Autumn",
 		bounds = {

@@ -25810,5 +25810,135 @@
    -1.8
   ],
   "tris": 1960
+ },
+ "Cloud1": {
+  "bounds": {
+   "max": [
+    4.703,
+    3.845,
+    2.548
+   ],
+   "min": [
+    -4.703,
+    -0.0,
+    -2.548
+   ]
+  },
+  "kind": "vfx",
+  "name": "Cloud1",
+  "parts": {
+   "Cloud1": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2614
+ },
+ "Cloud2": {
+  "bounds": {
+   "max": [
+    3.473,
+    3.492,
+    2.155
+   ],
+   "min": [
+    -3.473,
+    -0.0,
+    -2.155
+   ]
+  },
+  "kind": "vfx",
+  "name": "Cloud2",
+  "parts": {
+   "Cloud2": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1924
+ },
+ "Cloud3": {
+  "bounds": {
+   "max": [
+    2.766,
+    2.779,
+    1.709
+   ],
+   "min": [
+    -2.766,
+    -0.0,
+    -1.709
+   ]
+  },
+  "kind": "vfx",
+  "name": "Cloud3",
+  "parts": {
+   "Cloud3": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1220
+ },
+ "Cloud4": {
+  "bounds": {
+   "max": [
+    5.508,
+    3.87,
+    2.336
+   ],
+   "min": [
+    -5.508,
+    -0.0,
+    -2.336
+   ]
+  },
+  "kind": "vfx",
+  "name": "Cloud4",
+  "parts": {
+   "Cloud4": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2882
+ },
+ "Cloud5": {
+  "bounds": {
+   "max": [
+    3.293,
+    3.73,
+    1.83
+   ],
+   "min": [
+    -3.293,
+    -0.0,
+    -1.83
+   ]
+  },
+  "kind": "vfx",
+  "name": "Cloud5",
+  "parts": {
+   "Cloud5": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1740
  }
 }
