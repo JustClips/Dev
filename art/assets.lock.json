@@ -10108,9 +10108,17 @@
    "id": 126761495466886,
    "sha": "c18c31c7177325124cd39f9f778e38f1b5e4c8e3f5fdb0264fc4d8a883a8ef75"
   },
+  "Drift_Paper1": {
+   "id": 75462726634340,
+   "sha": "54d9b6eac90e496c826f939890035093292fdb57c6e131c328860f92ae3bfadd"
+  },
   "Drift_Park1": {
    "id": 94116330533322,
    "sha": "ca83d924dc6bdc637433ed56438cd3d4cee35933d4cbeecee63bf26d9394ca34"
+  },
+  "Drift_Seaweed1": {
+   "id": 88181757295904,
+   "sha": "5c909ff36f92ec4a4008bf3e1e14bd871335203b00a393ca9ba18b507b4e2484"
   },
   "Drift_Snow1": {
    "id": 95400829103100,

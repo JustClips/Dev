@@ -72,7 +72,7 @@ local HOP = 0.25 -- part of a flight spent hopping up before the pull starts
 local DEFAULT_GROUND = { "Ground_Autumn1", "Ground_Autumn2", "Ground_Autumn3" }
 -- 3D piles (models thread): how many variants each look has.
 local CLUMPS = { Autumn = 4, Park = 3, Seaweed = 2, Paper = 2, Snow = 2 }
-local DRIFTS = { Autumn = 2, Park = 1, Snow = 1 }
+local DRIFTS = { Autumn = 2, Park = 1, Snow = 1, Seaweed = 1, Paper = 1 }
 local GOLD_CLUMP = "Clump_Gold1"
 local DRIFT_CHANCE = 0.65 -- edge tiles that get a drift heap
 -- Wind
@@ -429,9 +429,10 @@ local function buildProps(tile: Tile)
 		tile.decal.Transparency = 1
 	end
 	local edge = tile.edge
-	local drifts = DRIFTS[look.name] or DRIFTS.Autumn
-	if edge and Grid.hash(id, 14) < DRIFT_CHANCE then
-		local name2 = `Drift_{if DRIFTS[look.name] then look.name else "Autumn"}{math.floor(Grid.hash(id, 19) * drifts) + 1}`
+	-- each zone heaps its own litter (no drift mesh for a zone: no heap, never autumn leaves)
+	local drifts = DRIFTS[look.name]
+	if edge and drifts and Grid.hash(id, 14) < DRIFT_CHANCE then
+		local name2 = `Drift_{look.name}{math.floor(Grid.hash(id, 19) * drifts) + 1}`
 		-- High side (+Z) against the edge, sloping down toward the open ground.
 		local at = centre + edge * zg.Zone.TileSize * 0.3
 		local world = CFrame.lookAt(at, at - edge)

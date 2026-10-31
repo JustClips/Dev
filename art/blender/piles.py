@@ -418,4 +418,6 @@ ALL = {
     "Drift_Autumn2": drift("Drift_Autumn2", "Autumn", 163, 34),
     "Drift_Park1": drift("Drift_Park1", "Park", 171, 34),
     "Drift_Snow1": drift("Drift_Snow1", "Snow", 181, 36),
+    "Drift_Seaweed1": drift("Drift_Seaweed1", "Seaweed", 191, 38),
+    "Drift_Paper1": drift("Drift_Paper1", "Paper", 201, 34),
 }

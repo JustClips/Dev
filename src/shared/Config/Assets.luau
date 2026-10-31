@@ -9746,6 +9746,20 @@ Assets.Models = {
 			},
 		},
 	},
+	Drift_Paper1 = {
+		atlas = "PileAtlas_Paper",
+		bounds = {
+			max = Vector3.new(3.873, 1.065, 1.691),
+			min = Vector3.new(-3.403, -0.209, -1.984),
+		},
+		id = 75462726634340,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
 	Drift_Park1 = {
 		atlas = "PileAtlas_Park",
 		bounds = {
@@ -9753,6 +9767,20 @@ Assets.Models = {
 			min = Vector3.new(-3.84, -0.141, -1.927),
 		},
 		id = 94116330533322,
+		kind = "prop",
+		parts = {
+			Clump = {
+				collide = false,
+			},
+		},
+	},
+	Drift_Seaweed1 = {
+		atlas = "PileAtlas_Seaweed",
+		bounds = {
+			max = Vector3.new(3.614, 1.151, 1.646),
+			min = Vector3.new(-3.703, -0.14, -2.134),
+		},
+		id = 88181757295904,
 		kind = "prop",
 		parts = {
 			Clump = {
