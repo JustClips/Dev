@@ -20,7 +20,7 @@
      ],
      [
       0,
-      168
+      120
      ]
     ],
     "Position": [
@@ -160,7 +160,7 @@
        ],
        [
         0,
-        52
+        40
        ]
       ],
       "Position": [
@@ -170,7 +170,7 @@
        ],
        [
         0,
-        16
+        18
        ]
       ],
       "AnchorPoint": [
@@ -190,19 +190,8 @@
        "family": "rbxasset://fonts/families/Montserrat.json",
        "weight": "ExtraBold",
        "style": "Normal"
-      },
-      "TextScaled": true
-     },
-     "children": [
-      {
-       "name": "Fit",
-       "className": "UITextSizeConstraint",
-       "properties": {
-        "MaxTextSize": 16,
-        "MinTextSize": 7
-       }
       }
-     ]
+     }
     },
     {
      "name": "Skip",
@@ -215,7 +204,7 @@
        ],
        [
         0,
-        72
+        60
        ]
       ],
       "Position": [
@@ -245,21 +234,21 @@
       "Size": [
        [
         1,
-        -20
+        -24
        ],
        [
         0,
-        80
+        36
        ]
       ],
       "Position": [
        [
         0,
-        10
+        12
        ],
        [
         1,
-        -10
+        -12
        ]
       ],
       "AnchorPoint": [
@@ -294,6 +283,7 @@
           8
          ]
         ],
+        "HorizontalAlignment": "Center",
         "SortOrder": "LayoutOrder"
        }
       },

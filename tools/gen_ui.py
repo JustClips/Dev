@@ -1283,8 +1283,10 @@ def rebirth():
 def dialog():
     """Talking to an NPC (DialogController, used by the Pet Trader). Our own window instead
     of Roblox's Dialog bubbles: the speaker's name on a yellow tab, what they say (typed
-    out), and up to four answers as buttons. Compact (Dev: the first one was far too big)."""
-    W, H = 420, 168
+    out), and up to four answers as buttons. DialogController resizes the window to fit the
+    line and the number of answers (Dev: one button left a big empty gap), so the sizes
+    here are only the starting layout."""
+    W, H = 420, 120
     option = button("Template", U(0, 0, 0, 0), color=BG, label="", ts=15, stroke=2.5, Visible=False)
     win = frame("Window", U(0, W, 0, H), U(0.5, 0, 1, -112), (0.5, 1), bg=SURFACE, children=[
         autoscale(), border(INK, 3),
@@ -1292,11 +1294,11 @@ def dialog():
             border(INK, 2.5),
             text("Label", "Pet Trader", U(1, -10, 1, 0), U(0, 5, 0, 0), ts=16, color=INK, display=True, ZIndex=4),
         ]),
-        text("Text", "", U(1, -28, 0, 52), U(0, 14, 0, 16), ts=16, color=INK, heavy=True, xa="Left", ya="Top", TextScaled=True,
-             children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 10})]),
-        node("Skip", "TextButton", base(U(1, 0, 0, 72), BackgroundTransparency=1, Text="", ZIndex=2)),
-        frame("Options", U(1, -20, 0, 80), U(0, 10, 1, -10), (0, 1), children=[
-            node("Layout", "UIGridLayout", {"CellSize": U(0.5, -4, 0, 36), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder"}),
+        text("Text", "", U(1, -28, 0, 40), U(0, 14, 0, 18), ts=16, color=INK, heavy=True, xa="Left", ya="Top"),
+        node("Skip", "TextButton", base(U(1, 0, 0, 60), BackgroundTransparency=1, Text="", ZIndex=2)),
+        frame("Options", U(1, -24, 0, 36), U(0, 12, 1, -12), (0, 1), children=[
+            node("Layout", "UIGridLayout", {"CellSize": U(0.5, -4, 0, 36), "CellPadding": U(0, 8, 0, 8),
+                                            "HorizontalAlignment": "Center", "SortOrder": "LayoutOrder"}),
             option,
         ]),
     ])
