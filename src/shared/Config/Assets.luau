@@ -11412,6 +11412,7 @@ Assets.Images = {
 	Icon_Shop = "rbxassetid://87494234333633",
 	Icon_Speed = "rbxassetid://117872911347534",
 	Icon_Spin = "rbxassetid://135451256586035",
+	Icon_Sword = "rbxassetid://91458882596391",
 	Icon_Star = "rbxassetid://140422400197629",
 	Icon_Timer = "rbxassetid://131179301917424",
 	Icon_Tool = "rbxassetid://110987406076400",

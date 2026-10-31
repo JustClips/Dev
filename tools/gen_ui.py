@@ -908,7 +908,7 @@ def side_button(name, label, ico, color, order):
 POPUP_W, POPUP_H = 440, 460  # Pets / Growing Eggs side popups
 
 
-def popup_list(screen_name, title, ico, header_color, head_button, row_children, footer):
+def popup_list(screen_name, title, ico, header_color, head_button, row_children, footer, row_h=74):
     """Pets / Eggs: a small popup beside the Eggs / Pets buttons (BasePanelsController places
     it) with a one-column list. No dim: the game stays visible; a click outside closes it."""
     row = plate("Template", U(0, 0, 0, 0), tint="#2E3340", stroke=3, Visible=False, children=[
@@ -933,7 +933,7 @@ def popup_list(screen_name, title, ico, header_color, head_button, row_children,
         button("Close", U(0, 42, 0, 42), U(1, -4, 0, 4), (0.5, 0.5), color=DANGER, label="X", ts=24, ZIndex=6),
         head_button,
         scroller("List", U(1, -16, 1, -(64 + list_bottom)), U(0, 8, 0, 64), [
-            node("Layout", "UIGridLayout", {"CellSize": U(1, -14, 0, 74), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
+            node("Layout", "UIGridLayout", {"CellSize": U(1, -14, 0, row_h), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
                                             "HorizontalAlignment": "Left"}),
             padding(2, 12, 2, 2), row,
         ]),
@@ -958,14 +958,25 @@ def base_panels():
     head = dict(size=U(0, 132, 0, 40), pos=U(1, -50, 0, 28), anchor=(1, 0.5))
     popup_list(
         "PetsPanel", "0/4 Active", "Alien", "#FF9A3C", None,
-        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=DANGER, label="Unequip", ts=18, ZIndex=3)],
+        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=DANGER, label="Unequip", ts=18, ZIndex=3),
+         # Fight stats under the cash line (2026-10-31): sword + damage per hit, bolt + seconds per hit.
+         frame("Stats", U(1, -190, 0, 22), U(0, 72, 0, 62), children=[
+             hlist(5, "Left"),
+             icon("DamageIcon", "Sword", 22, LayoutOrder=1),
+             text("Damage", "", U(0, 0, 1, 0), ts=17, color="#FF9A7A", display=True, stroke=2, xa="Left",
+                  TextWrapped=False, AutomaticSize="X", LayoutOrder=2),
+             frame("Gap", U(0, 6, 1, 0), LayoutOrder=3),
+             icon("RateIcon", "Boost", 22, LayoutOrder=4),
+             text("Rate", "", U(0, 0, 1, 0), ts=17, color="#8FD3FF", display=True, stroke=2, xa="Left",
+                  TextWrapped=False, AutomaticSize="X", LayoutOrder=5),
+         ])],
         [
             # Two ways to more slots: one for cash, three for Robux (the pass).
             button("BuySlot", U(0.5, -14, 0, 46), U(0, 10, 1, -66), (0, 1), color=SUCCESS, label="+1 Slot", ts=18),
             button("AddSlot", U(0.5, -14, 0, 46), U(1, -10, 1, -66), (1, 1), color=PREMIUM, label="+3 Slots", ts=18,
                    label_color=INK),
             button("EquipBest", U(1, -20, 0, 46), U(0.5, 0, 1, -10), (0.5, 1), color="#4C8DFF", label="Equip Best", ts=22),
-        ])
+        ], row_h=92)
     popup_list(
         "EggsPanel", "Growing Eggs", "Egg", DANGER,
         button("OpenAll", head["size"], head["pos"], head["anchor"], color=PREMIUM, label="Open All", ts=18, label_color=INK, ZIndex=5),

@@ -1111,6 +1111,24 @@ def _quest():
     ]
 
 
+@fit_icon("Sword")  # pet damage (Pets window, 2026-10-31): a cartoon sword, tilted
+def _sword():
+    blade, blade_d = "#E4EBF5", "#AEB9CA"
+    out = [
+        # blade with a pointed tip and a centre groove
+        path("M 216 330 L 216 70 L 256 0 L 296 70 L 296 330 Z", blade),
+        stroke_line("M 256 60 L 256 312", width=10, color=blade_d),
+        # crossguard, grip and pommel
+        rect(132, 318, 248, 52, GOLD, r=26),
+        rect(226, 366, 60, 104, BROWN, r=14),
+        stroke_line("M 232 400 L 280 392 M 232 432 L 280 424", width=9, color=DBROWN),
+        circle(256, 486, 34, GOLD),
+        hl(234, 160, 7, 70, rot=0, opacity=0.7),
+        hl(190, 334, 30, 7, rot=0, opacity=0.6),
+    ]
+    return turn(out, 40)
+
+
 @icon("LuckyClover")
 def _lucky_clover():
     out = ICONS["Luck"]()

@@ -17,6 +17,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AlienModel = require(Shared.AlienModel)
 local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
+local Combat = require(Shared.Combat)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
@@ -142,6 +143,13 @@ local function renderPets(data)
 		nameLabel.TextColor3 = Eggs.ByName[def.Rarity].Color
 		;(row:FindFirstChild("Sub") :: TextLabel).Text = `{Format.cash(entry.income * (data.CashMultiplier or 1))}/s`
 		ModelView.show(row:FindFirstChild("Viewport") :: ViewportFrame, AssetLibrary.alien(entry.pet.Id, entry.pet.Mutation), "Alien_" .. entry.pet.Id)
+		-- Fight stats: damage per hit and seconds between hits (shared/Combat).
+		local stats = row:FindFirstChild("Stats")
+		if stats then
+			local attack = Combat.petAttack(entry.pet.Id)
+			;(stats:FindFirstChild("Damage") :: TextLabel).Text = Format.number(Combat.petPower(entry.pet) * attack.DamageMult)
+			;(stats:FindFirstChild("Rate") :: TextLabel).Text = `{string.format("%.1f", attack.Rate)}s`
+		end
 		-- Tap the pet itself for its info card.
 		local select = row:FindFirstChild("Select") :: TextButton?
 		if select then
