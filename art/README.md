@@ -4,7 +4,7 @@ Everything visual is made by scripts, so it can be rebuilt and tweaked.
 
 | Step | Command | Output |
 |---|---|---|
-| Models (19 aliens, 7 eggs, 6 tools, 3 vehicles, map props) | `python art/blender/build.py` (needs `bpy`) | `art/out/*.glb` + `art/out/meta.json` |
+| Models (19 aliens, 7 eggs, 6 tools, 3 vehicles, map props, zone landmarks in `landmarks.py`) | `python art/blender/build.py` (needs `bpy`) | `art/out/*.glb` + `art/out/meta.json` |
 | Preview renders | `python art/blender/render.py`, `art/blender/sheet.py` | `art/out/renders/` |
 | HUD icons (512 px, navy outline) | `python art/blender/icons.py` | `art/out/icons/*.png` |
 | Stud texture | `python art/blender/stud.py` | `art/out/ui/Stud.png` |

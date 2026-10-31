@@ -17,6 +17,7 @@ import litter  # noqa: E402
 import piles  # noqa: E402
 import rocks  # noqa: E402
 import coins  # noqa: E402
+import landmarks  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "out")
 
@@ -35,6 +36,8 @@ def builders():
     for k, fn in rocks.ALL.items():
         yield k, fn
     for k, fn in coins.ALL.items():
+        yield k, fn
+    for k, fn in landmarks.ALL.items():
         yield k, fn
 
 

@@ -8,6 +8,7 @@ local Types = require(script.Parent.Parent.Types)
 type ZoneDef = Types.ZoneDef
 
 local World = require(script.Parent.World)
+local ZoneDecor = require(script.Parent.ZoneDecor)
 
 local landingExclusions: { Types.Exclusion } = {
 	{ Center = Vector2.new(World.RocketPosition.X, World.RocketPosition.Z), Radius = World.RocketClearRadius },
@@ -156,12 +157,27 @@ local Zones = {
 	TileHeight = 0.3,
 }
 
+-- World (x, z) of a ZoneDecor spot: x across, d studs in from the gate edge (Max.Z).
+function Zones.decorPosition(zone: ZoneDef, at: Vector2): Vector2
+	return Vector2.new(at.X, zone.Max.Y - at.Y)
+end
+
 for _, zone in List do
 	Zones.ById[zone.Id] = zone
 	-- Keep leaves off the spot where the zone's quest NPC stands.
 	local npc = World.ZoneNpc[zone.Id]
 	if npc then
 		table.insert(zone.Exclusions, { Center = Vector2.new(npc.X, npc.Z), Radius = 5 })
+	end
+	-- Keep leaves off the zone's landmarks (Config/ZoneDecor).
+	for _, decor in ZoneDecor[zone.Id] or {} do
+		local at = Zones.decorPosition(zone, decor.At)
+		if decor.Clear > 0 then
+			table.insert(zone.Exclusions, { Center = at, Radius = decor.Clear })
+		end
+		for _, hole in decor.Holes or {} do
+			table.insert(zone.Exclusions, { Center = at + Vector2.new(hole.X, -hole.Y), Radius = hole.Z })
+		end
 	end
 end
 

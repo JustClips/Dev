@@ -16,6 +16,7 @@ local Eggs = require(Shared.Config.Eggs)
 local Items = require(Shared.Config.Items)
 local Rewards = require(Shared.Config.Rewards)
 local World = require(Shared.Config.World)
+local ZoneDecor = require(Shared.Config.ZoneDecor)
 local Zones = require(Shared.Config.Zones)
 
 local MapBuilder = {}
@@ -1142,6 +1143,20 @@ function MapBuilder.buildProps()
 	scatter(rng, Zones.ById.DarkSide, { "Rock_Mars1", "Rock_Mars2", "Crystal_Red", "Mushroom_Mars" }, 30)
 	scatter(rng, Zones.ById.Mars, { "Rock_Dark1", "Rock_Dark2", "Crystal_Purple", "Mushroom_Glow" }, 30)
 	scatter(rng, Zones.ById.Europa, { "Rock_Ice1", "Rock_Ice2", "Crystal_Ice", "Crystal_Ice" }, 30)
+	-- Landmarks inside each zone's leaf field (Config/ZoneDecor; leaves keep clear of them).
+	for zoneId, list in ZoneDecor do
+		local zone = Zones.ById[zoneId]
+		if not zone then
+			continue
+		end
+		local folder = Instance.new("Folder")
+		folder.Name = "Decor_" .. zoneId
+		folder.Parent = propsFolder
+		for _, decor in list do
+			local at = Zones.decorPosition(zone, decor.At)
+			place(decor.Asset, CFrame.new(at.X, zone.GroundY, at.Y) * yaw(decor.Yaw), decor.Scale, folder)
+		end
+	end
 	rockWalls(rng)
 
 	for i = 1, World.BaseCount do

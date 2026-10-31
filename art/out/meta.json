@@ -15912,6 +15912,273 @@
   ],
   "tris": 2132
  },
+ "Beach_Boat": {
+  "bounds": {
+   "max": [
+    2.231,
+    1.12,
+    4.648
+   ],
+   "min": [
+    -2.231,
+    -0.2,
+    -4.648
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Boat",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 668
+ },
+ "Beach_HutA": {
+  "bounds": {
+   "max": [
+    3.688,
+    7.672,
+    3.4
+   ],
+   "min": [
+    -3.688,
+    0.0,
+    -4.2
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_HutA",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 200
+ },
+ "Beach_HutB": {
+  "bounds": {
+   "max": [
+    3.688,
+    7.672,
+    3.4
+   ],
+   "min": [
+    -3.688,
+    0.0,
+    -4.2
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_HutB",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 200
+ },
+ "Beach_HutC": {
+  "bounds": {
+   "max": [
+    3.688,
+    7.672,
+    3.4
+   ],
+   "min": [
+    -3.688,
+    0.0,
+    -4.2
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_HutC",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 200
+ },
+ "Beach_IceCream": {
+  "bounds": {
+   "max": [
+    3.025,
+    12.4,
+    2.1
+   ],
+   "min": [
+    -3.025,
+    0.0,
+    -3.2
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_IceCream",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 834
+ },
+ "Beach_Lifeguard": {
+  "bounds": {
+   "max": [
+    2.5,
+    13.0,
+    3.004
+   ],
+   "min": [
+    -3.35,
+    -0.245,
+    -9.138
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Lifeguard",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 698
+ },
+ "Beach_Lighthouse": {
+  "bounds": {
+   "max": [
+    8.468,
+    32.05,
+    7.87
+   ],
+   "min": [
+    -8.468,
+    -0.6,
+    -7.872
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Lighthouse",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamp_Glow": {
+    "collide": false,
+    "glow": "FFF0A0",
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1410
+ },
+ "Beach_Sandcastle": {
+  "bounds": {
+   "max": [
+    7.217,
+    7.6,
+    6.6
+   ],
+   "min": [
+    -7.418,
+    -0.35,
+    -6.6
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Sandcastle",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 708
+ },
+ "Beach_Surfboards": {
+  "bounds": {
+   "max": [
+    2.25,
+    5.934,
+    0.2
+   ],
+   "min": [
+    -2.25,
+    0.0,
+    -1.168
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Surfboards",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 588
+ },
+ "Beach_Volleyball": {
+  "bounds": {
+   "max": [
+    5.18,
+    5.2,
+    6.075
+   ],
+   "min": [
+    -5.18,
+    -0.05,
+    -6.075
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Volleyball",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 500
+ },
  "Boulder_1": {
   "bounds": {
    "max": [
@@ -15989,6 +16256,368 @@
    }
   },
   "tris": 120
+ },
+ "City_Billboard": {
+  "bounds": {
+   "max": [
+    8.0,
+    15.5,
+    0.8
+   ],
+   "min": [
+    -8.0,
+    0.0,
+    -1.438
+   ]
+  },
+  "kind": "prop",
+  "name": "City_Billboard",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 420
+ },
+ "City_BusStop": {
+  "bounds": {
+   "max": [
+    4.0,
+    5.1,
+    2.0
+   ],
+   "min": [
+    -5.185,
+    0.0,
+    -2.0
+   ]
+  },
+  "kind": "prop",
+  "name": "City_BusStop",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Panel_Glass": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": "Glass",
+    "parent": null
+   }
+  },
+  "tris": 268
+ },
+ "City_HotDog": {
+  "bounds": {
+   "max": [
+    2.625,
+    7.01,
+    2.625
+   ],
+   "min": [
+    -3.017,
+    0.0,
+    -2.625
+   ]
+  },
+  "kind": "prop",
+  "name": "City_HotDog",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2074
+ },
+ "City_Newsstand": {
+  "bounds": {
+   "max": [
+    2.5,
+    4.9,
+    2.0
+   ],
+   "min": [
+    -2.5,
+    0.0,
+    -2.8
+   ]
+  },
+  "kind": "prop",
+  "name": "City_Newsstand",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 204
+ },
+ "City_ShopA": {
+  "bounds": {
+   "max": [
+    9.0,
+    17.1,
+    5.3
+   ],
+   "min": [
+    -9.0,
+    0.0,
+    -7.253
+   ]
+  },
+  "kind": "prop",
+  "name": "City_ShopA",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Windows_Glass": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": "Glass",
+    "parent": null
+   }
+  },
+  "sign": [
+   0,
+   6.8,
+   -5.3
+  ],
+  "tris": 510
+ },
+ "City_ShopB": {
+  "bounds": {
+   "max": [
+    9.0,
+    14.0,
+    5.3
+   ],
+   "min": [
+    -9.0,
+    0.0,
+    -7.253
+   ]
+  },
+  "kind": "prop",
+  "name": "City_ShopB",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Windows_Glass": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": "Glass",
+    "parent": null
+   }
+  },
+  "sign": [
+   0,
+   6.8,
+   -5.3
+  ],
+  "tris": 492
+ },
+ "City_ShopC": {
+  "bounds": {
+   "max": [
+    9.0,
+    14.4,
+    5.3
+   ],
+   "min": [
+    -9.0,
+    0.0,
+    -7.253
+   ]
+  },
+  "kind": "prop",
+  "name": "City_ShopC",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Windows_Glass": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": "Glass",
+    "parent": null
+   }
+  },
+  "sign": [
+   0,
+   6.8,
+   -5.3
+  ],
+  "tris": 728
+ },
+ "City_ShopD": {
+  "bounds": {
+   "max": [
+    9.0,
+    15.6,
+    5.3
+   ],
+   "min": [
+    -9.0,
+    0.0,
+    -7.253
+   ]
+  },
+  "kind": "prop",
+  "name": "City_ShopD",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Windows_Glass": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": "Glass",
+    "parent": null
+   }
+  },
+  "sign": [
+   0,
+   6.8,
+   -5.3
+  ],
+  "tris": 408
+ },
+ "City_Statue": {
+  "bounds": {
+   "max": [
+    4.6,
+    12.359,
+    4.6
+   ],
+   "min": [
+    -4.971,
+    0.0,
+    -4.6
+   ]
+  },
+  "kind": "prop",
+  "name": "City_Statue",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1064
+ },
+ "City_StreetLamp": {
+  "bounds": {
+   "max": [
+    0.35,
+    9.45,
+    0.35
+   ],
+   "min": [
+    -0.35,
+    0.0,
+    -2.7
+   ]
+  },
+  "kind": "prop",
+  "name": "City_StreetLamp",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamp_Glow": {
+    "collide": false,
+    "glow": "FFF4CC",
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 108
+ },
+ "City_TrafficLight": {
+  "bounds": {
+   "max": [
+    0.46,
+    8.05,
+    0.4
+   ],
+   "min": [
+    -0.46,
+    0.0,
+    -4.15
+   ]
+  },
+  "kind": "prop",
+  "name": "City_TrafficLight",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Green_Glow": {
+    "collide": false,
+    "glow": "4AE07A",
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Red_Glow": {
+    "collide": false,
+    "glow": "FF4A3C",
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 338
  },
  "Cliff_1": {
   "bounds": {
@@ -17921,6 +18550,195 @@
   },
   "tris": 720
  },
+ "Park_DuckPond": {
+  "bounds": {
+   "max": [
+    12.61,
+    2.18,
+    8.691
+   ],
+   "min": [
+    -12.61,
+    -0.5,
+    -8.691
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_DuckPond",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 3370
+ },
+ "Park_FlowerBed": {
+  "bounds": {
+   "max": [
+    3.4,
+    2.4,
+    3.4
+   ],
+   "min": [
+    -3.4,
+    0.0,
+    -3.4
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_FlowerBed",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2652
+ },
+ "Park_Fountain": {
+  "bounds": {
+   "max": [
+    9.838,
+    8.8,
+    9.887
+   ],
+   "min": [
+    -9.838,
+    -0.3,
+    -9.887
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_Fountain",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2786
+ },
+ "Park_Gazebo": {
+  "bounds": {
+   "max": [
+    7.2,
+    9.05,
+    7.2
+   ],
+   "min": [
+    -7.2,
+    0.0,
+    -7.7
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_Gazebo",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 584
+ },
+ "Park_Lamp": {
+  "bounds": {
+   "max": [
+    0.7,
+    8.0,
+    0.7
+   ],
+   "min": [
+    -0.7,
+    0.0,
+    -0.7
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_Lamp",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamp_Glow": {
+    "collide": false,
+    "glow": "FFE9A8",
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 126
+ },
+ "Park_Picnic": {
+  "bounds": {
+   "max": [
+    3.5,
+    2.728,
+    3.0
+   ],
+   "min": [
+    -3.5,
+    -0.078,
+    -3.0
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_Picnic",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 324
+ },
+ "Park_Playground": {
+  "bounds": {
+   "max": [
+    11.0,
+    8.7,
+    7.5
+   ],
+   "min": [
+    -11.0,
+    -0.042,
+    -7.543
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_Playground",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 676
+ },
  "Pond": {
   "bounds": {
    "max": [
@@ -19082,6 +19900,195 @@
    }
   },
   "tris": 51598
+ },
+ "Snow_Cocoa": {
+  "bounds": {
+   "max": [
+    3.12,
+    8.6,
+    2.2
+   ],
+   "min": [
+    -3.12,
+    0.0,
+    -2.8
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_Cocoa",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 788
+ },
+ "Snow_FrozenPond": {
+  "bounds": {
+   "max": [
+    13.584,
+    1.6,
+    10.9
+   ],
+   "min": [
+    -13.244,
+    0.0,
+    -9.977
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_FrozenPond",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 4080
+ },
+ "Snow_Igloo": {
+  "bounds": {
+   "max": [
+    4.2,
+    3.6,
+    4.2
+   ],
+   "min": [
+    -4.2,
+    0.0,
+    -5.745
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_Igloo",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1008
+ },
+ "Snow_Lodge": {
+  "bounds": {
+   "max": [
+    8.2,
+    14.4,
+    6.521
+   ],
+   "min": [
+    -8.2,
+    0.0,
+    -8.89
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_Lodge",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Windows_Glow": {
+    "collide": false,
+    "glow": "FFD27A",
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1540
+ },
+ "Snow_SkiLift": {
+  "bounds": {
+   "max": [
+    3.8,
+    16.9,
+    19.5
+   ],
+   "min": [
+    -3.8,
+    0.0,
+    -19.5
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_SkiLift",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 880
+ },
+ "Snow_Sled": {
+  "bounds": {
+   "max": [
+    1.0,
+    1.675,
+    1.68
+   ],
+   "min": [
+    -1.0,
+    0.02,
+    -1.98
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_Sled",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1224
+ },
+ "Snow_Snowman": {
+  "bounds": {
+   "max": [
+    2.476,
+    7.0,
+    1.6
+   ],
+   "min": [
+    -2.476,
+    -0.2,
+    -1.6
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_Snowman",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1962
  },
  "Tool_Broom": {
   "bounds": {

@@ -7886,6 +7886,140 @@ Assets.Models = {
 		},
 		sign = Vector3.new(0.0, 11.4, -0.3),
 	},
+	Beach_Boat = {
+		bounds = {
+			max = Vector3.new(2.231, 1.12, 4.648),
+			min = Vector3.new(-2.231, -0.2, -4.648),
+		},
+		id = 94962561371229,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_HutA = {
+		bounds = {
+			max = Vector3.new(3.688, 7.672, 3.4),
+			min = Vector3.new(-3.688, 0.0, -4.2),
+		},
+		id = 99490456547645,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_HutB = {
+		bounds = {
+			max = Vector3.new(3.688, 7.672, 3.4),
+			min = Vector3.new(-3.688, 0.0, -4.2),
+		},
+		id = 83893782488451,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_HutC = {
+		bounds = {
+			max = Vector3.new(3.688, 7.672, 3.4),
+			min = Vector3.new(-3.688, 0.0, -4.2),
+		},
+		id = 99557965915132,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_IceCream = {
+		bounds = {
+			max = Vector3.new(3.025, 12.4, 2.1),
+			min = Vector3.new(-3.025, 0.0, -3.2),
+		},
+		id = 76495201096349,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_Lifeguard = {
+		bounds = {
+			max = Vector3.new(2.5, 13.0, 3.004),
+			min = Vector3.new(-3.35, -0.245, -9.138),
+		},
+		id = 86430528234488,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_Lighthouse = {
+		bounds = {
+			max = Vector3.new(8.468, 32.05, 7.87),
+			min = Vector3.new(-8.468, -0.6, -7.872),
+		},
+		id = 113771946694717,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Lamp_Glow = {
+				collide = false,
+				glow = "FFF0A0",
+			},
+		},
+	},
+	Beach_Sandcastle = {
+		bounds = {
+			max = Vector3.new(7.217, 7.6, 6.6),
+			min = Vector3.new(-7.418, -0.35, -6.6),
+		},
+		id = 73658242480314,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_Surfboards = {
+		bounds = {
+			max = Vector3.new(2.25, 5.934, 0.2),
+			min = Vector3.new(-2.25, 0.0, -1.168),
+		},
+		id = 104723102306026,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_Volleyball = {
+		bounds = {
+			max = Vector3.new(5.18, 5.2, 6.075),
+			min = Vector3.new(-5.18, -0.05, -6.075),
+		},
+		id = 135111623835015,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
 	Boulder_1 = {
 		bounds = {
 			max = Vector3.new(4.217, 4.827, 3.584),
@@ -7922,6 +8056,185 @@ Assets.Models = {
 		parts = {
 			Body = {
 				collide = true,
+			},
+		},
+	},
+	City_Billboard = {
+		bounds = {
+			max = Vector3.new(8.0, 15.5, 0.8),
+			min = Vector3.new(-8.0, 0.0, -1.438),
+		},
+		id = 106945589050288,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	City_BusStop = {
+		bounds = {
+			max = Vector3.new(4.0, 5.1, 2.0),
+			min = Vector3.new(-5.185, 0.0, -2.0),
+		},
+		id = 84785030601578,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Panel_Glass = {
+				collide = false,
+				material = "Glass",
+			},
+		},
+	},
+	City_HotDog = {
+		bounds = {
+			max = Vector3.new(2.625, 7.01, 2.625),
+			min = Vector3.new(-3.017, 0.0, -2.625),
+		},
+		id = 127597171878274,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	City_Newsstand = {
+		bounds = {
+			max = Vector3.new(2.5, 4.9, 2.0),
+			min = Vector3.new(-2.5, 0.0, -2.8),
+		},
+		id = 136876521185842,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	City_ShopA = {
+		bounds = {
+			max = Vector3.new(9.0, 17.1, 5.3),
+			min = Vector3.new(-9.0, 0.0, -7.253),
+		},
+		id = 101456601940382,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Windows_Glass = {
+				collide = false,
+				material = "Glass",
+			},
+		},
+		sign = Vector3.new(0.0, 6.8, -5.3),
+	},
+	City_ShopB = {
+		bounds = {
+			max = Vector3.new(9.0, 14.0, 5.3),
+			min = Vector3.new(-9.0, 0.0, -7.253),
+		},
+		id = 71896362697206,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Windows_Glass = {
+				collide = false,
+				material = "Glass",
+			},
+		},
+		sign = Vector3.new(0.0, 6.8, -5.3),
+	},
+	City_ShopC = {
+		bounds = {
+			max = Vector3.new(9.0, 14.4, 5.3),
+			min = Vector3.new(-9.0, 0.0, -7.253),
+		},
+		id = 131683329557698,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Windows_Glass = {
+				collide = false,
+				material = "Glass",
+			},
+		},
+		sign = Vector3.new(0.0, 6.8, -5.3),
+	},
+	City_ShopD = {
+		bounds = {
+			max = Vector3.new(9.0, 15.6, 5.3),
+			min = Vector3.new(-9.0, 0.0, -7.253),
+		},
+		id = 89200747192769,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Windows_Glass = {
+				collide = false,
+				material = "Glass",
+			},
+		},
+		sign = Vector3.new(0.0, 6.8, -5.3),
+	},
+	City_Statue = {
+		bounds = {
+			max = Vector3.new(4.6, 12.359, 4.6),
+			min = Vector3.new(-4.971, 0.0, -4.6),
+		},
+		id = 127705163053694,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	City_StreetLamp = {
+		bounds = {
+			max = Vector3.new(0.35, 9.45, 0.35),
+			min = Vector3.new(-0.35, 0.0, -2.7),
+		},
+		id = 71248684853551,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Lamp_Glow = {
+				collide = false,
+				glow = "FFF4CC",
+			},
+		},
+	},
+	City_TrafficLight = {
+		bounds = {
+			max = Vector3.new(0.46, 8.05, 0.4),
+			min = Vector3.new(-0.46, 0.0, -4.15),
+		},
+		id = 77136224136586,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Green_Glow = {
+				collide = false,
+				glow = "4AE07A",
+			},
+			Red_Glow = {
+				collide = false,
+				glow = "FF4A3C",
 			},
 		},
 	},
@@ -8926,6 +9239,101 @@ Assets.Models = {
 			},
 		},
 	},
+	Park_DuckPond = {
+		bounds = {
+			max = Vector3.new(12.61, 2.18, 8.691),
+			min = Vector3.new(-12.61, -0.5, -8.691),
+		},
+		id = 91044418536225,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Park_FlowerBed = {
+		bounds = {
+			max = Vector3.new(3.4, 2.4, 3.4),
+			min = Vector3.new(-3.4, 0.0, -3.4),
+		},
+		id = 76278609988360,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Park_Fountain = {
+		bounds = {
+			max = Vector3.new(9.838, 8.8, 9.887),
+			min = Vector3.new(-9.838, -0.3, -9.887),
+		},
+		id = 100624313421572,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Park_Gazebo = {
+		bounds = {
+			max = Vector3.new(7.2, 9.05, 7.2),
+			min = Vector3.new(-7.2, 0.0, -7.7),
+		},
+		id = 76370855197849,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Park_Lamp = {
+		bounds = {
+			max = Vector3.new(0.7, 8.0, 0.7),
+			min = Vector3.new(-0.7, 0.0, -0.7),
+		},
+		id = 86729560756741,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Lamp_Glow = {
+				collide = false,
+				glow = "FFE9A8",
+			},
+		},
+	},
+	Park_Picnic = {
+		bounds = {
+			max = Vector3.new(3.5, 2.728, 3.0),
+			min = Vector3.new(-3.5, -0.078, -3.0),
+		},
+		id = 71027360980028,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Park_Playground = {
+		bounds = {
+			max = Vector3.new(11.0, 8.7, 7.5),
+			min = Vector3.new(-11.0, -0.042, -7.543),
+		},
+		id = 115963252228606,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
 	Pond = {
 		bounds = {
 			max = Vector3.new(8.099, 1.8, 5.908),
@@ -9489,6 +9897,101 @@ Assets.Models = {
 			},
 			Walls2 = {
 				collide = false,
+			},
+		},
+	},
+	Snow_Cocoa = {
+		bounds = {
+			max = Vector3.new(3.12, 8.6, 2.2),
+			min = Vector3.new(-3.12, 0.0, -2.8),
+		},
+		id = 88924491918794,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Snow_FrozenPond = {
+		bounds = {
+			max = Vector3.new(13.584, 1.6, 10.9),
+			min = Vector3.new(-13.244, 0.0, -9.977),
+		},
+		id = 135068180440942,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Snow_Igloo = {
+		bounds = {
+			max = Vector3.new(4.2, 3.6, 4.2),
+			min = Vector3.new(-4.2, 0.0, -5.745),
+		},
+		id = 112499049632279,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Snow_Lodge = {
+		bounds = {
+			max = Vector3.new(8.2, 14.4, 6.521),
+			min = Vector3.new(-8.2, 0.0, -8.89),
+		},
+		id = 91616300614966,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Windows_Glow = {
+				collide = false,
+				glow = "FFD27A",
+			},
+		},
+	},
+	Snow_SkiLift = {
+		bounds = {
+			max = Vector3.new(3.8, 16.9, 19.5),
+			min = Vector3.new(-3.8, 0.0, -19.5),
+		},
+		id = 81523817573377,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Snow_Sled = {
+		bounds = {
+			max = Vector3.new(1.0, 1.675, 1.68),
+			min = Vector3.new(-1.0, 0.02, -1.98),
+		},
+		id = 121948992745255,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Snow_Snowman = {
+		bounds = {
+			max = Vector3.new(2.476, 7.0, 1.6),
+			min = Vector3.new(-2.476, -0.2, -1.6),
+		},
+		id = 94329279446710,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
 			},
 		},
 	},

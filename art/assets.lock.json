@@ -9280,6 +9280,46 @@
    "id": 118065667707706,
    "sha": "62cfcccd59674f5ffd0041ba6c9772f5bba7cf4a780f9eb2210ff59e645b7b75"
   },
+  "Beach_Boat": {
+   "id": 94962561371229,
+   "sha": "f798008c01d903788126f3bc4ac3528309428553aea0f30155173f3d0a8b6436"
+  },
+  "Beach_HutA": {
+   "id": 99490456547645,
+   "sha": "2f958ec649e90656d37241718926fb32317b78d0650ea34d69102ac99032233e"
+  },
+  "Beach_HutB": {
+   "id": 83893782488451,
+   "sha": "ac75bf4bf9e4eed37123b853a9106f18ff683cb469e85aa396e45544e5c1a413"
+  },
+  "Beach_HutC": {
+   "id": 99557965915132,
+   "sha": "f4f2409d95eb803c7bb5687f6180f1eec13585260451160a1e314f5086ac5921"
+  },
+  "Beach_IceCream": {
+   "id": 76495201096349,
+   "sha": "cca7eca546cb9c8093f92b47bbfa8a9f420c00dafdbcd4163952c5f08f119dd8"
+  },
+  "Beach_Lifeguard": {
+   "id": 86430528234488,
+   "sha": "b1c793b6a8ba57f7cf689a9f9e463c5ebbd2682a3824a62deb05cfbf3bf13c8e"
+  },
+  "Beach_Lighthouse": {
+   "id": 113771946694717,
+   "sha": "635ee8f31d7be8acdf827e83b0ab172086ca11dc50ffa14c225e6d3453a0c43c"
+  },
+  "Beach_Sandcastle": {
+   "id": 73658242480314,
+   "sha": "83434ba1cc88d412821cfbfcd7e557af07b0c77e30d2db683665f252ae1327ac"
+  },
+  "Beach_Surfboards": {
+   "id": 104723102306026,
+   "sha": "e0406b8d044b311f55e3054a12484fcd0c5a2d79790f795174123fa6cdc77d28"
+  },
+  "Beach_Volleyball": {
+   "id": 135111623835015,
+   "sha": "e9729d9125d700d6f118fb12bc055c058e33b96be8025fff796c2c1e301b4e1f"
+  },
   "Boulder_1": {
    "id": 139158421576031,
    "sha": "b8872b7dae93a42d611c0342af44057f37224e8c9c15688bfaf25471003d89a1"
@@ -9291,6 +9331,50 @@
   "Boulder_3": {
    "id": 99646249054269,
    "sha": "6457a21da56717455be5b6d025c3e5bd0baf93652a5311ffef55078f28224f9f"
+  },
+  "City_Billboard": {
+   "id": 106945589050288,
+   "sha": "87b325d55e1317c725b4e29594579b562e35cacdf00bc25556535d296e46b06d"
+  },
+  "City_BusStop": {
+   "id": 84785030601578,
+   "sha": "4117ec4e5d2801f0e7c1daece768c62c5c6fc959332f5f37ba597d3a4ec194a1"
+  },
+  "City_HotDog": {
+   "id": 127597171878274,
+   "sha": "d76a89299c416b1c3f6e2ed3869e6bff56f312e03d13e5dc0cc3fd2aff6fbbff"
+  },
+  "City_Newsstand": {
+   "id": 136876521185842,
+   "sha": "480d8784b4c27c197b8de699d622086cb15f05ab8613187795f541d43d79747b"
+  },
+  "City_ShopA": {
+   "id": 101456601940382,
+   "sha": "26b9042dac4faacaaa223e27de578d90fb6537a39004c64a206ea52c25f8543a"
+  },
+  "City_ShopB": {
+   "id": 71896362697206,
+   "sha": "dc6f07f01ca236f25a93431f0502f4962837389e10c3032d8b0fd06559dacb4c"
+  },
+  "City_ShopC": {
+   "id": 131683329557698,
+   "sha": "6a61b8f27d285e8285aef232bfdb145d4b266028120d97f6aef41f5ad243dfab"
+  },
+  "City_ShopD": {
+   "id": 89200747192769,
+   "sha": "262b0c7ef25d72968762767807060e62dde43de282dd000c8b0a6e40815eb706"
+  },
+  "City_Statue": {
+   "id": 127705163053694,
+   "sha": "ce88be91cd4b5b05442fc23cffffe05f8cb89abf65e76d96a572b7552c956c83"
+  },
+  "City_StreetLamp": {
+   "id": 71248684853551,
+   "sha": "ab1682254c15734b20963c781c3e032885f45c4e27f769cab24bf695c49d1ea5"
+  },
+  "City_TrafficLight": {
+   "id": 77136224136586,
+   "sha": "1a9f94763055a1043ebecfe699a7d738f1bea68f0bd9132da720040e3c8e6a53"
   },
   "Cliff_1": {
    "id": 76408303618333,
@@ -9536,6 +9620,34 @@
    "id": 94155925522557,
    "sha": "8c688707110760d1ed184202276609dda81798ae92a7c1f7ca7893f985c16ad9"
   },
+  "Park_DuckPond": {
+   "id": 91044418536225,
+   "sha": "8b94f04d61ac0c671815ca50c8a7798f180ab0bfa055d380e264156a0727c5d7"
+  },
+  "Park_FlowerBed": {
+   "id": 76278609988360,
+   "sha": "30834bcadda3cd10671b43466ebbb30f2f6b9a6facd1b5c88bf9bbeac218e59f"
+  },
+  "Park_Fountain": {
+   "id": 100624313421572,
+   "sha": "a7fa89bae26a659b1b0ceab79243c5542cce3bdf6c56ebf6bfc8a416d061e6cb"
+  },
+  "Park_Gazebo": {
+   "id": 76370855197849,
+   "sha": "6522a5cd15f1daebf050271b69ebe990d72a7a0b455b0027077ad6ba426add3a"
+  },
+  "Park_Lamp": {
+   "id": 86729560756741,
+   "sha": "7a12c16374316924d3d082cba7cc2d35801a31a4e7fcb10fca7c81d0934557d8"
+  },
+  "Park_Picnic": {
+   "id": 71027360980028,
+   "sha": "14575664202ff870a450fb6debb2e0b6609c60339f099e8d5e407ec01913415f"
+  },
+  "Park_Playground": {
+   "id": 115963252228606,
+   "sha": "180f34f1ce6cb6692ae02e793125d88944eb09db6a0ad4a7bf35dd12ef9c358e"
+  },
   "Pond": {
    "id": 120446619890790,
    "sha": "bb27b86b946b20775c7027080ad030d1d760f114a58b74554b043cc182ff150e"
@@ -9619,6 +9731,34 @@
   "Skin_Winter": {
    "id": 78209803285249,
    "sha": "3b7d1074a63c1c8f56588a7617af064a9578788419d77aad1565cea1073440fc"
+  },
+  "Snow_Cocoa": {
+   "id": 88924491918794,
+   "sha": "17e5597b295283881a1791084171d6a34e6beb5e49bb5b82342c00ed25b4a61b"
+  },
+  "Snow_FrozenPond": {
+   "id": 135068180440942,
+   "sha": "4a9701d8260e4720303b5161ff7b3a4ecd2b6f087283f30874b506decaf6d701"
+  },
+  "Snow_Igloo": {
+   "id": 112499049632279,
+   "sha": "e4159dfeb62fade5f2573802cb6b2c6b740525780f1edcad3223be1254ad1944"
+  },
+  "Snow_Lodge": {
+   "id": 91616300614966,
+   "sha": "68dfed061aa229a5c1d61ed61f470e2b4931df08f5a3849dfb5827341bec7985"
+  },
+  "Snow_SkiLift": {
+   "id": 81523817573377,
+   "sha": "de8dfbf7eab92988f5b0ca93355da09807911429e9f17834eb2bf6eacdc37bce"
+  },
+  "Snow_Sled": {
+   "id": 121948992745255,
+   "sha": "14faf944167850f586c08002223ab2fa584ffa26e0f19f4556753f8cb59f273d"
+  },
+  "Snow_Snowman": {
+   "id": 94329279446710,
+   "sha": "7eb2de3e425cc54d287d1eb2332eefc3806dce629222b47ee258cb81f44ef125"
   },
   "Tool_Broom": {
    "id": 115435271632713,
