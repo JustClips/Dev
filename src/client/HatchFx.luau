@@ -314,7 +314,9 @@ function HatchFx.swirl(parent: Instance, at: CFrame, radius: number, height: num
 	end
 end
 
--- A pillar of light shooting up from the egg into the sky (Legendary and up).
+-- A thin beam of light shooting up from the egg into the sky (Legendary and up). It only
+-- runs while the egg charges: call the returned function at the burst and it snaps shut
+-- (pinches thin and fades) so it never covers the egg changing or the pet reveal.
 function HatchFx.pillar(parent: Instance, at: CFrame, radius: number, height: number, color: Color3): (() -> ())
 	local outer = glowMesh("VfxHatchPillar", color, parent)
 	local inner = glowMesh("VfxHatchPillar", WHITE, parent)
@@ -336,20 +338,21 @@ function HatchFx.pillar(parent: Instance, at: CFrame, radius: number, height: nu
 			return false
 		end
 		t += dt
-		local grow = easeOut(math.clamp(t / 0.35, 0, 1))
-		local pulse = 1 + 0.06 * math.sin(t * 14)
+		local grow = easeOut(math.clamp(t / 0.3, 0, 1))
+		local pulse = 1 + 0.08 * math.sin(t * 14)
 		local h = height * grow
 		local fade = 0
 		if fading then
 			fadeT += dt
-			fade = math.clamp(fadeT / 0.5, 0, 1)
+			fade = math.clamp(fadeT / 0.25, 0, 1)
 		end
-		o.Size = Vector3.new(radius * 2 * pulse, h, radius * 2 * pulse)
+		local width = radius * 2 * pulse * (1 - fade) + 0.05
+		o.Size = Vector3.new(width, h, width)
 		o.CFrame = at * CFrame.new(0, h / 2, 0) * CFrame.Angles(0, t * 2, 0)
-		o.Transparency = 0.45 + 0.55 * fade
-		n.Size = Vector3.new(radius * 1.1, h * 1.02, radius * 1.1)
+		o.Transparency = 0.6 + 0.4 * fade
+		n.Size = Vector3.new(width * 0.45, h * 1.02, width * 0.45)
 		n.CFrame = at * CFrame.new(0, h * 1.02 / 2, 0)
-		n.Transparency = 0.2 + 0.8 * fade
+		n.Transparency = 0.45 + 0.55 * fade
 		if fade >= 1 then
 			o:Destroy()
 			n:Destroy()

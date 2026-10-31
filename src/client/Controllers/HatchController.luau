@@ -742,7 +742,8 @@ local function play(info)
 	end
 	if tier.pillar and not quick then
 		Ui.sound("HatchSuck")
-		endPillar = HatchFx.pillar(scene.parent, scene.origin, eggWidth * 0.75, if scene.world then 160 else eggHeight * 4, climbColor)
+		-- Thin (narrower than the egg) so the egg turning white stays visible around it.
+		endPillar = HatchFx.pillar(scene.parent, scene.origin, eggWidth * 0.22, if scene.world then 120 else eggHeight * 4, climbColor)
 	end
 	if tier.crown and not quick then
 		HatchFx.crown(scene.parent, scene.origin, eggWidth * 1.15, eggHeight * 0.7, climbColor)
@@ -778,6 +779,11 @@ local function play(info)
 	flashScreen(if big then 0.7 else 0.45, if big then 0.7 else 0.45)
 	if stopSuck then
 		stopSuck()
+	end
+	-- The beam closes at the burst so it never covers the pet roll or the reveal.
+	if endPillar then
+		endPillar()
+		endPillar = nil
 	end
 	removeLeak()
 	if removeSwirl then
@@ -1224,6 +1230,9 @@ local function playOther(info)
 		egg:PivotTo(spot)
 		egg.Parent = fx
 		local eggHeight = egg:GetExtentsSize().Y
+		local eggWidth = egg:GetExtentsSize().X
+		-- Legendary+: a thin beam while it shakes, gone by the time the pet shows.
+		local endPillar = if tier.pillar then HatchFx.pillar(fx, spot, eggWidth * 0.2, 50, rarity.Color) else nil
 		-- Shake and rise.
 		animate(0.5 + 0.12 * power, function(t)
 			local angle = math.sin(t * math.pi * 6) * math.rad(12) * (0.4 + 0.6 * t)
@@ -1235,7 +1244,9 @@ local function playOther(info)
 		HatchFx.burst(fx, focus, rarity.Color, 8 + power * 2, 18)
 		HatchFx.shockwave(fx, spot, rarity.Color, math.max(6, eggHeight * 2.5), 0.5)
 		HatchFx.shards(fx, focus, spot.Position.Y, eggRarity, math.ceil(tier.shards / 2), 16, eggScale)
-		local endPillar = if tier.pillar then HatchFx.pillar(fx, spot, eggHeight * 0.6, 60, rarity.Color) else nil
+		if endPillar then
+			endPillar()
+		end
 		-- The pet pops out facing the camera, with its name over it.
 		local face = CFrame.lookAt(spot.Position, Vector3.new(camera.CFrame.Position.X, spot.Position.Y, camera.CFrame.Position.Z))
 		local petScale = Weights.visualScale(Weights.incomeMult(info.Rarity, info.Weight)) * (if info.Huge then Aliens.HugeScale else 1)
@@ -1277,9 +1288,6 @@ local function playOther(info)
 		label.Parent = board
 		board.Parent = fx
 		task.wait(2.2)
-		if endPillar then
-			endPillar()
-		end
 		animate(0.3, function(t)
 			model:ScaleTo(math.max(0.05, petScale * (1 - t)))
 			label.TextTransparency = t
