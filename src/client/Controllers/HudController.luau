@@ -67,7 +67,15 @@ local function flyTarget(text: string, kind: string): string?
 	if kind == "Bad" or kind == "Info" then
 		return nil
 	end
-	if kind == "Egg" or kind == "Rare" or string.find(text, "in your bag", 1, true) then
+	-- News (the Traveling Merchant, events) stays put: only messages about something you
+	-- got fly (Dev, 2026-10-31).
+	local lower = string.lower(text)
+	local gotSomething = string.find(lower, "in your bag", 1, true) or string.find(lower, "you found", 1, true)
+		or string.find(lower, "you got", 1, true) or string.find(lower, "dropped", 1, true)
+	if string.find(lower, "merchant", 1, true) then
+		return nil
+	end
+	if (kind == "Egg" or kind == "Rare") and gotSomething then
 		return "Bag"
 	end
 	if kind == "Sell" or string.find(text, "+$", 1, true) then
