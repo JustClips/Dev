@@ -382,6 +382,21 @@ def main():
                 e = estimate(k)
                 print(f"{k['id']:10} {k['state']:8} {('?' if e is None else e):>8}  {str(k.get('refills_at') or ''):26} {k.get('note', '')}")
             print("costs:", d["costs"] or f"default {DEFAULT_COST}", " last used:", d["last_used"])
+            # ForgeGUI only reports a balance when a key runs dry, so unknown keys are estimated
+            # from the monthly amount (10k) minus what this tool has spent on them.
+            tot, exact = 0, 0
+            for k in d["keys"]:
+                if k["state"] == "invalid":
+                    continue
+                e = estimate(k)
+                if e is None:
+                    e = max(0, (k.get("daily_amount") or 10_000) - k.get("spent_since", 0))
+                else:
+                    exact += 1
+                tot += e
+            per = d["costs"].get("generation_image:thumbnail", DEFAULT_COST)
+            print(f"total about {tot:,} credits on {len(d['keys'])} keys (~{tot // per} thumbnails at {per}); "
+                  f"{exact} balances exact, the rest estimated")
     elif o.cmd == "probe":
         for row in probe(o.all):
             print(*row)
