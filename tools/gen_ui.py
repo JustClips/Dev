@@ -299,7 +299,7 @@ def zoom(children, k):
     return [walk(c) for c in children if c]
 
 
-def window(w, h, title, ico, children, header=HEADER, popup=False, scale=1.0, size=None):
+def window(w, h, title, ico, children, header=HEADER, popup=False, scale=1.0, size=None, body=SURFACE):
     """Modal window: white stud body, coloured stud header strip, red X top-right. Always
     WIN_W x WIN_H (or POP_W x POP_H for popups); smaller layouts are centred inside."""
     W, H = (POP_W, POP_H) if popup else (WIN_W, WIN_H)
@@ -311,7 +311,7 @@ def window(w, h, title, ico, children, header=HEADER, popup=False, scale=1.0, si
         w, h = w * scale, h * scale
     if (w, h) != (W, H):
         children = recentre(children, w, h, W, H)
-    return plate("Window", U(0, W, 0, H), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, [
+    return plate("Window", U(0, W, 0, H), U(0.5, 0, 0.5, 0), (0.5, 0.5), body, [
         autoscale(),
         plate("Header", U(1, 0, 0, 64), tint=header, children=[
             icon("Icon", ico, 48, U(0, 10, 0.5, 0), (0, 0.5)),
@@ -683,6 +683,11 @@ SHOP_TABS_W = 150  # category tabs down the left side
 SHOP_CELL = (196, 226)  # 3 tiles per row in the 612 px wide page
 SHOP_LUCK_H = 132  # LUCK_H in ShopController
 SHOP_BANNER_H = 168  # BANNER_H in ShopController
+SHOP_EGG_H = 292  # the limited egg banner
+SHOP_DARK = "#2A2E38"  # shop body (Dev's reference: a dark panel)
+SHOP_GREEN = "#3DBE3A"  # header and Robux buttons
+SHOP_GIFT = "#A65CFF"  # gift buttons (purple, like the reference)
+SHOP_LIGHT = "#C8D0E8"  # small text on the dark body
 
 
 def fit(mx, mn=MIN_FIT):
@@ -696,7 +701,12 @@ def shop():
     Pack, the limited pack) whose contents are pictures, the Server Luck card, and a grid of
     tiles: a big picture, a short name, one short line and one price button. A pink gift
     corner sits on giftable tiles. Egg tiles open a "How many?" picker (x1 / x3 / x10).
-    ShopController clones Tab, Banner, Chip, Tile, Grid, LuckCard, Offer and Option."""
+    Restyled the same day after Dev's reference: dark body, green header, centred yellow
+    "-- FEATURED --" headings, green Robux buttons with white text, purple gift buttons and
+    an EggBanner for the limited egg (title, New! sticker, "1d 22h 12m Left", the pets you
+    can get with their odds, and 1 / 3 / 10 buy cells each with a gift button).
+    ShopController clones Tab, Banner, Chip, EggBanner, PetCard, BuyCell, Tile, Grid,
+    LuckCard, Offer and Option."""
     tab = button("Template", U(1, 0, 0, 62), color=HEADER, stroke=3, Visible=False, children=[
         icon("Icon", "Star", 44, U(0, 6, 0.5, 0), (0, 0.5)),
         text("Label", "Tab", U(1, -58, 1, -6), U(0, 54, 0.5, 0), (0, 0.5), ts=21, display=True, stroke=2.5, xa="Left",
@@ -706,16 +716,15 @@ def shop():
     ])
     tab_list = scroller("List", U(1, -6, 1, -12), U(0, 3, 0, 6), [vlist(8), padding(3, 3, 3, 3), tab])
     tab_list["properties"].update(ScrollBarThickness=5, VerticalScrollBarInset="ScrollBar")
-    tabs = plate("Tabs", U(0, SHOP_TABS_W, 1, -88), U(0, 12, 0, 76), tint="#E3E7EF", stroke=3, children=[tab_list])
+    tabs = plate("Tabs", U(0, SHOP_TABS_W, 1, -88), U(0, 12, 0, 76), tint="#1C1F27", stroke=3, children=[tab_list])
 
-    # Page title: big and friendly, with the page's one-line promise on the right.
-    title = frame("PageTitle", U(1, 0, 0, 44), LayoutOrder=0, Visible=False, children=[
-        icon("Icon", "Star", 42, U(0, 0, 0.5, 0), (0, 0.5)),
-        text("Title", "Deals", U(0.55, -50, 1, 0), U(0, 50, 0, 0), ts=32, color=INK, display=True, xa="Left",
-             TextScaled=True, children=[fit(32)]),
-        text("Note", "", U(0.45, 0, 1, 0), U(1, 0, 0, 0), (1, 0), ts=18, color=SUB, display=True, xa="Right",
-             TextScaled=True, children=[fit(18)]),
-        frame("Rule", U(1, 0, 0, 5), U(0, 0, 1, 0), (0, 1), bg=HEADER),
+    # Page heading, centred and yellow like the reference ("-- FEATURED --"), with the page's
+    # one-line promise under it.
+    title = frame("PageTitle", U(1, 0, 0, 62), LayoutOrder=0, Visible=False, children=[
+        text("Title", "-- FEATURED --", U(1, 0, 0, 38), U(0.5, 0, 0, 0), (0.5, 0), ts=34, color=PREMIUM, display=True,
+             stroke=3.5, TextScaled=True, children=[fit(34)]),
+        text("Note", "", U(1, 0, 0, 20), U(0.5, 0, 0, 40), (0.5, 0), ts=17, color=SHOP_LIGHT, display=True, stroke=1.5,
+             TextScaled=True, children=[fit(17)]),
     ])
     # Banner: Starter Pack and the limited pack. What's inside is shown as pictures (Chips).
     chip = frame("Chip", U(0, 66, 0, 84), Visible=False, children=[
@@ -743,7 +752,41 @@ def shop():
         # Worth: what the same things cost in the shop, struck through above the price.
         text("Worth", "", U(0, 160, 0, 26), U(1, -12, 1, -76), (1, 1), ts=20, display=True, stroke=2.5, ZIndex=3,
              children=[frame("Strike", U(0, 74, 0, 3), U(0.5, 0, 0.5, 0), (0.5, 0.5), bg=DANGER, ZIndex=4)]),
-        button("Buy", U(0, 160, 0, 58), U(1, -12, 1, -12), (1, 1), color=PREMIUM, label="", ts=28, label_color=INK, ZIndex=3),
+        button("Buy", U(0, 160, 0, 58), U(1, -12, 1, -12), (1, 1), color=SHOP_GREEN, label="", ts=28, ZIndex=3),
+    ])
+    # The limited egg (Dev, 2026-10-31, from a "Halloween Egg" reference): the pets you can
+    # get with their odds, and buy cells (gift button, green price, "3 Eggs" under).
+    pet = plate("PetCard", U(0, 90, 0, 120), tint="#B05CFF", stroke=3, Visible=False, ZIndex=3, children=[
+        node("Glow", "ImageLabel", base(U(0, 110, 0, 110), U(0.5, 0, 0.5, 4), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
+                                        ImageColor3=WHITE, ImageTransparency=0.45, ZIndex=3)),
+        node("Model", "ViewportFrame", base(U(1, -4, 0, 78), U(0.5, 0, 0, 20), (0.5, 0), BackgroundTransparency=1, ZIndex=4,
+                                            Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1])),
+        text("Chance", "40%", U(1, -6, 0, 22), U(0.5, 0, 0, 2), (0.5, 0), ts=20, display=True, stroke=2.5, ZIndex=5,
+             TextScaled=True, children=[fit(20)]),
+        text("Name", "", U(1, -6, 0, 20), U(0.5, 0, 1, -3), (0.5, 1), ts=16, display=True, stroke=2, ZIndex=5,
+             TextScaled=True, children=[fit(16)]),
+    ])
+    cell = frame("BuyCell", U(0, 186, 0, 84), Visible=False, ZIndex=3, children=[
+        button("Gift", U(0, 52, 0, 54), U(0, 0, 0, 0), color=SHOP_GIFT, ico="Gift", ico_px=36, stroke=3, ZIndex=4),
+        button("Buy", U(1, -60, 0, 54), U(1, 0, 0, 0), (1, 0), color=SHOP_GREEN, label="", ts=26, ZIndex=4),
+        text("Count", "1 Egg", U(1, 0, 0, 26), U(0.5, 0, 1, 0), (0.5, 1), ts=21, display=True, stroke=2.5, ZIndex=4),
+        plate("Tag", U(0, 124, 0, 22), U(1, 4, 0, -12), (1, 0), tint=BADGE_RED, stroke=2.5, Visible=False, ZIndex=6, children=[
+            text("Label", "BEST VALUE", U(1, -6, 1, 0), U(0, 3, 0, 0), ts=15, display=True, stroke=2, ZIndex=7,
+                 TextScaled=True, children=[fit(15)]),
+        ]),
+    ])
+    egg_banner = plate("EggBanner", U(1, 0, 0, SHOP_EGG_H), tint="#3B1C5E", Visible=False, children=[
+        node("Glow", "ImageLabel", base(U(0, 420, 0, 300), U(0.5, 0, 0, 110), (0.5, 0.5), BackgroundTransparency=1,
+                                        Image=img("Glow"), ImageColor3="#FF9A2E", ImageTransparency=0.7, ZIndex=1)),
+        text("Title", "Halloween Egg", U(1, -340, 0, 40), U(0, 86, 0, 10), ts=36, color="#FF9A2E", display=True, stroke=3.5,
+             xa="Left", ZIndex=3, TextScaled=True, children=[fit(36)]),
+        plate("New", U(0, 66, 0, 30), U(0, 12, 0, 16), tint=BADGE_RED, stroke=3, Rotation=-8, ZIndex=6, children=[
+            text("Label", "New!", U(1, 0, 1, 0), ts=19, display=True, stroke=2, ZIndex=7),
+        ]),
+        text("Timer", "", U(0, 230, 0, 30), U(1, -14, 0, 14), (1, 0), ts=22, display=True, stroke=2.5, xa="Right", ZIndex=3,
+             TextScaled=True, children=[fit(22)]),
+        frame("Pets", U(1, -16, 0, 120), U(0.5, 0, 0, 58), (0.5, 0), ZIndex=3, children=[hlist(6, h="Center", v="Top")]),
+        frame("Buys", U(1, -16, 0, 84), U(0.5, 0, 1, -10), (0.5, 1), ZIndex=3, children=[hlist(10, h="Center", v="Bottom")]),
     ])
     # A limited offer the game made you (backpack full, rare egg growing...): stays a while.
     offer = plate("Offer", U(1, 0, 0, 104), tint="#FF5FA2", Visible=False, children=[
@@ -758,11 +801,11 @@ def shop():
              TextScaled=True, children=[fit(24)]),
         text("Desc", "", U(1, -290, 0, 30), U(0, 98, 0, 68), ts=16, heavy=True, stroke=2, xa="Left", ya="Top", ZIndex=3,
              TextScaled=True, children=[fit(16)]),
-        button("Buy", U(0, 170, 0, 54), U(1, -12, 0.5, 0), (1, 0.5), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
+        button("Buy", U(0, 170, 0, 54), U(1, -12, 0.5, 0), (1, 0.5), color=SHOP_GREEN, label="", ts=26, ZIndex=3),
     ])
     # Server Luck (Dev, 2026-10-31, from a reference): level now > next level, a shared
     # "Ends in" timer and the price of the next level.
-    luck = plate("LuckCard", U(1, 0, 0, SHOP_LUCK_H), tint="#5CC930", Visible=False, children=[
+    luck = plate("LuckCard", U(1, 0, 0, SHOP_LUCK_H), tint="#1E9A4A", Visible=False, children=[
         node("Glow", "ImageLabel", base(U(0, 150, 0, 150), U(0, 62, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
                                         ImageColor3=WHITE, ImageTransparency=0.35, ZIndex=1)),
         icon("Icon", "LuckyClover", 100, U(0, 62, 0.5, 0), (0.5, 0.5)),
@@ -772,8 +815,8 @@ def shop():
              ZIndex=3, RichText=True, TextScaled=True, children=[fit(50, 14)]),
         text("Desc", "", U(1, -320, 0, 22), U(0, 124, 0, 96), ts=16, heavy=True, stroke=2, xa="Left", ZIndex=3,
              TextScaled=True, children=[fit(16)]),
-        text("Timer", "", U(0, 180, 0, 26), U(1, -12, 0, 12), (1, 0), ts=19, display=True, stroke=2.5, color="#FF5A3C", ZIndex=3),
-        button("Buy", U(0, 180, 0, 58), U(1, -12, 1, -14), (1, 1), color=PREMIUM, label="", ts=28, label_color=INK, ZIndex=3),
+        text("Timer", "", U(0, 180, 0, 26), U(1, -12, 0, 12), (1, 0), ts=19, display=True, stroke=2.5, color="#FFE34D", ZIndex=3),
+        button("Buy", U(0, 180, 0, 58), U(1, -12, 1, -14), (1, 1), color=SHOP_GREEN, label="", ts=28, ZIndex=3),
     ])
     cw, ch = SHOP_CELL
     grid = frame("Grid", U(1, 0, 0, 0), Visible=False, AutomaticSize="Y", children=[
@@ -791,27 +834,27 @@ def shop():
             text("Label", "BEST", U(1, -6, 1, 0), U(0, 3, 0, 0), ts=16, display=True, stroke=2, ZIndex=6,
                  TextScaled=True, children=[fit(16)]),
         ]),
-        button("Gift", U(0, 40, 0, 40), U(1, -6, 0, 6), (1, 0), color="#FF7EB6", ico="Gift", ico_px=30, stroke=3,
+        button("Gift", U(0, 40, 0, 40), U(1, -6, 0, 6), (1, 0), color=SHOP_GIFT, ico="Gift", ico_px=30, stroke=3,
                Visible=False, ZIndex=5),
         text("Name", "Item", U(1, -12, 0, 30), U(0.5, 0, 0, 106), (0.5, 0), ts=24, display=True, stroke=2.5, ZIndex=3,
              TextScaled=True, children=[fit(24)]),
         text("Sub", "", U(1, -14, 0, 24), U(0.5, 0, 0, 136), (0.5, 0), ts=18, color="#FFF6C8", display=True, stroke=2, ZIndex=3,
              TextScaled=True, children=[fit(18)]),
-        button("Buy", U(1, -16, 0, 50), U(0.5, 0, 1, -8), (0.5, 1), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
+        button("Buy", U(1, -16, 0, 50), U(0.5, 0, 1, -8), (0.5, 1), color=SHOP_GREEN, label="", ts=26, ZIndex=3),
     ])
     lst = scroller("List", U(1, -(SHOP_TABS_W + 30), 1, -84), U(0, SHOP_TABS_W + 22, 0, 74),
                    [vlist(14), padding(4, 14, 4, 12)])
     empty = text("Empty", "Nothing here right now. Check back soon!", U(1, -(SHOP_TABS_W + 60), 0, 60),
-                 U(0, SHOP_TABS_W + 40, 0.5, 0), (0, 0.5), ts=20, color=SUB, heavy=True, Visible=False)
+                 U(0, SHOP_TABS_W + 40, 0.5, 0), (0, 0.5), ts=20, color=SHOP_LIGHT, heavy=True, Visible=False)
     gift_row = button("Template", U(1, -10, 0, 46), color=HEADER, label="Player", ts=18, stroke=3, Visible=False)
-    gift = plate("GiftPicker", U(0, 380, 0, 330), U(0.5, 0, 0.5, 20), (0.5, 0.5), SURFACE, Visible=False, ZIndex=10, children=[
-        plate("Header", U(1, 0, 0, 52), tint="#FF7EB6", children=[
+    gift = plate("GiftPicker", U(0, 380, 0, 330), U(0.5, 0, 0.5, 20), (0.5, 0.5), SHOP_DARK, Visible=False, ZIndex=10, children=[
+        plate("Header", U(1, 0, 0, 52), tint=SHOP_GIFT, children=[
             icon("Icon", "Gift", 38, U(0, 8, 0.5, 0), (0, 0.5)),
             text("Title", "Gift to...", U(1, -110, 1, 0), U(0, 54, 0, 0), ts=28, display=True, stroke=3, xa="Left"),
         ]),
         button("Close", U(0, 44, 0, 44), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=26, ZIndex=11),
         scroller("List", U(1, -24, 1, -72), U(0, 12, 0, 62), [vlist(8), padding(2), gift_row]),
-        text("Empty", "No one else is here yet.", U(1, -24, 0, 40), U(0, 12, 0.5, 0), ts=18, color=SUB, heavy=True, Visible=False),
+        text("Empty", "No one else is here yet.", U(1, -24, 0, 40), U(0, 12, 0.5, 0), ts=18, color=SHOP_LIGHT, heavy=True, Visible=False),
     ])
     # "How many?" picker for eggs: three big choices, the middle one marked MOST POPULAR.
     option = plate("Option", U(0, 170, 0, 238), tint="#FF5FA2", stroke=3, Visible=False, ZIndex=12, children=[
@@ -825,23 +868,24 @@ def shop():
         text("Count", "x1", U(1, 0, 0, 44), U(0.5, 0, 0, 112), (0.5, 0), ts=40, display=True, stroke=3, ZIndex=14),
         text("Each", "", U(1, -10, 0, 22), U(0.5, 0, 0, 154), (0.5, 0), ts=16, color="#FFF6C8", display=True, stroke=2, ZIndex=14,
              TextScaled=True, children=[fit(16)]),
-        button("Buy", U(1, -16, 0, 50), U(0.5, 0, 1, -8), (0.5, 1), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=14),
+        button("Buy", U(1, -16, 0, 50), U(0.5, 0, 1, -8), (0.5, 1), color=SHOP_GREEN, label="", ts=26, ZIndex=14),
     ])
-    qty = plate("QtyPicker", U(0, 600, 0, 380), U(0.5, 0, 0.5, 20), (0.5, 0.5), SURFACE, Visible=False, ZIndex=11, children=[
+    qty = plate("QtyPicker", U(0, 600, 0, 380), U(0.5, 0, 0.5, 20), (0.5, 0.5), SHOP_DARK, Visible=False, ZIndex=11, children=[
         plate("Header", U(1, 0, 0, 56), tint="#FF5FA2", ZIndex=11, children=[
             icon("Icon", "Egg", 42, U(0, 8, 0.5, 0), (0, 0.5), ZIndex=12),
             text("Title", "How many?", U(1, -120, 1, 0), U(0, 58, 0, 0), ts=30, display=True, stroke=3, xa="Left", ZIndex=12),
         ]),
         button("Close", U(0, 48, 0, 48), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=28, ZIndex=13),
         text("Note", "Bought eggs always hatch their own rarity!", U(1, -24, 0, 24), U(0.5, 0, 0, 64), (0.5, 0), ts=18,
-             color=SUB, display=True, ZIndex=12),
+             color=SHOP_LIGHT, display=True, ZIndex=12),
         frame("Options", U(1, -24, 0, 250), U(0.5, 0, 1, -16), (0.5, 1), ZIndex=12, children=[
             hlist(16, h="Center", v="Bottom"), option,
         ]),
     ])
     write("Shop", screen([dim(), window(WIN_W, WIN_H, "Shop", "Shop",
-                                        [tabs, lst, title, banner, chip, offer, luck, grid, tile, empty, gift, qty],
-                                        header="#E9A21F")],
+                                        [tabs, lst, title, banner, chip, egg_banner, pet, cell, offer, luck, grid, tile, empty,
+                                         gift, qty],
+                                        header=SHOP_GREEN, body=SHOP_DARK)],
                          order=10, enabled=False))
 
 

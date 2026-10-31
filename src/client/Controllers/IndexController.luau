@@ -16,6 +16,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Items = require(Shared.Config.Items)
+local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
 local Zones = require(Shared.Config.Zones)
@@ -70,7 +71,7 @@ end
 local function tabPets(name: string)
 	local list = {}
 	for _, def in Aliens.List do
-		local pick = if name == "Daily" then def.Exclusive == "Daily" else def.Rarity == name and not def.Exclusive
+		local pick = if name == "Daily" then def.Exclusive ~= nil else def.Rarity == name and not def.Exclusive
 		if pick then
 			table.insert(list, def)
 		end
@@ -142,7 +143,16 @@ local function render(force: boolean?)
 		;(card:FindFirstChild("Name") :: TextLabel).Text = if known then def.Name else "???"
 		local chance = card:FindFirstChild("Chance") :: TextLabel
 		local zoneLabel = card:FindFirstChild("Zone") :: TextLabel
-		if def.Exclusive then
+		if def.Exclusive == LimitedEgg.Id then
+			local odds = 0
+			for _, entry in LimitedEgg.Odds do
+				if entry.Pet == def.Id then
+					odds = entry.Chance
+				end
+			end
+			chance.Text = `{odds}%`
+			zoneLabel.Text = LimitedEgg.Name
+		elseif def.Exclusive then
 			chance.Text = "Day 7"
 			zoneLabel.Text = "Daily streak"
 		else

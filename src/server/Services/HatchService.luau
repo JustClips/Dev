@@ -16,6 +16,7 @@ local Economy = require(Shared.Config.Economy)
 local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
 local Items = require(Shared.Config.Items)
+local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Upgrades = require(Shared.Config.Upgrades)
 local Weights = require(Shared.Config.Weights)
 local World = require(Shared.Config.World)
@@ -229,25 +230,33 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	end
 	-- Any egg can hatch any rarity (Eggs.hatchOdds), rolled now so luck at opening counts.
 	-- Robux eggs always hatch their own rarity. Mythic and Cosmic eggs never drop twice in a row.
-	local high = Eggs.order(entry.Rarity) >= Eggs.order("Mythic")
-	local petRarity = if entry.Paid
+	-- The limited egg (Config/LimitedEgg) rolls its own exclusive pets by its shown odds.
+	local limited = LimitedEgg.isEgg(entry)
+	local high = not limited and Eggs.order(entry.Rarity) >= Eggs.order("Mythic")
+	local petRarity = if limited or entry.Paid
 		then entry.Rarity
 		else Eggs.rollPetRarity(rng, entry.Rarity, luck * (if clover then Items.CloverLuck else 1), high and data.Flags.HighEggDropped == true)
-	local dropped = Eggs.order(petRarity) < Eggs.order(entry.Rarity)
+	local dropped = not limited and Eggs.order(petRarity) < Eggs.order(entry.Rarity)
 	if high then
 		data.Flags.HighEggDropped = if dropped then true else nil
 	end
-	local pool = Aliens.pool(entry.Zone, petRarity)
-	local def = pool[rng:NextInteger(1, #pool)]
-	-- An egg the weather upgraded while it grew hatches with that mutation.
+	local def
+	if limited then
+		def = Aliens.ById[LimitedEgg.roll(rng)]
+	else
+		local pool = Aliens.pool(entry.Zone, petRarity)
+		def = pool[rng:NextInteger(1, #pool)]
+	end
+	-- An egg the weather upgraded while it grew hatches with that mutation (the limited
+	-- egg's own spooky skin isn't passed on).
 	-- Shiny Hunter / Huge Hunter (Egg Lab) and the Huge Charm.
-	local mutation = entry.Mutation or rollMutation(luck * Upgrades.multiplier(data.Upgrades, "MutChance"))
+	local mutation = (if limited then nil else entry.Mutation) or rollMutation(luck * Upgrades.multiplier(data.Upgrades, "MutChance"))
 	local hugeMult = Upgrades.multiplier(data.Upgrades, "Huge") * (if hugeCharm then Items.HugeCharmMult else 1)
 	local huge = rng:NextNumber() < math.min(1, Aliens.HugeChance * luck * hugeMult * S.WeatherService:GetHugeMult() * S.AdminService:Mult("Huge"))
 	local isNew = not data.Index[def.Id]
 	data.Index[def.Id] = true
 	local petUid = S.DataService:NewUid(data, "p")
-	local weight = Weights.rollPet(rng, def.Rarity, entry.Rarity, entry.Weight)
+	local weight = Weights.rollPet(rng, def.Rarity, if limited then def.Rarity else entry.Rarity, entry.Weight)
 	if dropped then
 		-- A pet that dropped below its egg is at least Big.
 		local kg = Weights.petKg(def.Rarity)
@@ -256,7 +265,7 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	local pet = { Id = def.Id, Mutation = mutation, Huge = if huge then true else nil, Weight = weight }
 	data.Pets[petUid] = pet
 	data.Stats.Hatches += 1
-	S.QuestService:ZoneCount(player, entry.Zone or "Landing", "Hatches", 1)
+	S.QuestService:ZoneCount(player, if limited then "Landing" else entry.Zone or "Landing", "Hatches", 1)
 	-- Tutorial: the first pet goes on your base by itself once the hatch show has played.
 	if data.Stats.Hatches == 1 and not data.Flags.TutorialDone then
 		task.delay(3, function()

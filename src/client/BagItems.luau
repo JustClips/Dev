@@ -16,6 +16,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Items = require(Shared.Config.Items)
+local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Net = require(Shared.Net)
 local Weights = require(Shared.Config.Weights)
 
@@ -46,6 +47,9 @@ local function mutationLabel(mutation: string?): string
 end
 
 function BagItems.eggName(egg): string
+	if LimitedEgg.isEgg(egg) then
+		return LimitedEgg.Name
+	end
 	local size = egg.Size or "Normal"
 	return mutationLabel(egg.Mutation) .. (if size ~= "Normal" then size .. " " else "") .. `{egg.Rarity} Egg`
 end
@@ -53,7 +57,8 @@ end
 -- Eggs stack by rarity, and mutated eggs get their own stack per mutation (Dev, 2026-10-31:
 -- a Rainbow egg hid in the plain Common stack). "Common" or "Common:Rainbow".
 function BagItems.eggStack(egg): string
-	return if egg.Mutation then `{egg.Rarity}:{egg.Mutation}` else egg.Rarity
+	return if LimitedEgg.isEgg(egg) then LimitedEgg.Id
+		elseif egg.Mutation then `{egg.Rarity}:{egg.Mutation}` else egg.Rarity
 end
 
 function BagItems.petWeight(pet): number

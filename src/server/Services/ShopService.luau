@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BigNum = require(Shared.BigNum)
 local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
+local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 local Tools = require(Shared.Config.Tools)
@@ -226,21 +227,12 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 		local got = S.RewardService:AddSpins(recipient, product.Count or 1)
 		notify(recipient, `+{product.Count or 1} wheel spin{if (product.Count or 1) == 1 then "" else "s"}! You have {got} now.`)
 	end,
-	LimitedPack = function(_product, _buyer, recipient)
-		local data = S.DataService:GetData(recipient)
-		local pack = Economy.LimitedPack
-		data.Flags.LimitedPackBought = pack.Id
-		local zone = bestZone(recipient)
-		for rarity, count in pack.Eggs do
-			for _ = 1, count do
-				S.InventoryService:AddEgg(recipient, rarity, zone, true, true)
-			end
+	LimitedEgg = function(product, _buyer, recipient)
+		local count = product.Count or 1
+		for _ = 1, count do
+			S.InventoryService:AddEgg(recipient, LimitedEgg.EggRarity, LimitedEgg.Id, true, true, LimitedEgg.EggMutation)
 		end
-		for item, count in pack.Items do
-			S.InventoryService:AddItem(recipient, item, count)
-		end
-		S.RewardService:AddSpins(recipient, pack.Spins)
-		notify(recipient, `{pack.Name}: eggs and potions are in your bag, plus {pack.Spins} wheel spins!`)
+		notify(recipient, `+{count} {LimitedEgg.Name}{if count == 1 then "" else "s"}! Hatch {if count == 1 then "it" else "them"} from your bag.`)
 	end,
 	ItemPack = function(product, _buyer, recipient)
 		if not product.Item then
@@ -397,8 +389,8 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		return false, "Already bought"
 	elseif product.Kind == "StarterPack" and not Products.starterPackEnds(targetData, os.time()) then
 		return false, "The Starter Pack has left the shop"
-	elseif product.Kind == "LimitedPack" and not Products.limitedPackEnds(targetData, os.time()) then
-		return false, if targetData.Flags.LimitedPackBought == Economy.LimitedPack.Id then "Already bought" else "This pack has left the shop"
+	elseif product.Kind == "LimitedEgg" and not LimitedEgg.onSale(os.time()) then
+		return false, `The {LimitedEgg.Name} has left the shop`
 	elseif product.Kind == "ToolSkip" and targetData.ToolTier + 1 ~= product.Tier then
 		return false, "Not the next tool"
 	elseif (product.Kind == "VehicleRental" or product.Kind == "VehicleUnlock") and S.ToolService:OwnsVehicle(recipient, product.Vehicle) then

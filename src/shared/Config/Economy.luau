@@ -93,18 +93,6 @@ local Economy = {
 	-- earnings and at least CashFloor x your next tool, an EggRarity egg, LuckPotions Luck
 	-- Potions and Cash2xMinutes of 2x cash. Still R$ 9: it's the "first purchase" deal.
 	StarterPack = { CashSeconds = 1800, CashFloor = 1, EggRarity = "Epic", LuckPotions = 3, Cash2xMinutes = 30, Hours = 2, HideAtToolTier = 8 },
-	-- Limited bundle (Products HalloweenPack): once per player until EndsAt (unix, UTC).
-	-- Id changes for the next limited pack so it can be bought again. "Worth" is the sum of
-	-- the same things' prices in the shop (keep it true when changing the contents).
-	LimitedPack = {
-		Id = "Halloween2026",
-		Name = "Spooky Halloween Pack",
-		EndsAt = 1794009600, -- 2026-11-07 00:00 UTC
-		Eggs = { Mythic = 1, Legendary = 1 },
-		Items = { HugeCharm = 1, SuperLuckPotion = 2, MegaCashPotion = 2 },
-		Spins = 3,
-		Worth = 348, -- 69 + 45 + 49 + 2x29 + 2x35 + 3x19
-	},
 	ServerLuckMinutes = 15,
 	-- At the top Server Luck level a buy adds ServerLuckMinutes, up to this much in total.
 	ServerLuckMaxMinutes = 60,
