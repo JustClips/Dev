@@ -46,8 +46,9 @@ local INFO_GREEN = Color3.fromRGB(124, 245, 138)
 local TILE = {
 	Open = Color3.fromRGB(42, 49, 66),
 	Owned = Color3.fromRGB(47, 155, 255),
-	Max = Color3.fromRGB(255, 190, 50),
-	Lab = Color3.fromRGB(61, 200, 90),
+	Max = Color3.fromRGB(47, 155, 255), -- bought: blue like Slime RNG
+	Lab = Color3.fromRGB(255, 196, 40), -- an unlocked lab: gold with "Open" (Slime RNG)
+	Back = Color3.fromRGB(235, 30, 45), -- a lab's centre hex: red, takes you back
 	Rebirth = Color3.fromRGB(91, 74, 143),
 	Mystery = Color3.fromRGB(58, 63, 75),
 }
@@ -64,7 +65,7 @@ local canvas: Frame
 local zoom: UIScale
 local title: TextLabel
 local tip: Frame
-local backButton: TextButton
+local backHexes: { [string]: TextButton } = {} -- each lab's red centre hex
 
 local boards: { [string]: Frame } = {}
 local nodes: { [string]: TextButton } = {}
@@ -79,8 +80,9 @@ local selected: string? = nil -- tapped once: tooltip stays, the next tap buys
 
 -- Phones: the first tap shows the tooltip, so buying takes a second tap. With a mouse or a
 -- controller the tooltip is already up from hovering, so one click buys (Dev, 2026-10-31).
+-- One tap buys everywhere now (Dev, 2026-10-31: like Slime RNG, no "tap again").
 local function twoTaps(): boolean
-	return UserInputService:GetLastInputType() == Enum.UserInputType.Touch
+	return false
 end
 
 local flashText: string? = nil -- a short message in the tooltip (e.g. "Need $50 more")
@@ -92,6 +94,42 @@ local useImage = false -- the HexTile image loaded; until then hexes are drawn w
 -- Flat-top hexes (Slime RNG): {0,-1} is straight up, {1,0} down-right.
 local function hexToPixel(q: number, r: number): Vector2
 	return Vector2.new(SPACING * 1.5 * q, SPACING * math.sqrt(3) * (r + q / 2))
+end
+
+-- Where a hex is drawn. A lab's centre spot is its red Back hex (Slime RNG), so each lab
+-- board is shifted one step: its root sits next to the Back hex, nothing sits on it.
+local shift: { [string]: { q: number, r: number } } = {}
+do
+	local spots: { [string]: { [string]: boolean } } = {}
+	for _, def in Upgrades.List do
+		spots[def.Tree] = spots[def.Tree] or {}
+		spots[def.Tree][`{def.Hex.q},{def.Hex.r}`] = true
+	end
+	local dirs = {
+		{ q = 0, r = 1 },
+		{ q = 0, r = -1 },
+		{ q = 1, r = 0 },
+		{ q = -1, r = 0 },
+		{ q = 1, r = -1 },
+		{ q = -1, r = 1 },
+	}
+	for treeId in Upgrades.Trees do
+		shift[treeId] = { q = 0, r = 0 }
+		-- Generated lab boards already leave the centre free (tools/gen_upgrade_tree.py).
+		if treeId ~= "Main" and (spots[treeId] or {})["0,0"] then
+			for _, d in dirs do
+				if not (spots[treeId] or {})[`{-d.q},{-d.r}`] then
+					shift[treeId] = d
+					break
+				end
+			end
+		end
+	end
+end
+
+local function hexOf(def: UpgradeDef): { q: number, r: number }
+	local d = shift[def.Tree]
+	return { q = def.Hex.q + d.q, r = def.Hex.r + d.r }
 end
 
 -- Rings from the middle of a board (0 = the centre hex).
@@ -306,9 +344,7 @@ local function setTip(id: string?)
 	local def = Upgrades.ById[id]
 	local state = computeStates(data)[id]
 	local level = data.Upgrades[id] or 0
-	local touch = twoTaps()
 	local pad = Ui.gamepad()
-	local again = if touch then "Tap again to buy" elseif pad then "Press A to buy" else "Click to buy"
 	tip.Visible = true
 	info.TextColor3 = INFO_GREEN
 	hint.TextColor3 = GOLD_TEXT
@@ -331,7 +367,7 @@ local function setTip(id: string?)
 				`Rebirth {def.RequiredRebirths} time{if def.RequiredRebirths == 1 then "" else "s"} to open this`
 		elseif state == "Max" then
 			info.TextColor3 = GOLD_TEXT
-			info.Text = `MAX  {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
+			info.Text = `Bought!  {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
 		elseif wait then
 			info.TextColor3 = RED
 			info.Text =
@@ -339,17 +375,17 @@ local function setTip(id: string?)
 		else
 			local stat = Upgrades.Stats[def.Stat]
 			local after = Upgrades.describe(def, level + 1)
-			info.Text = `Lv {levelText(def, level)}  ·  {Upgrades.describe(def, level)} > {after} {stat.Name}`
+			if def.MaxLevel == 1 then
+				info.Text = `{after} {stat.Name}  ·  {Format.cash(price(def, data))}`
+			else
+				info.Text = `Lv {levelText(def, level)}  ·  {Upgrades.describe(def, level)} > {after} {stat.Name}`
+			end
 		end
 		if (state == "Open" or state == "Owned") and not (def.Opens and level > 0) and not wait then
 			local cost = price(def, data)
 			if not BigNum.gte(data.Cash, cost) then
 				hint.TextColor3 = RED
 				hint.Text = `Need {Format.cash(BigNum.sub(cost, data.Cash))} more`
-			elseif selected == id then
-				hint.Text = again
-			else
-				hint.Text = if touch then "Tap to select" elseif pad then "Press A to buy" else "Click to buy"
 			end
 		end
 	end
@@ -460,25 +496,40 @@ local function bloom(treeId: string)
 	end
 	local origin = { q = 0, r = 0 }
 	local function angle(def: UpgradeDef): number
-		local p = hexToPixel(def.Hex.q, def.Hex.r)
+		local h = hexOf(def)
+		local p = hexToPixel(h.q, h.r)
 		return math.atan2(p.X, -p.Y) % (2 * math.pi) -- clockwise from straight up
 	end
 	table.sort(list, function(a, b)
-		local da, db = hexDistance(a.Hex, origin), hexDistance(b.Hex, origin)
+		local da, db = hexDistance(hexOf(a), origin), hexDistance(hexOf(b), origin)
 		if da ~= db then
 			return da < db
 		end
 		return angle(a) < angle(b)
 	end)
 	local lastRing, inRing, ringStart = 0, 0, 0
+	local back = backHexes[treeId]
+	if back then
+		-- The Back hex is the centre: it comes first.
+		local scale = (back :: any).Pop :: UIScale
+		scale.Scale = 0
+		if Ui.reducedMotion() then
+			scale.Scale = 1
+		else
+			TweenService
+				:Create(scale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+				:Play()
+		end
+		inRing = 1
+	end
 	for _, def in list do
-		local ring = hexDistance(def.Hex, origin)
+		local ring = hexDistance(hexOf(def), origin)
 		if ring ~= lastRing then
 			-- Next ring starts a moment after the last one has started.
-			ringStart += 0.06 + math.min(inRing, 8) * 0.03
+			ringStart += 0.05 + math.min(inRing, 6) * 0.02
 			lastRing, inRing = ring, 0
 		end
-		growIn(def.Id, ringStart + inRing * 0.03, 0, 0.3)
+		growIn(def.Id, ringStart + math.min(inRing, 12) * 0.02, 0, 0.3)
 		inRing += 1
 	end
 end
@@ -528,7 +579,8 @@ local function renderBoard(silent: boolean?)
 		end
 		lastState[def.Id] = state
 		node.Visible = state ~= "Hidden"
-		local color = if isLab and level > 0 then TILE.Lab else TILE[state] or TILE.Mystery
+		local labOpen = isLab and level > 0
+		local color = if labOpen then TILE.Lab else TILE[state] or TILE.Mystery
 		baseColor[def.Id] = color
 		local tile = node:FindFirstChild("Tile") :: ImageLabel
 		tile.Visible = useImage;
@@ -544,9 +596,10 @@ local function renderBoard(silent: boolean?)
 		local levelLabel = node:FindFirstChild("Level") :: TextLabel
 		icon.Visible = known and state ~= "Rebirth"
 		nameLabel.Visible = known
-		priceRow.Visible = known
-		levelLabel.Visible = known and not isLab and state ~= "Rebirth"
-		levelLabel.Text = levelText(def, level)
+		priceRow.Visible = known and not (state == "Max" and not isLab)
+		-- Owned hexes show their level as a gold number in the corner (Slime RNG).
+		levelLabel.Visible = known and not isLab and level > 0 and def.MaxLevel > 1
+		levelLabel.Text = tostring(level)
 		nameLabel.Text = Upgrades.name(def, level) -- evolving hexes change name
 		local wait = waitsForRebirth(def, data);
 		(node:FindFirstChild("Lock") :: ImageLabel).Visible = state == "Rebirth"
@@ -555,7 +608,7 @@ local function renderBoard(silent: boolean?)
 		coin.Visible = false
 		priceLabel.TextColor3 = WHITE
 		if isLab and level > 0 then
-			priceLabel.Text = "ENTER"
+			priceLabel.Text = "Open"
 		elseif state == "Max" then
 			priceLabel.Text = "MAX"
 		elseif state == "Rebirth" then
@@ -573,20 +626,32 @@ local function renderBoard(silent: boolean?)
 				priceLabel.TextColor3 = if BigNum.gte(data.Cash, cost) then WHITE else RED
 			end
 		end
+		-- Only the selected hex glows (Dev: don't highlight what you can buy).
 		local glow = node:FindFirstChild("Glow") :: Frame
 		local isSelected = selected == def.Id and state ~= "Hidden"
-		local buyable = canBuy(def, data, state)
-		glowMode[def.Id] = if isSelected then "select" elseif buyable then "buy" else nil
-		glow.Visible = isSelected or buyable
-		setHex(glow, if isSelected then WHITE else GREEN)
+		glowMode[def.Id] = if isSelected then "select" else nil
+		glow.Visible = isSelected
+		setHex(glow, WHITE)
 		if not fresh[def.Id] then
 			tile.ImageColor3 = color
 			setHex(node:FindFirstChild("Fill") :: Frame, color)
 		end
-		local tag = node:FindFirstChild("New") :: TextLabel?
-		if tag then
-			tag.Visible = fresh[def.Id] == true
+		-- An open lab shows how many hexes inside it you can afford.
+		local count = 0
+		if labOpen and def.Opens then
+			for _, inner in Upgrades.List do
+				if inner.Tree == def.Opens and canBuy(inner, data, states[inner.Id]) then
+					count += 1
+				end
+			end
 		end
+		Ui.setBadge(node:FindFirstChild("Badge") :: GuiObject?, if count > 0 then count else nil)
+	end
+	local back = backHexes[current]
+	if back then
+		(back:FindFirstChild("Tile") :: ImageLabel).Visible = useImage;
+		(back:FindFirstChild("Outline") :: Frame).Visible = not useImage;
+		(back:FindFirstChild("Fill") :: Frame).Visible = not useImage
 	end
 	refreshTip()
 end
@@ -601,10 +666,6 @@ local function seen(id: string?)
 			local tileImage = node:FindFirstChild("Tile") :: ImageLabel
 			tileImage.ImageColor3 = color
 			setHex(node:FindFirstChild("Fill") :: Frame, color)
-			local tag = node:FindFirstChild("New") :: TextLabel?
-			if tag then
-				tag.Visible = false
-			end
 		end
 	end
 end
@@ -629,10 +690,6 @@ local function animateBoard()
 			local tileImage = node:FindFirstChild("Tile") :: ImageLabel
 			tileImage.ImageColor3 = color
 			setHex(node:FindFirstChild("Fill") :: Frame, color)
-			local tag = node:FindFirstChild("New") :: TextLabel?
-			if tag then
-				tag.Rotation = -8 + (if still then 0 else math.sin(t * 5) * 4)
-			end
 			if glowMode[def.Id] ~= "select" then
 				glow.Visible = true
 				setHex(glow, FLASH)
@@ -661,6 +718,7 @@ end
 
 -- Shows one board (Main or a lab) and frames it on screen.
 local function showBoard(treeId: string, flyIn: boolean?)
+	local keepZoom = gui.Enabled and boards[current] ~= nil and boards[current].Visible
 	if zoom and boards[current] then
 		views[current] = { zoom = zoom.Scale, pan = pan }
 	end
@@ -668,7 +726,6 @@ local function showBoard(treeId: string, flyIn: boolean?)
 	for id, board in boards do
 		board.Visible = id == treeId
 	end
-	backButton.Visible = treeId ~= "Main"
 	title.Text = if treeId == "Main" then "Upgrades!" else `{Upgrades.Trees[treeId].Name}!`
 	hovered = nil
 	selected = nil
@@ -681,21 +738,32 @@ local function showBoard(treeId: string, flyIn: boolean?)
 			end
 		end)
 	end
+	-- The zoom stays as you set it when going into a lab and back (Dev, 2026-10-31);
+	-- each board keeps its own pan.
 	local saved = views[treeId]
-	local target = if saved then math.clamp(saved.zoom, ZOOM_MIN, ZOOM_MAX) else fitZoom()
+	local target = if keepZoom
+		then zoom.Scale
+		elseif saved then math.clamp(saved.zoom, ZOOM_MIN, ZOOM_MAX)
+		else fitZoom()
 	zoom.Scale = target
 	pan = if saved then saved.pan else Vector2.zero
 	clampPan()
-	-- Silent: hexes that opened while you were away just get their NEW! flash; the bloom
-	-- below brings every hex in.
+	-- Silent: hexes that opened while you were away just start flashing; the bloom below
+	-- brings every hex in.
 	renderBoard(true)
 	bloom(treeId)
-	if flyIn and not Ui.reducedMotion() then
-		-- Going into a lab: the board also grows a little out of the middle of the screen.
-		zoom.Scale = target * 0.8
-		TweenService
-			:Create(zoom, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = target })
-			:Play()
+	local _ = flyIn
+end
+
+-- Out of a lab: back to the main board, looking at the lab you came from.
+local function goBack()
+	local lab = Upgrades.Trees[current].Portal
+	Ui.sound("Click")
+	showBoard("Main")
+	if lab then
+		local def = Upgrades.ById[lab]
+		pan = -hexToPixel(def.Hex.q, def.Hex.r) * zoom.Scale
+		clampPan()
 	end
 end
 
@@ -759,8 +827,49 @@ local function build()
 		boards[treeId] = board
 		extents[treeId] = Vector2.new(100, 100)
 	end
+	-- Each lab's centre: a red hex with the lab's name and "Back".
+	for treeId, tree in Upgrades.Trees do
+		if treeId == "Main" then
+			continue
+		end
+		local back = template:Clone()
+		back.Name = "Back"
+		back.Position = UDim2.fromOffset(0, 0)
+		back.Visible = true
+		if not back:FindFirstChild("Pop") then
+			local scale = Instance.new("UIScale")
+			scale.Name = "Pop"
+			scale.Parent = back
+		end
+		for _, name in { "Icon", "Level", "Lock", "Question", "Badge", "Glow" } do
+			local child = back:FindFirstChild(name) :: GuiObject?
+			if child then
+				child.Visible = false
+			end
+		end
+		(back:FindFirstChild("Tile") :: ImageLabel).ImageColor3 = TILE.Back
+		setHex(back:FindFirstChild("Fill") :: Frame, TILE.Back)
+		local nameLabel = back:FindFirstChild("Name") :: TextLabel
+		nameLabel.Text = tree.Name
+		nameLabel.Position = UDim2.new(0.5, 0, 0, 40)
+		local priceRow = back:FindFirstChild("Price") :: Frame
+		priceRow.Position = UDim2.new(0.5, 0, 0, 64);
+		(priceRow:FindFirstChild("Coin") :: GuiObject).Visible = false
+		local label = priceRow:FindFirstChild("Label") :: TextLabel
+		label.Text = "Back"
+		label.TextColor3 = Color3.fromRGB(255, 205, 205)
+		back.Parent = boards[treeId]
+		backHexes[treeId] = back
+		back.Activated:Connect(function()
+			if dragged and os.clock() - draggedAt < 0.25 then
+				return
+			end
+			goBack()
+		end)
+	end
 	for i, def in Upgrades.List do
-		local p = hexToPixel(def.Hex.q, def.Hex.r)
+		local h = hexOf(def)
+		local p = hexToPixel(h.q, h.r)
 		local e = extents[def.Tree]
 		extents[def.Tree] = Vector2.new(math.max(e.X, math.abs(p.X) + 80), math.max(e.Y, math.abs(p.Y) + 70))
 		local node = template:Clone()
@@ -896,7 +1005,19 @@ function UpgradeController:Init(_controllers)
 	zoom = Ui.find(canvas, "Zoom")
 	title = Ui.find(gui, "Top.Title")
 	tip = Ui.find(gui, "Tooltip")
-	backButton = Ui.find(gui, "Bottom.Back")
+	-- Only CLOSE stays at the bottom (Dev, 2026-10-31); a lab's centre hex is its Back.
+	-- LiveSync never deletes removed UI, so clear the old buttons and the NEW! tag here.
+	local bottom = Ui.find(gui, "Bottom")
+	for _, name in { "Back", "ZoomIn", "ZoomOut" } do
+		local old = bottom:FindFirstChild(name)
+		if old then
+			old:Destroy()
+		end
+	end
+	local oldTag = Ui.find(canvas, "NodeTemplate"):FindFirstChild("New")
+	if oldTag then
+		oldTag:Destroy()
+	end
 end
 
 function UpgradeController:Start()
@@ -943,12 +1064,12 @@ function UpgradeController:Start()
 		tutorialHint.Visible = teaching
 		local root = nodes[Upgrades.Root]
 		if teaching and root then
-			local touch = twoTaps()
+			local touch = UserInputService:GetLastInputType() == Enum.UserInputType.Touch
 			local pad = Ui.gamepad()
-			tutorialHint.Text = if not touch
-				then (if pad then "Press A on Sweep Power to buy it!" else "Click Sweep Power to buy it!")
-				elseif selected == Upgrades.Root then "Tap it again to buy!"
-				else "Double-tap Sweep Power to buy it!"
+			tutorialHint.Text = if pad
+				then "Press A on the middle hex to buy it!"
+				elseif touch then "Tap the middle hex to buy it!"
+				else "Click the middle hex to buy it!"
 			local k = 1 + math.abs(math.sin(os.clock() * 4)) * 0.08
 			root.Size = UDim2.fromOffset(nodeSize.X.Offset * k, nodeSize.Y.Offset * k);
 			(root:FindFirstChild("Glow") :: Frame).Visible = true
@@ -956,16 +1077,6 @@ function UpgradeController:Start()
 			root.Size = nodeSize
 		end
 		wasTeaching = teaching
-	end)
-	Ui.button(backButton, function()
-		local lab = Upgrades.Trees[current].Portal
-		showBoard("Main")
-		if lab then
-			-- Land on the lab hex you came out of.
-			local def = Upgrades.ById[lab]
-			pan = -hexToPixel(def.Hex.q, def.Hex.r) * zoom.Scale
-			clampPan()
-		end
 	end)
 	-- Controller: the board follows the selected hex and shows its tooltip; LB / RB zoom.
 	GuiService:GetPropertyChangedSignal("SelectedObject"):Connect(function()
@@ -975,10 +1086,10 @@ function UpgradeController:Start()
 		local object = GuiService.SelectedObject
 		local id = object and nodes[object.Name] == object and object.Name or nil
 		if id then
-			local def = Upgrades.ById[id]
+			local h = hexOf(Upgrades.ById[id])
 			hovered = id
 			seen(id)
-			pan = -hexToPixel(def.Hex.q, def.Hex.r) * zoom.Scale
+			pan = -hexToPixel(h.q, h.r) * zoom.Scale
 			clampPan()
 			refreshTip()
 		elseif hovered and not UserInputService.MouseEnabled then
@@ -995,12 +1106,6 @@ function UpgradeController:Start()
 		elseif input.KeyCode == Enum.KeyCode.ButtonL1 then
 			setZoom(zoom.Scale - 0.15)
 		end
-	end)
-	Ui.button(Ui.find(gui, "Bottom.ZoomIn"), function()
-		setZoom(zoom.Scale + 0.15)
-	end)
-	Ui.button(Ui.find(gui, "Bottom.ZoomOut"), function()
-		setZoom(zoom.Scale - 0.15)
 	end)
 	ProximityPromptService.PromptTriggered:Connect(function(prompt)
 		if prompt:GetAttribute("Opens") == "Upgrades" then

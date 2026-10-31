@@ -1938,6 +1938,9 @@ def upgrades():
                 for i, rot in enumerate((90, 30, -30))]
         return frame(name, U(0, 0, 0, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=z, children=bars, **extra)
 
+    hex_badge = badge(z=9, px=34)
+    hex_badge["properties"]["Position"] = U(0, 118, 0, -4)
+    hex_badge["properties"]["AnchorPoint"] = [0.5, 0]
     node_t = node("NodeTemplate", "TextButton", base(U(0, HEX_W, 0, HEX_H), anchor=(0.5, 0.5), BackgroundTransparency=1,
                                                       Text="", AutoButtonColor=False, Visible=False, ZIndex=3), [
         # Pops / bloom animations scale the whole hex (UpgradeController).
@@ -1955,11 +1958,9 @@ def upgrades():
         icon("Icon", "Upgrade", 46, U(0.5, 0, 0, 10), (0.5, 0), ZIndex=5),
         text("Name", "Upgrade", U(1, -24, 0, 22), U(0.5, 0, 0, 58), (0.5, 0), ts=18, display=True, stroke=2.5, ZIndex=6,
              TextScaled=True, children=[fit(18)]),
-        text("Level", "0/5", U(0, 60, 0, 16), U(0.5, 0, 0, 104), (0.5, 0), ts=14, color="#E3E8F2", display=True, stroke=2,
-             ZIndex=6),
-        # Newly opened hexes flash and wear this tag until you look at them (Slime RNG style).
-        text("New", "NEW!", U(0, 64, 0, 24), U(0.5, 0, 0, -10), (0.5, 0), ts=20, color="#FFE14D", display=True, stroke=3,
-             ZIndex=8, Rotation=-8, Visible=False),
+        # Owned: the level as a big gold number on the top-right corner (Slime RNG).
+        text("Level", "1", U(0, 40, 0, 30), U(0, 112, 0, 8), (0.5, 0), ts=28, color="#FFD43B", display=True, stroke=3,
+             ZIndex=7, Visible=False),
         frame("Price", U(1, -30, 0, 22), U(0.5, 0, 0, 81), (0.5, 0), ZIndex=6, children=[
             hlist(4, "Center", "Center"),
             icon("Coin", "Cash", 20, ZIndex=6, LayoutOrder=1),
@@ -1968,6 +1969,8 @@ def upgrades():
         ]),
         icon("Lock", "Lock", 46, U(0.5, 0, 0.5, -12), (0.5, 0.5), ZIndex=6, Visible=False),
         text("Question", "?", U(1, 0, 1, 0), ts=68, display=True, stroke=4, ZIndex=6, Visible=False),
+        # Lab hexes: how many hexes inside you can afford (Ui.setBadge), on the top-right corner.
+        hex_badge,
     ])
     # Tapping the empty board closes the tooltip.
     backdrop = node("Backdrop", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", AutoButtonColor=False,
@@ -2005,10 +2008,6 @@ def upgrades():
     bottom = frame("Bottom", U(0, 900, 0, 196), U(0.5, 0, 1, -8), (0.5, 1), children=[
         autoscale(),
         button("Close", U(0, 250, 0, 88), U(0.5, 0, 1, 0), (0.5, 1), color=DANGER, label="CLOSE", ts=46, ZIndex=5),
-        button("Back", U(0, 170, 0, 72), U(0.5, -140, 1, -8), (1, 1), color=HEADER, label="BACK", ts=32, ZIndex=5,
-               Visible=False),
-        button("ZoomOut", U(0, 64, 0, 64), U(0.5, 140, 1, -12), (0, 1), color=HEADER, label="-", ts=40, ZIndex=5),
-        button("ZoomIn", U(0, 64, 0, 64), U(0.5, 214, 1, -12), (0, 1), color=HEADER, label="+", ts=40, ZIndex=5),
     ])
     d = dim()
     d["className"] = "Frame"

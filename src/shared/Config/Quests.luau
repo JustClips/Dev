@@ -190,7 +190,7 @@ textOf = function(q: Quest): string
 	elseif k == "Rebirths" then
 		return if n == 1 then "Rebirth" else `Rebirth {num} times`
 	elseif k == "Power" then
-		return if n == 1 then "Buy Sweep Power" else `Get Sweep Power level {num}`
+		return if n == 1 then "Buy your first upgrade" else `Buy {num} upgrades`
 	elseif k == "FreeSpin" then
 		return "Spin the Lucky Wheel"
 	end

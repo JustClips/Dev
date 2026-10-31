@@ -86,6 +86,9 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 		return true, `{def.Name} unlocked! New upgrades opened`
 	end
 	if level >= def.MaxLevel then
+		if def.MaxLevel == 1 then
+			return true, `Got {def.Name}!`
+		end
 		return true, `{def.Name} maxed! {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
 	end
 	return true, `{def.Name} {level}/{def.MaxLevel}: {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
@@ -114,7 +117,7 @@ local function refundRetired(player: Player, session)
 			total += Upgrades.retiredRefund(id, level)
 			levels[id] = nil
 		elseif rebuilt then
-			total += Upgrades.oldTreeRefund(id, level)
+			total += Upgrades.oldTreeRefund(id, level, data.Flags.UpgradeTreeV)
 			levels[id] = nil
 		elseif not Upgrades.ById[id] then
 			levels[id] = nil
