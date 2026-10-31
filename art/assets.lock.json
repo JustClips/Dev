@@ -849,52 +849,196 @@
    "sha": "ceb09c708afeabd535760b43ae2b6cbf4098f61134073a1550c063e00e959648"
   },
   "Tool_Broom_Hold": {
-   "id": 130648850082063,
-   "sha": "277f8e948b60f62ea96abdb59da9eec2aa949f433a080842b3a961e987a0a898"
+   "id": 127960350844396,
+   "sha": "980afc48bf102f3dd365c953f715cff7c8b394c6a49a825c9e81c94a5b006c0c"
+  },
+  "Tool_Broom_Stance": {
+   "id": 70877513209564,
+   "sha": "fb5ddc8bf55195312d6b89ff86932e8d68a85a7dd313e9bc77e8f20ee5802f49"
   },
   "Tool_Broom_Use": {
-   "id": 94716587382943,
-   "sha": "38df4318041ca3872e141ef94be9d2c816abe98ef8d92d3470e78da10bcbb2af"
+   "id": 81496630709831,
+   "sha": "1414a091bc5fa5b7e80e9bea8e00fccf80a6bb907e91d6b49c61301c513d2d2c"
+  },
+  "Tool_DiamondMop_Hold": {
+   "id": 105333119089956,
+   "sha": "ce3c2793fd5622c3888d7d3b60408cd9b387bcb2c6889f68c38f3ff07263491c"
+  },
+  "Tool_DiamondMop_Stance": {
+   "id": 128792504340051,
+   "sha": "e86bb04f227370143eff7ccdeb06146a5c4d69053effc1ea64fbc83a1f747039"
+  },
+  "Tool_DiamondMop_Use": {
+   "id": 82342394407006,
+   "sha": "835585c26aea3fda69fba956c8672ed47623fbd2bfde3b37989ec67b3f734ba7"
+  },
+  "Tool_GalaxyVacuum_Hold": {
+   "id": 134466673874598,
+   "sha": "a69345e7f6164a985bc06b299a0759bc6ef8b81baffdd2cbfcb54a2690d266cc"
+  },
+  "Tool_GalaxyVacuum_Stance": {
+   "id": 105121252590274,
+   "sha": "08f66d9c9d8ff2057f9a8cac2fd55db0b179a9e2945c4e86b80c520b464aecba"
+  },
+  "Tool_GalaxyVacuum_Use": {
+   "id": 100595444960855,
+   "sha": "37c3358bf303290d7bef937d943c9bd51522bf3412182dd0821c7baffe457b90"
+  },
+  "Tool_GoldenBroom_Hold": {
+   "id": 119432586745102,
+   "sha": "cf4a066ecaef5c45eef66a96cc17f85173372e970055deeb9ea4b7c4842f589b"
+  },
+  "Tool_GoldenBroom_Stance": {
+   "id": 135158228747644,
+   "sha": "52a139d42f1de5a5424c15f6a809005f1d6225f36323acc6f4d9dfabc3fcec63"
+  },
+  "Tool_GoldenBroom_Use": {
+   "id": 74870056158331,
+   "sha": "b1d8105cb6077b0d21980812982d7543adb6009c5d2803c965b5b83ae1bfa97b"
   },
   "Tool_LeafBlower_Hold": {
-   "id": 73423630980959,
-   "sha": "47c1f39bbb62d4353f20bb44374e4a60e86bc099ab9236b3696429d51959973c"
+   "id": 116439990371034,
+   "sha": "70c777ab6b06cee3af0e1a4de286912d34b0758d8ee0d2365618e8986e651298"
+  },
+  "Tool_LeafBlower_Stance": {
+   "id": 111965871713347,
+   "sha": "3ec1d37e656fadcc806a2dbb4e7db7c194a6fb98d543ab10a63fd5fa9ea5f308"
   },
   "Tool_LeafBlower_Use": {
-   "id": 95948399948099,
-   "sha": "37c67bb3d150ed362b50b818b69427846cbb42227c6fd1641e8bc040c4121a2e"
+   "id": 109538935876824,
+   "sha": "c61516c3ba721f352dde2924f47dba8681fce1cc1e3ee34c7af2760eba533e04"
+  },
+  "Tool_LeafVac_Hold": {
+   "id": 85332703210348,
+   "sha": "19247dd8e5888f80d0c32b47f67863b99600e17e8e4bf0f725a40222baa6eba3"
+  },
+  "Tool_LeafVac_Stance": {
+   "id": 137913988685585,
+   "sha": "03c93d0e23f05f6e47ab5a9fe6f21d32de46fbe9153c2924a13106113cb39aa2"
+  },
+  "Tool_LeafVac_Use": {
+   "id": 103377329862887,
+   "sha": "318efbd49670ca1f887b3dc2ebaaf9081f878edb2a4a148f9089bc3856a49641"
   },
   "Tool_Mop_Hold": {
-   "id": 88754308408607,
-   "sha": "f1af29ac9e579746935022fa6390396ebc266d4e237884deb5be3375fa18f60e"
+   "id": 111831678314528,
+   "sha": "82560b1cfda47ff4cfeb4496793ae1b11ed87932000be7d3a34b1ad8fa36bf95"
+  },
+  "Tool_Mop_Stance": {
+   "id": 126346770818434,
+   "sha": "6d37197771c4d26245264b4d71b5c3e8e2f74fc66216b00cb56fe5bb75eb83dd"
   },
   "Tool_Mop_Use": {
-   "id": 131493756773944,
-   "sha": "ae138d97966fe136abe3d1b8b7d9ce71e974f23d47c70f5a6c73870cff63b330"
+   "id": 138002893961088,
+   "sha": "24421566837e1cda417fbd012031de120bd1c9350bc3e33ec936c152964ed192"
+  },
+  "Tool_PressureWasher_Hold": {
+   "id": 81284167500240,
+   "sha": "7d7c2d367ecad1ff015f1f985cf175ec4281e861e813c23d77bbbeb059afb367"
+  },
+  "Tool_PressureWasher_Stance": {
+   "id": 90411727406694,
+   "sha": "77c246be7cd7aa452eabaf05f7b88d3521624078d904aaba52210d14ae6dcac3"
+  },
+  "Tool_PressureWasher_Use": {
+   "id": 87884466365384,
+   "sha": "c293a836c13198265ec12f50ba18430d4c24db43a8106392e7b4391933659f17"
+  },
+  "Tool_PushBroom_Hold": {
+   "id": 99689392746775,
+   "sha": "b34df691e1087c3e771919683eba738dd6d556ede582aa93daa976a363c6bd2d"
+  },
+  "Tool_PushBroom_Stance": {
+   "id": 95290516628609,
+   "sha": "862b5905e47d6c7ed339a24aa56c8cad9eaa1667235999af8a341e14a9ec3999"
+  },
+  "Tool_PushBroom_Use": {
+   "id": 95024713373168,
+   "sha": "aa822a1225078125bf6792d3bd7faf39f63f037f7d27b25d4c483b1e8d2e4a69"
+  },
+  "Tool_RainbowDuster_Hold": {
+   "id": 110254550047012,
+   "sha": "1b960b3a39cbee37e91e192f6bc20c5e8ae6643a76271301fd2571021a6cee5e"
+  },
+  "Tool_RainbowDuster_Stance": {
+   "id": 108904385372572,
+   "sha": "e193b94b60a5027097743a9bad719f267c41c69e1f84b0848782a22f51f72aa2"
+  },
+  "Tool_RainbowDuster_Use": {
+   "id": 84777604878459,
+   "sha": "5ebd4c009639f7844e1531876ba08b547b93cd56b2c2800e1d15953cf274a126"
+  },
+  "Tool_Rake_Hold": {
+   "id": 135358480592113,
+   "sha": "5f8a168da4effebb8f972be5e5d2d898a1d87c69fad6c0675e4dc7a5d37e0de7"
+  },
+  "Tool_Rake_Stance": {
+   "id": 103422956982480,
+   "sha": "6015f63bf2df630b00e9daac4dc84519a872fc34cf93651f4a81e234260aaafd"
+  },
+  "Tool_Rake_Use": {
+   "id": 137545527962475,
+   "sha": "7662239c49d98e642541187e9caab6e5faa6fe2de79fb3ab3871bc467c46e163"
   },
   "Tool_ShopVac_Hold": {
-   "id": 75972902418278,
-   "sha": "4bf9e4bfbfadd673a88f2f812281d24f31967739f4fa4d6f80c957e9dd7f8424"
+   "id": 79758906715382,
+   "sha": "53159bc9591421326ddc21c6bed44be00646470a816f5d158c6d8f374a05173b"
+  },
+  "Tool_ShopVac_Stance": {
+   "id": 110496910327394,
+   "sha": "c2e1fa7663362dcea4f3edde94736150789917230d396a7c4006c1b4b0f05f92"
   },
   "Tool_ShopVac_Use": {
-   "id": 108781314751499,
-   "sha": "689f739ed659b80873977e632927da4d19e68c338487885f112c40b6374c9925"
+   "id": 107785108919584,
+   "sha": "9fbd4f92d29ef34f7b49b0d2b3fce169974b4b2af3ffd6e8a97b182e7a82066b"
+  },
+  "Tool_StormBlower_Hold": {
+   "id": 132527707354593,
+   "sha": "f815dfd2dfef097d15d04621ba464baea6b6be1f8ba81ae1cac086cb1e7c48f3"
+  },
+  "Tool_StormBlower_Stance": {
+   "id": 118802653190055,
+   "sha": "92a6638808439006cc3ef3d5f6e11b32033f5e74215127c16250a4da9fda2085"
+  },
+  "Tool_StormBlower_Use": {
+   "id": 85060058952095,
+   "sha": "55f507721132e5021c33514ddcab5e89086f6a82391f6cd2dc9ff82ad1f59d5c"
   },
   "Tool_Toothbrush_Hold": {
-   "id": 88741629412820,
-   "sha": "3664dac3cf950a7ca81eac22ad0a67e1d48c44f60f7927c9fcc8e65e965a7a2d"
+   "id": 74330023316596,
+   "sha": "b752fccdb39b9c568091c5f30de35d14ae8a0b7e4c34abe32e4b1916f4094256"
+  },
+  "Tool_Toothbrush_Stance": {
+   "id": 94144318889340,
+   "sha": "fe726b88fbe6dade3ad39353f5bacbc6935427345d9c0d171886730bf08c6a5e"
   },
   "Tool_Toothbrush_Use": {
-   "id": 133133024120378,
-   "sha": "8bff4a82fd0badbc1c12ddc6ed7b3b22c6edb32f2e2aa06ddbb6d6178924b82e"
+   "id": 75417676755379,
+   "sha": "68a039c82c2420e47eace046f8a37ea3e7f6d22b65259d8e643c3ed94865768a"
+  },
+  "Tool_TornadoVac_Hold": {
+   "id": 81506182324301,
+   "sha": "a5666f15bfd8e91e49f09ebc2ce3455d3ddd9bc1b6a02cdefba26bceeab8a16d"
+  },
+  "Tool_TornadoVac_Stance": {
+   "id": 140579875890646,
+   "sha": "587d73e6a0639554763ab904ee697a2ac8189285f8055b31323d9c645252faed"
+  },
+  "Tool_TornadoVac_Use": {
+   "id": 115167687953012,
+   "sha": "64316816497f87455b7e5fe9b5c2cb6fd52a16adb2f954960f04f08802bb6ef9"
   },
   "Tool_TurboVacuum_Hold": {
-   "id": 138403122465309,
-   "sha": "1befaa09884025384f8216d10fd276e1a509a36c22b4db8bf200c76be978d4eb"
+   "id": 102549969440556,
+   "sha": "e922613f3049a1fe86a745edea5d92c51d24a15d1b4a98b80bc26b9cc833a944"
+  },
+  "Tool_TurboVacuum_Stance": {
+   "id": 130520111730052,
+   "sha": "e4c421023df2c92e079ff88ffc575e28f0d0adebbdd19dcd863617d0ef0b6191"
   },
   "Tool_TurboVacuum_Use": {
-   "id": 87111358481355,
-   "sha": "15401d39396a810c114154c7ec67a5c61b172610afe2b3da48b49b44478cc763"
+   "id": 121653979396202,
+   "sha": "5dc0ddcefcdcb858dbed209664daa736167cf5f917012f92c58fb48e13e26824"
   }
  },
  "images": {
@@ -1490,21 +1634,61 @@
    "id": 95356725858033,
    "sha": "02d8bb325b41a8f5752513f49e4747314630bb9fb2820e4cf3cd4f04c2118050"
   },
+  "Icon_Tool_DiamondMop": {
+   "id": 84696879730966,
+   "sha": "dfafe18b89dfa477737e38c80ea2b086c4ab001a0b248913db1569d8a2006fe8"
+  },
+  "Icon_Tool_GalaxyVacuum": {
+   "id": 72185865265709,
+   "sha": "cfae3c10503aad07047f964bc27f06283efcd6b843a9a71644245fab7aa184c0"
+  },
+  "Icon_Tool_GoldenBroom": {
+   "id": 71011432301811,
+   "sha": "88505b457c79e7fc801c3f50519907e45db3fcc3450bfa5b8ae0636af3298e7c"
+  },
   "Icon_Tool_LeafBlower": {
    "id": 116578079730414,
    "sha": "f79643afe7f37a4226f7212592ac57b4cec68cc3f41ab91da027e46f977993ca"
+  },
+  "Icon_Tool_LeafVac": {
+   "id": 74375744379567,
+   "sha": "397b79084bed1036b1ac36a4c2d28b10c77bdb55fb8b1b6fa9462ad2e65f0e85"
   },
   "Icon_Tool_Mop": {
    "id": 124459978417318,
    "sha": "8511be2058d223db95207f3c5ec832e37790c843e1c266ede2c94a3298f815b0"
   },
+  "Icon_Tool_PressureWasher": {
+   "id": 93892935626448,
+   "sha": "4e019abe95300e9888ce16b0b43c68fc37ada849e052dddf983c68af742983a8"
+  },
+  "Icon_Tool_PushBroom": {
+   "id": 96182836973565,
+   "sha": "ea972a5c4aa8367104aa4595cd554ee6cb192d8f171327bb647ac43b3ddcc52c"
+  },
+  "Icon_Tool_RainbowDuster": {
+   "id": 112437821126498,
+   "sha": "20285afc3085127f97e4956a0331ddc99ec28607bebeb0114fc2083768d14d3a"
+  },
+  "Icon_Tool_Rake": {
+   "id": 79688078175275,
+   "sha": "1f77833c523c4cc87a3d4e8ba9114e3221683b83bfbf374221ea7f9b2b7f493c"
+  },
   "Icon_Tool_ShopVac": {
    "id": 102858327065929,
    "sha": "88915d693feb9ca74c8228dc6420e291aea64a7b768fcaebaea6315fc78c2b43"
   },
+  "Icon_Tool_StormBlower": {
+   "id": 88098508389854,
+   "sha": "5fb639d98dedc399e7c3726df9a48735c843b8e351231d85826db9ba324784cc"
+  },
   "Icon_Tool_Toothbrush": {
    "id": 105038827412048,
    "sha": "b08922d7ccab2769435116c91ed2d1f1e490403f0860e7be71da01d6961ed10f"
+  },
+  "Icon_Tool_TornadoVac": {
+   "id": 78184755866818,
+   "sha": "00a72108de2bc0a9956c0764f2336f9a10348266af389036df0b65bfdac1034b"
   },
   "Icon_Tool_TurboVacuum": {
    "id": 73779732410237,
@@ -9432,21 +9616,61 @@
    "id": 115435271632713,
    "sha": "a9fa37219106cb8aa4ba038e912cb53304e13e2f0b26fc490024fcfc476ab9df"
   },
+  "Tool_DiamondMop": {
+   "id": 89004424607208,
+   "sha": "4969040e4c3041f1c7050dda5566f6208cd21edc9beb9c9b7a6505f10b5a4f73"
+  },
+  "Tool_GalaxyVacuum": {
+   "id": 114495315460495,
+   "sha": "8b3a39a849be4cbce3f9b6df27003c40ec38280492ae71f3d93549aebbb94e81"
+  },
+  "Tool_GoldenBroom": {
+   "id": 99365589328068,
+   "sha": "bb36fcd943da05a131917b63039e157b4908377d24a586da753550a884ec91b8"
+  },
   "Tool_LeafBlower": {
    "id": 76606737119686,
    "sha": "5edf11d0843e2b9f78b6377d2a74de235abea6e26fa730f6254af803c523713e"
+  },
+  "Tool_LeafVac": {
+   "id": 102162807825358,
+   "sha": "2bf1434bec10653d75a17bba9a35dc10c0e95a6054e5ee9f24c0a1e8b677e31d"
   },
   "Tool_Mop": {
    "id": 113873007252118,
    "sha": "9553ad4077547f7cfa85eb8d1305a0e8a8453d777b83541c06bfa695f17aacba"
   },
+  "Tool_PressureWasher": {
+   "id": 107717263096182,
+   "sha": "197c0c8fe1254625554d78e55e7e209af6b9af28e9e8a7b39dbbc5260a2451e4"
+  },
+  "Tool_PushBroom": {
+   "id": 108144200599917,
+   "sha": "b1b2d607879d2d7615fa2ae41e348f03570eb4661e82293f1ead407917aea358"
+  },
+  "Tool_RainbowDuster": {
+   "id": 115170139555631,
+   "sha": "a95d92ecff1cd41b54f652bf40f7a3e0b5d448459fa651e96148b90675581de2"
+  },
+  "Tool_Rake": {
+   "id": 92023897507719,
+   "sha": "9afc8a1d4639aff207c26291e7a730633d3933ca4ee181fa94ad30db06e0bfe3"
+  },
   "Tool_ShopVac": {
    "id": 75032185910647,
    "sha": "40e6d71724729be6699729893900cdd1d5512fb2b6c857dcd78650e2e18af71b"
   },
+  "Tool_StormBlower": {
+   "id": 103878888296558,
+   "sha": "466ad667156df427f2598e8e1261d916fce897890cd7f9c217093571d5f37cd9"
+  },
   "Tool_Toothbrush": {
    "id": 106138393457522,
    "sha": "959d4201fb84c45a13317b912b263452444b036320a4a7403809590c5dbfd147"
+  },
+  "Tool_TornadoVac": {
+   "id": 130726682706058,
+   "sha": "7cba052cee6e234ea93dd5fb6a4f526597e52a22c71d36bbfd34cc44794fed5d"
   },
   "Tool_TurboVacuum": {
    "id": 104795889853784,

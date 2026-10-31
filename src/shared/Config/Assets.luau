@@ -9494,6 +9494,69 @@ Assets.Models = {
 		},
 		tip = Vector3.new(0.0, 0.0, -2.65),
 	},
+	Tool_DiamondMop = {
+		bounds = {
+			max = Vector3.new(0.68, 0.69, 2.54),
+			min = Vector3.new(-0.68, -0.69, -2.677),
+		},
+		grip = Vector3.new(0.0, 0.0, 0.4),
+		grip2 = Vector3.new(0.0, 0.0, 1.6),
+		id = 89004424607208,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+			Handle_Glow = {
+				collide = false,
+				glow = "A0F4FF",
+				parent = "Handle",
+			},
+		},
+		tip = Vector3.new(0.0, 0.0, -2.55),
+	},
+	Tool_GalaxyVacuum = {
+		bounds = {
+			max = Vector3.new(0.52, 0.69, 1.79),
+			min = Vector3.new(-0.52, -1.297, -2.075),
+		},
+		grip = Vector3.new(0.0, 0.6, 0.82),
+		grip2 = Vector3.new(-0.0, -0.42, -0.748),
+		id = 114495315460495,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+			Handle_Glow = {
+				collide = false,
+				glow = "FF6EE6",
+				parent = "Handle",
+			},
+		},
+		tip = Vector3.new(-0.0, -0.866, -1.898),
+	},
+	Tool_GoldenBroom = {
+		bounds = {
+			max = Vector3.new(0.922, 0.288, 2.548),
+			min = Vector3.new(-0.922, -0.288, -2.858),
+		},
+		grip = Vector3.new(0.0, 0.0, 0.4),
+		grip2 = Vector3.new(0.0, 0.0, 1.6),
+		id = 99365589328068,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+			Handle_Glow = {
+				collide = false,
+				glow = "FFF4B4",
+				parent = "Handle",
+			},
+		},
+		tip = Vector3.new(0.0, 0.0, -2.7),
+	},
 	Tool_LeafBlower = {
 		bounds = {
 			max = Vector3.new(0.39, 0.71, 1.14),
@@ -9509,6 +9572,22 @@ Assets.Models = {
 			},
 		},
 		tip = Vector3.new(-0.0, -0.897, -2.134),
+	},
+	Tool_LeafVac = {
+		bounds = {
+			max = Vector3.new(0.42, 0.69, 1.5),
+			min = Vector3.new(-0.44, -1.221, -2.043),
+		},
+		grip = Vector3.new(0.0, 0.6, 0.72),
+		grip2 = Vector3.new(-0.0, -0.475, -0.75),
+		id = 102162807825358,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+		},
+		tip = Vector3.new(-0.0, -0.96, -1.979),
 	},
 	Tool_Mop = {
 		bounds = {
@@ -9526,6 +9605,70 @@ Assets.Models = {
 		},
 		tip = Vector3.new(0.0, 0.0, -2.55),
 	},
+	Tool_PressureWasher = {
+		bounds = {
+			max = Vector3.new(0.31, 0.61, 1.66),
+			min = Vector3.new(-0.37, -1.125, -2.185),
+		},
+		grip = Vector3.new(0.0, 0.52, 0.75),
+		grip2 = Vector3.new(-0.0, -0.51, -0.74),
+		id = 107717263096182,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+		},
+		tip = Vector3.new(-0.0, -1.035, -2.185),
+	},
+	Tool_PushBroom = {
+		bounds = {
+			max = Vector3.new(1.1, 0.16, 2.54),
+			min = Vector3.new(-1.1, -0.13, -2.643),
+		},
+		grip = Vector3.new(0.0, 0.0, 0.4),
+		grip2 = Vector3.new(0.0, 0.0, 1.6),
+		id = 108144200599917,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+		},
+		tip = Vector3.new(0.0, 0.0, -2.62),
+	},
+	Tool_RainbowDuster = {
+		bounds = {
+			max = Vector3.new(0.987, 0.522, 2.54),
+			min = Vector3.new(-0.987, -0.522, -2.919),
+		},
+		grip = Vector3.new(0.0, 0.0, 0.4),
+		grip2 = Vector3.new(0.0, 0.0, 1.6),
+		id = 115170139555631,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+		},
+		tip = Vector3.new(0.0, 0.0, -2.65),
+	},
+	Tool_Rake = {
+		bounds = {
+			max = Vector3.new(1.103, 0.13, 2.54),
+			min = Vector3.new(-1.103, -0.155, -2.705),
+		},
+		grip = Vector3.new(0.0, 0.0, 0.4),
+		grip2 = Vector3.new(0.0, 0.0, 1.6),
+		id = 92023897507719,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+		},
+		tip = Vector3.new(0.0, -0.1, -2.6),
+	},
 	Tool_ShopVac = {
 		bounds = {
 			max = Vector3.new(0.5, 0.57, 1.52),
@@ -9541,6 +9684,27 @@ Assets.Models = {
 			},
 		},
 		tip = Vector3.new(-0.0, -1.12, -2.1),
+	},
+	Tool_StormBlower = {
+		bounds = {
+			max = Vector3.new(0.485, 0.72, 1.275),
+			min = Vector3.new(-0.485, -1.3, -2.286),
+		},
+		grip = Vector3.new(0.0, 0.63, 0.68),
+		grip2 = Vector3.new(-0.0, -0.485, -0.875),
+		id = 103878888296558,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+			Handle_Glow = {
+				collide = false,
+				glow = "FFE03C",
+				parent = "Handle",
+			},
+		},
+		tip = Vector3.new(-0.0, -0.956, -2.176),
 	},
 	Tool_Toothbrush = {
 		bounds = {
@@ -9560,6 +9724,27 @@ Assets.Models = {
 			},
 		},
 		tip = Vector3.new(0.0, -0.3, -1.25),
+	},
+	Tool_TornadoVac = {
+		bounds = {
+			max = Vector3.new(0.5, 0.69, 1.73),
+			min = Vector3.new(-0.5, -1.022, -2.051),
+		},
+		grip = Vector3.new(0.0, 0.6, 0.82),
+		grip2 = Vector3.new(-0.0, -0.493, -0.787),
+		id = 130726682706058,
+		kind = "tool",
+		parts = {
+			Handle = {
+				collide = false,
+			},
+			Handle_Glow = {
+				collide = false,
+				glow = "78FFF0",
+				parent = "Handle",
+			},
+		},
+		tip = Vector3.new(-0.0, -1.002, -1.891),
 	},
 	Tool_TurboVacuum = {
 		bounds = {
@@ -10507,18 +10692,54 @@ Assets.Animations = {
 	Pet_Yeti_Walk = 88158201303113,
 	Player_Hold = 129888683850993,
 	Player_Sweep = 98110507730768,
-	Tool_Broom_Hold = 130648850082063,
-	Tool_Broom_Use = 94716587382943,
-	Tool_LeafBlower_Hold = 73423630980959,
-	Tool_LeafBlower_Use = 95948399948099,
-	Tool_Mop_Hold = 88754308408607,
-	Tool_Mop_Use = 131493756773944,
-	Tool_ShopVac_Hold = 75972902418278,
-	Tool_ShopVac_Use = 108781314751499,
-	Tool_Toothbrush_Hold = 88741629412820,
-	Tool_Toothbrush_Use = 133133024120378,
-	Tool_TurboVacuum_Hold = 138403122465309,
-	Tool_TurboVacuum_Use = 87111358481355,
+	Tool_Broom_Hold = 127960350844396,
+	Tool_Broom_Stance = 70877513209564,
+	Tool_Broom_Use = 81496630709831,
+	Tool_DiamondMop_Hold = 105333119089956,
+	Tool_DiamondMop_Stance = 128792504340051,
+	Tool_DiamondMop_Use = 82342394407006,
+	Tool_GalaxyVacuum_Hold = 134466673874598,
+	Tool_GalaxyVacuum_Stance = 105121252590274,
+	Tool_GalaxyVacuum_Use = 100595444960855,
+	Tool_GoldenBroom_Hold = 119432586745102,
+	Tool_GoldenBroom_Stance = 135158228747644,
+	Tool_GoldenBroom_Use = 74870056158331,
+	Tool_LeafBlower_Hold = 116439990371034,
+	Tool_LeafBlower_Stance = 111965871713347,
+	Tool_LeafBlower_Use = 109538935876824,
+	Tool_LeafVac_Hold = 85332703210348,
+	Tool_LeafVac_Stance = 137913988685585,
+	Tool_LeafVac_Use = 103377329862887,
+	Tool_Mop_Hold = 111831678314528,
+	Tool_Mop_Stance = 126346770818434,
+	Tool_Mop_Use = 138002893961088,
+	Tool_PressureWasher_Hold = 81284167500240,
+	Tool_PressureWasher_Stance = 90411727406694,
+	Tool_PressureWasher_Use = 87884466365384,
+	Tool_PushBroom_Hold = 99689392746775,
+	Tool_PushBroom_Stance = 95290516628609,
+	Tool_PushBroom_Use = 95024713373168,
+	Tool_RainbowDuster_Hold = 110254550047012,
+	Tool_RainbowDuster_Stance = 108904385372572,
+	Tool_RainbowDuster_Use = 84777604878459,
+	Tool_Rake_Hold = 135358480592113,
+	Tool_Rake_Stance = 103422956982480,
+	Tool_Rake_Use = 137545527962475,
+	Tool_ShopVac_Hold = 79758906715382,
+	Tool_ShopVac_Stance = 110496910327394,
+	Tool_ShopVac_Use = 107785108919584,
+	Tool_StormBlower_Hold = 132527707354593,
+	Tool_StormBlower_Stance = 118802653190055,
+	Tool_StormBlower_Use = 85060058952095,
+	Tool_Toothbrush_Hold = 74330023316596,
+	Tool_Toothbrush_Stance = 94144318889340,
+	Tool_Toothbrush_Use = 75417676755379,
+	Tool_TornadoVac_Hold = 81506182324301,
+	Tool_TornadoVac_Stance = 140579875890646,
+	Tool_TornadoVac_Use = 115167687953012,
+	Tool_TurboVacuum_Hold = 102549969440556,
+	Tool_TurboVacuum_Stance = 130520111730052,
+	Tool_TurboVacuum_Use = 121653979396202,
 }
 
 -- Used instead of Assets.Animations when the primary account's models failed to load
@@ -10677,10 +10898,20 @@ Assets.Images = {
 	Icon_Timer = "rbxassetid://131179301917424",
 	Icon_Tool = "rbxassetid://110987406076400",
 	Icon_Tool_Broom = "rbxassetid://95356725858033",
+	Icon_Tool_DiamondMop = "rbxassetid://84696879730966",
+	Icon_Tool_GalaxyVacuum = "rbxassetid://72185865265709",
+	Icon_Tool_GoldenBroom = "rbxassetid://71011432301811",
 	Icon_Tool_LeafBlower = "rbxassetid://116578079730414",
+	Icon_Tool_LeafVac = "rbxassetid://74375744379567",
 	Icon_Tool_Mop = "rbxassetid://124459978417318",
+	Icon_Tool_PressureWasher = "rbxassetid://93892935626448",
+	Icon_Tool_PushBroom = "rbxassetid://96182836973565",
+	Icon_Tool_RainbowDuster = "rbxassetid://112437821126498",
+	Icon_Tool_Rake = "rbxassetid://79688078175275",
 	Icon_Tool_ShopVac = "rbxassetid://102858327065929",
+	Icon_Tool_StormBlower = "rbxassetid://88098508389854",
 	Icon_Tool_Toothbrush = "rbxassetid://105038827412048",
+	Icon_Tool_TornadoVac = "rbxassetid://78184755866818",
 	Icon_Tool_TurboVacuum = "rbxassetid://73779732410237",
 	Icon_Tools = "rbxassetid://91258440828416",
 	Icon_TreasureMap = "rbxassetid://82608374341931",

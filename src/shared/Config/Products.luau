@@ -39,20 +39,20 @@ local Products: { ProductDef } = {
 
 	-- "Next tool now": priced per target tier.
 	{ Key = "ToolSkip2", Id = 3723358874, Price = 3, Name = "Unlock Broom", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 2 },
-	{ Key = "ToolSkip3", Id = 0, Price = 5, Name = "Unlock Rake", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 3 },
+	{ Key = "ToolSkip3", Id = 3724878294, Price = 5, Name = "Unlock Rake", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 3 },
 	{ Key = "ToolSkip4", Id = 3723358883, Price = 9, Name = "Unlock Mop", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 4 },
-	{ Key = "ToolSkip5", Id = 0, Price = 15, Name = "Unlock Push Broom", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 5 },
+	{ Key = "ToolSkip5", Id = 3724878303, Price = 15, Name = "Unlock Push Broom", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 5 },
 	{ Key = "ToolSkip6", Id = 3723358889, Price = 25, Name = "Unlock Leaf Blower", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 6 },
-	{ Key = "ToolSkip7", Id = 0, Price = 39, Name = "Unlock Leaf Vacuum", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 7 },
+	{ Key = "ToolSkip7", Id = 3724878312, Price = 39, Name = "Unlock Leaf Vacuum", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 7 },
 	{ Key = "ToolSkip8", Id = 3723358904, Price = 59, Name = "Unlock Shop Vac", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 8 },
-	{ Key = "ToolSkip9", Id = 0, Price = 89, Name = "Unlock Pressure Washer", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 9 },
+	{ Key = "ToolSkip9", Id = 3724878325, Price = 89, Name = "Unlock Pressure Washer", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 9 },
 	{ Key = "ToolSkip10", Id = 3723358915, Price = 129, Name = "Unlock Turbo Vacuum", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 10 },
-	{ Key = "ToolSkip11", Id = 0, Price = 169, Name = "Unlock Golden Broom", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 11 },
-	{ Key = "ToolSkip12", Id = 0, Price = 199, Name = "Unlock Storm Blower", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 12 },
-	{ Key = "ToolSkip13", Id = 0, Price = 249, Name = "Unlock Tornado Vac", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 13 },
-	{ Key = "ToolSkip14", Id = 0, Price = 299, Name = "Unlock Diamond Mop", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 14 },
-	{ Key = "ToolSkip15", Id = 0, Price = 349, Name = "Unlock Rainbow Duster", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 15 },
-	{ Key = "ToolSkip16", Id = 0, Price = 399, Name = "Unlock Galaxy Vacuum", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 16 },
+	{ Key = "ToolSkip11", Id = 3724878338, Price = 169, Name = "Unlock Golden Broom", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 11 },
+	{ Key = "ToolSkip12", Id = 3724878349, Price = 199, Name = "Unlock Storm Blower", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 12 },
+	{ Key = "ToolSkip13", Id = 3724878366, Price = 249, Name = "Unlock Tornado Vac", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 13 },
+	{ Key = "ToolSkip14", Id = 3724878378, Price = 299, Name = "Unlock Diamond Mop", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 14 },
+	{ Key = "ToolSkip15", Id = 3724878385, Price = 349, Name = "Unlock Rainbow Duster", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 15 },
+	{ Key = "ToolSkip16", Id = 3724878401, Price = 399, Name = "Unlock Galaxy Vacuum", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 16 },
 
 	-- Cars (sold in the Garage). Unlock = owned until rebirth; Rent = until you leave or rebirth.
 	-- Both need the car's rebirth level, so Robux can't jump ahead of the progression.
