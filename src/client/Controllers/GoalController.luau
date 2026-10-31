@@ -70,14 +70,16 @@ local function render()
 		end
 	end
 	;(strip:FindFirstChild("Count") :: TextLabel).Text = `GOALS {done}/{#goals.List}`
-	;(strip:FindFirstChild("Next") :: TextLabel).Text = if nextGoal then `{nextGoal.Text}  {nextGoal.Progress}` else "All done!"
+	;(strip:FindFirstChild("Next") :: TextLabel).Text = if nextGoal then nextGoal.Text else "All done!"
+	;(strip:FindFirstChild("Progress") :: TextLabel).Text = if nextGoal then nextGoal.Progress else ""
 end
 
 function GoalController:Init(controllers)
 	C = controllers
 	strip = Ui.find(Ui.screen("Hud"), "Goals")
 	list = Ui.find(strip, "List")
-	Ui.fitText(strip:FindFirstChild("Next") :: TextLabel, 16, 8)
+	Ui.fitText(strip:FindFirstChild("Next") :: TextLabel, 16, 10)
+	Ui.fitText(strip:FindFirstChild("Progress") :: TextLabel, 15, 10)
 end
 
 function GoalController:Start()

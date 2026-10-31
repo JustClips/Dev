@@ -676,13 +676,16 @@ def hud():
             text("Progress", "", U(0, 92, 1, 0), U(1, -2, 0, 0), (1, 0), ts=16, color="#C9D0DE", display=True, stroke=2,
                  xa="Right", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
         ])
-    goals = button("Goals", U(0, 336, 0, 30), U(0.5, 0, 0, 118), (0.5, 0), color=BG, stroke=3, stud=False, Visible=False,
+    goals = button("Goals", U(0, 360, 0, 30), U(0.5, 0, 0, 118), (0.5, 0), color=BG, stroke=3, stud=False, Visible=False,
                    children=[
         autoscale(),
         text("Count", "GOALS 0/3", U(0, 84, 1, 0), U(0, 8, 0, 0), ts=15, color=PREMIUM, display=True, stroke=2, xa="Left",
              TextWrapped=False),
         # GoalController fits the text to the space (Ui.fitText): TextScaled overflowed here.
-        text("Next", "", U(1, -122, 1, -4), U(0, 96, 0, 2), ts=16, display=True, stroke=2, xa="Left", TextWrapped=False),
+        # The progress ("56/150") has its own label so it never runs into the goal text.
+        text("Next", "", U(1, -186, 1, -4), U(0, 92, 0, 2), ts=16, display=True, stroke=2, xa="Left", TextWrapped=False),
+        text("Progress", "", U(0, 70, 1, -4), U(1, -26, 0, 2), (1, 0), ts=15, color="#C9D0DE", display=True, stroke=2,
+             xa="Right", TextWrapped=False),
         text("Arrow", "v", U(0, 16, 1, 0), U(1, -6, 0, 0), (1, 0), ts=16, color="#C9D0DE", display=True),
         plate("List", U(1, 0, 0, 116), U(0, 0, 1, 4), tint=BG, stroke=3, Visible=False, children=[
             text("Title", "GOALS", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=17, color=PREMIUM, display=True, stroke=2, xa="Left"),
