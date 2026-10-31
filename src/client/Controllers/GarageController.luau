@@ -205,22 +205,25 @@ local function render(keepScroll: boolean?)
 		end)
 	else
 		list.CanvasPosition = Vector2.zero
-		-- Tools open on the row with the next tool to buy (or the one in your hands).
+		-- Tools open at the top, and only scroll when the next tool's card would be out of
+		-- view (Dev 2026-10-31: the window opened half-scrolled with the Broom cut off).
 		if tab == "Tools" then
-			local focus = math.min(data.ToolTier + 1, Tools.MaxTier)
+			local focus = Tools.List[math.min(data.ToolTier + 1, Tools.MaxTier)]
 			task.defer(function()
-				local layout = list:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout?
-				if not layout then
+				local card = focus and list:FindFirstChild(focus.Id) :: GuiObject?
+				if not card then
 					return
 				end
-				-- Count cards per row in screen pixels (UIScale-proof), scroll in layout units.
-				local cell = layout.CellSize.X.Offset
-				local k = layout.AbsoluteCellSize.X / math.max(1, cell)
-				local gap = layout.CellPadding.X.Offset
-				local perRow = math.max(1, math.floor((list.AbsoluteSize.X / math.max(k, 0.01) + gap) / (cell + gap)))
-				local rowIndex = math.floor((focus - 1) / perRow)
-				local rowHeight = layout.CellSize.Y.Offset + layout.CellPadding.Y.Offset
-				list.CanvasPosition = Vector2.new(0, rowIndex * rowHeight)
+				local top = card.AbsolutePosition.Y - list.AbsolutePosition.Y
+				local bottom = top + card.AbsoluteSize.Y
+				if bottom <= list.AbsoluteSize.Y then
+					return
+				end
+				-- Screen pixels to layout units (the window has a UIScale).
+				local layout = list:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout?
+				local cellY = layout and layout.CellSize.Y.Offset or 0
+				local k = if cellY > 0 then card.AbsoluteSize.Y / cellY else 1
+				list.CanvasPosition = Vector2.new(0, math.max(0, top / math.max(k, 0.01) - 6))
 			end)
 		end
 	end

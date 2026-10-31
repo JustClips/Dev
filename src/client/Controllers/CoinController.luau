@@ -16,6 +16,7 @@ local Client = script.Parent.Parent
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AssetLibrary = require(Shared.AssetLibrary)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 
@@ -56,20 +57,32 @@ local function take(): BasePart
 	if part then
 		return part
 	end
-	-- Shiny metal gold (not Neon: Dev found that too bright, 2026-10-30), 1.5x smaller
-	-- than before, with a faint twinkle so they still read against the leaves.
+	-- Glowing Pet Sim style orb (Dev 2026-10-31: metal coins were hard to see on the
+	-- leaves). A neon core plus a soft glow sprite around it that ignores lighting.
 	local p = Instance.new("Part")
 	p.Name = "Coin"
-	p.Shape = Enum.PartType.Cylinder
-	p.Size = Vector3.new(0.3, 1.6, 1.6)
-	p.Color = GOLD
-	p.Material = Enum.Material.Metal
-	p.Reflectance = 0.15
+	p.Shape = Enum.PartType.Ball
+	p.Size = Vector3.one * 1.25
+	p.Color = Color3.fromRGB(255, 225, 70)
+	p.Material = Enum.Material.Neon
 	p.Anchored = true
 	p.CanCollide = false
 	p.CanQuery = false
 	p.CanTouch = false
 	p.CastShadow = false
+	local halo = Instance.new("BillboardGui")
+	halo.Name = "Halo"
+	halo.Size = UDim2.fromScale(3.4, 3.4)
+	halo.LightInfluence = 0
+	halo.MaxDistance = 160
+	halo.Parent = p
+	local glow = Instance.new("ImageLabel")
+	glow.BackgroundTransparency = 1
+	glow.Size = UDim2.fromScale(1, 1)
+	glow.Image = AssetLibrary.image("Vfx_Glow")
+	glow.ImageColor3 = Color3.fromRGB(255, 200, 40)
+	glow.ImageTransparency = 0.15
+	glow.Parent = halo
 	local twinkle = Instance.new("ParticleEmitter")
 	twinkle.Name = "Twinkle"
 	twinkle.Texture = SPARKLE

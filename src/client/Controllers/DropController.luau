@@ -26,7 +26,7 @@ local DropController = {}
 local C: any
 local FLY_OUT = 0.55
 local FLY_IN = 0.25
-local HOVER = 1.6 -- studs above the ground
+local HOVER = 2.4 -- studs above the ground (the glow orb is ~4 studs wide)
 local REPORT_EVERY = 0.15
 local POUCH_COLOR = Color3.fromRGB(255, 205, 40)
 local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
@@ -89,14 +89,27 @@ local function build(item: string?): (Model, BasePart)
 	local big = rarity == "Epic" or rarity == "Legendary"
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Icon"
-	gui.Size = UDim2.fromScale(if big then 3.4 else 2.6, if big then 3.4 else 2.6)
+	gui.Size = UDim2.fromScale(if big then 5 else 4.2, if big then 5 else 4.2)
 	gui.LightInfluence = 0
 	gui.MaxDistance = 220
 	gui.Adornee = root
 	gui.Parent = root
+	-- Glowing orb behind the icon, Pet Sim style (Dev 2026-10-31: drops were hard to see).
+	local glow = Instance.new("ImageLabel")
+	glow.Name = "Glow"
+	glow.Size = UDim2.fromScale(1, 1)
+	glow.BackgroundTransparency = 1
+	glow.Image = AssetLibrary.image("Vfx_Glow")
+	glow.ImageColor3 = color
+	glow.ZIndex = 1
+	glow.Parent = gui
 	local image = Instance.new("ImageLabel")
-	image.Size = UDim2.fromScale(1, 1)
+	image.Name = "Item"
+	image.AnchorPoint = Vector2.new(0.5, 0.5)
+	image.Position = UDim2.fromScale(0.5, 0.5)
+	image.Size = UDim2.fromScale(0.62, 0.62)
 	image.BackgroundTransparency = 1
+	image.ZIndex = 2
 	image.Image = AssetLibrary.image(if item and Items.ById[item] then Items.ById[item].Icon else "Icon_Cash")
 	image.Parent = gui
 	local pop = Instance.new("UIScale")
@@ -106,17 +119,17 @@ local function build(item: string?): (Model, BasePart)
 	local ring = part({
 		Name = "Ring",
 		Shape = Enum.PartType.Cylinder,
-		Size = Vector3.new(0.12, 3, 3),
+		Size = Vector3.new(0.12, 3.6, 3.6),
 		Color = color,
 		Material = Enum.Material.Neon,
-		Transparency = 0.45,
+		Transparency = 0.25,
 	})
 	ring.Parent = model
 	local sparkle = Instance.new("ParticleEmitter")
 	sparkle.Texture = SPARKLE
 	sparkle.Color = ColorSequence.new(Color3.new(1, 1, 1), color)
 	sparkle.LightEmission = 0.7
-	sparkle.Rate = if rarity == "Common" then 2 else 6
+	sparkle.Rate = if rarity == "Common" then 4 else 8
 	sparkle.Lifetime = NumberRange.new(0.6, 1)
 	sparkle.Speed = NumberRange.new(1, 2.5)
 	sparkle.SpreadAngle = Vector2.new(180, 180)
@@ -218,7 +231,7 @@ local function onDropped(list: any)
 			report = true,
 		}
 		drops[d.id] = d
-		local pop = (root:FindFirstChild("Icon") :: BillboardGui):FindFirstChildOfClass("ImageLabel")
+		local pop = (root:FindFirstChild("Icon") :: BillboardGui):FindFirstChild("Item") :: ImageLabel?
 		local scale = pop and pop:FindFirstChild("Pop") :: UIScale?
 		if scale and not Ui.reducedMotion() then
 			scale.Scale = 0.2

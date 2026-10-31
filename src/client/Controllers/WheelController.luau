@@ -149,6 +149,115 @@ local function celebrate(index: number)
 	TweenService:Create(scale, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 end
 
+-- The prize card over the wheel (Dev 2026-10-31: show what you won inside the wheel frame,
+-- not only in a toast). Square, solid, Montserrat like the rest of the UI.
+local prizeCard: Frame?
+local prizeToken = 0
+
+local function makePrizeCard(): Frame
+	local area = Ui.find(gui, "Window.WheelArea") :: Frame
+	local card = Instance.new("Frame")
+	card.Name = "PrizeCard"
+	card.AnchorPoint = Vector2.new(0.5, 0.5)
+	card.Position = UDim2.fromScale(0.5, 0.5)
+	card.Size = UDim2.fromOffset(250, 210)
+	card.BackgroundColor3 = Color3.fromRGB(30, 34, 52)
+	card.BorderSizePixel = 0
+	card.ZIndex = 20
+	card.Visible = false
+	local stroke = Instance.new("UIStroke")
+	stroke.Name = "Edge"
+	stroke.Thickness = 4
+	stroke.Color = GOLD
+	stroke.Parent = card
+	local scale = Instance.new("UIScale")
+	scale.Parent = card
+	local title = Instance.new("TextLabel")
+	title.Name = "Title"
+	title.BackgroundColor3 = GOLD
+	title.BorderSizePixel = 0
+	title.Size = UDim2.new(1, 0, 0, 40)
+	title.Font = Enum.Font.Montserrat
+	title.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+	title.Text = "YOU WON!"
+	title.TextColor3 = WHITE
+	title.TextSize = 26
+	title.ZIndex = 21
+	local tStroke = Instance.new("UIStroke")
+	tStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+	tStroke.Thickness = 2
+	tStroke.Color = Color3.fromRGB(90, 55, 0)
+	tStroke.Parent = title
+	title.Parent = card
+	local icon = Instance.new("ImageLabel")
+	icon.Name = "Icon"
+	icon.BackgroundTransparency = 1
+	icon.AnchorPoint = Vector2.new(0.5, 0)
+	icon.Position = UDim2.new(0.5, 0, 0, 48)
+	icon.Size = UDim2.fromOffset(104, 104)
+	icon.ScaleType = Enum.ScaleType.Fit
+	icon.ZIndex = 21
+	icon.Parent = card
+	local name = Instance.new("TextLabel")
+	name.Name = "PrizeName"
+	name.BackgroundTransparency = 1
+	name.Position = UDim2.new(0, 8, 1, -54)
+	name.Size = UDim2.new(1, -16, 0, 46)
+	name.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+	name.TextScaled = true
+	name.TextColor3 = WHITE
+	name.ZIndex = 21
+	local nStroke = Instance.new("UIStroke")
+	nStroke.Thickness = 2
+	nStroke.Color = Color3.new(0, 0, 0)
+	nStroke.Parent = name
+	name.Parent = card
+	card.Parent = area
+	return card
+end
+
+local function hidePrize()
+	prizeToken += 1
+	if prizeCard then
+		prizeCard.Visible = false
+	end
+end
+
+local function showPrize(index: number)
+	local seg = Rewards.Wheel.Segments[index]
+	if not seg then
+		return
+	end
+	local card = prizeCard or makePrizeCard()
+	prizeCard = card
+	local image, name, tint = C.RewardsController.Describe(seg.Reward)
+	local icon = card:FindFirstChild("Icon") :: ImageLabel
+	icon.Image = AssetLibrary.image(image)
+	icon.ImageColor3 = tint or WHITE
+	local jackpot = seg.Weight <= 1
+	local edge = card:FindFirstChild("Edge") :: UIStroke
+	edge.Color = if jackpot then Color3.fromRGB(255, 90, 200) else GOLD
+	local title = card:FindFirstChild("Title") :: TextLabel
+	title.Text = if jackpot then "JACKPOT!" else "YOU WON!"
+	title.BackgroundColor3 = if jackpot then Color3.fromRGB(255, 90, 200) else GOLD;
+	(card:FindFirstChild("PrizeName") :: TextLabel).Text = name
+	card.Visible = true
+	local scale = card:FindFirstChildOfClass("UIScale") :: UIScale
+	if Ui.reducedMotion() then
+		scale.Scale = 1
+	else
+		scale.Scale = 0.3
+		TweenService:Create(scale, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	end
+	prizeToken += 1
+	local token = prizeToken
+	task.delay(3.5, function()
+		if token == prizeToken and card.Visible then
+			card.Visible = false
+		end
+	end)
+end
+
 -- Turns the wheel so wedge `index` stops under the pointer (top), several turns clockwise.
 local function turnTo(index: number, done: () -> ())
 	local centre = (index - 0.5) * STEP
@@ -192,6 +301,7 @@ local function spin()
 		return
 	end
 	spinning = true
+	hidePrize()
 	render()
 	local ok, message, index = Net.func("Rewards"):InvokeServer("Spin")
 	if not ok or type(index) ~= "number" then
@@ -208,6 +318,7 @@ local function spin()
 		local seg = Rewards.Wheel.Segments[index]
 		Ui.sound(if seg and seg.Weight <= 5 then "RareReveal" else "Reveal")
 		celebrate(index)
+		showPrize(index)
 		if message then
 			C.HudController:Toast(message, "Good")
 		end
