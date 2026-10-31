@@ -14,6 +14,7 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AlienModel = require(Shared.AlienModel)
+local Combat = require(Shared.Combat)
 local Aliens = require(Shared.Config.Aliens)
 local PetPassives = require(Shared.PetPassives)
 local Eggs = require(Shared.Config.Eggs)
@@ -112,6 +113,8 @@ local function showPet(model: Model)
 	if season then
 		table.insert(lines, season)
 	end
+	-- Its attack in fights: "Pounce · 12 dmg / 1.1s" (shared/Combat).
+	table.insert(lines, Combat.describeAttack({ Id = alienId, Mutation = mutation, Huge = huge, Weight = model:GetAttribute("Weight") }))
 	showEffects(lines, color)
 	return true
 end

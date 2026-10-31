@@ -233,7 +233,7 @@ local function tick()
 			local levels = data and data.Upgrades
 			for slot, fighter in team.fighters do
 				if awake(fighter) and now >= fighter.nextHit and team.target == target then
-					fighter.nextHit = now + Combat.PetAttackInterval
+					fighter.nextHit = now + Combat.petAttack(fighter.pet.Id).Rate
 					local damage = Combat.petDamage(fighter.pet, levels)
 					local crit = rng:NextNumber() < Combat.CritChance
 					if crit then

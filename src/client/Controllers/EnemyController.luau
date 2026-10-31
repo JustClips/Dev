@@ -364,19 +364,27 @@ local function onHits(list: any)
 				end
 			end
 		else
-			visual.kick = 0.18
+			-- The pet plays its attack move; the hit shows when the move lands.
+			local delay = 0
 			if hit.S and hit.S > 0 then
-				controllers.FollowerController:Lunge(hit.U, hit.S, visual.cframe.Position)
+				delay = controllers.FollowerController:Lunge(hit.U, hit.S, visual.cframe.Position)
 			end
 			local color = if hit.C then Color3.fromRGB(255, 214, 51) elseif hit.S == 0 then Color3.fromRGB(150, 220, 255) else Color3.new(1, 1, 1)
 			local text = Format.number(hit.D)
 			if hit.C then
 				text = "CRIT " .. text
 			end
-			popNumber(top, text, color, (if mine then 26 else 18) + (if hit.C then 6 else 0))
-			if mine then
-				sound("PetHit", 0.08)
+			local size = (if mine then 26 else 18) + (if hit.C then 6 else 0)
+			if mine and delay > 0.05 then
+				sound("PetSwing", 0.08)
 			end
+			task.delay(delay, function()
+				visual.kick = 0.18
+				popNumber(top, text, color, size)
+				if mine then
+					sound("PetHit", 0.08)
+				end
+			end)
 		end
 	end
 end

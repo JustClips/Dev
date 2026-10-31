@@ -10,7 +10,8 @@
 -- keeping up with it however fast it goes.
 --
 -- Pet combat (CombatService): when their owner has a CombatTarget, awake pets run to a spot
--- around that enemy, face it and lunge at it on every hit. Each pet shows a small health
+-- around that enemy, face it and play their attack move on every hit (shared/Combat
+-- styles: Pounce, Bite, Charge, Dive). Each pet shows a small health
 -- bar during fights; a knocked-out pet lies on its side where it fell with a "Zzz"
 -- countdown until it wakes up (PetSleep), then runs back.
 local CollectionService = game:GetService("CollectionService")
@@ -26,7 +27,51 @@ local Combat = require(Shared.Combat)
 local FONT = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
 local INK = Color3.fromRGB(16, 18, 28)
 local FIGHT_ANGLES = { math.rad(-60), math.rad(60), 0 } -- around the enemy, from the owner's side
-local LUNGE_SECONDS = 0.2
+
+-- An attack move at time t (0-1): how far forward and up the pet is, and its nose tilt
+-- (radians, + = nose up). Forward is toward the enemy.
+local function attackPose(style: string, t: number): (number, number, number)
+	local function ease(x: number): number
+		return 1 - (1 - x) * (1 - x)
+	end
+	if style == "Bite" then
+		-- Two quick nips.
+		local k = math.abs(math.sin(t * math.pi * 2))
+		return k * 1.1, k * 0.15, -0.3 * k
+	elseif style == "Charge" then
+		-- Back up, ram forward head down, walk back.
+		if t < 0.35 then
+			local k = ease(t / 0.35)
+			return -1.2 * k, 0, 0.12 * k
+		elseif t < 0.65 then
+			local k = (t - 0.35) / 0.3
+			return -1.2 + 3.8 * k * k, math.sin(k * math.pi) * 0.25, 0.12 - 0.42 * k
+		end
+		local k = ease((t - 0.65) / 0.35)
+		return 2.6 * (1 - k), 0, -0.3 * (1 - k)
+	elseif style == "Dive" then
+		-- Rise up, then sting-dive nose first into the enemy, and float back.
+		if t < 0.4 then
+			local k = ease(t / 0.4)
+			return -0.8 * k, 2.2 * k, 0.5 * k
+		elseif t < 0.63 then
+			local k = (t - 0.4) / 0.23
+			return -0.8 + 3.2 * k, 2.2 * (1 - k) - 0.6 * k, 0.5 - 1.4 * k
+		end
+		local k = ease((t - 0.63) / 0.37)
+		return 2.4 * (1 - k), -0.6 * (1 - k), -0.9 * (1 - k)
+	end
+	-- Pounce: crouch back, hop forward and slam down, then step back.
+	if t < 0.3 then
+		local k = ease(t / 0.3)
+		return -0.35 * k, 0, 0.18 * k
+	elseif t < 0.62 then
+		local k = (t - 0.3) / 0.32
+		return -0.35 + 2.15 * k, math.sin(k * math.pi) * 1.3, 0.25 - 0.7 * k
+	end
+	local k = ease((t - 0.62) / 0.38)
+	return 1.8 * (1 - k), 0, -0.45 * (1 - k)
+end
 
 local SCALE = 0.8
 local RENDER_DISTANCE = 150
@@ -51,7 +96,9 @@ type Follower = {
 	speed: number,
 	groundY: number,
 	size: Vector3, -- extents after scaling (to lie down on its side)
-	lunge: number,
+	attack: Combat.PetAttack,
+	style: Combat.AttackStyle,
+	attackAt: number, -- os.clock() its current attack move started (0 = none)
 	lungeAt: Vector3?,
 	hp: number, -- 0-1
 	wakeAt: number, -- server time; 0 = awake
@@ -182,7 +229,9 @@ local function rebuild(player: Player)
 				speed = 0,
 				groundY = 0,
 				size = model:GetExtentsSize(),
-				lunge = 0,
+				attack = Combat.petAttack(id),
+				style = Combat.Styles[Combat.petAttack(id).Style] or Combat.Styles.Pounce,
+				attackAt = 0,
 				lungeAt = nil,
 				hp = 1,
 				wakeAt = 0,
@@ -211,15 +260,18 @@ function FollowerController:PetPosition(userId: number, slot: number): Vector3?
 	return follower and follower.pos
 end
 
--- A pet hits an enemy: a quick jump at it.
-function FollowerController:Lunge(userId: number, slot: number, at: Vector3)
+-- A pet hits an enemy: it plays its attack move. Returns how long until the move lands
+-- (so the damage number shows on impact).
+function FollowerController:Lunge(userId: number, slot: number, at: Vector3): number
 	local player = Players:GetPlayerByUserId(userId)
 	local entry = player and entries[player]
 	local follower = entry and entry.models[slot]
-	if follower then
-		follower.lunge = LUNGE_SECONDS
+	if follower and follower.pos then
+		follower.attackAt = os.clock()
 		follower.lungeAt = at
+		return follower.style.Impact
 	end
+	return 0
 end
 
 function FollowerController:Init(all)
@@ -380,7 +432,7 @@ function FollowerController:Start()
 						CFrame.new(lying) * CFrame.Angles(0, follower.yaw, 0) * CFrame.new(0, w / 2, 0) * CFrame.Angles(0, 0, math.pi / 2) * CFrame.new(0, -h / 2, 0)
 					)
 					follower.speed = 0
-					follower.lunge = 0
+					follower.attackAt = 0
 					if follower.walk and follower.walking then
 						follower.walking = false
 						follower.walk:Stop(0.1)
@@ -449,19 +501,25 @@ function FollowerController:Start()
 				local running = follower.speed > walkSpeed * 1.25
 				local hop = if running and not follower.floats then math.abs(math.sin(now * 14 + i)) * 0.35 else 0
 				local lift = if follower.floats then FLOAT_HEIGHT + bob else hop
-				-- Hit lunge: a quick jump at the enemy and back.
-				local lungeOffset = Vector3.zero
-				if follower.lunge > 0 then
-					follower.lunge -= dt
-					local k = math.sin(math.max(follower.lunge, 0) / LUNGE_SECONDS * math.pi)
-					local at = follower.lungeAt
-					local toward = if at then Vector3.new(at.X - p.X, 0, at.Z - p.Z) else Vector3.zero
-					if toward.Magnitude > 0.01 then
-						lungeOffset = toward.Unit * k * 1.5
+				-- Attack move (its style from shared/Combat), facing the enemy.
+				local pose = CFrame.Angles(0, follower.yaw, 0)
+				if follower.attackAt > 0 then
+					local t = (now - follower.attackAt) / follower.style.Duration
+					if t >= 1 then
+						follower.attackAt = 0
+					else
+						local at = follower.lungeAt
+						if at then
+							local toward = Vector3.new(at.X - p.X, 0, at.Z - p.Z)
+							if toward.Magnitude > 0.01 then
+								follower.yaw = turn(follower.yaw, yawToward(toward), math.min(1, dt * 20))
+							end
+						end
+						local forward, up, pitch = attackPose(follower.style.Name, t)
+						pose = CFrame.Angles(0, follower.yaw, 0) * CFrame.new(0, up, -forward) * CFrame.Angles(pitch, 0, 0)
 					end
-					lungeOffset += Vector3.new(0, k * 0.7, 0)
 				end
-				model:PivotTo(CFrame.new(p.X, p.Y + lift, p.Z) * CFrame.Angles(0, follower.yaw, 0) + lungeOffset)
+				model:PivotTo(CFrame.new(p.X, p.Y + lift, p.Z) * pose)
 				-- Health bar while fighting or hurt.
 				if fighting or follower.hp < 0.999 then
 					ensureGui(follower)
