@@ -6,13 +6,13 @@ type RarityDef = Types.RarityDef
 type MutationDef = Types.MutationDef
 
 local Rarities: { RarityDef } = {
-	{ Name = "Common", Order = 1, Weight = 100, HatchSeconds = 3, Color = Color3.fromRGB(190, 190, 190) },
-	{ Name = "Uncommon", Order = 2, Weight = 32, HatchSeconds = 10, Color = Color3.fromRGB(90, 220, 110) },
-	{ Name = "Rare", Order = 3, Weight = 9, HatchSeconds = 30, Color = Color3.fromRGB(70, 150, 255) },
-	{ Name = "Epic", Order = 4, Weight = 2.5, HatchSeconds = 120, Color = Color3.fromRGB(170, 90, 255) },
-	{ Name = "Legendary", Order = 5, Weight = 0.6, HatchSeconds = 300, Color = Color3.fromRGB(255, 200, 40) },
-	{ Name = "Mythic", Order = 6, Weight = 0.12, HatchSeconds = 900, Color = Color3.fromRGB(255, 60, 70) },
-	{ Name = "Cosmic", Order = 7, Weight = 0.02, HatchSeconds = 1800, Color = Color3.fromRGB(255, 120, 230) },
+	{ Name = "Common", Order = 1, Weight = 100, HatchSeconds = 15, Color = Color3.fromRGB(190, 190, 190) },
+	{ Name = "Uncommon", Order = 2, Weight = 32, HatchSeconds = 45, Color = Color3.fromRGB(90, 220, 110) },
+	{ Name = "Rare", Order = 3, Weight = 9, HatchSeconds = 120, Color = Color3.fromRGB(70, 150, 255) },
+	{ Name = "Epic", Order = 4, Weight = 2.5, HatchSeconds = 300, Color = Color3.fromRGB(170, 90, 255) },
+	{ Name = "Legendary", Order = 5, Weight = 0.6, HatchSeconds = 720, Color = Color3.fromRGB(255, 200, 40) },
+	{ Name = "Mythic", Order = 6, Weight = 0.12, HatchSeconds = 1800, Color = Color3.fromRGB(255, 60, 70) },
+	{ Name = "Cosmic", Order = 7, Weight = 0.02, HatchSeconds = 3600, Color = Color3.fromRGB(255, 120, 230) },
 }
 
 local Mutations: { MutationDef } = {
@@ -40,6 +40,8 @@ local Eggs = {
 	ShowerWeights = { Rare = 60, Epic = 28, Legendary = 9, Mythic = 3 } :: { [string]: number },
 	-- "Faster Hatch" gamepass multiplier on hatch time.
 	FasterHatchMult = 0.5,
+	-- A brand-new player's first egg opens after this many seconds (HatchService).
+	FirstEggSeconds = 3,
 }
 
 for _, r in Rarities do

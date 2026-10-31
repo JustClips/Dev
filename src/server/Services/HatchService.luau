@@ -72,6 +72,10 @@ function HatchService:EnsureSpots(data)
 end
 
 local function hatchSeconds(data, rarity: string): number
+	-- A brand-new player's very first egg opens right away, so the tutorial stays snappy.
+	if (data.Stats.Hatches or 0) == 0 and #data.Hatching == 0 then
+		return Eggs.FirstEggSeconds
+	end
 	local seconds = Eggs.ByName[rarity].HatchSeconds
 	if data.Gamepasses.FasterHatch then
 		seconds *= Eggs.FasterHatchMult
