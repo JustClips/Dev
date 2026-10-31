@@ -224,15 +224,14 @@ BADGE_RED = "#FF2E4D"
 
 
 def badge(z=6, px=30):
-    """Count badge: a red square with a white outline and a big white number (Dev wanted the
-    square back, with a number you can read). Controllers set it with Ui.setBadge, which
-    widens it for 2-3 digits and pops it when the count goes up."""
-    # Dev, 2026-10-31: every badge is a red "!" (Ui.setBadge), upright, crisp: a flat red
-    # square with a dark outline and a plain white "!" (the thin white ring and text
-    # outline looked blurry at phone size).
-    return frame("Badge", U(0, px, 0, px), U(1, 6, 0, -10), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, children=[
-        node("Stroke", "UIStroke", {"Color": INK, "Thickness": 2.5, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
-        text("Label", "!", U(1, 0, 1, 2), U(0.5, 0, 0.5, 0), (0.5, 0.5), ts=px - 4, display=True, ZIndex=z + 1),
+    """Count badge: a round red badge with a white border and a white number (Dev,
+    2026-10-31, from his reference). Controllers set it with Ui.setBadge, which also
+    applies this look at runtime, widens it into a pill for 2-3 digits, pops it when the
+    count goes up and sends out two red waves every 10 seconds."""
+    return frame("Badge", U(0, px, 0, px), U(1, 6, 0, -10), (1, 0), bg="#D61634", Visible=False, ZIndex=z, children=[
+        node("Corner", "UICorner", {"CornerRadius": [0.5, 0]}),  # round on purpose (Dev's reference)
+        node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": max(2, round(px / 11)), "ApplyStrokeMode": "Border", "LineJoinMode": "Round"}),
+        text("Label", "1", U(1, 0, 1, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), ts=round(px * 0.66), display=True, TextWrapped=False, ZIndex=z + 1),
     ])
 
 

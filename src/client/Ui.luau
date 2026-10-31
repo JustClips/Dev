@@ -462,13 +462,21 @@ local function isModal(scale: UIScale): boolean
 	return parent ~= nil and (parent.Name == "Window" or parent:GetAttribute("Modal") == true)
 end
 
--- Count badges (red square, white outline, big white number). Ui.setBadge shows the count
--- (nil/0 hides it; anything else shows a red "!"), and
--- pops it when the count goes up. Every 10 seconds visible badges give a little wiggle
--- so they catch the eye.
+-- Count badges (Dev, 2026-10-31, from his reference): a round red badge with a white
+-- border and a white number. Ui.setBadge shows the count (nil/0 hides it, a string is
+-- shown as is) and pops it when the count goes up. Every 10 seconds each visible badge
+-- sends out two soft red waves, a moment apart, so it catches the eye.
+-- The look is applied here at runtime, so every badge in the game (gen_ui.py or older
+-- place files) gets it.
 local badgeCounts: { [GuiObject]: string } = setmetatable({}, { __mode = "k" }) :: any
-local wiggleStarted = false
-local BADGE_TILT = 0 -- badges rest upright (Dev, 2026-10-31)
+local badgeBase: { [GuiObject]: number } = setmetatable({}, { __mode = "k" }) :: any
+local pulseStarted = false
+local BADGE_FILL = Color3.fromRGB(214, 22, 52)
+local BADGE_RING = Color3.fromRGB(255, 255, 255)
+local PULSE_EVERY = 10 -- seconds between pulse pairs
+local PULSE_GAP = 0.45 -- seconds between the two waves
+local PULSE_TIME = 0.8 -- how long one wave takes to grow and fade
+local PULSE_GROW = 2.1 -- how big a wave gets, relative to the badge
 
 local function badgePop(badge: GuiObject)
 	if Ui.reducedMotion() then
@@ -486,19 +494,97 @@ local function badgePop(badge: GuiObject)
 	TweenService:Create(scale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 end
 
-local function startWiggle()
-	if wiggleStarted then
+-- Turns a badge into the round red + white border style (once per badge).
+local function styleBadge(badge: GuiObject)
+	if badgeBase[badge] then
 		return
 	end
-	wiggleStarted = true
+	badgeBase[badge] = badge.Size.Y.Offset
+	badge.Rotation = 0
+	badge.BackgroundColor3 = BADGE_FILL
+	badge.BackgroundTransparency = 0
+	local corner = badge:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.5, 0)
+	corner.Parent = badge
+	local stroke = badge:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
+	stroke.Color = BADGE_RING
+	stroke.Thickness = math.max(2, math.floor(badgeBase[badge] / 11 + 0.5))
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.LineJoinMode = Enum.LineJoinMode.Round
+	stroke.Parent = badge
+	local label = badge:FindFirstChild("Label") :: TextLabel?
+	if label then
+		label.TextColor3 = Color3.new(1, 1, 1)
+		label.TextScaled = false
+		label.TextWrapped = false
+		label.Size = UDim2.fromScale(1, 1)
+		label.Position = UDim2.fromScale(0.5, 0.5)
+		label.AnchorPoint = Vector2.new(0.5, 0.5)
+		for _, child in label:GetChildren() do
+			if child:IsA("UIStroke") then
+				child:Destroy() -- plain white number, no outline
+			end
+		end
+	end
+end
+
+-- One red wave: a red circle behind the badge that grows and fades. It is a sibling of
+-- the badge one layer below it (with Sibling z-order a child would draw on top).
+local function waveFrom(badge: GuiObject)
+	local host = badge.Parent
+	if not (host and host:IsA("GuiObject")) then
+		return
+	end
+	local size = badge.Size
+	local w, h = size.X.Offset, size.Y.Offset
+	local pos, anchor = badge.Position, badge.AnchorPoint
+	local wave = Instance.new("Frame")
+	wave.Name = "BadgeWave"
+	wave.BorderSizePixel = 0
+	wave.BackgroundColor3 = BADGE_FILL
+	wave.BackgroundTransparency = 0.25
+	wave.AnchorPoint = Vector2.new(0.5, 0.5)
+	wave.Size = UDim2.fromOffset(w, h)
+	wave.Position = UDim2.new(
+		pos.X.Scale + size.X.Scale * (0.5 - anchor.X),
+		pos.X.Offset + w * (0.5 - anchor.X),
+		pos.Y.Scale + size.Y.Scale * (0.5 - anchor.Y),
+		pos.Y.Offset + h * (0.5 - anchor.Y)
+	)
+	wave.ZIndex = badge.ZIndex - 1
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.5, 0)
+	corner.Parent = wave
+	local grow = Instance.new("UIScale")
+	grow.Scale = 1
+	grow.Parent = wave
+	wave.Parent = host
+	local info = TweenInfo.new(PULSE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	TweenService:Create(grow, info, { Scale = PULSE_GROW }):Play()
+	local fade = TweenService:Create(wave, info, { BackgroundTransparency = 1 })
+	fade.Completed:Once(function()
+		wave:Destroy()
+	end)
+	fade:Play()
+end
+
+local function startPulse()
+	if pulseStarted then
+		return
+	end
+	pulseStarted = true
 	task.spawn(function()
 		while true do
-			task.wait(10) -- Dev: a wiggle every few seconds was annoying
+			task.wait(PULSE_EVERY)
 			if not Ui.reducedMotion() then
-				for badge in badgeCounts do
-					if badge.Parent and badge.Visible then
-						badge.Rotation = -14
-						TweenService:Create(badge, TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), { Rotation = BADGE_TILT }):Play()
+				for wave = 1, 2 do
+					for badge in badgeCounts do
+						if badge.Parent and badge.Visible then
+							waveFrom(badge)
+						end
+					end
+					if wave == 1 then
+						task.wait(PULSE_GAP)
 					end
 				end
 			end
@@ -538,14 +624,16 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 		liftHost(badge, false)
 		return
 	end
-	-- Every badge reads "!" (Dev, 2026-10-31: like the Shop "!" in his reference); the count
-	-- is still tracked so the badge pops when it goes up.
+	styleBadge(badge)
+	local px = badgeBase[badge]
 	local label = badge:FindFirstChild("Label") :: TextLabel?
 	if label then
-		label.Text = "!"
+		label.Text = shown
+		label.TextSize = math.floor(px * (if #shown >= 3 then 0.5 else 0.66) + 0.5)
 	end
-	local px = badge.Size.Y.Offset
-	badge.Size = UDim2.fromOffset(px, px)
+	-- Round for one digit, a pill for "12" or "99+".
+	local extra = if #shown >= 3 then 0.75 elseif #shown == 2 then 0.3 else 0
+	badge.Size = UDim2.fromOffset(math.floor(px * (1 + extra) + 0.5), px)
 	local before = badgeCounts[badge]
 	badgeCounts[badge] = shown
 	badge.Visible = true
@@ -553,7 +641,7 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	if before ~= shown and (before == nil or (tonumber(shown) or 0) > (tonumber(before) or 0)) then
 		badgePop(badge)
 	end
-	startWiggle()
+	startPulse()
 end
 
 -- Small pop for dropdowns and panels (a frame with an AutoScale UIScale).
