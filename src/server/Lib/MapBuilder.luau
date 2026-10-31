@@ -463,7 +463,13 @@ local function traderStall(parent: Instance, cf: CFrame)
 		block(model, "Awning", Vector3.new(1.13, 0.25, 6.2), cf * CFrame.new(x, 8.3, -0.8) * CFrame.Angles(math.rad(-8), 0, 0),
 			if k % 2 == 0 then green else WHITE, nil, { CanCollide = false })
 	end
-	sign(model, "TraderSign", cf * CFrame.new(0, 10.2, -0.4), 8, 2.2, Color3.fromRGB(255, 200, 60), "PET TRADER", "Sell your pets")
+	-- The sign sits on the awning with two wooden legs behind it, so from the base side (its
+	-- blank back) it reads as part of the stall, not a board floating in the air (Dev,
+	-- 2026-10-31).
+	sign(model, "TraderSign", cf * CFrame.new(0, 9.75, -0.4), 8, 2.2, Color3.fromRGB(255, 200, 60), "PET TRADER", "Sell your pets")
+	for _, x in { -2.8, 2.8 } do
+		block(model, "SignLeg", Vector3.new(0.45, 3.2, 0.45), cf * CFrame.new(x, 9.3, 0.15), WOOD_DARK, M.Wood, { CanCollide = false })
+	end
 end
 
 -- Raised stud-plate platform in the base colour, corner lights, low walls and a name sign.
