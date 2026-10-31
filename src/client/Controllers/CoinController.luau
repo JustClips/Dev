@@ -59,22 +59,64 @@ local function take(): BasePart
 	if part then
 		return part
 	end
-	-- Glowing Pet Sim style orb (Dev 2026-10-31: metal coins were hard to see on the
-	-- leaves). A neon core plus a soft glow sprite around it that ignores lighting.
+	-- Cartoon coin (Dev 2026-10-31: "model them, cartoon look"): a chunky gold coin with a
+	-- dark outline ring, a darker rim, a raised face with a "$" on both sides, a soft glow
+	-- behind it and twinkles. The pooled part is an invisible root; the coin pieces are
+	-- welded to it so the movement code only moves the root. Their axis lies along the
+	-- root's Z, which the root's spin keeps level, so the coin stands up and turns.
 	local p = Instance.new("Part")
 	p.Name = "Coin"
-	p.Shape = Enum.PartType.Ball
-	p.Size = Vector3.one * 1.25
-	p.Color = Color3.fromRGB(255, 225, 70)
-	p.Material = Enum.Material.Neon
+	p.Size = Vector3.one * 0.2
+	p.Transparency = 1
 	p.Anchored = true
 	p.CanCollide = false
 	p.CanQuery = false
 	p.CanTouch = false
 	p.CastShadow = false
+	local upright = CFrame.Angles(0, math.pi / 2, 0)
+	local function piece(name: string, thick: number, across: number, color: Color3): BasePart
+		local c = Instance.new("Part")
+		c.Name = name
+		c.Shape = Enum.PartType.Cylinder
+		c.Size = Vector3.new(thick, across, across)
+		c.Color = color
+		c.Material = Enum.Material.SmoothPlastic
+		c.Anchored = false
+		c.Massless = true
+		c.CanCollide = false
+		c.CanQuery = false
+		c.CanTouch = false
+		c.CastShadow = false
+		c.CFrame = upright
+		local weld = Instance.new("WeldConstraint")
+		weld.Part0 = p
+		weld.Part1 = c
+		weld.Parent = c
+		c.Parent = p
+		return c
+	end
+	piece("Outline", 0.26, 1.62, Color3.fromRGB(74, 42, 8))
+	piece("Rim", 0.34, 1.46, Color3.fromRGB(232, 150, 18))
+	local face = piece("Face", 0.42, 1.12, Color3.fromRGB(255, 214, 58))
+	for _, side in { Enum.NormalId.Left, Enum.NormalId.Right } do
+		local gui = Instance.new("SurfaceGui")
+		gui.Face = side
+		gui.LightInfluence = 0.5
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 60
+		gui.Parent = face
+		local mark = Instance.new("TextLabel")
+		mark.BackgroundTransparency = 1
+		mark.Size = UDim2.fromScale(1, 1)
+		mark.Text = "$"
+		mark.TextScaled = true
+		mark.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+		mark.TextColor3 = Color3.fromRGB(214, 128, 6)
+		mark.Parent = gui
+	end
 	local halo = Instance.new("BillboardGui")
 	halo.Name = "Halo"
-	halo.Size = UDim2.fromScale(3.4, 3.4)
+	halo.Size = UDim2.fromScale(2.6, 2.6)
 	halo.LightInfluence = 0
 	halo.MaxDistance = 160
 	halo.Parent = p
@@ -83,7 +125,7 @@ local function take(): BasePart
 	glow.Size = UDim2.fromScale(1, 1)
 	glow.Image = AssetLibrary.image("Vfx_Glow")
 	glow.ImageColor3 = Color3.fromRGB(255, 200, 40)
-	glow.ImageTransparency = 0.15
+	glow.ImageTransparency = 0.5
 	glow.Parent = halo
 	local twinkle = Instance.new("ParticleEmitter")
 	twinkle.Name = "Twinkle"
@@ -91,7 +133,7 @@ local function take(): BasePart
 	twinkle.Color = ColorSequence.new(Color3.fromRGB(255, 255, 220), GOLD)
 	twinkle.LightEmission = 0.5
 	twinkle.LightInfluence = 0.4
-	twinkle.Rate = 1.5
+	twinkle.Rate = 2.5
 	twinkle.Lifetime = NumberRange.new(0.5, 0.8)
 	twinkle.Speed = NumberRange.new(0.5, 1.5)
 	twinkle.SpreadAngle = Vector2.new(180, 180)
@@ -209,7 +251,7 @@ local function onDropped(origin: Vector3, list: any)
 			value = if type(item.Value) == "number" then item.Value else 0,
 			part = part,
 			from = origin,
-			to = item.Pos + Vector3.new(0, 0.8, 0),
+			to = item.Pos + Vector3.new(0, 1.05, 0),
 			start = now + (i - 1) * 0.04,
 			spin = math.random() * math.pi * 2,
 			state = "out",
