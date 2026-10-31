@@ -463,26 +463,7 @@ local function update()
 		textLabel.Text = nudgeText
 		return
 	end
-	-- After the tutorial: the next starter goal (GoalController), until the last is done.
-	local goal = C.GoalController:Tracker()
-	if goal and not holding and not Ui.openModal() then
-		card.Visible = true
-		stepLabel.Visible = true
-		stepLabel.Text = goal.Label
-		textLabel.Text = goal.Text
-		cardIcon.Image = AssetLibrary.image(goal.Icon)
-		barFill.Parent.Visible = true
-		barFill.Size = UDim2.fromScale(math.clamp(goal.Fraction, 0, 1), 1)
-	else
-		card.Visible = false
-	end
-end
-
--- Green flash + chime on the card (a starter goal was finished).
-function TutorialController:Flash()
-	if not celebrating then
-		task.spawn(celebrate, nil)
-	end
+	card.Visible = false
 end
 
 local function showReward(reward)

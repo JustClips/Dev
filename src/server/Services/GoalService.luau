@@ -1,12 +1,15 @@
 --!strict
--- Starter goals after the tutorial (Config/Goals). Progress is read from the save, so no
--- other service reports anything: StateService calls Update before each snapshot, which
--- pays a finished goal (one per call) and moves to the next.
--- Save: data.Flags.Goal = index of the current goal (past the end = all done),
---       data.Flags.GoalBase = the stat value when it started (count goals).
+-- The three goals after the tutorial (Config/Goals). Progress is read from the save, so no
+-- other service reports anything: StateService calls Update before each snapshot. Each goal
+-- ticks off on its own; all three = a free wheel spin and the next round.
+-- Save (Flags): GoalRound = round number, GoalBase = { Leaves, Cash, Hatches } at the
+-- round's start, GoalDone = { [1..3] = true } for goals already ticked this round.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Aliens = require(Shared.Config.Aliens)
+local BigNum = require(Shared.BigNum)
+local Eggs = require(Shared.Config.Eggs)
 local Goals = require(Shared.Config.Goals)
 local Net = require(Shared.Net)
 
@@ -14,53 +17,55 @@ local GoalService = {}
 
 local S: any
 
-local function countKeys(t: { [any]: any }?): number
-	local n = 0
-	for _ in t or {} do
-		n += 1
-	end
-	return n
+local function counters(data): { [string]: number }
+	return {
+		Leaves = data.Stats.TilesCleared or 0,
+		Cash = BigNum.toNumber(data.Stats.CashEarned or 0),
+		Hatches = data.Stats.Hatches or 0,
+	}
 end
 
-local function statValue(player: Player, data, stat: string): number
-	local stats = data.Stats
-	if stat == "Leaves" then
-		return stats.TilesCleared or 0
-	elseif stat == "EggsFound" then
-		return stats.EggsFound or 0
-	elseif stat == "Hatches" then
-		return stats.Hatches or 0
-	elseif stat == "Placed" then
-		return S.AlienService:PlacedCount(player)
-	elseif stat == "Power" then
-		return data.Upgrades.Power or 0
-	elseif stat == "Tool" then
-		return data.ToolTier or 1
-	elseif stat == "Zones" then
-		return countKeys(data.ZonesUnlocked)
-	end
-	return 0
-end
-
--- The current goal and its progress, or nil (tutorial not done / all goals done).
-local function current(player: Player, data): (Goals.Goal?, number)
-	if data.Flags.TutorialDone ~= true then
-		return nil, 0
-	end
-	local index = data.Flags.Goal or 1
-	local goal = Goals.List[index]
-	if not goal then
-		return nil, 0
-	end
-	local value = statValue(player, data, goal.Stat)
-	if Goals.Stats[goal.Stat] == "count" then
-		-- A rebirth can lower a count: restart from there instead of getting stuck.
-		if type(data.Flags.GoalBase) ~= "number" or data.Flags.GoalBase > value then
-			data.Flags.GoalBase = value
+local function hasPet(data, rarity: string): boolean
+	local want = Eggs.order(rarity)
+	for _, pet in data.Pets do
+		local def = Aliens.ById[pet.Id]
+		if def and Eggs.order(def.Rarity) >= want then
+			return true
 		end
-		value -= data.Flags.GoalBase
 	end
-	return goal, math.clamp(value, 0, goal.Goal)
+	return false
+end
+
+-- Starts tracking once the tutorial is done. Returns the round's goals and progress.
+local function current(data): (Goals.Round?, { number })
+	if data.Flags.TutorialDone ~= true then
+		return nil, {}
+	end
+	local flags = data.Flags
+	local now = counters(data)
+	if type(flags.GoalRound) ~= "number" or type(flags.GoalBase) ~= "table" then
+		flags.GoalRound = 1
+		flags.GoalBase = now
+		flags.GoalDone = {}
+	end
+	local base = flags.GoalBase
+	local round = Goals.round(flags.GoalRound)
+	local progress = {}
+	for i, goal in round do
+		local value = 0
+		if goal.Kind == "Pet" then
+			value = if hasPet(data, goal.Rarity or "Rare") then 1 else 0
+		else
+			-- A rebirth can lower a count: restart from there instead of getting stuck.
+			if (base[goal.Kind] or 0) > now[goal.Kind] then
+				base[goal.Kind] = now[goal.Kind]
+			end
+			value = now[goal.Kind] - (base[goal.Kind] or 0)
+		end
+		local target = if goal.Kind == "Pet" then 1 else goal.Goal or 1
+		progress[i] = if flags.GoalDone[i] then target else math.clamp(value, 0, target)
+	end
+	return round, progress
 end
 
 function GoalService:Update(player: Player)
@@ -68,38 +73,56 @@ function GoalService:Update(player: Player)
 	if not data then
 		return
 	end
-	local goal, progress = current(player, data)
-	if not goal or progress < goal.Goal then
+	local round, progress = current(data)
+	if not round then
 		return
 	end
-	local index = data.Flags.Goal or 1
-	data.Flags.Goal = index + 1
-	data.Flags.GoalBase = nil
-	local got = S.RewardService:Grant(player, goal.Reward, "Goal" .. index)
-	Net.fire("GoalDone", player, { Text = Goals.text(goal), Reward = got })
-	S.AnalyticsService:Custom(player, "GoalDone", index, nil)
-	S.StateService:Mark(player)
+	local flags = data.Flags
+	local all = true
+	for i, goal in round do
+		local target = if goal.Kind == "Pet" then 1 else goal.Goal or 1
+		if progress[i] >= target then
+			if not flags.GoalDone[i] then
+				flags.GoalDone[i] = true
+				Net.fire("GoalDone", player, { Text = Goals.text(goal), Index = i })
+			end
+		else
+			all = false
+		end
+	end
+	if all then
+		local n = flags.GoalRound
+		S.RewardService:Grant(player, Goals.Reward, "Goals" .. n)
+		Net.fire("GoalDone", player, { Text = "All 3 goals", Reward = Goals.RewardText, Round = n })
+		S.AnalyticsService:Custom(player, "GoalsRound", n, nil)
+		flags.GoalRound = n + 1
+		flags.GoalBase = counters(data)
+		flags.GoalDone = {}
+		S.StateService:Mark(player)
+	end
 end
 
--- What the card above the hotbar shows.
+-- What the goals panel shows. nil before the tutorial is done.
 function GoalService:Snapshot(player: Player): any
 	local data = S.DataService:GetData(player)
 	if not data then
 		return nil
 	end
-	local goal, progress = current(player, data)
-	if not goal then
+	local round, progress = current(data)
+	if not round then
 		return nil
 	end
-	return {
-		Index = data.Flags.Goal or 1,
-		Total = #Goals.List,
-		Text = Goals.text(goal),
-		Progress = progress,
-		Goal = goal.Goal,
-		Reward = Goals.describe(goal.Reward),
-		Icon = goal.Icon,
-	}
+	local out = { Round = data.Flags.GoalRound, Reward = Goals.RewardText, List = {} }
+	for i, goal in round do
+		local target = if goal.Kind == "Pet" then 1 else goal.Goal or 1
+		table.insert(out.List, {
+			Text = Goals.text(goal),
+			Progress = Goals.progressText(goal, progress[i]),
+			Fraction = progress[i] / target,
+			Done = progress[i] >= target,
+		})
+	end
+	return out
 end
 
 function GoalService:Init(services)

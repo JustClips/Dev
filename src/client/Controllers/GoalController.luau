@@ -1,44 +1,63 @@
 --!strict
--- Starter goals (server: GoalService). After the tutorial the step card above the hotbar
--- shows the next goal (TutorialController asks Tracker()). A finished goal flashes the
--- card green and toasts its bonus.
+-- The three goals above the cash panel (server: GoalService, config: Config/Goals). Shown
+-- once the tutorial is done. A goal that ticks off pops its row with a chime; all three
+-- give a free wheel spin and the next round slides in.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = script.Parent.Parent
 local State = require(Client.State)
+local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 
 local GoalController = {}
 
 local C: any
+local panel: Frame
 
-export type Tracker = { Label: string, Text: string, Fraction: number, Icon: string }
+local GREEN = Color3.fromRGB(61, 220, 90)
+local DARK = Color3.fromRGB(20, 23, 29)
 
-function GoalController:Tracker(): Tracker?
-	local g = State.data and State.data.Goal
-	if not g then
-		return nil
+local function render()
+	local goals = State.data and State.data.Goal
+	panel.Visible = goals ~= nil
+	if not goals then
+		return
 	end
-	return {
-		Label = `GOAL {g.Index}/{g.Total}  ·  BONUS: {g.Reward}`,
-		Text = `{g.Text}  ({Format.number(g.Progress)}/{Format.number(g.Goal)})`,
-		Fraction = g.Progress / math.max(1, g.Goal),
-		Icon = g.Icon,
-	}
+	for i = 1, 3 do
+		local row = panel:FindFirstChild("Row" .. i) :: Frame
+		local g = goals.List[i]
+		row.Visible = g ~= nil
+		if g then
+			local check = row:FindFirstChild("Check") :: Frame
+			check.BackgroundColor3 = if g.Done then GREEN else DARK
+			;(check:FindFirstChild("Mark") :: TextLabel).Text = if g.Done then "✓" else ""
+			local label = row:FindFirstChild("Text") :: TextLabel
+			label.Text = g.Text
+			label.TextTransparency = if g.Done then 0.35 else 0
+			;(row:FindFirstChild("Progress") :: TextLabel).Text = if g.Done then "DONE" else g.Progress
+		end
+	end
 end
 
 function GoalController:Init(controllers)
 	C = controllers
+	panel = Ui.find(Ui.screen("Hud"), "Wallet.Goals")
 end
 
 function GoalController:Start()
 	Net.event("GoalDone").OnClientEvent:Connect(function(info)
-		C.HudController:Toast(`Goal done: {info.Text}  +{info.Reward}`, "Good")
-		C.TutorialController:Flash()
+		Ui.sound("Tutorial")
+		if info.Round then
+			C.HudController:Toast(`All 3 goals done! You got {info.Reward}!`, "Good")
+		else
+			C.HudController:Toast(`Goal done: {info.Text}!`, "Good")
+		end
+		Ui.popFrame(panel)
 	end)
+	State.Changed:Connect(render)
+	render()
 end
 
 return GoalController

@@ -499,6 +499,22 @@ def hud():
     # a thick bar with "310 / 500" inside; it turns red with FULL when the bag is full.
     wallet = frame("Wallet", U(0, 262, 0, 118), U(0, 14, 1, -14), (0, 1), children=[
         autoscale(), vlist(8, "Left", "Bottom"),
+        # Goals (GoalController, Dev 2026-10-31): after the tutorial, three goals right
+        # above the cash; all three ticked = a free wheel spin.
+        plate("Goals", U(0, 262, 0, 116), tint=BG, stroke=3, LayoutOrder=0, Visible=False, children=[
+            text("Title", "GOALS", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=17, color=PREMIUM, display=True, stroke=2, xa="Left"),
+            text("Reward", "All 3 = FREE SPIN", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=16, color=ACCENT, display=True, stroke=2,
+                 xa="Right"),
+        ] + [frame(f"Row{i}", U(1, -12, 0, 26), U(0, 6, 0, 30 + (i - 1) * 28), children=[
+            frame("Check", U(0, 20, 0, 20), U(0, 2, 0.5, 0), (0, 0.5), bg="#14171D", children=[
+                border(WHITE, 2),
+                text("Mark", "", U(1, 0, 1, 0), ts=18, color=WHITE, display=True, stroke=2),
+            ]),
+            text("Text", "", U(1, -112, 1, 0), U(0, 30, 0, 0), ts=17, display=True, stroke=2, xa="Left",
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 8})]),
+            text("Progress", "", U(0, 82, 1, 0), U(1, -2, 0, 0), (1, 0), ts=16, color="#C9D0DE", display=True, stroke=2,
+                 xa="Right", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
+        ]) for i in (1, 2, 3)]),
         plate("CashPanel", U(0, 262, 0, 62), tint=BG, stroke=3, LayoutOrder=1, children=[
             icon("Icon", "Cash", 50, U(0, 4, 0.5, 0), (0, 0.5)),
             text("Cash", "$0", U(1, -112, 0, 34), U(0, 58, 0, 3), ts=30, color=WHITE, display=True, xa="Left", stroke=2.5,
