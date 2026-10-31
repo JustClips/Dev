@@ -46,7 +46,6 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 	end
 	local want = if type(count) == "number" and count == count then math.clamp(math.floor(count), 1, 100) else 1
 	local bought = 0
-	local startLevel = data.Upgrades[def.Id] or 0
 	for _ = 1, want do
 		local level = data.Upgrades[def.Id] or 0
 		local blocked = Upgrades.blocked(def, data.Upgrades, data.Rebirths)
@@ -86,18 +85,10 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 	if level == 1 and #Upgrades.Children[def.Id] > 0 then
 		return true, `{def.Name} unlocked! New upgrades opened`
 	end
-	-- Maxed a tier: the hex evolves into the next one.
-	local _, fromTier = Upgrades.currentTier(def, startLevel)
-	local cur, nowTier = Upgrades.currentTier(def, level)
-	if nowTier > fromTier and level < def.MaxLevel then
-		local before = def.Tiers[nowTier - 1].Name
-		if (data.Rebirths or 0) < cur.RequiredRebirths then
-			return true, `{before} maxed! It evolves into {cur.Name} at Rebirth {cur.RequiredRebirths}`
-		end
-		return true, `{before} evolved into {cur.Name}!`
+	if level >= def.MaxLevel then
+		return true, `{def.Name} maxed! {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
 	end
-	local tr = Upgrades.tierFor(def, level)
-	return true, `{tr.Name} level {level - tr.First}: {Upgrades.describe(def, level)}`
+	return true, `{def.Name} {level}/{def.MaxLevel}: {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
 end
 
 function UpgradeService:ResetForRebirth(player: Player)
@@ -110,25 +101,41 @@ function UpgradeService:ResetForRebirth(player: Player)
 	S.StateService:Mark(player)
 end
 
--- Hexes removed in the 2026-10-30 tree remake: pay back what their levels cost.
+-- Tree remakes: hexes removed in the 2026-10-30 remake (Retired) and every level bought
+-- before the 2026-10-31 rebuild (OldTree, when Flags.UpgradeTreeV is behind) are paid back
+-- in cash, and the player starts the new tree fresh.
 local function refundRetired(player: Player, session)
-	local levels = session.Data.Upgrades
+	local data = session.Data
+	local levels = data.Upgrades
+	local rebuilt = (data.Flags.UpgradeTreeV or 0) < Upgrades.Version
 	local total = 0
 	for id, level in levels do
 		if Upgrades.Retired[id] then
 			total += Upgrades.retiredRefund(id, level)
 			levels[id] = nil
+		elseif rebuilt then
+			total += Upgrades.oldTreeRefund(id, level)
+			levels[id] = nil
 		elseif not Upgrades.ById[id] then
 			levels[id] = nil
 		end
 	end
+	data.Flags.UpgradeTreeV = Upgrades.Version
 	if total > 0 then
 		S.BackpackService:GiveCash(player, total, "UpgradeRefund")
 		task.delay(6, function()
 			if player.Parent then
-				Net.fire("Notify", player, `The upgrade tree got remade! You got back {Format.cash(total)} for the old upgrades.`, "Good")
+				Net.fire(
+					"Notify",
+					player,
+					`The upgrade tree got rebuilt! You got back {Format.cash(total)} to spend on it.`,
+					"Good"
+				)
 			end
 		end)
+	end
+	if rebuilt then
+		applyWalkSpeed(player)
 	end
 end
 

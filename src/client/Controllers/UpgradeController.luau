@@ -1,7 +1,10 @@
 --!strict
 -- Upgrade Tree (Upgrade Station on the south plaza, or the rail button), Slime RNG style:
--- full screen over the dimmed world, a honeycomb of hexagons with icon, name and price
--- inside. Hover a hex (PC) or tap it (phones) for a tooltip; tap / click it again to buy. Hexes next to what you own show as "?" until you get
+-- full screen over the dimmed world, a honeycomb of flat-top hexagons with icon, name and
+-- price inside. Opening a board blooms its hexes out from the middle one ring at a time;
+-- buying a hex pops the hexes it opens into view, and newly opened hexes flash with a NEW!
+-- tag until you look at them. Hover a hex (PC) or tap it (phones) for a tooltip; tap /
+-- click it again to buy. Hexes next to what you own show as "?" until you get
 -- next to them; rebirth-gated ones show a lock. Lab hexes (Egg Lab, Lucky Lab, Pet Lab)
 -- cost cash once, then tapping them flies into that lab's own honeycomb; BACK returns.
 -- Drag to look around, pinch / mouse wheel / +- to zoom. Every other UI hides while the
@@ -49,7 +52,8 @@ local TILE = {
 	Mystery = Color3.fromRGB(58, 63, 75),
 }
 
-local SPACING = 79 -- hex grid size (centre to corner) in board pixels; hexes are 150 tall
+local SPACING = 79 -- hex grid size (centre to corner) in board pixels; hexes are 150 wide
+local FLASH = Color3.fromRGB(255, 236, 140) -- newly opened hexes pulse towards this
 local ZOOM_MIN, ZOOM_MAX = 0.5, 1.5
 local DRAG_THRESHOLD = 10 -- screen pixels before a press becomes a drag
 
@@ -64,7 +68,7 @@ local backButton: TextButton
 
 local boards: { [string]: Frame } = {}
 local nodes: { [string]: TextButton } = {}
-local nodeSize = UDim2.fromOffset(130, 150)
+local nodeSize = UDim2.fromOffset(150, 130)
 local extents: { [string]: Vector2 } = {}
 local current = "Main"
 -- Each board's zoom and pan, kept while you play so closing and reopening the window (or
@@ -85,9 +89,25 @@ local pan = Vector2.zero
 local railBadge: GuiObject? = nil
 local useImage = false -- the HexTile image loaded; until then hexes are drawn with frames
 
+-- Flat-top hexes (Slime RNG): {0,-1} is straight up, {1,0} down-right.
 local function hexToPixel(q: number, r: number): Vector2
-	return Vector2.new(SPACING * math.sqrt(3) * (q + r / 2), SPACING * 1.5 * r)
+	return Vector2.new(SPACING * 1.5 * q, SPACING * math.sqrt(3) * (r + q / 2))
 end
+
+-- Rings from the middle of a board (0 = the centre hex).
+local function hexDistance(a: { q: number, r: number }, b: { q: number, r: number }): number
+	local dq, dr = a.q - b.q, a.r - b.r
+	return math.max(math.abs(dq), math.abs(dr), math.abs(dq + dr))
+end
+
+-- ---------------------------------------------------------------- animation state
+
+local lastState: { [string]: string } = {} -- each hex's state the last time it was drawn
+local fresh: { [string]: boolean } = {} -- newly opened: flashes with NEW! until looked at
+local baseColor: { [string]: Color3 } = {} -- the tile colour renderBoard picked
+local glowMode: { [string]: string? } = {} -- "select", "buy" or nil
+local popToken: { [string]: number } = {} -- newer animations cancel older delayed ones
+local lastBought: UpgradeDef? = nil -- new hexes pop in rippling out from here
 
 -- ---------------------------------------------------------------- state of each node
 
@@ -128,16 +148,8 @@ local function waitsForRebirth(def: UpgradeDef, data): number?
 	return if (data.Rebirths or 0) < need then need else nil
 end
 
-local ROMAN = { "I", "II", "III", "IV", "V", "VI" }
-
--- "II 3/10" on an evolving hex (stage and level inside it), "3/10" on a simple one.
 local function levelText(def: UpgradeDef, level: number): string
-	local tr, index = Upgrades.currentTier(def, level)
-	local inTier = math.clamp(level - tr.First, 0, tr.Levels)
-	if #def.Tiers > 1 then
-		return `{ROMAN[index] or index} {inTier}/{tr.Levels}`
-	end
-	return `{inTier}/{tr.Levels}`
+	return `{level}/{def.MaxLevel}`
 end
 
 local function price(def: UpgradeDef, data): number
@@ -176,7 +188,8 @@ local function clampPan()
 	local k = zoom.Scale
 	local extent = extents[current] or Vector2.new(300, 300)
 	local size = viewSize()
-	local limit = Vector2.new(math.max(0, extent.X * k - size.X / 2 + 120), math.max(0, extent.Y * k - size.Y / 2 + 160))
+	local limit =
+		Vector2.new(math.max(0, extent.X * k - size.X / 2 + 120), math.max(0, extent.Y * k - size.Y / 2 + 160))
 	pan = Vector2.new(math.clamp(pan.X, -limit.X, limit.X), math.clamp(pan.Y, -limit.Y, limit.Y))
 	canvas.Position = UDim2.new(0.5, pan.X, 0.5, pan.Y)
 end
@@ -249,7 +262,10 @@ local function setupDragging()
 		end
 		if
 			input == active
-			or (active.UserInputType == Enum.UserInputType.MouseButton1 and input.UserInputType == Enum.UserInputType.MouseButton1)
+			or (
+				active.UserInputType == Enum.UserInputType.MouseButton1
+				and input.UserInputType == Enum.UserInputType.MouseButton1
+			)
 		then
 			dragInput = nil
 			if dragged then
@@ -306,19 +322,24 @@ local function setTip(id: string?)
 		desc.Text = Upgrades.description(def, level)
 		local wait = waitsForRebirth(def, data)
 		if def.Opens then
-			info.Text = if level > 0 then (if pad then "Press A to go inside" else "Tap to go inside") else `Unlock for {Format.cash(price(def, data))}`
+			info.Text = if level > 0
+				then (if pad then "Press A to go inside" else "Tap to go inside")
+				else `Unlock for {Format.cash(price(def, data))}`
 		elseif state == "Rebirth" then
 			info.TextColor3 = RED
-			info.Text = `Rebirth {def.RequiredRebirths} time{if def.RequiredRebirths == 1 then "" else "s"} to open this`
+			info.Text =
+				`Rebirth {def.RequiredRebirths} time{if def.RequiredRebirths == 1 then "" else "s"} to open this`
 		elseif state == "Max" then
 			info.TextColor3 = GOLD_TEXT
 			info.Text = `MAX  {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
 		elseif wait then
 			info.TextColor3 = RED
-			info.Text = `Evolves at Rebirth {wait}  ·  now {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
+			info.Text =
+				`Evolves at Rebirth {wait}  ·  now {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
 		else
 			local stat = Upgrades.Stats[def.Stat]
-			info.Text = `Lv {levelText(def, level)}  ·  {Upgrades.describe(def, level)} > {Upgrades.describe(def, level + 1)} {stat.Name}`
+			local after = Upgrades.describe(def, level + 1)
+			info.Text = `Lv {levelText(def, level)}  ·  {Upgrades.describe(def, level)} > {after} {stat.Name}`
 		end
 		if (state == "Open" or state == "Owned") and not (def.Opens and level > 0) and not wait then
 			local cost = price(def, data)
@@ -376,7 +397,109 @@ local function setHex(hex: Frame, color: Color3)
 	end
 end
 
-local function renderBoard()
+local function pop(id: string): UIScale
+	return (nodes[id] :: any).Pop
+end
+
+-- Scales a hex from `from` to full size after `delay` (Back easing overshoots a little).
+local function growIn(id: string, delay: number, from: number, time: number?)
+	local scale = pop(id)
+	popToken[id] = (popToken[id] or 0) + 1
+	local token = popToken[id]
+	if Ui.reducedMotion() then
+		scale.Scale = 1
+		return
+	end
+	scale.Scale = from
+	task.delay(delay, function()
+		if popToken[id] ~= token then
+			return
+		end
+		TweenService
+			:Create(scale, TweenInfo.new(time or 0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+			:Play()
+	end)
+end
+
+-- A white hex ring that grows and fades from a hex (buying, a hex opening up).
+local function shockwave(id: string, color: Color3?)
+	local node = nodes[id]
+	if Ui.reducedMotion() or not node then
+		return
+	end
+	local ring = (node:FindFirstChild("Glow") :: Frame):Clone()
+	ring.Name = "Shockwave"
+	ring.Visible = true
+	ring.Position = node.Position
+	ring.ZIndex = 1
+	local scale = Instance.new("UIScale")
+	scale.Parent = ring
+	ring.Parent = node.Parent
+	local info = TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	for _, bar in ring:GetChildren() do
+		if bar:IsA("Frame") then
+			bar.BackgroundColor3 = color or WHITE
+			bar.BackgroundTransparency = 0.1
+			TweenService:Create(bar, info, { BackgroundTransparency = 1 }):Play()
+		end
+	end
+	TweenService:Create(scale, info, { Scale = 1.55 }):Play()
+	task.delay(0.5, function()
+		ring:Destroy()
+	end)
+end
+
+-- Opening a board: the centre hex first, then each ring around it, one hex after another
+-- (Slime RNG's sub-category opening).
+local function bloom(treeId: string)
+	local list = {}
+	for _, def in Upgrades.List do
+		if def.Tree == treeId and nodes[def.Id].Visible then
+			table.insert(list, def)
+		end
+	end
+	local origin = { q = 0, r = 0 }
+	local function angle(def: UpgradeDef): number
+		local p = hexToPixel(def.Hex.q, def.Hex.r)
+		return math.atan2(p.X, -p.Y) % (2 * math.pi) -- clockwise from straight up
+	end
+	table.sort(list, function(a, b)
+		local da, db = hexDistance(a.Hex, origin), hexDistance(b.Hex, origin)
+		if da ~= db then
+			return da < db
+		end
+		return angle(a) < angle(b)
+	end)
+	local lastRing, inRing, ringStart = 0, 0, 0
+	for _, def in list do
+		local ring = hexDistance(def.Hex, origin)
+		if ring ~= lastRing then
+			-- Next ring starts a moment after the last one has started.
+			ringStart += 0.06 + math.min(inRing, 8) * 0.03
+			lastRing, inRing = ring, 0
+		end
+		growIn(def.Id, ringStart + inRing * 0.03, 0, 0.3)
+		inRing += 1
+	end
+end
+
+-- A hex just changed state while you watch: hexes that appear pop in (rippling out from
+-- the hex you bought), "?" hexes that open flip to their new face and start flashing.
+local function animateChange(def: UpgradeDef, before: string, now: string)
+	local origin = lastBought
+	local wave = if origin and origin.Tree == def.Tree then hexDistance(def.Hex, origin.Hex) else 1
+	local delay = 0.1 + (wave - 1) * 0.12
+	if before == "Hidden" then
+		growIn(def.Id, delay, 0)
+	elseif now == "Open" or now == "Rebirth" then
+		growIn(def.Id, delay, 0.55, 0.38)
+		if not Ui.reducedMotion() then
+			task.delay(delay, shockwave, def.Id, FLASH)
+		end
+	end
+end
+
+local function renderBoard(silent: boolean?)
 	local data = State.data
 	if not data or not gui.Enabled then
 		return
@@ -390,14 +513,27 @@ local function renderBoard()
 		local state = states[def.Id]
 		local level = data.Upgrades[def.Id] or 0
 		local isLab = def.Opens ~= nil
+		-- What changed since this hex was last drawn.
+		local before = lastState[def.Id]
+		if before and before ~= state then
+			local opened = state == "Open" and (before == "Hidden" or before == "Mystery" or before == "Rebirth")
+			if opened then
+				fresh[def.Id] = true
+			elseif state ~= "Open" then
+				fresh[def.Id] = nil
+			end
+			if not silent and state ~= "Hidden" and (before == "Hidden" or before == "Mystery") then
+				animateChange(def, before, state)
+			end
+		end
+		lastState[def.Id] = state
 		node.Visible = state ~= "Hidden"
 		local color = if isLab and level > 0 then TILE.Lab else TILE[state] or TILE.Mystery
-		setHex(node:FindFirstChild("Fill") :: Frame, color)
+		baseColor[def.Id] = color
 		local tile = node:FindFirstChild("Tile") :: ImageLabel
-		tile.ImageColor3 = color
-		tile.Visible = useImage
-		;(node:FindFirstChild("Outline") :: Frame).Visible = not useImage
-		;(node:FindFirstChild("Fill") :: Frame).Visible = not useImage
+		tile.Visible = useImage;
+		(node:FindFirstChild("Outline") :: Frame).Visible = not useImage;
+		(node:FindFirstChild("Fill") :: Frame).Visible = not useImage
 
 		local known = state == "Open" or state == "Owned" or state == "Max" or state == "Rebirth"
 		local icon = node:FindFirstChild("Icon") :: ImageLabel
@@ -412,9 +548,9 @@ local function renderBoard()
 		levelLabel.Visible = known and not isLab and state ~= "Rebirth"
 		levelLabel.Text = levelText(def, level)
 		nameLabel.Text = Upgrades.name(def, level) -- evolving hexes change name
-		local wait = waitsForRebirth(def, data)
-		;(node:FindFirstChild("Lock") :: ImageLabel).Visible = state == "Rebirth"
-		;(node:FindFirstChild("Question") :: TextLabel).Visible = state == "Mystery"
+		local wait = waitsForRebirth(def, data);
+		(node:FindFirstChild("Lock") :: ImageLabel).Visible = state == "Rebirth"
+		(node:FindFirstChild("Question") :: TextLabel).Visible = state == "Mystery"
 
 		coin.Visible = false
 		priceLabel.TextColor3 = WHITE
@@ -439,19 +575,88 @@ local function renderBoard()
 		end
 		local glow = node:FindFirstChild("Glow") :: Frame
 		local isSelected = selected == def.Id and state ~= "Hidden"
-		glow.Visible = isSelected or canBuy(def, data, state)
+		local buyable = canBuy(def, data, state)
+		glowMode[def.Id] = if isSelected then "select" elseif buyable then "buy" else nil
+		glow.Visible = isSelected or buyable
 		setHex(glow, if isSelected then WHITE else GREEN)
+		if not fresh[def.Id] then
+			tile.ImageColor3 = color
+			setHex(node:FindFirstChild("Fill") :: Frame, color)
+		end
+		local tag = node:FindFirstChild("New") :: TextLabel?
+		if tag then
+			tag.Visible = fresh[def.Id] == true
+		end
 	end
 	refreshTip()
 end
 
-local function popNode(node: TextButton)
+-- Looking at a hex (hover, tap, controller) stops its NEW! flash.
+local function seen(id: string?)
+	if id and fresh[id] then
+		fresh[id] = nil
+		local node = nodes[id]
+		local color = baseColor[id]
+		if node and color then
+			local tileImage = node:FindFirstChild("Tile") :: ImageLabel
+			tileImage.ImageColor3 = color
+			setHex(node:FindFirstChild("Fill") :: Frame, color)
+			local tag = node:FindFirstChild("New") :: TextLabel?
+			if tag then
+				tag.Visible = false
+			end
+		end
+	end
+end
+
+-- Every frame: newly opened hexes flash, hexes you can afford breathe their green glow.
+local function animateBoard()
+	local t = os.clock()
+	local still = Ui.reducedMotion()
+	local breathe = if still then 0.15 else 0.15 + 0.4 * (math.sin(t * 4) + 1) / 2
+	local flash = if still then 0.35 else 0.55 * (math.sin(t * 7) + 1) / 2
+	for _, def in Upgrades.List do
+		if def.Tree ~= current then
+			continue
+		end
+		local node = nodes[def.Id]
+		if not node.Visible then
+			continue
+		end
+		local glow = node:FindFirstChild("Glow") :: Frame
+		if fresh[def.Id] then
+			local color = (baseColor[def.Id] or TILE.Open):Lerp(FLASH, flash)
+			local tileImage = node:FindFirstChild("Tile") :: ImageLabel
+			tileImage.ImageColor3 = color
+			setHex(node:FindFirstChild("Fill") :: Frame, color)
+			local tag = node:FindFirstChild("New") :: TextLabel?
+			if tag then
+				tag.Rotation = -8 + (if still then 0 else math.sin(t * 5) * 4)
+			end
+			if glowMode[def.Id] ~= "select" then
+				glow.Visible = true
+				setHex(glow, FLASH)
+			end
+		end
+		if glow.Visible then
+			local mode = glowMode[def.Id]
+			local alpha = if mode == "select" then 0 elseif fresh[def.Id] then 1 - flash else breathe
+			for _, bar in glow:GetChildren() do
+				if bar:IsA("Frame") then
+					bar.BackgroundTransparency = alpha
+				end
+			end
+		end
+	end
+end
+
+-- Bought: the hex squashes and springs back with a ring of light.
+local function popNode(id: string)
 	if Ui.reducedMotion() then
 		return
 	end
-	node.Size = nodeSize
-	local big = UDim2.fromOffset(nodeSize.X.Offset * 1.15, nodeSize.Y.Offset * 1.15)
-	TweenService:Create(node, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true), { Size = big }):Play()
+	growIn(id, 0, 0.82, 0.35)
+	shockwave(id)
 end
 
 -- Shows one board (Main or a lab) and frames it on screen.
@@ -481,11 +686,16 @@ local function showBoard(treeId: string, flyIn: boolean?)
 	zoom.Scale = target
 	pan = if saved then saved.pan else Vector2.zero
 	clampPan()
-	renderBoard()
-	if flyIn and not saved and not Ui.reducedMotion() then
-		-- The new board grows out of the middle of the screen.
-		zoom.Scale = target * 0.4
-		TweenService:Create(zoom, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = target }):Play()
+	-- Silent: hexes that opened while you were away just get their NEW! flash; the bloom
+	-- below brings every hex in.
+	renderBoard(true)
+	bloom(treeId)
+	if flyIn and not Ui.reducedMotion() then
+		-- Going into a lab: the board also grows a little out of the middle of the screen.
+		zoom.Scale = target * 0.8
+		TweenService
+			:Create(zoom, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = target })
+			:Play()
 	end
 end
 
@@ -508,6 +718,7 @@ local function onNodeTapped(def: UpgradeDef)
 		showBoard(def.Opens, true)
 		return
 	end
+	seen(def.Id)
 	if selected ~= def.Id then
 		selected = def.Id
 		flashText = nil
@@ -524,7 +735,8 @@ local function onNodeTapped(def: UpgradeDef)
 	local ok, message = Net.func("BuyUpgrade"):InvokeServer(def.Id, 1)
 	if ok then
 		Ui.sound("Coin")
-		popNode(nodes[def.Id])
+		lastBought = def
+		popNode(def.Id)
 		flashText = nil
 	else
 		Ui.sound("Error")
@@ -550,14 +762,25 @@ local function build()
 	for i, def in Upgrades.List do
 		local p = hexToPixel(def.Hex.q, def.Hex.r)
 		local e = extents[def.Tree]
-		extents[def.Tree] = Vector2.new(math.max(e.X, math.abs(p.X) + 70), math.max(e.Y, math.abs(p.Y) + 80))
+		extents[def.Tree] = Vector2.new(math.max(e.X, math.abs(p.X) + 80), math.max(e.Y, math.abs(p.Y) + 70))
 		local node = template:Clone()
 		node.Name = def.Id
 		node.Position = UDim2.fromOffset(p.X, p.Y)
 		node.LayoutOrder = i
 		node.Visible = false
-		;(node:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.image(def.Icon)
-		;(node:FindFirstChild("Name") :: TextLabel).Text = def.Name
+		-- A hex's own sticker icon, or its stat's icon until that one is uploaded.
+		local image = AssetLibrary.image(def.Icon)
+		if image == "" then
+			image = AssetLibrary.image(Upgrades.Stats[def.Stat].Icon)
+		end
+		(node:FindFirstChild("Icon") :: ImageLabel).Image = image
+		if not node:FindFirstChild("Pop") then
+			-- Older UI without the Pop scale (LiveSync before the regenerate).
+			local scale = Instance.new("UIScale")
+			scale.Name = "Pop"
+			scale.Parent = node
+		end
+		(node:FindFirstChild("Name") :: TextLabel).Text = def.Name
 		node.Parent = boards[def.Tree]
 		nodes[def.Id] = node
 		node.Activated:Connect(function()
@@ -569,6 +792,7 @@ local function build()
 		end)
 		node.MouseEnter:Connect(function()
 			hovered = def.Id
+			seen(def.Id)
 			refreshTip()
 		end)
 		node.MouseLeave:Connect(function()
@@ -708,9 +932,14 @@ function UpgradeController:Start()
 		if tip.Visible then
 			placeTip()
 		end
+		animateBoard()
 		local data = State.data
 		local job = data and data.Quests and data.Quests.Job
-		local teaching = job ~= nil and job.Kind == "Power" and not job.Done and (data.Upgrades.Power or 0) < 1 and current == "Main"
+		local teaching = job ~= nil
+			and job.Kind == "Power"
+			and not job.Done
+			and (data.Upgrades.Power or 0) < 1
+			and current == "Main"
 		tutorialHint.Visible = teaching
 		local root = nodes[Upgrades.Root]
 		if teaching and root then
@@ -721,8 +950,8 @@ function UpgradeController:Start()
 				elseif selected == Upgrades.Root then "Tap it again to buy!"
 				else "Double-tap Sweep Power to buy it!"
 			local k = 1 + math.abs(math.sin(os.clock() * 4)) * 0.08
-			root.Size = UDim2.fromOffset(nodeSize.X.Offset * k, nodeSize.Y.Offset * k)
-			;(root:FindFirstChild("Glow") :: Frame).Visible = true
+			root.Size = UDim2.fromOffset(nodeSize.X.Offset * k, nodeSize.Y.Offset * k);
+			(root:FindFirstChild("Glow") :: Frame).Visible = true
 		elseif root and wasTeaching then
 			root.Size = nodeSize
 		end
@@ -748,6 +977,7 @@ function UpgradeController:Start()
 		if id then
 			local def = Upgrades.ById[id]
 			hovered = id
+			seen(id)
 			pan = -hexToPixel(def.Hex.q, def.Hex.r) * zoom.Scale
 			clampPan()
 			refreshTip()

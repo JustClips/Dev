@@ -1770,6 +1770,58 @@
    "id": 82608374341931,
    "sha": "c7824fbeb1360d804f7fe7b907a04371efaeeb6a88acecd39e217c461ad0f78b"
   },
+  "Icon_UpBone": {
+   "id": 110067251384206,
+   "sha": "270220faf907cc468e3c9dbec41ed7a44187c40a320ff99a5fd2ed62040c1ee1"
+  },
+  "Icon_UpDumbbell": {
+   "id": 112098718688832,
+   "sha": "6a688afa746468a9c9358a8f4a537d004efcd709fcd8951851b9b95ffcf9f149"
+  },
+  "Icon_UpGem": {
+   "id": 138730349741171,
+   "sha": "fff1bd1a7a559ff5e87a6f794588a141a68820961afc4aeb6c52093687a5f10e"
+  },
+  "Icon_UpGloves": {
+   "id": 102198074835436,
+   "sha": "6bfb158dfbe760705958302decac82055a22d9020b8d8747200b689a7b346ac6"
+  },
+  "Icon_UpHeart": {
+   "id": 125306291252099,
+   "sha": "28d27ec31b900af3a12b3d77f42369ac4ef836fccf2f612d723bbe1caae1cf13"
+  },
+  "Icon_UpHorseshoe": {
+   "id": 129739086964105,
+   "sha": "b07d6d16f3a1cd1b173aaa7486fc929c85b2125285994ec97cd6ce180c5d43c0"
+  },
+  "Icon_UpMagnet": {
+   "id": 78694799199483,
+   "sha": "0a71488474fceddcb4a0857164cbe7bb04206376a53a3490686ca160cb3bcc57"
+  },
+  "Icon_UpMagnifier": {
+   "id": 136307452502914,
+   "sha": "d62f9c0d0405186700a6ada43fedd82100e628c8ba7d107f0938d0dd892be640"
+  },
+  "Icon_UpMoon": {
+   "id": 78494638662187,
+   "sha": "5ff8b3f9e94574db744cf2b27af48683dfad8a9f43fc428eb00b8c4eb4a46e98"
+  },
+  "Icon_UpNest": {
+   "id": 73453063053899,
+   "sha": "ca7a4e831e19809a492e45bb1ae2bf2eb7e632f42cd92364bddb040583cb0caf"
+  },
+  "Icon_UpSack": {
+   "id": 85318458230462,
+   "sha": "46616e130483391f35c9bb5420cf2a0d86d1264080f27cddb2ecf62f370bbafe"
+  },
+  "Icon_UpShield": {
+   "id": 132551243674464,
+   "sha": "863cdff1cb56f2fdc706480b0e29d8a94c6f62cea2823890bd555021e3564fb5"
+  },
+  "Icon_UpSprout": {
+   "id": 90103715783837,
+   "sha": "436bdf8f82002845a7714a623a49060cf34f609a9c7254644a1bb6624c9fe4a5"
+  },
   "Icon_Upgrade": {
    "id": 109295202924382,
    "sha": "6e61cc68ddf4f5efa0cdda8a479a2d6a8b4c231c3939181864a0cfcf5cbeb471"

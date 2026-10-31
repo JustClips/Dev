@@ -1200,6 +1200,153 @@ def _merchant():
     return out
 
 
+# ------------------------------------------------------------------ upgrade tree hexes (2026-10-31)
+# Hand-drawn because ForgeUI was out of credits; same sticker look as the rest.
+@icon("UpGloves")  # a yellow work glove
+def _up_gloves():
+    return [
+        rect(150, 380, 200, 92, BROWN, r=14),
+        path("M 150 392 L 150 200 C 150 170 196 170 196 200 L 196 120 C 196 88 244 88 244 120 L 244 100 "
+             "C 244 68 292 68 292 100 L 292 124 C 292 94 338 94 338 124 L 338 300 L 386 236 C 404 210 446 230 430 262 "
+             "L 362 392 Z", YELLOW),
+        stroke_line("M 196 200 L 196 280", width=W * 0.55),
+        stroke_line("M 244 120 L 244 270", width=W * 0.55),
+        stroke_line("M 292 124 L 292 270", width=W * 0.55),
+        rect(150, 380, 200, 26, DBROWN, r=6, shade=False),
+        hl(176, 210, 10, 30, rot=0),
+    ]
+
+
+@icon("UpDumbbell")  # a big dumbbell
+def _up_dumbbell():
+    return [
+        rect(130, 226, 252, 60, GREY, r=12),
+        rect(60, 150, 80, 212, DGREY, r=18),
+        rect(372, 150, 80, 212, DGREY, r=18),
+        rect(110, 180, 44, 152, RED, r=12),
+        rect(358, 180, 44, 152, RED, r=12),
+        hl(86, 196, 10, 34, rot=0), hl(126, 214, 6, 24, rot=0),
+    ]
+
+
+@icon("UpSack")  # a burlap sack stuffed with leaves
+def _up_sack():
+    out = [
+        path("M 190 150 C 120 210 80 300 96 380 C 108 450 200 470 256 470 C 312 470 404 450 416 380 "
+             "C 432 300 392 210 322 150 Z", TAN),
+        path("M 170 92 C 200 120 230 126 256 126 C 282 126 312 120 342 92 L 322 160 L 190 160 Z", TAN),
+        rect(180, 140, 152, 32, BROWN, r=10, shade=False),
+    ]
+    out.append(path("M 230 96 C 220 40 280 30 286 70 C 290 100 260 110 230 96 Z", ORANGE))
+    out.append(path("M 280 102 C 300 60 352 70 340 110 C 330 136 296 128 280 102 Z", RED))
+    out += [stroke_line("M 170 330 C 220 360 292 360 342 330", width=W * 0.5), hl(150, 260, 16, 46, rot=10)]
+    return out
+
+
+@icon("UpMagnet")  # a red horseshoe magnet
+def _up_magnet():
+    return [
+        path("M 100 120 L 200 120 L 200 280 C 200 320 312 320 312 280 L 312 120 L 412 120 L 412 280 "
+             "C 412 470 100 470 100 280 Z", RED),
+        rect(100, 92, 100, 70, GREY, r=8),
+        rect(312, 92, 100, 70, GREY, r=8),
+        stroke_line("M 150 60 L 150 24", width=W * 0.8), stroke_line("M 362 60 L 362 24", width=W * 0.8),
+        stroke_line("M 90 58 L 66 34", width=W * 0.8), stroke_line("M 422 58 L 446 34", width=W * 0.8),
+        hl(136, 300, 14, 50, rot=10),
+    ]
+
+
+@icon("UpSprout")  # a sprout growing from a pot of soil
+def _up_sprout():
+    return [
+        path("M 256 320 C 256 260 254 220 256 170", "none", body=False, shade=False, line=False),
+        stroke_line("M 256 330 C 256 270 252 220 256 160", width=W * 2.4),
+        stroke_line("M 256 330 C 256 270 252 220 256 160", width=W, color=DGREEN),
+        path("M 256 200 C 200 220 110 200 100 120 C 170 90 240 120 256 200 Z", GREEN),
+        path("M 256 170 C 300 190 400 180 420 90 C 340 60 266 100 256 170 Z", LEAF),
+        path("M 120 300 L 392 300 L 360 470 L 152 470 Z", ORANGE),
+        rect(100, 280, 312, 54, "#E8803A", r=12),
+        hl(150, 130, 10, 26, rot=60),
+    ]
+
+
+@icon("UpGem")  # a sparkly blue diamond
+def _up_gem():
+    return [
+        poly([(150, 120), (362, 120), (450, 220), (256, 460), (62, 220)], SKY),
+        poly([(62, 220), (450, 220), (256, 460)], BLUE, body=False, shade=False),
+        poly([(150, 120), (200, 220), (256, 120), (312, 220), (362, 120)], "#B8ECFF", body=False, shade=False),
+        stroke_line("M 200 220 L 256 460 L 312 220", width=W * 0.55),
+        hl(170, 160, 12, 30, rot=40, opacity=0.8),
+    ]
+
+
+@icon("UpMagnifier")  # a magnifying glass
+def _up_magnifier():
+    return [
+        rect(300, 300, 60, 180, BROWN, r=24, rot=-45),
+        circle(210, 210, 150, GREY),
+        circle(210, 210, 110, SKY, body=False, shade=False),
+        hl(160, 160, 30, 56, rot=40, opacity=0.7),
+    ]
+
+
+@icon("UpNest")  # a twig nest with an egg
+def _up_nest():
+    out = [egg_shape(256, 230, 96, 130, CREAM), hl(220, 160, 18, 34, rot=20)]
+    out.append(path("M 60 280 C 70 420 180 470 256 470 C 332 470 442 420 452 280 C 380 320 132 320 60 280 Z", BROWN))
+    for x0, x1 in ((90, 230), (160, 330), (250, 420)):
+        out.append(stroke_line("M %s 330 C %s 380 %s 380 %s 420" % (x0, x0 + 40, x1 - 40, x1), width=W * 0.5))
+    return out
+
+
+@icon("UpHorseshoe")  # a golden lucky horseshoe
+def _up_horseshoe():
+    out = [path("M 90 90 L 190 90 L 190 270 C 190 360 322 360 322 270 L 322 90 L 422 90 L 422 270 "
+                "C 422 500 90 500 90 270 Z", GOLD)]
+    for cx, cy in ((140, 140), (140, 230), (160, 330), (372, 140), (372, 230), (352, 330)):
+        out.append(circle(cx, cy, 13, DBROWN, body=False, shade=False, line=False))
+    out.append(hl(124, 300, 12, 40, rot=10, opacity=0.7))
+    return out
+
+
+@icon("UpHeart")  # a pink heart
+def _up_heart():
+    return [
+        path("M 256 450 C 120 360 50 280 50 190 C 50 110 110 70 170 70 C 210 70 240 92 256 126 "
+             "C 272 92 302 70 342 70 C 402 70 462 110 462 190 C 462 280 392 360 256 450 Z", PINK),
+        hl(140, 150, 26, 44, rot=40, opacity=0.7),
+    ]
+
+
+@icon("UpBone")  # a dog treat bone
+def _up_bone():
+    shape = path("M 150 190 L 362 190 C 360 120 450 110 460 170 C 500 190 480 260 440 256 C 480 260 500 330 460 342 "
+                 "C 450 402 360 392 362 322 L 150 322 C 152 392 62 402 52 342 C 12 330 32 260 72 256 "
+                 "C 32 260 12 190 52 170 C 62 110 152 120 150 190 Z", CREAM)
+    shape.attrs["transform"] = "rotate(-30 256 256)"
+    return [shape, hl(150, 220, 12, 40, rot=60, opacity=0.8)]
+
+
+@icon("UpMoon")  # a sleepy crescent moon
+def _up_moon():
+    return [
+        path("M 300 70 C 180 90 110 190 120 300 C 130 410 230 470 330 450 C 220 420 170 320 200 220 "
+             "C 220 150 260 100 300 70 Z", YELLOW),
+        text(360, 150, "Z", 120, fill=WHITE), text(420, 70, "z", 80, fill=WHITE),
+        hl(170, 260, 12, 50, rot=10, opacity=0.6),
+    ]
+
+
+@icon("UpShield")  # a blue shield with a star
+def _up_shield():
+    return [
+        path("M 256 50 L 440 110 C 440 300 380 410 256 470 C 132 410 72 300 72 110 Z", BLUE),
+        poly(star_points(256, 250, 110, 50), YELLOW, shade=False),
+        hl(150, 160, 16, 50, rot=0, opacity=0.6),
+    ]
+
+
 # ------------------------------------------------------------------ output
 FORGE = os.path.join(HERE, "out", "forge")
 MARGIN = 14

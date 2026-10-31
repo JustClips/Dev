@@ -1922,7 +1922,7 @@ def base_picker():
 
 
 # ---------------------------------------------------------------- Upgrades
-HEX_W, HEX_H = 130, 150  # one tree node (HexTile is pointy-top, 0.866 wide)
+HEX_W, HEX_H = 150, 130  # one tree node, flat-top like Slime RNG (the pointy HexTile image is turned 90 degrees)
 
 
 def upgrades():
@@ -1932,35 +1932,42 @@ def upgrades():
     boards from Config/Upgrades by cloning Board.Scaler.Canvas.NodeTemplate."""
     fit = lambda mx, mn=9: node("Fit", "UITextSizeConstraint", {"MaxTextSize": mx, "MinTextSize": mn})
     def hexagon(name, radius, color, z, **extra):
-        """A pointy-top hexagon from three rotated bars (no image to load, so it always shows)."""
+        """A flat-top hexagon from three rotated bars (no image to load, so it always shows)."""
         w = round(radius * 3 ** 0.5, 1)
         bars = [frame(f"Bar{i}", U(0, w, 0, radius), U(0.5, 0, 0.5, 0), (0.5, 0.5), bg=color, Rotation=rot, ZIndex=z)
-                for i, rot in enumerate((0, 60, -60))]
+                for i, rot in enumerate((90, 30, -30))]
         return frame(name, U(0, 0, 0, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=z, children=bars, **extra)
 
     node_t = node("NodeTemplate", "TextButton", base(U(0, HEX_W, 0, HEX_H), anchor=(0.5, 0.5), BackgroundTransparency=1,
                                                       Text="", AutoButtonColor=False, Visible=False, ZIndex=3), [
-        hexagon("Glow", HEX_H / 2 + 8, SUCCESS, 1, Visible=False),
-        hexagon("Outline", HEX_H / 2, INK, 2),
-        hexagon("Fill", HEX_H / 2 - 6, "#2A3142", 3),
-        # The image tile; UpgradeController shows it (and hides the frame hexagon) once it loads.
-        node("Tile", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("HexTile"), ScaleType="Fit",
-                                        ImageColor3="#2A3142", Visible=False, ZIndex=4), [
-            node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.55, WHITE], [1, "#B9C0CE"]]}, "Rotation": 90}),
+        # Pops / bloom animations scale the whole hex (UpgradeController).
+        node("Pop", "UIScale", {"Scale": 1}),
+        hexagon("Glow", HEX_W / 2 + 8, SUCCESS, 1, Visible=False),
+        hexagon("Outline", HEX_W / 2, INK, 2),
+        hexagon("Fill", HEX_W / 2 - 6, "#2A3142", 3),
+        # The image tile (pointy-top art turned 90 degrees); UpgradeController shows it (and
+        # hides the frame hexagon) once it loads. The shade runs top to bottom on screen.
+        node("Tile", "ImageLabel", base(U(0, HEX_H, 0, HEX_W), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
+                                        Image=img("HexTile"), ScaleType="Fit", Rotation=90, ImageColor3="#2A3142",
+                                        Visible=False, ZIndex=4), [
+            node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.55, WHITE], [1, "#B9C0CE"]]}, "Rotation": 0}),
         ]),
-        text("Level", "0/10", U(0, 70, 0, 18), U(0.5, 0, 0, 14), (0.5, 0), ts=14, color="#E3E8F2", display=True, stroke=2,
+        icon("Icon", "Upgrade", 46, U(0.5, 0, 0, 10), (0.5, 0), ZIndex=5),
+        text("Name", "Upgrade", U(1, -24, 0, 22), U(0.5, 0, 0, 58), (0.5, 0), ts=18, display=True, stroke=2.5, ZIndex=6,
+             TextScaled=True, children=[fit(18)]),
+        text("Level", "0/5", U(0, 60, 0, 16), U(0.5, 0, 0, 104), (0.5, 0), ts=14, color="#E3E8F2", display=True, stroke=2,
              ZIndex=6),
-        icon("Icon", "Upgrade", 54, U(0.5, 0, 0, 30), (0.5, 0), ZIndex=5),
-        text("Name", "Upgrade", U(1, -22, 0, 24), U(0.5, 0, 0, 84), (0.5, 0), ts=19, display=True, stroke=2.5, ZIndex=6,
-             TextScaled=True, children=[fit(19)]),
-        frame("Price", U(1, -26, 0, 24), U(0.5, 0, 0, 108), (0.5, 0), ZIndex=6, children=[
+        # Newly opened hexes flash and wear this tag until you look at them (Slime RNG style).
+        text("New", "NEW!", U(0, 64, 0, 24), U(0.5, 0, 0, -10), (0.5, 0), ts=20, color="#FFE14D", display=True, stroke=3,
+             ZIndex=8, Rotation=-8, Visible=False),
+        frame("Price", U(1, -30, 0, 22), U(0.5, 0, 0, 81), (0.5, 0), ZIndex=6, children=[
             hlist(4, "Center", "Center"),
-            icon("Coin", "Cash", 22, ZIndex=6, LayoutOrder=1),
-            text("Label", "$0", U(0, 0, 1, 0), ts=19, color=WHITE, display=True, stroke=2.5, ZIndex=7, LayoutOrder=2,
+            icon("Coin", "Cash", 20, ZIndex=6, LayoutOrder=1),
+            text("Label", "$0", U(0, 0, 1, 0), ts=18, color=WHITE, display=True, stroke=2.5, ZIndex=7, LayoutOrder=2,
                  AutomaticSize="X", TextWrapped=False),
         ]),
-        icon("Lock", "Lock", 52, U(0.5, 0, 0.5, -10), (0.5, 0.5), ZIndex=6, Visible=False),
-        text("Question", "?", U(1, 0, 1, 0), ts=72, display=True, stroke=4, ZIndex=6, Visible=False),
+        icon("Lock", "Lock", 46, U(0.5, 0, 0.5, -12), (0.5, 0.5), ZIndex=6, Visible=False),
+        text("Question", "?", U(1, 0, 1, 0), ts=68, display=True, stroke=4, ZIndex=6, Visible=False),
     ])
     # Tapping the empty board closes the tooltip.
     backdrop = node("Backdrop", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", AutoButtonColor=False,

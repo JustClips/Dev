@@ -173,11 +173,11 @@ def _upgrades() -> list[dict]:
                 )
             )
             continue
-        m = re.search(r"\blab\(\"(\w+)\",\s*-?\d+,\s*-?\d+,\s*\"(\w+)\",.*?([\d_]+)\),\s*$", line)
+        m = re.search(r"\blab\(\"(\w+)\",\s*-?\d+,\s*-?\d+,\s*\"(\w+)\",\s*\"(\w+)\",.*?([\d_]+)\),\s*$", line)
         if m:
             rows.append(
-                dict(Id=m.group(1), Tree="Main", Parent="Power", Stat="Portal", MaxLevel=1, PerLevel=0,
-                     BaseCost=_num(m.group(3)), CostGrowth=1, RequiredRebirths=0, Opens=m.group(2))
+                dict(Id=m.group(1), Tree="Main", Parent=m.group(2), Stat="Portal", MaxLevel=1, PerLevel=0,
+                     BaseCost=_num(m.group(4)), CostGrowth=1, RequiredRebirths=0, Opens=m.group(3))
             )
     return rows
 
