@@ -16,6 +16,7 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 local Rewards = require(Shared.Config.Rewards)
@@ -23,7 +24,6 @@ local Rewards = require(Shared.Config.Rewards)
 local GREEN = Color3.fromRGB(61, 220, 90)
 local GOLD = Color3.fromRGB(255, 200, 60)
 local GREY = Color3.fromRGB(166, 174, 194)
-local BLUE = Color3.fromRGB(76, 141, 255)
 local WHITE = Color3.new(1, 1, 1)
 local STEP = 360 / 8
 local BUYS = { Buy1 = "WheelSpin1", Buy5 = "WheelSpin5" }
@@ -47,16 +47,6 @@ end
 -- Spins you can use right now (the free one counts).
 local function available(r): number
 	return (r.Spins or 0) + (if r.FreeSpin then 1 else 0)
-end
-
--- Biggest unit only, like "23H", "45M" or "30S" (the SPIN button countdown).
-local function shortTime(seconds: number): string
-	if seconds >= 3600 then
-		return `{math.floor(seconds / 3600)}H`
-	elseif seconds >= 60 then
-		return `{math.floor(seconds / 60)}M`
-	end
-	return `{math.max(1, math.ceil(seconds))}S`
 end
 
 -- White text with the dark outline on every colour (dark text on the gold button blurred
@@ -84,21 +74,19 @@ local function render()
 	if railBadge then
 		Ui.setBadge(railBadge, if count > 0 then count else nil)
 	end
-	-- The HUD Spin button counts down too ("23H") while there's nothing to spin.
+	-- Buttons keep their labels (Dev, 2026-10-31: no button turning into a timer); the
+	-- countdown lives in the line above the SPIN button, as "23h 12m 5s".
 	local freeIn = if type(r.FreeSpinAt) == "number" then math.max(0, r.FreeSpinAt - State.now()) else nil
-	Ui.setText(Ui.find(Ui.screen("Hud"), "SpinButton"), if count <= 0 and freeIn then shortTime(freeIn) else "Spin")
 	if not Ui.isOpen(gui) then
 		return
 	end
 	;(Ui.find(gui, "Window.Side.Spins") :: TextLabel).Text = `Spins: {r.Spins or 0}`
-	-- One free spin a day (Dev, 2026-10-31): while it's waiting, the SPIN button counts down
-	-- ("FREE SPIN IN: 23H") unless you have spins to use, then the line above it does.
-	local timer = if freeIn then `FREE SPIN IN: {shortTime(freeIn)}` else nil
+	local timer = if freeIn and freeIn > 0 then `Free spin in {Format.dhms(freeIn)}` else nil
 	local note = Ui.find(gui, "Window.Side.FreeNote") :: TextLabel
 	if r.FreeSpin then
 		note.Text = "Your FREE spin is ready!"
 		note.TextColor3 = Color3.fromRGB(30, 158, 58)
-	elseif timer and (r.Spins or 0) > 0 then
+	elseif timer then
 		note.Text = timer
 		note.TextColor3 = Color3.fromRGB(91, 96, 112)
 	else
@@ -111,8 +99,6 @@ local function render()
 		setButton(spinButton, "FREE SPIN!", GREEN)
 	elseif (r.Spins or 0) > 0 then
 		setButton(spinButton, "SPIN!", GREEN)
-	elseif timer then
-		setButton(spinButton, timer, BLUE)
 	else
 		setButton(spinButton, "No spins", GREY)
 	end
@@ -451,7 +437,7 @@ local function spin()
 	if available(r) <= 0 then
 		local freeIn = if type(r.FreeSpinAt) == "number" then math.max(0, r.FreeSpinAt - State.now()) else nil
 		C.HudController:Toast(
-			if freeIn then `Free spin in {shortTime(freeIn)}. Get more spins below!` else "No spins left. Get more below!",
+			if freeIn then `Free spin in {Format.dhms(freeIn)}. Get more spins below!` else "No spins left. Get more below!",
 			"Bad"
 		)
 		return

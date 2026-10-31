@@ -1,23 +1,22 @@
 --!strict
--- Shop (Robux things only), redesigned for kids (Dev, 2026-10-31: the old one-long-scroll
--- shop was "hella clustered"). Tabs down the left switch PAGES, one at a time:
---   Deals   - Starter Pack and the limited pack as big banners whose contents are
---             pictures, plus limited offers the game made you in the last few minutes
---   Eggs    - one tile per rarity (Epic .. Cosmic); Buy opens a "How many?" picker
---             (x1 / x3 MOST POPULAR / x10 BEST VALUE), then hatch skips for eggs growing
---   Passes  - gamepasses, cheapest first, owned ones last
---   Boosts  - the Server Luck card (level now > next, shared timer) and other server buys
---   Potions - small buys that go to your bag
---   Cash    - cash packs, Skip Rebirth, the next tool skip
--- A tile is a big picture, a short name, one short line and one price button; giftable
--- tiles get a pink gift corner. Layout templates come from tools/gen_ui.py shop().
--- Look (Dev, 2026-10-31, from a reference): dark body, green header, centred yellow
--- "-- FEATURED --" headings, green Robux buttons, purple gift buttons, timers as
--- "1d 22h 12m Left". The limited egg (Config/LimitedEgg) gets the top banner on Deals: the
--- pets you can get with their odds and 1 / 3 / 10 buy cells.
+-- Shop (Robux things only). Dev, 2026-10-31, copied from a reference shop: ONE scrolling
+-- list (not pages) with sections one under the other, each under a centred "-- MONEY --"
+-- heading in its colour:
+--   Featured - the limited egg banner (the pets you can get with their odds, buy cells
+--              biggest first, each with a gift button), the Starter Pack, and limited
+--              offers the game made you in the last few minutes
+--   Eggs     - one card per rarity (Epic .. Cosmic); Buy opens a "How many?" picker
+--              (x1 / x3 MOST POPULAR / x10 BEST VALUE), then hatch skips for eggs growing
+--   Passes   - gamepasses, cheapest first, owned ones last
+--   Boosts   - the Server Luck card (level now > next, shared timer) and other server buys
+--   Potions  - small buys that go to your bag
+--   Money    - cash packs, the next tool skip, Skip Rebirth
+-- The buttons to the right of the panel jump the list to their section. A card is a big
+-- picture, one line ("+$24K", "2x CASH"), a purple gift button and a green Robux button.
+-- Timers read "1d 22h 12m 5s". Layout templates come from tools/gen_ui.py shop().
 -- Free / cash things (tools, cars) are in the Gear window and base skins in the base picker.
--- Robux items whose ID is still 0 are hidden. The rail Shop button and the Deals tab show
--- a badge while a special offer is up.
+-- Robux items whose ID is still 0 are hidden. The rail Shop button and the Featured button
+-- show a badge while a special offer is up.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -27,12 +26,12 @@ local State = require(Client.State)
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Aliens = require(Shared.Config.Aliens)
 local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
-local Eggs = require(Shared.Config.Eggs)
 local Economy = require(Shared.Config.Economy)
+local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
-local Aliens = require(Shared.Config.Aliens)
 local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
@@ -40,81 +39,73 @@ local Tools = require(Shared.Config.Tools)
 
 local GREY = Color3.fromRGB(166, 174, 194)
 -- Robux buttons are green with white text (Dev's reference).
-local ROBUX = Color3.fromRGB(61, 190, 58)
+local ROBUX = Color3.fromRGB(76, 209, 55)
 local WHITE = Color3.new(1, 1, 1)
-local INK = Color3.fromRGB(27, 31, 58)
+local YELLOW = "#FFE34D"
 
 local LUCK_H = 132 -- SHOP_LUCK_H in tools/gen_ui.py
+-- The limited egg's small pet cards, most common first; the rarest gets the big card.
+local PET_SIZES = { 64, 64, 75, 88, 100 }
 
 type Tile = {
-	Name: string,
-	Sub: string,
+	Hi: string?, -- the yellow part of the card's line ("+$24K", "2x")
+	Lo: string?, -- the white part ("CASH")
 	Price: string,
 	PriceColor: Color3?,
 	Enabled: boolean,
 	OnBuy: (() -> ())?,
 	GiftKey: string?,
 	Icon: string?,
-	Rarity: string?, -- egg tiles show the 3D egg
+	Rarity: string?, -- egg cards show the 3D egg
 	Tag: string?,
 }
 
 type Chip = { Icon: string?, Rarity: string?, Caption: string }
 
-type Page = {
+type Section = {
 	Key: string,
 	Title: string,
-	Heading: string?, -- the page's big yellow heading, if not the title
 	Icon: string,
-	Color: Color3,
-	Note: string,
+	Heading: Color3, -- heading and nav label colour
+	Card: Color3, -- card colour
 }
 
-local PAGES: { Page } = {
-	{ Key = "Deals", Title = "Deals", Heading = "Featured", Icon = "Icon_Star", Color = Color3.fromRGB(255, 77, 94), Note = "Big savings, not here for long!" },
-	{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Color = Color3.fromRGB(255, 95, 162), Note = "Hatch rare pets!" },
-	{ Key = "Passes", Title = "Passes", Icon = "Icon_Star", Color = Color3.fromRGB(155, 107, 255), Note = "Yours forever" },
-	{ Key = "Boosts", Title = "Boosts", Icon = "Icon_Luck", Color = Color3.fromRGB(255, 128, 48), Note = "The whole server gets it!" },
-	{ Key = "Potions", Title = "Potions", Icon = "Icon_PotionLuck", Color = Color3.fromRGB(46, 184, 160), Note = "Goes to your bag" },
-	{ Key = "Cash", Title = "Cash", Icon = "Icon_Cash", Color = Color3.fromRGB(46, 140, 230), Note = "More cash right now" },
+local SECTIONS: { Section } = {
+	{ Key = "Featured", Title = "Featured", Icon = "Icon_Gift", Heading = Color3.fromRGB(255, 212, 59), Card = Color3.fromRGB(255, 77, 94) },
+	{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Heading = Color3.fromRGB(255, 126, 182), Card = Color3.fromRGB(255, 95, 162) },
+	{ Key = "Passes", Title = "Passes", Icon = "Icon_Star", Heading = Color3.fromRGB(197, 155, 255), Card = Color3.fromRGB(155, 107, 255) },
+	{ Key = "Boosts", Title = "Boosts", Icon = "Icon_Luck", Heading = Color3.fromRGB(255, 154, 60), Card = Color3.fromRGB(255, 128, 48) },
+	{ Key = "Potions", Title = "Potions", Icon = "Icon_PotionLuck", Heading = Color3.fromRGB(94, 230, 200), Card = Color3.fromRGB(46, 184, 160) },
+	{ Key = "Money", Title = "Money", Icon = "Icon_Cash", Heading = Color3.fromRGB(107, 227, 74), Card = Color3.fromRGB(76, 209, 55) },
 }
-local PAGE_BY_KEY: { [string]: Page } = {}
-for _, page in PAGES do
-	PAGE_BY_KEY[page.Key] = page
-end
 -- Old section names other code may still open.
-local PAGE_ALIAS = { Tools = "Cash", Offers = "Deals" }
+local ALIAS = { Deals = "Featured", Offers = "Featured", Cash = "Money", Tools = "Money" }
 
-local PASS_INFO: { [string]: { Icon: string, Sub: string, Tag: string? } } = {
-	FastWalk = { Icon = "Icon_Speed", Sub = "Walk 30% faster", Tag = "NEW" },
-	BigBag = { Icon = "Icon_Backpack", Sub = "2x bag space", Tag = "NEW" },
-	Cash2x = { Icon = "Icon_Cash", Sub = "2x cash forever" },
-	Carry3 = { Icon = "Icon_Egg", Sub = "Carry 3 eggs" },
-	AutoSweep = { Icon = "Icon_Auto", Sub = "Sweeps for you" },
-	Lucky = { Icon = "Icon_LuckyClover", Sub = "+50% egg luck", Tag = "NEW" },
-	ExtraSlots = { Icon = "Icon_Alien", Sub = "+3 pets on your base" },
-	SellAnywhere = { Icon = "Icon_Sell", Sub = "Sell from anywhere" },
-	FasterHatch = { Icon = "Icon_Timer", Sub = "Eggs hatch 2x faster" },
-	VIP = { Icon = "Icon_Star", Sub = "Daily gift, luck, cash" },
+local PASS_INFO: { [string]: { Icon: string, Hi: string, Lo: string, Tag: string? } } = {
+	FastWalk = { Icon = "Icon_Speed", Hi = "+30%", Lo = "SPEED", Tag = "NEW" },
+	BigBag = { Icon = "Icon_Backpack", Hi = "2x", Lo = "BAG", Tag = "NEW" },
+	Cash2x = { Icon = "Icon_Cash", Hi = "2x", Lo = "CASH" },
+	Carry3 = { Icon = "Icon_Egg", Hi = "CARRY", Lo = "3 EGGS" },
+	AutoSweep = { Icon = "Icon_Auto", Hi = "AUTO", Lo = "SWEEP" },
+	Lucky = { Icon = "Icon_LuckyClover", Hi = "+50%", Lo = "LUCK", Tag = "NEW" },
+	ExtraSlots = { Icon = "Icon_Alien", Hi = "+3", Lo = "PET SLOTS" },
+	SellAnywhere = { Icon = "Icon_Sell", Hi = "SELL", Lo = "ANYWHERE" },
+	FasterHatch = { Icon = "Icon_Timer", Hi = "2x", Lo = "HATCH SPEED" },
+	VIP = { Icon = "Icon_Star", Hi = "", Lo = "VIP" },
 }
 
-local EGG_TIERS = {
-	{ Rarity = "Epic", Sub = "A sure Epic pet" },
-	{ Rarity = "Legendary", Sub = "A sure Legendary pet" },
-	{ Rarity = "Mythic", Sub = "A sure Mythic pet" },
-	{ Rarity = "Cosmic", Sub = "A sure Cosmic pet" },
-}
+local EGG_TIERS = { "Epic", "Legendary", "Mythic", "Cosmic" }
 
 -- Small buys that go to your bag, cheapest first.
 local POTIONS = {
-	{ Key = "LeafBomb3", Icon = "Icon_LeafBomb", Sub = "Clears leaves around you" },
-	{ Key = "LuckyClover1", Icon = "Icon_LuckyClover", Sub = "Next hatch: rarer!" },
-	{ Key = "LuckPotion3", Icon = "Icon_PotionLuck", Sub = "2x luck, 10 min each" },
-	{ Key = "CashPotion3", Icon = "Icon_PotionCash", Sub = "2x cash, 10 min each" },
-	{ Key = "MutationSpray1", Icon = "Icon_MutationSpray", Sub = "Mutates a growing egg" },
-	{ Key = "SuperLuckPotion1", Icon = "Icon_PotionSuperLuck", Sub = "3x luck, 15 min" },
-	{ Key = "MegaCashPotion1", Icon = "Icon_PotionMegaCash", Sub = "3x cash, 15 min" },
-	{ Key = "HugeCharm1", Icon = "Icon_HugeCharm", Sub = "Next hatch: 10x Huge" },
+	{ Key = "LeafBomb3", Icon = "Icon_LeafBomb", Hi = "3x", Lo = "LEAF BOMB" },
+	{ Key = "LuckyClover1", Icon = "Icon_LuckyClover", Hi = "", Lo = "LUCKY CLOVER" },
+	{ Key = "LuckPotion3", Icon = "Icon_PotionLuck", Hi = "3x", Lo = "LUCK POTION" },
+	{ Key = "CashPotion3", Icon = "Icon_PotionCash", Hi = "3x", Lo = "CASH POTION" },
+	{ Key = "MutationSpray1", Icon = "Icon_MutationSpray", Hi = "", Lo = "MUTATION SPRAY" },
+	{ Key = "SuperLuckPotion1", Icon = "Icon_PotionSuperLuck", Hi = "3x", Lo = "LUCK 15 MIN" },
+	{ Key = "MegaCashPotion1", Icon = "Icon_PotionMegaCash", Hi = "3x", Lo = "CASH 15 MIN" },
+	{ Key = "HugeCharm1", Icon = "Icon_HugeCharm", Hi = "10x", Lo = "HUGE CHANCE" },
 }
 
 local ShopController = {}
@@ -122,8 +113,8 @@ local ShopController = {}
 local C: any
 local gui: ScreenGui
 local list: ScrollingFrame
+local scale: UIScale
 local templates: { [string]: GuiObject } = {}
-local emptyLabel: TextLabel
 local giftPicker: Frame
 local giftList: ScrollingFrame
 local giftTemplate: TextButton
@@ -131,12 +122,11 @@ local giftEmpty: TextLabel
 local qtyPicker: Frame
 local qtyOptions: Frame
 local shopBadge: Frame?
-local tabList: ScrollingFrame
-local tabTemplate: TextButton
-local tabs: { [string]: TextButton } = {}
-local currentPage = "Deals"
+local nav: Frame
+local navButtons: { [string]: GuiButton } = {}
+local headings: { [string]: GuiObject } = {}
 local luckCard: Frame? = nil
--- Labels that count down every second while their page is open.
+-- Labels that count down every second while the shop is open.
 local timers: { () -> boolean } = {}
 
 local function toast(ok: boolean, message: string?)
@@ -152,9 +142,9 @@ local function prompt(key: string, giftTo: number?)
 	end
 end
 
--- "1d 22h 12m 5s Left" (the reference's timer style).
+-- "1d 22h 12m 5s" (the reference's timer style).
 local function leftText(seconds: number, gone: string): string
-	return if seconds > 0 then `{Format.dhms(seconds)} Left` else gone
+	return if seconds > 0 then Format.dhms(seconds) else gone
 end
 
 local function robuxPrice(price: number): string
@@ -204,14 +194,25 @@ local function showPicture(root: Instance, iconName: string?, rarity: string?)
 	end
 end
 
-local function productTile(key: string, sub: string, iconName: string?, tag: string?): Tile?
+local function line(hi: string?, lo: string?): string
+	local parts = {}
+	if hi and hi ~= "" then
+		table.insert(parts, `<font color="{YELLOW}">{hi}</font>`)
+	end
+	if lo and lo ~= "" then
+		table.insert(parts, lo)
+	end
+	return table.concat(parts, " ")
+end
+
+local function productTile(key: string, hi: string?, lo: string?, iconName: string?, tag: string?): Tile?
 	local def = Products.ProductByKey[key]
 	if not def or def.Id == 0 then
 		return nil
 	end
 	return {
-		Name = def.Name,
-		Sub = sub,
+		Hi = hi,
+		Lo = lo,
 		Price = robuxPrice(def.Price),
 		Icon = iconName,
 		Enabled = true,
@@ -311,18 +312,20 @@ local function place(object: GuiObject)
 	object.Parent = list
 end
 
-local function addTitle(page: Page)
-	local row = clone("PageTitle")
-	Ui.find(row, "Title").Text = `-- {string.upper(page.Heading or page.Title)} --`
-	Ui.find(row, "Note").Text = page.Note
+local function addHeading(section: Section)
+	local row = clone("Heading")
+	row.Name = "Heading_" .. section.Key
+	local title = Ui.find(row, "Title") :: TextLabel
+	title.Text = `-- {string.upper(section.Title)} --`
+	title.TextColor3 = section.Heading
+	headings[section.Key] = row
 	place(row)
 end
 
-local function buildTile(item: Tile, color: Color3): Frame
-	local card = clone("Tile")
+local function buildCard(item: Tile, color: Color3): Frame
+	local card = clone("Card")
 	tint(card, if item.Enabled then color else GREY)
-	Ui.find(card, "Name").Text = item.Name
-	Ui.find(card, "Sub").Text = item.Sub
+	Ui.find(card, "Label").Text = line(item.Hi, item.Lo)
 	showPicture(card, item.Icon, item.Rarity)
 	local tag = Ui.find(card, "Tag") :: Frame
 	tag.Visible = item.Tag ~= nil
@@ -343,6 +346,10 @@ local function buildTile(item: Tile, color: Color3): Frame
 			openGiftPicker(giftKey)
 		end)
 	end
+	if not gift.Visible then
+		-- No gift button: the price takes the whole row.
+		buy.Size = UDim2.new(1, -16, 0, buy.Size.Y.Offset)
+	end
 	return card
 end
 
@@ -352,21 +359,18 @@ local function addGrid(items: { Tile }, color: Color3)
 	end
 	local grid = clone("Grid")
 	for i, item in items do
-		local tile = buildTile(item, color)
-		tile.LayoutOrder = i
-		tile.Parent = grid
+		local card = buildCard(item, color)
+		card.LayoutOrder = i
+		card.Parent = grid
 	end
 	place(grid)
 end
 
--- A big banner: tag, title, what's inside as pictures, a timer and the price.
+-- A big banner (the Starter Pack): tag, title, what's inside as pictures, timer, price.
 local function addBanner(opts: {
 	Tag: string,
-	TagColor: Color3?,
 	Title: string,
-	TitleColor: Color3?,
 	Color: Color3,
-	Art: string?,
 	Chips: { Chip },
 	Ends: number?,
 	Worth: number?,
@@ -375,18 +379,8 @@ local function addBanner(opts: {
 })
 	local banner = clone("Banner")
 	tint(banner, opts.Color)
-	local art = Ui.find(banner, "Art") :: ImageLabel
-	art.Image = if opts.Art then AssetLibrary.image(opts.Art) else ""
-	art.Visible = opts.Art ~= nil
 	Ui.find(banner, "Tag.Label").Text = opts.Tag
-	if opts.TagColor then
-		tint(Ui.find(banner, "Tag"), opts.TagColor)
-	end
-	local titleLabel = Ui.find(banner, "Title") :: TextLabel
-	titleLabel.Text = opts.Title
-	if opts.TitleColor then
-		titleLabel.TextColor3 = opts.TitleColor
-	end
+	Ui.find(banner, "Title").Text = string.upper(opts.Title)
 	local row = Ui.find(banner, "Items") :: Frame
 	for i, chip in opts.Chips do
 		local c = clone("Chip")
@@ -480,8 +474,9 @@ end
 
 -------------------------------------------------------------------------- limited egg
 
--- The limited egg banner: title, New! sticker, "1d 22h 12m Left", every pet you can get
--- with its odds (rarest last), and a buy cell per pack with its gift button.
+-- The limited egg banner (Dev's "Halloween Egg" reference): New! tag, title, Limited
+-- Time!, timer, the egg on the left, pet cards that grow with rarity (the rarest big with
+-- a rainbow border) and buy cells biggest first, each with a gift button.
 local function addEggBanner(now: number)
 	local packs = Products.limitedEggPacks(now)
 	if #packs == 0 then
@@ -489,35 +484,54 @@ local function addEggBanner(now: number)
 	end
 	local banner = clone("EggBanner")
 	banner.Name = "LimitedEgg"
-	Ui.find(banner, "Title").Text = LimitedEgg.Name
+	Ui.find(banner, "Title").Text = string.upper(LimitedEgg.Name)
+	ModelView.show(Ui.find(banner, "Egg"), AssetLibrary.egg(LimitedEgg.EggRarity), "Egg_" .. LimitedEgg.EggRarity)
 	local pets = Ui.find(banner, "Pets") :: Frame
-	for i, entry in LimitedEgg.Odds do
+	local odds = table.clone(LimitedEgg.Odds)
+	table.sort(odds, function(a, b)
+		return a.Chance > b.Chance
+	end)
+	for i, entry in odds do
 		local def = Aliens.ById[entry.Pet]
 		if def then
-			local card = clone("PetCard")
+			local rarest = i == #odds
+			local card = clone(if rarest then "BigPet" else "PetCard")
+			card.Name = def.Id
 			card.LayoutOrder = i
+			if not rarest then
+				local px = PET_SIZES[math.min(i, #PET_SIZES)]
+				card.Size = UDim2.fromOffset(px, px)
+			end
+			local chance = Ui.find(card, "Chance") :: TextLabel
+			chance.Text = `{entry.Chance}%`
 			local rarity = Eggs.ByName[def.Rarity]
-			tint(card, if rarity then rarity.Color else GREY)
-			Ui.find(card, "Chance").Text = `{entry.Chance}%`
-			Ui.find(card, "Name").Text = def.Name
+			if rarity and Eggs.order(def.Rarity) >= Eggs.order("Mythic") then
+				chance.TextColor3 = Color3.fromRGB(255, 227, 77)
+			end
 			card.Parent = pets
 			ModelView.show(Ui.find(card, "Model"), AssetLibrary.alien(def.Id), "Alien_" .. def.Id)
 		end
 	end
-	local cheapest = math.huge
-	for _, def in packs do
-		cheapest = math.min(cheapest, def.Price / (def.Count or 1))
-	end
+	local single = packs[1].Price / (packs[1].Count or 1)
 	local buys = Ui.find(banner, "Buys") :: Frame
-	for i, def in packs do
+	for i = #packs, 1, -1 do
+		local def = packs[i]
 		local count = def.Count or 1
 		local cell = clone("BuyCell")
-		cell.LayoutOrder = i
+		cell.LayoutOrder = #packs - i + 1
 		Ui.find(cell, "Count").Text = if count == 1 then "1 Egg" else `{count} Eggs`
-		;(Ui.find(cell, "Tag") :: Frame).Visible = count > 1 and def.Price / count <= cheapest
+		local buy = Ui.find(cell, "Buy") :: TextButton
+		setPrice(buy, robuxPrice(def.Price), ROBUX)
+		if i == #packs and count > 1 then
+			-- The biggest pack: rainbow button with what the same eggs cost one by one.
+			(Ui.find(buy, "Rainbow") :: UIGradient).Enabled = true
+			tint(buy, WHITE)
+			local worth = Ui.find(cell, "Worth") :: TextLabel
+			worth.Visible = true
+			worth.Text = robuxPrice(math.floor(single * count + 0.5))
+		end
 		local key = def.Key
-		setPrice(Ui.find(cell, "Buy"), robuxPrice(def.Price), ROBUX)
-		Ui.button(Ui.find(cell, "Buy"), function()
+		Ui.button(buy, function()
 			prompt(key)
 		end)
 		local gift = Ui.find(cell, "Gift") :: TextButton
@@ -538,7 +552,7 @@ local function addEggBanner(now: number)
 	place(banner)
 end
 
--------------------------------------------------------------------------- deals
+-------------------------------------------------------------------------- featured
 
 local function productIcon(key: string): string
 	local def = Products.ProductByKey[key]
@@ -584,7 +598,7 @@ local function specialCount(data): number
 		+ #liveOffers(data)
 end
 
-local function buildDeals(data)
+local function buildFeatured(data)
 	local now = workspace:GetServerTimeNow()
 	addEggBanner(now)
 	local starterEnds = Products.starterPackEnds(data, now)
@@ -592,7 +606,7 @@ local function buildDeals(data)
 		local pack = Economy.StarterPack
 		local cash = data.CashPacks and data.CashPacks.StarterPack
 		addBanner({
-			Tag = "SPECIAL OFFER",
+			Tag = "OFFER",
 			Title = "Starter Pack",
 			Color = Color3.fromRGB(255, 77, 94),
 			Chips = {
@@ -632,17 +646,16 @@ local function buildDeals(data)
 	end
 end
 
--------------------------------------------------------------------------- other pages
+-------------------------------------------------------------------------- other sections
 
 local function buildEggs(data, color: Color3)
 	local tiles: { Tile } = {}
-	for _, tier in EGG_TIERS do
-		local packs = Products.eggPacks(tier.Rarity)
+	for _, rarity in EGG_TIERS do
+		local packs = Products.eggPacks(rarity)
 		if #packs > 0 then
-			local rarity = tier.Rarity
 			table.insert(tiles, {
-				Name = `{rarity} Egg`,
-				Sub = tier.Sub,
+				Hi = string.upper(rarity),
+				Lo = "EGG",
 				Price = robuxPrice(packs[1].Price),
 				Rarity = rarity,
 				Enabled = true,
@@ -657,9 +670,8 @@ local function buildEggs(data, color: Color3)
 	for _, entry in data.Hatching do
 		if not seen[entry.Rarity] then
 			seen[entry.Rarity] = true
-			local tile = productTile("SkipHatch" .. entry.Rarity, `Hatch your {entry.Rarity} egg now`, "Icon_Timer", "INSTANT")
+			local tile = productTile("SkipHatch" .. entry.Rarity, "SKIP", `{string.upper(entry.Rarity)} HATCH`, "Icon_Timer", "INSTANT")
 			if tile then
-				tile.Name = "Skip Hatch"
 				table.insert(tiles, tile)
 			end
 		end
@@ -682,8 +694,8 @@ local function buildPasses(data, color: Color3)
 			local owned = data.Gamepasses[pass.Key] == true
 			local info = PASS_INFO[pass.Key]
 			table.insert(tiles, {
-				Name = pass.Name,
-				Sub = if info then info.Sub else "",
+				Hi = if info then info.Hi else "",
+				Lo = if info then info.Lo else string.upper(pass.Name),
 				Price = if owned then "Owned" else robuxPrice(pass.Price),
 				Enabled = not owned,
 				Icon = if info then info.Icon else "Icon_Star",
@@ -703,10 +715,10 @@ local function buildBoosts(_data, color: Color3)
 	addLuckCard()
 	local tiles: { Tile } = {}
 	for _, entry in {
-		{ "WeatherTotem1", "Lucky weather for all", "Icon_WeatherTotem" },
-		{ "MeteorShower", "Eggs fall for everyone", "Icon_Meteor" },
+		{ "WeatherTotem1", "WEATHER", "TOTEM", "Icon_WeatherTotem" },
+		{ "MeteorShower", "EGG", "RAIN", "Icon_Meteor" },
 	} do
-		local tile = productTile(entry[1], entry[2], entry[3])
+		local tile = productTile(entry[1], entry[2], entry[3], entry[4])
 		if tile then
 			table.insert(tiles, tile)
 		end
@@ -717,7 +729,7 @@ end
 local function buildPotions(_data, color: Color3)
 	local tiles: { Tile } = {}
 	for _, entry in POTIONS do
-		local tile = productTile(entry.Key, entry.Sub, entry.Icon, entry.Tag)
+		local tile = productTile(entry.Key, entry.Hi, entry.Lo, entry.Icon)
 		if tile then
 			table.insert(tiles, tile)
 		end
@@ -725,12 +737,12 @@ local function buildPotions(_data, color: Color3)
 	addGrid(tiles, color)
 end
 
-local function buildCash(data, color: Color3)
+local function buildMoney(data, color: Color3)
 	local tiles: { Tile } = {}
 	for _, key in { "Cash1", "Cash2", "Cash3", "Cash4", "Cash5" } do
 		-- The server works out each pack's amount for this player (it grows with progress).
 		local amount = data.CashPacks and data.CashPacks[key]
-		local tile = productTile(key, if amount then `+{Format.cash(amount)}` else "Grows with you", "Icon_Cash")
+		local tile = productTile(key, if amount then Format.cash(amount) else "CASH", nil, "Icon_Cash")
 		if tile then
 			table.insert(tiles, tile)
 		end
@@ -738,110 +750,96 @@ local function buildCash(data, color: Color3)
 	local tier = data.ToolTier + 1
 	if tier <= Tools.MaxTier and tier > Tools.FreeTier then
 		local def = Tools.get(tier)
-		local skip = productTile("ToolSkip" .. tier, "Your next tool now", "Icon_Tool_" .. def.Id, "INSTANT")
+		local skip = productTile("ToolSkip" .. tier, "GET", string.upper(def.Name), "Icon_Tool_" .. def.Id, "INSTANT")
 		if skip then
-			skip.Name = def.Name
 			table.insert(tiles, skip)
 		end
 	end
 	local skipDef = Products.skipRebirthFor(data.Rebirths)
-	local skip = skipDef and productTile(skipDef.Key, `Jump to Rebirth {data.Rebirths + 1}`, "Icon_Rebirth")
+	local skip = skipDef and productTile(skipDef.Key, "SKIP", "REBIRTH", "Icon_Rebirth")
 	if skip then
-		skip.Name = "Skip Rebirth"
 		table.insert(tiles, skip)
 	end
 	addGrid(tiles, color)
 end
 
 local BUILDERS: { [string]: (any, Color3) -> () } = {
-	Deals = function(data)
-		buildDeals(data)
+	Featured = function(data)
+		buildFeatured(data)
 	end,
 	Eggs = buildEggs,
 	Passes = buildPasses,
 	Boosts = buildBoosts,
 	Potions = buildPotions,
-	Cash = buildCash,
+	Money = buildMoney,
 }
 
 -------------------------------------------------------------------------- render
 
-local function pageVisible(key: string, data): boolean
-	if key == "Deals" then
-		return specialCount(data) > 0
+-- Scrolls the list so a section's heading is at the top.
+local function jumpTo(key: string)
+	local heading = headings[key]
+	if not heading or not heading.Parent then
+		return
 	end
-	return true
+	local k = if scale.Scale > 0 then scale.Scale else 1
+	local y = (heading.AbsolutePosition.Y - list.AbsolutePosition.Y) / k + list.CanvasPosition.Y
+	list.CanvasPosition = Vector2.new(0, math.max(0, y - 4))
 end
 
-local function setLit(key: string)
-	for k, button in tabs do
-		local on = k == key
-		local lit = button:FindFirstChild("Lit") :: GuiObject?
-		if lit then
-			lit.Visible = on
-		end
-		local stroke = button:FindFirstChild("Stroke") :: UIStroke?
-		if stroke then
-			stroke.Color = if on then WHITE else INK
-		end
-	end
-end
-
-local render: () -> ()
-
-local function buildTabs()
-	for i, page in PAGES do
-		local button = tabTemplate:Clone()
-		button.Name = "Tab_" .. page.Key
+local function buildNav()
+	local template = Ui.find(nav, "NavButton") :: GuiButton
+	for i, section in SECTIONS do
+		local button = template:Clone()
+		button.Name = section.Key
 		button.LayoutOrder = i
 		button.Visible = true
-		tint(button, page.Color)
-		Ui.setText(button, page.Title)
-		Ui.find(button, "Icon").Image = AssetLibrary.image(page.Icon)
-		button.Parent = tabList
-		local key = page.Key
+		Ui.find(button, "Icon").Image = AssetLibrary.image(section.Icon)
+		Ui.find(button, "Label").Text = section.Title
+		button.Parent = nav
+		local key = section.Key
 		Ui.button(button, function()
-			if currentPage ~= key then
-				currentPage = key
-				list.CanvasPosition = Vector2.zero
-				render()
-			end
+			jumpTo(key)
 		end)
-		tabs[key] = button
+		navButtons[key] = button
 	end
 end
 
-function render()
+local function render()
 	local data = State.data
 	if not data then
 		return
 	end
 	local specials = specialCount(data)
 	Ui.setBadge(shopBadge, specials)
-	local dealsTab = tabs.Deals
-	if dealsTab then
-		dealsTab.Visible = specials > 0
-		Ui.setBadge(dealsTab:FindFirstChild("Badge") :: Frame?, specials)
+	local featured = navButtons.Featured
+	if featured then
+		featured.Visible = specials > 0
 	end
 	if not gui.Enabled then
 		return
 	end
-	if not pageVisible(currentPage, data) then
-		currentPage = "Eggs"
-	end
+	local scroll = list.CanvasPosition
 	for _, child in list:GetChildren() do
 		if child:GetAttribute("Built") then
 			child:Destroy()
 		end
 	end
 	table.clear(timers)
+	table.clear(headings)
 	luckCard = nil
 	nextOrder = 0
-	local page = PAGE_BY_KEY[currentPage]
-	addTitle(page)
-	BUILDERS[page.Key](data, page.Color)
-	emptyLabel.Visible = nextOrder <= 1
-	setLit(page.Key)
+	for _, section in SECTIONS do
+		local before = nextOrder
+		addHeading(section)
+		BUILDERS[section.Key](data, section.Card)
+		if nextOrder == before + 1 then
+			-- Nothing for sale here right now: no lone heading.
+			headings[section.Key]:Destroy()
+			headings[section.Key] = nil
+		end
+	end
+	list.CanvasPosition = scroll
 end
 
 local function tickTimers(): boolean
@@ -853,18 +851,18 @@ local function tickTimers(): boolean
 end
 
 local function open(section: string?)
-	local key = section and (PAGE_ALIAS[section] or section)
-	local data = State.data
-	if key and PAGE_BY_KEY[key] then
-		currentPage = key
-	elseif data then
-		-- Deals first while there's a deal; otherwise eggs (what kids come for).
-		currentPage = if specialCount(data) > 0 then "Deals" else "Eggs"
-	end
+	local key = section and (ALIAS[section] or section)
 	giftPicker.Visible = false
 	qtyPicker.Visible = false
-	render()
 	list.CanvasPosition = Vector2.zero
+	render()
+	if key and key ~= "Featured" then
+		-- Let the list lay out before measuring where the section is.
+		task.defer(function()
+			task.wait()
+			jumpTo(key)
+		end)
+	end
 end
 
 function ShopController:Toggle()
@@ -874,7 +872,7 @@ function ShopController:Toggle()
 	end
 end
 
--- Opens the shop at a page ("Deals", "Eggs", "Passes", "Boosts", "Potions", "Cash").
+-- Opens the shop at a section ("Featured", "Eggs", "Passes", "Boosts", "Potions", "Money").
 function ShopController:Open(section: string?)
 	Ui.open("Shop")
 	open(section)
@@ -888,11 +886,12 @@ end
 function ShopController:Init(controllers)
 	C = controllers
 	gui = Ui.screen("Shop")
-	list = Ui.find(gui, "Window.List")
-	for _, name in { "PageTitle", "Banner", "Chip", "EggBanner", "PetCard", "BuyCell", "Offer", "LuckCard", "Grid", "Tile" } do
+	list = Ui.find(gui, "Window.Panel.List")
+	scale = Ui.find(gui, "Window.AutoScale")
+	nav = Ui.find(gui, "Window.Nav")
+	for _, name in { "Heading", "Grid", "Card", "Banner", "Chip", "EggBanner", "PetCard", "BigPet", "BuyCell", "Offer", "LuckCard" } do
 		templates[name] = Ui.find(gui, "Window." .. name)
 	end
-	emptyLabel = Ui.find(gui, "Window.Empty")
 	giftPicker = Ui.find(gui, "Window.GiftPicker")
 	giftList = Ui.find(gui, "Window.GiftPicker.List")
 	giftTemplate = Ui.find(gui, "Window.GiftPicker.List.Template")
@@ -901,13 +900,11 @@ function ShopController:Init(controllers)
 	qtyOptions = Ui.find(gui, "Window.QtyPicker.Options")
 	templates.Option = Ui.find(qtyOptions, "Option")
 	shopBadge = Ui.find(Ui.screen("Hud"), "Rail.ShopButton.Badge")
-	tabList = Ui.find(gui, "Window.Tabs.List")
-	tabTemplate = Ui.find(gui, "Window.Tabs.List.Template")
 end
 
 function ShopController:Start()
-	buildTabs()
-	Ui.button(Ui.find(gui, "Window.Close"), function()
+	buildNav()
+	Ui.button(Ui.find(gui, "Window.Panel.Header.Close"), function()
 		Ui.close("Shop")
 	end)
 	Ui.button(Ui.find(gui, "Dim"), function()
@@ -919,13 +916,13 @@ function ShopController:Start()
 	Ui.button(Ui.find(qtyPicker, "Close"), function()
 		qtyPicker.Visible = false
 	end)
-	-- Dev Academy tip: the server opens the Shop at Cash on the 3rd "not enough cash".
+	-- Dev Academy tip: the server opens the Shop at Money on the 3rd "not enough cash".
 	Net.event("OpenShop").OnClientEvent:Connect(function(section: any)
 		if not gui.Enabled then
-			ShopController:Open(if type(section) == "string" then section else "Cash")
+			ShopController:Open(if type(section) == "string" then section else "Money")
 		end
 	end)
-	-- Income changes cash every second; only rebuild when something the page shows changed.
+	-- Income changes cash every second; only rebuild when something the shop shows changed.
 	local lastSignature = ""
 	State.Changed:Connect(function(data)
 		local nextTool = Tools.get(math.min(data.ToolTier + 1, Tools.MaxTier))

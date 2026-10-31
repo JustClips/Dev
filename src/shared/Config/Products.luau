@@ -68,6 +68,7 @@ local Products: { ProductDef } = {
 	{ Key = "HalloweenEgg1", Id = 3725068763, Price = 59, Name = "Halloween Egg", Kind = "LimitedEgg", Category = "Special", Giftable = true, Count = 1 },
 	{ Key = "HalloweenEgg3", Id = 3725068779, Price = 149, Name = "3 Halloween Eggs", Kind = "LimitedEgg", Category = "Special", Giftable = true, Count = 3 },
 	{ Key = "HalloweenEgg10", Id = 3725068801, Price = 449, Name = "10 Halloween Eggs", Kind = "LimitedEgg", Category = "Special", Giftable = true, Count = 10 },
+	{ Key = "HalloweenEgg50", Id = 3725079092, Price = 1999, Name = "50 Halloween Eggs", Kind = "LimitedEgg", Category = "Special", Giftable = true, Count = 50 },
 
 	-- "Next tool now": priced per target tier.
 	{ Key = "ToolSkip2", Id = 3723358874, Price = 3, Name = "Unlock Broom", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 2 },
