@@ -756,15 +756,22 @@ layout = function(s: number, compact: boolean)
 	HudController.RightDrop = math.max(0, spinY + SPIN_H + 6 - 8)
 	local barY = top + pillsH + math.ceil(5 * s)
 	HudController.barY = barY
-	el.MoonPanel.Position = UDim2.new(0.5, 0, 0, barY)
-	el.ZonePicker.Position = UDim2.new(0.5, 0, 0, barY)
+	-- The World Cleaned bar and the Quests strip line up with the pills row (Dev,
+	-- 2026-10-31: "why this not centered"): same centre (the pills can be shifted right of
+	-- Roblox's buttons) and the same width. The bar's star sticks out on the left, so the
+	-- panel is 24 px wider and moved left by half of that.
+	local rowW = math.max(360, el.Pills.Size.X.Offset)
+	el.MoonPanel.Size = UDim2.fromOffset(rowW + 24, el.MoonPanel.Size.Y.Offset)
+	el.MoonPanel.Position = UDim2.new(0.5, shift - math.floor(12 * s), 0, barY)
+	el.ZonePicker.Position = UDim2.new(0.5, shift, 0, barY)
 	-- The quests strip (QuestController) sits right under the World Cleaned bar; the
 	-- announcement and toasts go under it.
 	local goals = el.Quests :: GuiObject
-	goals.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(48 * s))
+	goals.Size = UDim2.fromOffset(rowW, goals.Size.Y.Offset)
+	goals.Position = UDim2.new(0.5, shift, 0, barY + math.ceil(48 * s))
 	local goalsH = if goals.Visible then math.ceil(36 * s) else 0
-	el.Announcement.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(52 * s) + goalsH)
-	el.Toasts.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(54 * s) + goalsH + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
+	el.Announcement.Position = UDim2.new(0.5, shift, 0, barY + math.ceil(52 * s) + goalsH)
+	el.Toasts.Position = UDim2.new(0.5, shift, 0, barY + math.ceil(54 * s) + goalsH + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
 	local hotbarTop = 12 + math.ceil(88 * s)
 	el.Hint.Position = UDim2.new(0.5, 0, 1, -(hotbarTop + math.ceil(12 * s)))
 	local walletLayout = el.Wallet:FindFirstChildOfClass("UIListLayout")
