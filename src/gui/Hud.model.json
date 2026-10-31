@@ -11730,7 +11730,7 @@
    ]
   },
   {
-   "name": "Combo",
+   "name": "ComboCounter",
    "className": "Frame",
    "properties": {
     "Size": [
@@ -11746,7 +11746,7 @@
     "Position": [
      [
       0.5,
-      100
+      170
      ],
      [
       0.5,

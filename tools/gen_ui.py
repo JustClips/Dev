@@ -583,7 +583,8 @@ def hud():
     # other side (ComboBurst). The pop runs on Body.Pop so it doesn't fight AutoScale.
     def blue():
         return node("Shade", "UIGradient", {"Color": {"keypoints": [[0, "#BDEBFF"], [0.5, "#5BB8FF"], [1, "#2A6FE8"]]}, "Rotation": 90})
-    combo = frame("Combo", U(0, 280, 0, 120), U(0.5, 100, 0.5, -50), (0, 0.5), Visible=False, Rotation=-5, children=[
+    # Named ComboCounter: the old "Combo" frame lived on in synced Studio places (Dev saw both).
+    combo = frame("ComboCounter", U(0, 280, 0, 120), U(0.5, 170, 0.5, -50), (0, 0.5), Visible=False, Rotation=-5, children=[
         autoscale(0.8),
         frame("Body", U(1, 0, 1, 0), children=[
             node("Pop", "UIScale", {"Scale": 1}),

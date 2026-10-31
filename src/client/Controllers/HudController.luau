@@ -709,11 +709,19 @@ function HudController:Init(controllers)
 	el.Goals = Ui.find(hud, "Goals")
 	el.Toasts = Ui.find(hud, "Toasts")
 	el.Hint = Ui.find(hud, "Hint")
-	el.Combo = Ui.find(hud, "Combo")
-	el.ComboFill = Ui.find(hud, "Combo.Body.Bar.Fill")
-	el.ComboPop = Ui.find(hud, "Combo.Body.Pop")
-	el.ComboLabel = Ui.find(hud, "Combo.Body.Label")
-	el.ComboMult = Ui.find(hud, "Combo.Body.Mult")
+	-- Studio places synced before the combo rework still hold the old frame: drop it.
+	local stale = hud:FindFirstChild("Combo")
+	if stale then
+		stale:Destroy()
+	end
+	el.Combo = Ui.find(hud, "ComboCounter")
+	el.ComboShade = Ui.find(hud, "ComboCounter.Body.Label.Shade")
+	el.ComboFrom = 0
+	el.BurstShade = Ui.find(hud, "ComboBurst.Body.Word.Shade")
+	el.ComboFill = Ui.find(hud, "ComboCounter.Body.Bar.Fill")
+	el.ComboPop = Ui.find(hud, "ComboCounter.Body.Pop")
+	el.ComboLabel = Ui.find(hud, "ComboCounter.Body.Label")
+	el.ComboMult = Ui.find(hud, "ComboCounter.Body.Mult")
 	el.Burst = Ui.find(hud, "ComboBurst")
 	el.BurstPop = Ui.find(hud, "ComboBurst.Body.Pop")
 	el.BurstRays = Ui.find(hud, "ComboBurst.Body.Rays")
@@ -740,10 +748,47 @@ local MILESTONES = {
 }
 local MILESTONE_EVERY = 5000 -- past the list: GODLIKE! every 5000
 
+-- The counter (and the milestone word) change colour as the combo climbs:
+-- blue -> green -> gold -> orange -> red -> purple, then a rainbow past 5000.
+local COMBO_COLORS = {
+	{ at = 0, color = Color3.fromRGB(91, 184, 255) },
+	{ at = 100, color = Color3.fromRGB(92, 222, 92) },
+	{ at = 250, color = Color3.fromRGB(255, 206, 46) },
+	{ at = 500, color = Color3.fromRGB(255, 140, 40) },
+	{ at = 1000, color = Color3.fromRGB(255, 70, 90) },
+	{ at = 2500, color = Color3.fromRGB(190, 90, 255) },
+}
+local RAINBOW_FROM = 5000
+
+local function comboColor(count: number): Color3
+	if count >= RAINBOW_FROM then
+		return Color3.fromHSV((os.clock() * 0.25) % 1, 0.75, 1)
+	end
+	local color = COMBO_COLORS[1].color
+	for _, step in COMBO_COLORS do
+		if count >= step.at then
+			color = step.color
+		end
+	end
+	return color
+end
+
+-- Light on top, the colour in the middle, darker at the bottom (like the reference).
+local function shade(gradient: UIGradient?, color: Color3)
+	if gradient then
+		gradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, color:Lerp(Color3.new(1, 1, 1), 0.65)),
+			ColorSequenceKeypoint.new(0.5, color),
+			ColorSequenceKeypoint.new(1, color:Lerp(Color3.new(0, 0, 0), 0.3)),
+		})
+	end
+end
+
 -- "553", "12345", then "1.2M" once it gets silly.
 local function comboText(n: number): string
 	return if n < 100_000 then tostring(math.floor(n)) else Format.number(n)
 end
+local COMBO_ROLL = 0.35 -- seconds the number takes to roll up to a new count
 local comboToken = 0
 local comboShown = 0
 local comboHold = 1.8
@@ -803,6 +848,13 @@ local function showBurst(at: number, word: string)
 	;(el.BurstWord :: TextLabel).Text = word
 	;(el.BurstSub :: TextLabel).Text = `x{comboText(at)} COMBO`
 	drawRays(rays)
+	local color = comboColor(at)
+	shade(el.BurstShade, color)
+	for _, ray in rays:GetChildren() do
+		if ray:IsA("Frame") then
+			ray.BackgroundColor3 = color:Lerp(Color3.new(0, 0, 0), 0.25)
+		end
+	end
 	frame.Visible = true
 	Ui.sound("Combo", 1.5)
 	if not Ui.reducedMotion() then
@@ -841,7 +893,18 @@ function HudController:SetCombo(count: number, mult: number?, hold: number?)
 		return
 	end
 	comboHold = hold or comboHold
-	label.Text = "x" .. comboText(count)
+	-- The number rolls up to the new count instead of jumping (RenderStepped below).
+	if count < comboShown or not frame.Visible then
+		el.ComboFrom = math.max(0, count - 1)
+		label.Text = "x" .. comboText(count)
+	else
+		el.ComboFrom = el.ComboShownValue or comboShown
+	end
+	el.ComboTarget = count
+	el.ComboRollAt = os.clock()
+	local color = comboColor(count)
+	shade(el.ComboShade, color)
+	el.ComboFill.BackgroundColor3 = color
 	;(el.ComboMult :: TextLabel).Text = string.format("Cash x%.1f", mult or 1)
 	comboEnds = os.clock() + comboHold
 	frame.Visible = true
@@ -888,6 +951,19 @@ function HudController:Start()
 		local combo = el.Combo :: Frame
 		if combo.Visible then
 			el.ComboFill.Size = UDim2.fromScale(math.clamp((comboEnds - os.clock()) / comboHold, 0, 1), 1)
+			local target = el.ComboTarget or 0
+			local a = math.clamp((os.clock() - (el.ComboRollAt or 0)) / COMBO_ROLL, 0, 1)
+			a = 1 - (1 - a) ^ 3 -- ease out
+			local value = math.floor(el.ComboFrom + (target - el.ComboFrom) * a + 0.5)
+			if value ~= el.ComboShownValue then
+				el.ComboShownValue = value
+				el.ComboLabel.Text = "x" .. comboText(value)
+			end
+			if target >= RAINBOW_FROM then
+				local color = comboColor(target)
+				shade(el.ComboShade, color)
+				el.ComboFill.BackgroundColor3 = color
+			end
 		end
 	end)
 
