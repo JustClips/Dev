@@ -13,12 +13,14 @@
 -- Floor x the price of the next thing they're saving for.
 
 export type Reward = {
-	Kind: string, -- "Cash" | "Item" | "Egg" | "Spin" (Lucky Wheel spins)
+	Kind: string, -- "Cash" | "Item" | "Egg" | "Spin" (Lucky Wheel spins) | "Pet"
 	Seconds: number?, -- Cash
 	Floor: number?, -- Cash
 	Item: string?, -- Item
 	Amount: number?, -- Item, Spin
 	Rarity: string?, -- Egg
+	Pet: string?, -- Pet: a pet id, or "Daily" for the player's next daily exclusive
+	Bonus: Reward?, -- given along with this one (shown as "+ ...")
 }
 
 export type EventDef = {
@@ -33,14 +35,17 @@ export type EventDef = {
 
 local Rewards = {}
 
+-- Dev (2026-10-31): daily rewards should be worth coming back for, so they give things
+-- playtime gifts don't: a Super Luck Potion on day 2, a Huge Charm on day 5 and an
+-- exclusive pet on day 7 (a new one each finished week, Aliens.Exclusives.Daily).
 Rewards.Daily = {
 	{ Kind = "Cash", Seconds = 300, Floor = 0.3 },
-	{ Kind = "Item", Item = "LuckPotion", Amount = 1 },
+	{ Kind = "Item", Item = "SuperLuckPotion", Amount = 1 },
 	{ Kind = "Cash", Seconds = 600, Floor = 0.5 },
 	{ Kind = "Item", Item = "CashPotion", Amount = 2 },
-	{ Kind = "Egg", Rarity = "Rare" },
+	{ Kind = "Egg", Rarity = "Rare", Bonus = { Kind = "Item", Item = "HugeCharm", Amount = 1 } },
 	{ Kind = "Item", Item = "HatchPotion", Amount = 2 },
-	{ Kind = "Egg", Rarity = "Epic" },
+	{ Kind = "Pet", Pet = "Daily", Bonus = { Kind = "Egg", Rarity = "Epic" } },
 } :: { Reward }
 
 -- Minutes of play in one session -> gift. Claimed ones reset when the player rejoins.

@@ -122,6 +122,7 @@ export type AlienDef = {
 	Size: number,
 	Zone: string?, -- the zone whose eggs hatch it (nil = Landing)
 	Base: string?, -- zone variants: the Landing alien whose model they remix
+	Exclusive: string?, -- "Daily": only from that reward, never from eggs
 	Passive: PetPassive?, -- bonus while placed (shared/PetPassives)
 }
 
@@ -254,7 +255,7 @@ export type ProfileData = {
 	Gamepasses: { [string]: boolean },
 	-- Passes a friend gifted (gift products); count as owned for good.
 	GiftedPasses: { [string]: boolean },
-	Daily: { Streak: number, LastDay: number, LastClaim: number? },
+	Daily: { Streak: number, LastDay: number, LastClaim: number?, Weeks: number? },
 	Spins: number,
 	RedeemedCodes: { [string]: number },
 	ReceiptsGranted: { [string]: string },
@@ -298,7 +299,7 @@ export type PlayerSnapshot = {
 	BaseSkins: { Owned: { [string]: boolean }, Equipped: string }?,
 	Boosts: { [string]: number },
 	Gamepasses: { [string]: boolean },
-	Daily: { Streak: number, LastDay: number, LastClaim: number? },
+	Daily: { Streak: number, LastDay: number, LastClaim: number?, Weeks: number? },
 	-- RewardService:Snapshot (daily card, session playtime, stay offer, group, event)
 	Rewards: { [string]: any }?,
 	FriendsHere: number, -- friends in this server (friend luck boost)

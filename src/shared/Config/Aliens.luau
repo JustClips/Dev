@@ -230,6 +230,22 @@ local List: { AlienDef } = {
 		Passive = { Name = "Overdrive", Stat = "Power", Value = 0.35 } },
 	{ Id = "AuroraWhale", Name = "Aurora Whale", Rarity = "Cosmic", Zone = "Europa", Income = 135_000_000, Color = Color3.fromRGB(79, 216, 255), Size = 5.5,
 		Passive = { Name = "Northern Lights", Stat = "Cash", Value = 0.3 } },
+
+	-- Daily reward exclusives (Dev, 2026-10-31): never in eggs. Day 7 of the daily streak
+	-- gives the next one (Aliens.Exclusives.Daily), so a full set takes 4 weeks. Their
+	-- passives are percentages, so they stay worth placing in every zone.
+	{ Id = "Capybara", Name = "Sunny Capybara", Rarity = "Legendary", Zone = "Daily", Exclusive = "Daily", Income = 1_500,
+		Color = Color3.fromRGB(196, 146, 96), Size = 2.4,
+		Passive = { Name = "Sunny Day", Stat = "Cash", Value = 0.15 } },
+	{ Id = "Axolotl", Name = "Rainbow Axolotl", Rarity = "Legendary", Zone = "Daily", Exclusive = "Daily", Income = 1_800,
+		Color = Color3.fromRGB(255, 160, 200), Size = 2,
+		Passive = { Name = "Rainbow Gills", Stat = "Luck", Value = 0.2 } },
+	{ Id = "Sloth", Name = "Sleepy Sloth", Rarity = "Legendary", Zone = "Daily", Exclusive = "Daily", Income = 2_100,
+		Color = Color3.fromRGB(140, 104, 74), Size = 2.6,
+		Passive = { Name = "Power Nap", Stat = "Offline", Value = 0.4 } },
+	{ Id = "Chameleon", Name = "Golden Chameleon", Rarity = "Legendary", Zone = "Daily", Exclusive = "Daily", Income = 2_500,
+		Color = Color3.fromRGB(242, 194, 50), Size = 2.2,
+		Passive = { Name = "Gold Shift", Stat = "Golden", Value = 0.3 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new
@@ -300,10 +316,21 @@ local Aliens = {
 	HugeChance = 1 / 2000,
 	HugeIncomeMult = 10,
 	HugeScale = 2,
+	-- Pets you can't hatch, by where they come from, in the order they're given out.
+	Exclusives = { Daily = {} :: { string } } :: { [string]: { string } },
 }
 
 for _, alien in List do
 	Aliens.ById[alien.Id] = alien
+	if alien.Exclusive then
+		local set = Aliens.Exclusives[alien.Exclusive]
+		if not set then
+			set = {}
+			Aliens.Exclusives[alien.Exclusive] = set
+		end
+		table.insert(set, alien.Id)
+		continue -- not in any egg pool or rarity list
+	end
 	local bucket = Aliens.ByRarity[alien.Rarity]
 	if not bucket then
 		bucket = {}

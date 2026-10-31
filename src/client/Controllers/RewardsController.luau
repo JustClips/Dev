@@ -9,11 +9,13 @@ local GuiService = game:GetService("GuiService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = script.Parent.Parent
+local ModelView = require(Client.ModelView)
 local State = require(Client.State)
 local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
@@ -71,19 +73,68 @@ local function describe(reward: Rewards.Reward): (string, string, Color3?)
 	elseif reward.Kind == "Spin" then
 		local amount = reward.Amount or 1
 		return "Icon_Spin", if amount > 1 then `{amount} Wheel Spins` else "Wheel Spin", nil
+	elseif reward.Kind == "Pet" then
+		local def = Aliens.ById[reward.Pet or ""]
+		return "Icon_Gift", if def then def.Name else "Exclusive Pet", nil
 	end
 	return "Icon_Gift", "", nil
+end
+
+-- Like describe, with the Bonus added to the text ("Rare Egg + Huge Charm").
+local function describeAll(reward: Rewards.Reward): (string, string, Color3?)
+	local image, label, tint = describe(reward)
+	if reward.Bonus then
+		local _, extra = describe(reward.Bonus)
+		label ..= " + " .. extra
+	end
+	return image, label, tint
 end
 
 -- The wheel window labels its prizes the same way (WheelController).
 RewardsController.Describe = describe
 
-local function fillCard(card: GuiButton, reward: Rewards.Reward)
-	local image, label, tint = describe(reward)
+-- petId: the day-7 card shows the player's next exclusive pet in 3D instead of an icon.
+local function fillCard(card: GuiButton, reward: Rewards.Reward, petId: string?)
+	if reward.Kind == "Pet" and reward.Pet == "Daily" then
+		reward = table.clone(reward)
+		reward.Pet = petId
+	end
+	local image, label, tint = describeAll(reward)
 	local icon = card:FindFirstChild("Icon") :: ImageLabel
 	icon.Image = AssetLibrary.image(image)
 	icon.ImageColor3 = tint or WHITE
 	;(card:FindFirstChild("Reward") :: TextLabel).Text = label
+	local view = card:FindFirstChild("PetView") :: ViewportFrame?
+	local pet = if reward.Kind == "Pet" then Aliens.ById[reward.Pet or ""] else nil
+	icon.Visible = pet == nil
+	if not pet then
+		if view then
+			view.Visible = false
+		end
+		return
+	end
+	if not view then
+		local v = Instance.new("ViewportFrame")
+		v.Name = "PetView"
+		v.BackgroundTransparency = 1
+		v.Size = icon.Size + UDim2.fromOffset(10, 10)
+		v.Position = icon.Position
+		v.AnchorPoint = icon.AnchorPoint
+		v.ZIndex = icon.ZIndex
+		v.Ambient = Color3.fromRGB(200, 200, 200)
+		v.LightColor = Color3.new(1, 1, 1)
+		v.Parent = card
+		view = v
+	end
+	local shown = view :: ViewportFrame
+	shown.Visible = true
+	-- Redrawn once the real model has loaded (a stand-in shows until then).
+	local key = pet.Id .. (if AssetLibrary.has("Alien_" .. pet.Id) then "" else "?")
+	if shown:GetAttribute("PetKey") ~= key then
+		shown:SetAttribute("PetKey", key)
+		ModelView.show(shown, AssetLibrary.alien(pet.Id), "Alien_" .. pet.Id)
+	end
+	;(card:FindFirstChild("Day") :: TextLabel).TextColor3 = Color3.fromRGB(214, 140, 0)
 end
 
 local function setButton(button: GuiButton, text: string, color: Color3, labelColor: Color3?)
@@ -123,7 +174,7 @@ end
 local function renderDaily(info)
 	for i, reward in Rewards.Daily do
 		local card = Ui.find(gui, `Window.Days.Day{i}`) :: GuiButton
-		fillCard(card, reward)
+		fillCard(card, reward, info.DailyPet)
 		local claimed = if info.DailyReady then i < info.DailyIndex else i <= info.DailyIndex
 		-- A new streak (DailyIndex 1 while ready) shows no ticks.
 		if info.DailyReady and info.DailyIndex == 1 then

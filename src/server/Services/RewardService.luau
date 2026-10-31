@@ -8,11 +8,13 @@ local GroupService = game:GetService("GroupService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
+local Weights = require(Shared.Config.Weights)
 local Zones = require(Shared.Config.Zones)
 
 local SIGNED = 1
@@ -22,6 +24,7 @@ local RewardService = {}
 
 local S: any
 local clockOffset = 0
+local rng = Random.new()
 
 local function now(): number
 	return os.time() + clockOffset
@@ -47,12 +50,34 @@ local function eggZone(data, rarity: string): string
 	return best
 end
 
--- Gives one reward and returns a short description ("$1.2K", "Luck Potion x2", "Rare Egg").
-local function grant(player: Player, reward: Rewards.Reward, sku: string): string
-	local data = S.DataService:GetData(player)
-	if not data then
+-- The daily exclusive pet this player gets next: one per finished week, in order, then
+-- around again (Daily.Weeks counts the day-7 pets given).
+function RewardService:NextDailyPet(data): string?
+	local list = Aliens.Exclusives.Daily
+	if not list or #list == 0 then
+		return nil
+	end
+	return list[(data.Daily.Weeks or 0) % #list + 1]
+end
+
+local function givePet(player: Player, data, reward: Rewards.Reward): string
+	local id = reward.Pet
+	if id == "Daily" then
+		id = RewardService:NextDailyPet(data)
+		data.Daily.Weeks = (data.Daily.Weeks or 0) + 1
+	end
+	local def = id and Aliens.ById[id]
+	if not def then
 		return ""
 	end
+	local uid = S.DataService:NewUid(data, "p")
+	data.Pets[uid] = { Id = def.Id, Weight = Weights.rollPet(rng, def.Rarity, def.Rarity) }
+	data.Index[def.Id] = true
+	S.InventoryService:Touch(player)
+	return def.Name
+end
+
+local function grantOne(player: Player, data, reward: Rewards.Reward, sku: string): string
 	if reward.Kind == "Cash" then
 		local cash = S.ShopService:CashFor(player, reward.Seconds or 60, reward.Floor)
 		S.BackpackService:GiveCash(player, cash, sku)
@@ -75,6 +100,20 @@ local function grant(player: Player, reward: Rewards.Reward, sku: string): strin
 		return if amount > 1 then `{amount} Wheel Spins` else "Wheel Spin"
 	end
 	return ""
+end
+
+-- Gives one reward (and its Bonus) and returns a short description ("$1.2K",
+-- "Luck Potion x2", "Rare Egg + Huge Charm").
+local function grant(player: Player, reward: Rewards.Reward, sku: string): string
+	local data = S.DataService:GetData(player)
+	if not data then
+		return ""
+	end
+	local bonus = if reward.Bonus then " + " .. grant(player, reward.Bonus, sku) else ""
+	if reward.Kind == "Pet" then
+		return givePet(player, data, reward) .. bonus
+	end
+	return grantOne(player, data, reward, sku) .. bonus
 end
 
 -- Other services (CodeService) give rewards the same way.
@@ -370,6 +409,7 @@ function RewardService:Snapshot(player: Player): { [string]: any }?
 		DailyReady = ready,
 		DailyStreak = streak,
 		DailyNextAt = nextAt,
+		DailyPet = RewardService:NextDailyPet(data),
 		Playtime = rt.Playtime,
 		PlaytimeClaimed = claimed,
 		StayLeft = if rt.StayAt then rt.StayAt - rt.Playtime else nil,

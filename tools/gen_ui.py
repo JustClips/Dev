@@ -960,13 +960,16 @@ def placing():
 
 
 # ---------------------------------------------------------------- Rewards (daily, playtime, group, event)
-def reward_card(name, top, order, w, h, ico_px):
-    """Daily / gift card: label on top, big icon, reward text, a CLAIMED overlay."""
+def reward_card(name, top, order, w, h, ico_px, wrap=False):
+    """Daily / gift card: label on top, big icon, reward text, a CLAIMED overlay.
+    wrap: the reward text may take two lines ("Rare Egg + Huge Charm")."""
+    label_h = 30 if wrap else 22
     return button(name, U(0, w, 0, h), color=WHITE, stroke=3, LayoutOrder=order, children=[
         text("Day", top, U(1, 0, 0, 24), U(0.5, 0, 0, 2), (0.5, 0), ts=18, color=INK, display=True, ZIndex=4),
-        icon("Icon", "Gift", ico_px, U(0.5, 0, 0.5, 2), (0.5, 0.5)),
-        text("Reward", "", U(1, -6, 0, 22), U(0.5, 0, 1, -3), (0.5, 1), ts=15, color=INK, display=True, ZIndex=4,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
+        icon("Icon", "Gift", ico_px, U(0.5, 0, 0.5, -2 if wrap else 2), (0.5, 0.5)),
+        text("Reward", "", U(1, -6, 0, label_h), U(0.5, 0, 1, -3), (0.5, 1), ts=15, color=INK, display=True, ZIndex=4,
+             TextScaled=True,
+             children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16 if not wrap else 14, "MinTextSize": 8})]),
         frame("Done", U(1, 0, 1, 0), bg="#0B0E1E", BackgroundTransparency=0.45, Visible=False, ZIndex=6, children=[
             text("Label", "✓", U(1, 0, 1, 0), ts=54, color=SUCCESS, display=True, stroke=3, ZIndex=7),
         ]),
@@ -976,7 +979,7 @@ def reward_card(name, top, order, w, h, ico_px):
 def rewards():
     days = frame("Days", U(1, -24, 0, 140), U(0, 12, 0, 116), children=[
         hlist(10, "Center", "Center"),
-    ] + [reward_card(f"Day{i}", f"Day {i}", i, 102, 136, 72) for i in range(1, 8)])
+    ] + [reward_card(f"Day{i}", f"Day {i}", i, 102, 136, 64, wrap=True) for i in range(1, 8)])
     group = plate("Group", U(0.5, -18, 0, 100), U(0, 12, 0, 358), tint="#4C8DFF", stud=0.3, stroke=3, children=[
         icon("Icon", "Group", 70, U(0, 4, 0.5, 0), (0, 0.5)),
         text("Text", "Join our group for 2 Luck Potions + cash!", U(1, -220, 1, -8), U(0, 78, 0, 4), ts=16, display=True,
