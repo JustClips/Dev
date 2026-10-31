@@ -41,7 +41,9 @@ FIELD_SHARE = 0.5  # share of a zone's regrowth one player gets (others sweep to
 SESSION_HOURS = 1.5  # one session a day
 STEP = 2.0  # sim step, seconds
 WEATHER_GROW = 1.12  # average egg growth bonus from rain / storms
-WEIGHT_MULT = 1.22  # average pet weight multiplier (Config/Weights size classes)
+WEIGHT_MULT = 1.22
+CAR_BOOST = (6, 0.15)  # Config/Tools CarBoost: FromTier, PerTier
+ON_FOOT = (1.0, 1.0)  # on-foot golden / egg bonus (none in the game right now)  # average pet weight multiplier (Config/Weights size classes)
 
 
 # ---------------------------------------------------------------- tiny Luau readers
@@ -445,13 +447,16 @@ class Player:
         walk = WALK + self.stat("Speed", pas) + (10 if self.boost("Speed") else 0)
         tool = c.tools[self.tier - 1]
         gear = [(tool["Radius"], tool["Power"], tool["Capacity"], walk)]
+        boost = 1 + CAR_BOOST[1] * max(0, self.tier - CAR_BOOST[0])  # Tools.carBoost
         for car in c.cars:
             if car["Id"] in self.cars:
-                gear.append((car["Radius"], car["Power"], max(car["Capacity"], tool["Capacity"]), car["Speed"]))
+                gear.append((car["Radius"], car["Power"] * boost, max(car["Capacity"], tool["Capacity"]), car["Speed"]))
         trip = SELL_TRIP_PASS if "SellAnywhere" in self.passes else SELL_TRIP
         eff = EFFICIENCY + (0.15 if "AutoSweep" in self.passes else 0)
         best = (0.0, 0.0, trip, "Landing")
-        for r, p, cap, spd in gear:
+        self.on_foot = True
+        for gi, (r, p, cap, spd) in enumerate(gear):
+            foot_gold = 1 + (GOLDEN - 1) * (1 + self.stat("Golden", pas)) * (ON_FOOT[0] if gi == 0 else 1)
             r *= size_m
             p *= power_m
             cap *= bag_m
@@ -470,9 +475,10 @@ class Player:
                 share = fill / (fill + trip)
                 active = tiles / max(eff, 1e-9)  # piles a second while actually sweeping
                 combo = combo_avg(c.eco, active, min(run_len, fill))
-                cps = units * z["CashMult"] * value_m * combo * gold * trash * (1 + crit) * share
+                cps = units * z["CashMult"] * value_m * combo * foot_gold * trash * (1 + crit) * share
                 if cps > best[0]:
                     best = (cps, tiles * share, trip, z["Id"])
+                    self.on_foot = gi == 0
         cps, tiles, trip, zone = best
         return cps * self.cash_mult(), tiles, trip, zone, cps
 
@@ -713,7 +719,7 @@ class Player:
             self.cash += (cps + pets) * STEP
             # eggs found while sweeping
             zdef = next(z for z in self.c.zones if z["Id"] == zone)
-            lam = tiles * STEP * zdef["EggChance"] * self.luck() * (1 + self.stat("EggFind"))
+            lam = tiles * STEP * zdef["EggChance"] * self.luck() * (1 + self.stat("EggFind")) * (ON_FOOT[1] if self.on_foot else 1)
             # leaf drops (Config/Items Drops): coin pouches and items
             for _ in range(_poisson(self.rng, min(tiles * STEP * self.c.drop_chance * (1 + self.stat("ItemFind")), STEP / self.c.drop_gap))):
                 drop = self.rng.choices(self.c.drops, weights=[d["Weight"] for d in self.c.drops])[0]

@@ -90,7 +90,7 @@ function ToolService:GetSweepTool(player: Player): { Radius: number, Power: numb
 	if session and ToolService:IsInVehicle(player) then
 		local car = Tools.vehicle(session.Runtime.VehicleId or "")
 		if car then
-			return { Radius = car.Radius * size, Power = car.Power * mult }
+			return { Radius = car.Radius * size, Power = car.Power * mult * Tools.carBoost(session.Data.ToolTier) }
 		end
 	end
 	local def = Tools.get(ToolService:GetEffectiveTier(player))
@@ -611,6 +611,9 @@ local function buyNext(player: Player): (boolean, string)
 	S.AnalyticsService:Sink(player, price, Enum.AnalyticsEconomyTransactionType.Shop, "Tool_" .. def.Id)
 	ToolService:SetTier(player, nextTier)
 	S.OfferService:OnToolBought(player)
+	if nextTier > Tools.CarBoost.FromTier then
+		return true, `Got the {def.Name}! Your cars sweep +{math.round((Tools.carBoost(nextTier) - 1) * 100)}% too`
+	end
 	return true, `Got the {def.Name}!`
 end
 

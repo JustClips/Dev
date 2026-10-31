@@ -5,16 +5,16 @@ local Economy = {
 	-- rebirth costs RebirthCostGrowth x the one before. Use Economy.rebirthCost(rebirths).
 	-- Fitted with tools/balance/fit.py (targets there; check with tools/balance/sim.py).
 	RebirthCosts = {
-		26_000_000_000,
-		780_000_000_000,
-		8_000_000_000_000,
-		210_000_000_000_000,
-		4_200_000_000_000_000,
-		20_000_000_000_000_000,
+		60_000_000_000,
+		1_600_000_000_000,
+		8_800_000_000_000,
+		340_000_000_000_000,
+		6_100_000_000_000_000,
+		22_000_000_000_000_000,
 		36_000_000_000_000_000,
-		67_000_000_000_000_000,
-		86_000_000_000_000_000,
-		120_000_000_000_000_000,
+		59_000_000_000_000_000,
+		93_000_000_000_000_000,
+		140_000_000_000_000_000,
 	},
 	-- Robux shortcuts that speed you up without skipping the game:
 	SkipRebirthMinShare = 0.3, -- Skip Rebirth needs 30% of the rebirth cost saved up

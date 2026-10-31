@@ -146,7 +146,8 @@ local function carRows(data)
 		local locked = not owned and not rented and data.Rebirths < car.RequiredRebirths
 		;(row:FindFirstChild("Name") :: TextLabel).Text = car.Name
 		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.carIcon(car.Id)
-		setStats(row, car.Radius, car.Power, car.Capacity)
+		-- Your best hand tool powers the car's brush too (Tools.carBoost).
+		setStats(row, car.Radius, math.floor(car.Power * Tools.carBoost(data.ToolTier)), car.Capacity)
 		if owned or rented then
 			setStatus(row, if owned then "OWNED" else "RENTED", if owned then GREEN else ORANGE)
 			setMain(row, "Spawn", BLUE, function()
