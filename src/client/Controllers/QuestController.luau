@@ -115,7 +115,7 @@ local function renderStrip(quests)
 	local nextLabel = strip:FindFirstChild("Next") :: TextLabel
 	local progress = strip:FindFirstChild("Progress") :: TextLabel
 	if job.Done then
-		nextLabel.Text = "Done! Claim at Quest Master"
+		nextLabel.Text = "Done! Claim it in Quests"
 		nextLabel.TextColor3 = GOLD
 		progress.Text = ""
 	else
@@ -140,8 +140,8 @@ local function renderJob(job)
 	local hint = page:FindFirstChild("Hint") :: TextLabel
 	local go = page:FindFirstChild("Go") :: GuiButton
 	if job.Done then
-		hint.Text = "Job done! Talk to the Quest Master on your base to get your reward."
-		paint(go, "Go claim it!", GREEN)
+		hint.Text = "Job done! Claim your reward here."
+		paint(go, "Claim", GREEN)
 	else
 		hint.Text = "Finish the job, then talk to the Quest Master on your base."
 		paint(go, "Go to Quest Master", BLUE)
@@ -339,6 +339,22 @@ local function claimBonus()
 	end
 end
 
+-- Claim from the Quests window: only gives the reward, never moves you.
+local function claimFromWindow(action: string, arg: any?, label: string)
+	if busy then
+		return
+	end
+	busy = true
+	local ok, got = invoke(action, arg)
+	busy = false
+	if ok then
+		Ui.sound("Reveal")
+		C.HudController:Toast(`{label}: {got}!`, "Good")
+	else
+		C.HudController:Toast(got or "Couldn't claim that", "Bad")
+	end
+end
+
 local function goToMaster()
 	Ui.close("Quests")
 	-- Already on your base: the 3D arrow path shows the way when a job is done.
@@ -380,7 +396,9 @@ local function goToZoneNpc(i: number)
 		if root and spot and (root.Position - spot).Magnitude < 90 then
 			return
 		end
-		local target = if z.Zone == "Landing" then "Rocket" else z.Zone
+		-- Land right next to the quest giver (zone teleports land elsewhere, and the
+		-- Backyard one is the sell spot).
+		local target = `Npc:{z.Zone}`
 		local ok, message = pcall(function()
 			return Net.func("Teleport"):InvokeServer(target)
 		end)
@@ -736,7 +754,14 @@ function QuestController:Start()
 		tab = "Daily"
 		render()
 	end)
-	Ui.button(Ui.find(gui, "Window.Job.Go"), goToMaster)
+	Ui.button(Ui.find(gui, "Window.Job.Go"), function()
+		local job = State.data and State.data.Quests and State.data.Quests.Job
+		if job and job.Done then
+			claimFromWindow("ClaimJob", nil, "Job reward")
+		else
+			goToMaster()
+		end
+	end)
 	for i = 1, 3 do
 		Ui.button(Ui.find(gui, `Window.Daily.List.Row{i}.Claim`), function()
 			claimDaily(i)
@@ -749,7 +774,13 @@ function QuestController:Start()
 	end)
 	for i = 1, 5 do
 		Ui.button(Ui.find(gui, `Window.Zones.List.Row{i}.Go`), function()
-			goToZoneNpc(i)
+			local quests = State.data and State.data.Quests
+			local z = quests and quests.Zones and quests.Zones[i]
+			if z and z.Open and z.Done and not z.Finished then
+				claimFromWindow("ClaimZone", z.Zone, "Quest reward")
+			else
+				goToZoneNpc(i)
+			end
 		end)
 	end
 	ProximityPromptService.PromptTriggered:Connect(function(prompt)
@@ -773,9 +804,9 @@ function QuestController:Start()
 	Net.event("QuestReady").OnClientEvent:Connect(function(info)
 		Ui.sound("Tutorial")
 		if info.Npc then
-			C.HudController:Toast(`Quest done: {info.Text}! Go see {info.Npc}.`, "Good")
+			C.HudController:Toast(`Quest done: {info.Text}! Claim it in Quests.`, "Good")
 		elseif info.Job then
-			C.HudController:Toast(`Job done: {info.Text}! Go see the Quest Master.`, "Good")
+			C.HudController:Toast(`Job done: {info.Text}! Claim it in Quests.`, "Good")
 		else
 			C.HudController:Toast(`Daily quest done: {info.Text}! Claim it in Quests.`, "Good")
 		end

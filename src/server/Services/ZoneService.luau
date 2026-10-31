@@ -145,6 +145,16 @@ local function teleportCFrame(player: Player, target: string): (CFrame?, string?
 	if target == "Rocket" then
 		return World.Teleports.Rocket, nil
 	end
+	-- "Npc:<zoneId>": next to that zone's quest giver (Quests window Go button).
+	local npcZone = string.match(target, "^Npc:(.+)$")
+	if npcZone then
+		local at = World.ZoneNpc[npcZone]
+		if not at or not Zones.ById[npcZone] or not ZoneService:IsUnlocked(player, npcZone) then
+			return nil, nil
+		end
+		local spot = at + Vector3.new(-6, 1, 6)
+		return CFrame.lookAt(spot, Vector3.new(at.X, spot.Y, at.Z)), nil
+	end
 	local zone = Zones.ById[target]
 	if not zone or not World.Teleports[target] then
 		return nil, nil

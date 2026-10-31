@@ -10,7 +10,7 @@
 --   QuestDaily  { Day, List = { { Kind, Goal, Base, Claimed } }, Bonus = claimed? }
 --
 -- Remote "Quests"(action, arg) -> ok, message
---   "ClaimJob"        the finished job's reward; you must be at a Quest Master
+--   "ClaimJob"        the finished job's reward (Quest Master dialog or Quests window)
 --   "ClaimDaily", i   daily quest i's reward (anywhere)
 --   "ClaimBonus"      all daily quests claimed -> the bonus (anywhere)
 --
@@ -20,7 +20,7 @@
 -- quests that only count what you do in that zone (Stats.Zone[zoneId] counters, bumped
 -- through ZoneCount). Save: Flags.ZoneQuest[zoneId] = { Step, Base }, Flags.ZonePass
 -- (next zone half price, ZoneService:Unlock), Flags.ZoneVisited (first-visit egg given).
---   "ClaimZone", zoneId   the finished step's reward; you must be at that zone's NPC
+--   "ClaimZone", zoneId   the finished step's reward (NPC dialog or Quests window)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -353,9 +353,7 @@ local function claimJob(player: Player): (boolean, string?)
 	if not data then
 		return false, "Still loading"
 	end
-	if not Npc.isNear(player, roots, CLAIM_DISTANCE) then
-		return false, "Talk to the Quest Master on your base to claim it!"
-	end
+	-- Claimable from the Quests window too, so no distance check (it used to need the NPC).
 	local now_ = counters(player, data)
 	local job, progress = jobState(player, data, now_)
 	if not job then
@@ -406,10 +404,7 @@ local function claimZone(player: Player, zoneId: any): (boolean, string?)
 	if not line then
 		return false, "Unknown zone"
 	end
-	local root = zoneRoots[line.Zone]
-	if not root or not Npc.isNear(player, { root }, ZoneQuests.ClaimDistance) then
-		return false, `Talk to {line.Npc} to claim it!`
-	end
+	-- Claimable from the Quests window too, so no distance check (it used to need the NPC).
 	local n, step, progress = zoneState(data, line)
 	if not n then
 		return false, `Unlock {Zones.ById[line.Zone].Name} first!`
