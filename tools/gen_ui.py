@@ -656,37 +656,25 @@ def hud():
         text("Label", "HOLD HERE", U(1, 0, 0, 30), U(0.5, 0, 1, -24), (0.5, 1), ts=26, display=True, stroke=3, ZIndex=18),
         text("Sub", "to sweep", U(1, 0, 0, 22), U(0.5, 0, 1, 0), (0.5, 1), ts=19, color=ACCENT, display=True, stroke=2.5, ZIndex=18),
     ])
-    # Goals (GoalController, Dev 2026-10-31): a slim strip under the World Cleaned bar with
-    # the next goal; tap it to drop down all three. All three ticked = a free wheel spin.
-    def goal_row(i):
-        return frame(f"Row{i}", U(1, -12, 0, 26), U(0, 6, 0, 30 + (i - 1) * 28), children=[
-            frame("Check", U(0, 20, 0, 20), U(0, 2, 0.5, 0), (0, 0.5), bg="#14171D", children=[
-                border(WHITE, 2),
-                text("Mark", "", U(1, 0, 1, 0), ts=18, color=WHITE, display=True, stroke=2),
-            ]),
-            text("Text", "", U(1, -122, 1, 0), U(0, 30, 0, 0), ts=17, display=True, stroke=2, xa="Left",
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 8})]),
-            text("Progress", "", U(0, 92, 1, 0), U(1, -2, 0, 0), (1, 0), ts=16, color="#C9D0DE", display=True, stroke=2,
-                 xa="Right", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
-        ])
-    goals = button("Goals", U(0, 360, 0, 30), U(0.5, 0, 0, 118), (0.5, 0), color=BG, stroke=3, stud=False, Visible=False,
-                   children=[
+    # Quests strip (QuestController, Dev 2026-10-31; replaced the 3-goal strip): a slim strip
+    # under the World Cleaned bar with the Quest Master's current job. Tap it to open the
+    # Quests window. The red "!" badge shows when something can be claimed.
+    quests = button("Quests", U(0, 360, 0, 30), U(0.5, 0, 0, 118), (0.5, 0), color=BG, stroke=3, stud=False, Visible=False,
+                    children=[
         autoscale(),
-        text("Count", "GOALS 0/3", U(0, 84, 1, 0), U(0, 8, 0, 0), ts=15, color=PREMIUM, display=True, stroke=2, xa="Left",
+        icon("Icon", "TreasureMap", 26, U(0, 4, 0.5, 0), (0, 0.5)),
+        text("Count", "JOB 1", U(0, 64, 1, 0), U(0, 32, 0, 0), ts=15, color=PREMIUM, display=True, stroke=2, xa="Left",
              TextWrapped=False),
-        # GoalController fits the text to the space (Ui.fitText): TextScaled overflowed here.
-        # The progress ("56/150") has its own label so it never runs into the goal text.
-        text("Next", "", U(1, -186, 1, -4), U(0, 92, 0, 2), ts=16, display=True, stroke=2, xa="Left", TextWrapped=False),
-        text("Progress", "", U(0, 70, 1, -4), U(1, -26, 0, 2), (1, 0), ts=15, color="#C9D0DE", display=True, stroke=2,
+        # QuestController fits the text to the space (Ui.fitText); the progress has its own label.
+        text("Next", "", U(1, -186, 1, -4), U(0, 96, 0, 2), ts=16, display=True, stroke=2, xa="Left", TextWrapped=False),
+        text("Progress", "", U(0, 76, 1, -4), U(1, -8, 0, 2), (1, 0), ts=15, color="#C9D0DE", display=True, stroke=2,
              xa="Right", TextWrapped=False),
-        text("Arrow", "v", U(0, 16, 1, 0), U(1, -6, 0, 0), (1, 0), ts=16, color="#C9D0DE", display=True),
-        plate("List", U(1, 0, 0, 116), U(0, 0, 1, 4), tint=BG, stroke=3, Visible=False, children=[
-            text("Title", "GOALS", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=17, color=PREMIUM, display=True, stroke=2, xa="Left"),
-            text("Reward", "All 3 = FREE SPIN", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=16, color=ACCENT, display=True, stroke=2,
-                 xa="Right"),
-        ] + [goal_row(i) for i in (1, 2, 3)]),
+        frame("Bar", U(1, -6, 0, 3), U(0, 3, 1, -4), bg="#14171D", children=[
+            frame("Fill", U(0, 0, 1, 0), bg=ACCENT),
+        ]),
+        badge(px=22),
     ])
-    write("Hud", screen([rail, spin, pills, moon, goals, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, burst, picker,
+    write("Hud", screen([rail, spin, pills, moon, quests, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, burst, picker,
                          spot, pointer, hold], order=1))
 
 
@@ -1548,6 +1536,76 @@ def merchant():
                             order=10, enabled=False))
 
 
+# ---------------------------------------------------------------- Quests
+def quests():
+    """Quests window (screen "Quests", QuestController), opened from the Quests strip under
+    World Cleaned or from the Quest Master's dialog. Two tabs:
+      Jobs   the Quest Master's current job: number, text, progress bar, reward, and a
+             button that sends you to him (jobs are claimed by talking to him).
+      Daily  three rows ("Row1".."Row3": text, bar, reward, Claim) and the bonus row
+             (all three claimed = a free spin), with the time until new ones."""
+    W, H = 640, 470
+    fit = lambda mx, mn: [node("Fit", "UITextSizeConstraint", {"MaxTextSize": mx, "MinTextSize": mn})]
+
+    def tab(name, label, x):
+        return button(name, U(0, 180, 0, 46), U(0, x, 0, 74), color="#4C8DFF", label=label, ts=22, children=[badge(px=24)])
+
+    def progress_bar(name, size, pos):
+        return frame(name, size, pos, bg="#D9DEE8", children=[
+            border(INK, 3),
+            frame("Fill", U(0, 0, 1, 0), bg=SUCCESS),
+            text("Label", "0/0", U(1, 0, 1, 0), ts=18, display=True, stroke=2.5, ZIndex=4),
+        ])
+
+    def reward_box(name, size, pos, anchor=(0, 0)):
+        return plate(name, size, pos, anchor, tint="#FFF4CF", stroke=3, children=[
+            icon("Icon", "Cash", 40, U(0, 6, 0.5, 0), (0, 0.5)),
+            text("Label", "", U(1, -56, 1, -6), U(0, 50, 0.5, 0), (0, 0.5), ts=17, color=INK, display=True, xa="Left",
+                 TextScaled=True, children=fit(17, 8)),
+        ])
+
+    job = frame("Job", U(1, -28, 0, 320), U(0, 14, 0, 130), children=[
+        plate("Card", U(1, 0, 0, 230), tint=WHITE, stroke=3, children=[
+            frame("Stripe", U(1, 0, 0, 8), bg="#4C8DFF", ZIndex=2),
+            icon("Npc", "TreasureMap", 96, U(0, 14, 0, 24)),
+            text("Number", "JOB 1", U(1, -140, 0, 26), U(0, 124, 0, 20), ts=20, color="#4C8DFF", display=True, xa="Left"),
+            text("Text", "", U(1, -140, 0, 40), U(0, 124, 0, 46), ts=30, color=INK, display=True, xa="Left",
+                 TextScaled=True, children=fit(30, 12)),
+            progress_bar("Bar", U(1, -140, 0, 34), U(0, 124, 0, 96)),
+            text("RewardTitle", "REWARD", U(0, 120, 0, 22), U(0, 124, 0, 146), ts=16, color=SUB, display=True, xa="Left"),
+            reward_box("Reward", U(0, 300, 0, 52), U(0, 124, 0, 168)),
+        ]),
+        text("Hint", "Talk to the Quest Master on your base to claim your reward!", U(1, 0, 0, 24), U(0.5, 0, 0, 240), (0.5, 0),
+             ts=17, color=SUB, heavy=True),
+        button("Go", U(0, 320, 0, 54), U(0.5, 0, 0, 270), (0.5, 0), color=SUCCESS, label="Go to Quest Master", ts=24,
+               ico="Base", ico_px=38),
+    ])
+
+    def row(i):
+        return plate(f"Row{i}", U(1, 0, 0, 70), tint=WHITE, stroke=3, LayoutOrder=i, children=[
+            text("Text", "", U(1, -330, 0, 28), U(0, 12, 0, 6), ts=20, color=INK, display=True, xa="Left", TextScaled=True,
+                 children=fit(20, 9)),
+            progress_bar("Bar", U(1, -330, 0, 26), U(0, 12, 0, 36)),
+            reward_box("Reward", U(0, 170, 0, 50), U(1, -148, 0.5, 0), (1, 0.5)),
+            button("Claim", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="Claim", ts=22),
+        ])
+
+    daily = frame("Daily", U(1, -28, 0, 330), U(0, 14, 0, 130), Visible=False, children=[
+        frame("List", U(1, 0, 0, 234), children=[vlist(8)] + [row(i) for i in (1, 2, 3)]),
+        plate("Bonus", U(1, 0, 0, 62), U(0, 0, 0, 240), tint="#4C8DFF", stud=0.3, stroke=3, children=[
+            icon("Icon", "Spin", 48, U(0, 8, 0.5, 0), (0, 0.5)),
+            text("Text", "Claim all 3 for a FREE SPIN!", U(1, -220, 1, -8), U(0, 64, 0, 4), ts=19, display=True, stroke=2.5,
+                 xa="Left", TextScaled=True, children=fit(19, 9)),
+            button("Claim", U(0, 140, 0, 46), U(1, -8, 0.5, 0), (1, 0.5), color=PREMIUM, label="Claim", ts=22,
+                   label_color=INK),
+        ]),
+        text("Timer", "New quests in 0:00", U(1, 0, 0, 22), U(0.5, 0, 0, 308), (0.5, 0), ts=17, color=SUB, display=True),
+    ])
+    body = [tab("JobsTab", "Jobs", 14), tab("DailyTab", "Daily", 206), job, daily]
+    write("Quests", screen([dim(), window(W, H, "Quests", "TreasureMap", body, header="#4C8DFF", size=(W, H))],
+                          order=10, enabled=False))
+
+
 # ---------------------------------------------------------------- Codes
 def codes():
     """Codes window (screen "Codes", CodesController), opened from the Codes button in
@@ -1804,6 +1862,7 @@ def main():
     group_reward()
     wheel()
     codes()
+    quests()
     merchant()
     upgrades()
     loading()

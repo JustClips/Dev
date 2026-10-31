@@ -717,7 +717,9 @@ layout = function(s: number, compact: boolean)
 	-- past Roblox's buttons and our settings gear.
 	local inset = GuiService.TopbarInset
 	local shift = 0
-	if inset.Height >= pillsH and hud.AbsoluteSize.X > 2 then
+	-- Dev, 2026-10-31 ("move this entire thing higher"): the pills go up into the bar row
+	-- even when they're a bit taller than it, so the whole top block sits higher.
+	if inset.Height > 0 and hud.AbsoluteSize.X > 2 then
 		local w = math.ceil(el.Pills.Size.X.Offset * s)
 		local guiMid = hud.AbsolutePosition.X + hud.AbsoluteSize.X / 2
 		-- Past Roblox's buttons and our settings gear next to them (AudioController
@@ -728,7 +730,7 @@ layout = function(s: number, compact: boolean)
 		local freeRight = inset.Max.X - 8 - (if Admin.isAdmin(Players.LocalPlayer.UserId) then 100 else SPIN_W + 14)
 		local x0 = math.max(guiMid - w / 2, freeLeft)
 		if x0 + w <= freeRight then
-			top = -math.floor(inset.Height) + math.floor((inset.Height - pillsH) / 2)
+			top = -math.floor(inset.Height) + math.max(4, math.floor((inset.Height - pillsH) / 2))
 			shift = math.floor(x0 + w / 2 - guiMid)
 		end
 	end
@@ -746,14 +748,14 @@ layout = function(s: number, compact: boolean)
 	el.SpinButton.Position = UDim2.new(1, -10, 0, spinY)
 	-- Anything at the top right below that line moves down under the Spin button.
 	HudController.RightDrop = math.max(0, spinY + SPIN_H + 6 - 8)
-	local barY = top + pillsH + math.ceil(8 * s)
+	local barY = top + pillsH + math.ceil(5 * s)
 	HudController.barY = barY
 	el.MoonPanel.Position = UDim2.new(0.5, 0, 0, barY)
 	el.ZonePicker.Position = UDim2.new(0.5, 0, 0, barY)
-	-- The goals strip (GoalController) sits right under the World Cleaned bar; the
+	-- The quests strip (QuestController) sits right under the World Cleaned bar; the
 	-- announcement and toasts go under it.
-	local goals = el.Goals :: GuiObject
-	goals.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(50 * s))
+	local goals = el.Quests :: GuiObject
+	goals.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(48 * s))
 	local goalsH = if goals.Visible then math.ceil(36 * s) else 0
 	el.Announcement.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(52 * s) + goalsH)
 	el.Toasts.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(54 * s) + goalsH + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
@@ -864,13 +866,18 @@ function HudController:Init(controllers)
 	el.Pills = Ui.find(hud, "Pills")
 	el.SpinButton = Ui.find(hud, "SpinButton")
 	el.MoonPanel = Ui.find(hud, "MoonPanel")
-	el.Goals = Ui.find(hud, "Goals")
+	el.Quests = Ui.find(hud, "Quests")
 	el.Toasts = Ui.find(hud, "Toasts")
 	el.Hint = Ui.find(hud, "Hint")
 	-- Studio places synced before the combo rework still hold the old frame: drop it.
 	local stale = hud:FindFirstChild("Combo")
 	if stale then
 		stale:Destroy()
+	end
+	-- Same for the old 3-goal strip (replaced by the Quests strip, 2026-10-31).
+	local oldGoals = hud:FindFirstChild("Goals")
+	if oldGoals then
+		oldGoals:Destroy()
 	end
 	el.Combo = Ui.find(hud, "ComboCounter")
 	el.ComboShade = Ui.find(hud, "ComboCounter.Body.Label.Shade")

@@ -250,6 +250,7 @@ local function spin(player: Player): (boolean, string?, number?)
 		return false, "No spins left. Get more below!"
 	end
 	rt.WheelBusyUntil = os.clock() + Rewards.Wheel.SpinSeconds - 0.4
+	data.Stats.Spins = (data.Stats.Spins or 0) + 1 -- quests
 	local index = rollSegment()
 	-- The very first spin always lands on the Rare Egg (Dev, 2026-10-31: a sure win for new
 	-- players). Free, so the shown odds for bought spins don't change.

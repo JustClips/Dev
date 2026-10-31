@@ -120,6 +120,11 @@ local function targetFor(data): Vector3?
 	if data.Backpack >= data.Capacity and not data.Gamepasses.SellAnywhere then
 		return dumpSpot
 	end
+	-- A finished Quest Master job: the path leads to him to claim it.
+	local quests = data.Quests
+	if hasBase and quests and quests.Job and quests.Job.Done then
+		return (World.questCFrame(data.BaseIndex) * CFrame.new(0, 0, -4.5)).Position
+	end
 	return nil
 end
 

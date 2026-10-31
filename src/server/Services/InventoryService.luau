@@ -341,6 +341,7 @@ function InventoryService:UseItem(player: Player, itemId: string): (boolean, str
 		message = text or message
 	end
 	data.Items[itemId] -= 1
+	data.Stats.ItemsUsed = (data.Stats.ItemsUsed or 0) + 1 -- quests
 	if data.Items[itemId] <= 0 then
 		data.Items[itemId] = nil
 	end

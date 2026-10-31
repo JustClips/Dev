@@ -37,7 +37,7 @@ local ORDER = {
 	"HoverController",
 	"AudioController",
 	"TutorialController",
-	"GoalController",
+	"QuestController",
 	"BasePanelsController",
 	"RewardsController",
 	"GroupRewardController",

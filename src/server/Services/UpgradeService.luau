@@ -65,6 +65,7 @@ function UpgradeService:Buy(player: Player, id: string, count: number?): (boolea
 			break
 		end
 		data.Upgrades[def.Id] = level + 1
+		data.Stats.Upgrades = (data.Stats.Upgrades or 0) + 1 -- quests
 		bought += 1
 	end
 	if def.Stat == "Speed" then

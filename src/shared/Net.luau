@@ -27,7 +27,7 @@ local EVENTS: { [string]: number } = {
 	EggUpgraded = 0, -- server -> all: (position, mutation) the weather upgraded a growing egg
 	BunnyPop = 0, -- server -> all: a dust bunny got swept at a position
 	TutorialDone = 0, -- server -> owner: tutorial finished, with the reward it gave
-	GoalDone = 0, -- server -> owner: { Text, Reward } a starter goal was finished and paid
+	QuestReady = 0, -- server -> owner: { Text, Job } a quest is done and can be claimed
 	SetAutoSweep = 4, -- client: toggle auto sweep (gamepass)
 	SetAutoSell = 4, -- client: toggle auto sell (Sell Anywhere pass)
 	DumpTick = 0, -- server -> owner: (cash, bagLeft 0-1) a bit of the bag poured into a leaf dump
@@ -67,6 +67,7 @@ local FUNCTIONS: { [string]: number } = {
 	Rewards = 6, -- (action, arg?) -> ok, message: see RewardService ACTIONS
 	BaseSkin = 4, -- ("Unlock" | "Equip" | "Preview", skinId) -> ok, message
 	RedeemCode = 2, -- (code) -> ok, message: CodeService
+	Quests = 6, -- ("ClaimJob" | "ClaimDaily", i | "ClaimBonus") -> ok, message: QuestService
 	Merchant = 6, -- ("Get" | "Buy", slot?) -> ok, message, stock: MerchantService
 	Admin = 8, -- (action, payload) -> ok, message: admins only, see AdminService
 }

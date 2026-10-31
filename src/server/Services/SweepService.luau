@@ -98,6 +98,14 @@ local function sweepArea(player: Player, session, position: Vector3, radius: num
 			S.DropService:LeafDrop(player, tilePos)
 		end
 	end
+	-- Counters for quests (QuestService).
+	local stats = session.Data.Stats
+	if goldenHits > 0 then
+		stats.Golden = (stats.Golden or 0) + goldenHits
+	end
+	if trashHits > 0 then
+		stats.Trash = (stats.Trash or 0) + trashHits
+	end
 	S.AnalyticsService:Funnel(player, "FirstSweep")
 	S.StateService:Mark(player)
 	Net.fire("SweepResult", player, {

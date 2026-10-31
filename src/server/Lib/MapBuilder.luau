@@ -472,6 +472,41 @@ local function traderStall(parent: Instance, cf: CFrame)
 	end
 end
 
+-- The Quest Master's stall on the left of every base (the NPC is QuestService's): the
+-- trader's stall shape with a blue and yellow awning, a notice board full of job notes
+-- behind him and a rolled scroll on the counter. cf = where he stands, facing -Z.
+local function questStall(parent: Instance, cf: CFrame)
+	local model = make("Model", { Name = "QuestStall" }, parent)
+	local blue = Color3.fromRGB(47, 130, 230)
+	local yellow = Color3.fromRGB(255, 200, 60)
+	local paper = Color3.fromRGB(250, 240, 210)
+	block(model, "Counter", Vector3.new(7, 3, 1.8), cf * CFrame.new(0, 1.5, -2.4), WOOD, M.WoodPlanks)
+	block(model, "CounterTop", Vector3.new(7.6, 0.3, 2.3), cf * CFrame.new(0, 3.15, -2.4), blue)
+	for _, x in { -3.6, 3.6 } do
+		for _, z in { -3.4, 1.8 } do
+			block(model, "Post", Vector3.new(0.5, 8, 0.5), cf * CFrame.new(x, 4, z), WOOD_DARK, M.Wood)
+		end
+	end
+	for k = 0, 7 do
+		local x = -3.95 + k * 1.13 + 0.565
+		block(model, "Awning", Vector3.new(1.13, 0.25, 6.2), cf * CFrame.new(x, 8.3, -0.8) * CFrame.Angles(math.rad(-8), 0, 0),
+			if k % 2 == 0 then blue else yellow, nil, { CanCollide = false })
+	end
+	sign(model, "QuestSign", cf * CFrame.new(0, 10.2, -0.4), 8, 2.2, Color3.fromRGB(110, 190, 255), "QUESTS", "Jobs and rewards")
+	-- Notice board behind him, pinned with job notes.
+	local boardCf = cf * CFrame.new(0, 4.6, 1.9)
+	block(model, "Board", Vector3.new(6.4, 3.6, 0.3), boardCf, Color3.fromRGB(176, 120, 72), M.Wood, { CanCollide = false })
+	for i, at in { Vector2.new(-2.2, 0.8), Vector2.new(-0.6, 0.6), Vector2.new(1.2, 0.9), Vector2.new(-1.5, -0.8), Vector2.new(0.6, -0.7), Vector2.new(2.3, -0.6) } do
+		local tilt = CFrame.Angles(0, 0, math.rad(((i * 37) % 17) - 8))
+		block(model, "Note", Vector3.new(1.2, 1.4, 0.06), boardCf * CFrame.new(at.X, at.Y, -0.18) * tilt, paper, M.SmoothPlastic, { CanCollide = false })
+		block(model, "Pin", Vector3.new(0.18, 0.18, 0.1), boardCf * CFrame.new(at.X, at.Y + 0.55, -0.24), if i % 2 == 0 then blue else Color3.fromRGB(255, 77, 94), M.SmoothPlastic, { CanCollide = false })
+	end
+	-- A rolled scroll on the counter.
+	local scroll = block(model, "Scroll", Vector3.new(2.2, 0.5, 0.5), cf * CFrame.new(-1.6, 3.55, -2.4) * CFrame.Angles(0, math.rad(20), 0), paper, M.SmoothPlastic, { CanCollide = false })
+	scroll.Shape = Enum.PartType.Cylinder
+	block(model, "Ribbon", Vector3.new(0.2, 0.56, 0.56), cf * CFrame.new(-1.6, 3.55, -2.4) * CFrame.Angles(0, math.rad(20), 0), Color3.fromRGB(255, 77, 94), M.SmoothPlastic, { CanCollide = false })
+end
+
 -- Raised stud-plate platform in the base colour, corner lights, low walls and a name sign.
 function MapBuilder.buildBaseStructure(index: number): Sign
 	local cf = World.baseCFrame(index)
@@ -543,6 +578,7 @@ function MapBuilder.buildBaseStructure(index: number): Sign
 		block(model, "Post", Vector3.new(0.7, wallH, 0.7), cf * CFrame.new(k * (w - 6) / 8, wallH / 2, d / 2 - 0.4), WOOD_DARK, M.Wood)
 	end
 	traderStall(model, World.traderCFrame(index))
+	questStall(model, World.questCFrame(index))
 	-- name sign above the arch, facing the field
 	local arch = World.Base.Arch
 	local s = sign(model, "NameSign", cf * CFrame.new(arch + Vector3.new(0, 15.4, 0)), 19, 4.6, color, "Free Base", "Claim it by joining!", true)
@@ -1114,6 +1150,10 @@ local function setClassicVisible(index: number, visible: boolean, accent: Color3
 			continue
 		end
 		for _, d in root:GetDescendants() do
+			-- The Quest Master's stall stays as it is under every skin.
+			if d:FindFirstAncestor("QuestStall") or d.Name == "QuestStall" then
+				continue
+			end
 			local stall = d:FindFirstAncestor("TraderStall")
 			if stall or d.Name == "TraderStall" then
 				if d:IsA("BasePart") and d.Name == "Awning" then

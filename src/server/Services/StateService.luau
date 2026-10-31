@@ -116,7 +116,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 	local sendInventory = full == true or sentInventory[player] ~= invVersion
 	sentInventory[player] = invVersion
 	local step = tutorialStep(player, session)
-	S.GoalService:Update(player)
+	S.QuestService:Update(player)
 	if lastStep[player] ~= step then
 		-- Every finished tutorial step pays a little cash with the "you got" popup (kids
 		-- stay for small, frequent rewards). Not on the first snapshot after joining.
@@ -174,7 +174,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		CarryLimit = S.EggService:GetCarryLimit(player),
 		BaseIndex = runtime.BaseIndex or 0,
 		TutorialStep = step,
-		Goal = S.GoalService:Snapshot(player),
+		Quests = S.QuestService:Snapshot(player),
 		TutorialTarget = runtime.TutorialEggPosition,
 		AutoSweep = data.Settings.AutoSweep == true,
 		AutoSell = data.Settings.AutoSell ~= false,
