@@ -164,12 +164,32 @@ end
 -- Rain littered the whole field).
 local ground: { { egg: BasePart, owner: number? } } = {}
 
+-- Over the cap, the lowest-rarity egg goes first (Egg Rain eggs before found ones, then the
+-- oldest). Rare and better are never removed for room (Dev, 2026-10-31: driving through
+-- commons kept deleting a rare find); with only those left the cap is allowed to stretch.
+local KEEP_FROM = Eggs.order("Rare")
+
 local function makeRoom(owner: Player?)
 	local function removeAt(i: number)
 		local entry = table.remove(ground, i)
 		if entry and entry.egg.Parent then
 			entry.egg:Destroy()
 		end
+	end
+	-- The egg to drop among those `fits` accepts, or nil when only keepers are left.
+	local function pick(fits: (entry: any) -> boolean): number?
+		local best, bestOrder, bestRain = nil, math.huge, false
+		for i, entry in ground do
+			if fits(entry) then
+				local rarity = entry.egg:GetAttribute("Rarity")
+				local order = Eggs.order(if type(rarity) == "string" then rarity else "Common")
+				local rain = entry.owner == nil
+				if order < KEEP_FROM and (order < bestOrder or (order == bestOrder and rain and not bestRain)) then
+					best, bestOrder, bestRain = i, order, rain
+				end
+			end
+		end
+		return best
 	end
 	if owner then
 		local mine = 0
@@ -179,24 +199,23 @@ local function makeRoom(owner: Player?)
 			end
 		end
 		if mine >= Economy.MaxGroundEggsPerPlayer then
-			for i, entry in ground do
-				if entry.owner == owner.UserId then
-					removeAt(i)
-					break
-				end
+			local i = pick(function(entry)
+				return entry.owner == owner.UserId
+			end)
+			if i then
+				removeAt(i)
 			end
 		end
 	end
-	while #ground >= Economy.MaxGroundEggs do
-		-- Oldest Egg Rain egg first, then the oldest of all.
-		local pick = 1
-		for i, entry in ground do
-			if entry.owner == nil then
-				pick = i
-				break
-			end
+	local over = #ground - Economy.MaxGroundEggs + 1
+	for _ = 1, over do
+		local i = pick(function()
+			return true
+		end)
+		if not i then
+			break
 		end
-		removeAt(pick)
+		removeAt(i)
 	end
 end
 
