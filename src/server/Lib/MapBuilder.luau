@@ -1154,7 +1154,10 @@ function MapBuilder.buildProps()
 		folder.Parent = propsFolder
 		for _, decor in list do
 			local at = Zones.decorPosition(zone, decor.At)
-			place(decor.Asset, CFrame.new(at.X, zone.GroundY, at.Y) * yaw(decor.Yaw), decor.Scale, folder)
+			local model = place(decor.Asset, CFrame.new(at.X, zone.GroundY, at.Y) * yaw(decor.Yaw), decor.Scale, folder)
+			if model and decor.Asset == "Park_Fountain" then
+				model:AddTag("Fountain") -- FountainController (client) adds the moving water
+			end
 		end
 	end
 	rockWalls(rng)

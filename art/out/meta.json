@@ -18082,6 +18082,329 @@
   },
   "tris": 128
  },
+ "FountainFx_Arc": {
+  "bounds": {
+   "max": [
+    0.2,
+    0.329,
+    0.093
+   ],
+   "min": [
+    -0.2,
+    -1.276,
+    -2.758
+   ]
+  },
+  "fx": {
+   "land": [
+    -0.0,
+    -1.15,
+    -2.6
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_Arc",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 208
+ },
+ "FountainFx_Curtain1": {
+  "bounds": {
+   "max": [
+    3.8,
+    0.0,
+    3.8
+   ],
+   "min": [
+    -3.8,
+    -4.094,
+    -3.8
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_Curtain1",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2640
+ },
+ "FountainFx_Curtain2": {
+  "bounds": {
+   "max": [
+    2.25,
+    0.0,
+    2.228
+   ],
+   "min": [
+    -2.25,
+    -2.499,
+    -2.228
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_Curtain2",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2200
+ },
+ "FountainFx_Drips1": {
+  "bounds": {
+   "max": [
+    3.554,
+    0.17,
+    3.554
+   ],
+   "min": [
+    -3.554,
+    -0.45,
+    -3.554
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_Drips1",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2688
+ },
+ "FountainFx_Drips2": {
+  "bounds": {
+   "max": [
+    2.005,
+    0.17,
+    1.957
+   ],
+   "min": [
+    -2.005,
+    -0.45,
+    -1.957
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_Drips2",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2240
+ },
+ "FountainFx_Drop": {
+  "bounds": {
+   "max": [
+    0.12,
+    0.204,
+    0.114
+   ],
+   "min": [
+    -0.12,
+    -0.12,
+    -0.114
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_Drop",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 140
+ },
+ "FountainFx_Jet": {
+  "bounds": {
+   "max": [
+    0.304,
+    1.75,
+    0.319
+   ],
+   "min": [
+    -0.324,
+    -0.1,
+    -0.319
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_Jet",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 908
+ },
+ "FountainFx_Ripple": {
+  "bounds": {
+   "max": [
+    1.07,
+    0.042,
+    1.07
+   ],
+   "min": [
+    -1.07,
+    -0.002,
+    -1.07
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_Ripple",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 960
+ },
+ "FountainFx_Splash": {
+  "bounds": {
+   "max": [
+    0.453,
+    0.275,
+    0.49
+   ],
+   "min": [
+    -0.503,
+    -0.19,
+    -0.49
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_Splash",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 884
+ },
+ "FountainFx_SplashRing1": {
+  "bounds": {
+   "max": [
+    4.02,
+    0.376,
+    3.923
+   ],
+   "min": [
+    -4.02,
+    -0.234,
+    -3.926
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_SplashRing1",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 3056
+ },
+ "FountainFx_SplashRing2": {
+  "bounds": {
+   "max": [
+    2.302,
+    0.361,
+    2.344
+   ],
+   "min": [
+    -2.279,
+    -0.209,
+    -2.223
+   ]
+  },
+  "kind": "prop",
+  "name": "FountainFx_SplashRing2",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1680
+ },
+ "FountainFx_Umbrella": {
+  "bounds": {
+   "max": [
+    1.44,
+    0.546,
+    1.44
+   ],
+   "min": [
+    -1.44,
+    -2.157,
+    -1.44
+   ]
+  },
+  "fx": {
+   "drop": 1.7,
+   "reach": 1.3
+  },
+  "kind": "prop",
+  "name": "FountainFx_Umbrella",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2304
+ },
  "Habitat": {
   "bounds": {
    "max": [
@@ -18632,15 +18955,77 @@
  "Park_Fountain": {
   "bounds": {
    "max": [
-    9.838,
-    8.8,
-    9.887
+    10.896,
+    9.925,
+    10.968
    ],
    "min": [
-    -9.838,
-    -0.3,
-    -9.887
+    -10.858,
+    -0.083,
+    -11.003
    ]
+  },
+  "fx": {
+   "bowl1": [
+    0,
+    5.1,
+    0
+   ],
+   "bowl1R": 3.3,
+   "bowl1Water": [
+    0,
+    5.0,
+    0
+   ],
+   "bowl2": [
+    0,
+    7.45,
+    0
+   ],
+   "bowl2R": 1.75,
+   "bowl2Water": [
+    0,
+    7.38,
+    0
+   ],
+   "frogs": [
+    [
+     -4.3487,
+     2.43,
+     4.3487
+    ],
+    [
+     4.3487,
+     2.43,
+     4.3487
+    ],
+    [
+     4.3487,
+     2.43,
+     -4.3487
+    ],
+    [
+     -4.3487,
+     2.43,
+     -4.3487
+    ]
+   ],
+   "jet": [
+    0,
+    9.75,
+    -0.22
+   ],
+   "jetTop": [
+    0,
+    11.15,
+    -0.22
+   ],
+   "pool": [
+    0,
+    1.05,
+    0
+   ],
+   "poolR": 6.55
   },
   "kind": "prop",
   "name": "Park_Fountain",
@@ -18651,9 +19036,37 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Critters": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Garden": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Statue": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Water": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 2786
+  "tris": 38292
  },
  "Park_Gazebo": {
   "bounds": {

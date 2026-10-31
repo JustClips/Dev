@@ -9004,6 +9004,169 @@ Assets.Models = {
 			},
 		},
 	},
+	FountainFx_Arc = {
+		bounds = {
+			max = Vector3.new(0.2, 0.329, 0.093),
+			min = Vector3.new(-0.2, -1.276, -2.758),
+		},
+		fx = {
+			land = Vector3.new(-0.0, -1.15, -2.6),
+		},
+		id = 85655828997588,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_Curtain1 = {
+		bounds = {
+			max = Vector3.new(3.8, 0.0, 3.8),
+			min = Vector3.new(-3.8, -4.094, -3.8),
+		},
+		id = 105093208972415,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_Curtain2 = {
+		bounds = {
+			max = Vector3.new(2.25, 0.0, 2.228),
+			min = Vector3.new(-2.25, -2.499, -2.228),
+		},
+		id = 112416479700900,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_Drips1 = {
+		bounds = {
+			max = Vector3.new(3.554, 0.17, 3.554),
+			min = Vector3.new(-3.554, -0.45, -3.554),
+		},
+		id = 100047620726122,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_Drips2 = {
+		bounds = {
+			max = Vector3.new(2.005, 0.17, 1.957),
+			min = Vector3.new(-2.005, -0.45, -1.957),
+		},
+		id = 116213540536783,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_Drop = {
+		bounds = {
+			max = Vector3.new(0.12, 0.204, 0.114),
+			min = Vector3.new(-0.12, -0.12, -0.114),
+		},
+		id = 120408855976178,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_Jet = {
+		bounds = {
+			max = Vector3.new(0.304, 1.75, 0.319),
+			min = Vector3.new(-0.324, -0.1, -0.319),
+		},
+		id = 108140881014884,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_Ripple = {
+		bounds = {
+			max = Vector3.new(1.07, 0.042, 1.07),
+			min = Vector3.new(-1.07, -0.002, -1.07),
+		},
+		id = 113883062450038,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_Splash = {
+		bounds = {
+			max = Vector3.new(0.453, 0.275, 0.49),
+			min = Vector3.new(-0.503, -0.19, -0.49),
+		},
+		id = 87116512374203,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_SplashRing1 = {
+		bounds = {
+			max = Vector3.new(4.02, 0.376, 3.923),
+			min = Vector3.new(-4.02, -0.234, -3.926),
+		},
+		id = 83728579322978,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_SplashRing2 = {
+		bounds = {
+			max = Vector3.new(2.302, 0.361, 2.344),
+			min = Vector3.new(-2.279, -0.209, -2.223),
+		},
+		id = 106927584275589,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	FountainFx_Umbrella = {
+		bounds = {
+			max = Vector3.new(1.44, 0.546, 1.44),
+			min = Vector3.new(-1.44, -2.157, -1.44),
+		},
+		fx = {
+			drop = 1.7,
+			reach = 1.3,
+		},
+		id = 130639490746803,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
 	Habitat = {
 		bounds = {
 			max = Vector3.new(7.232, 12.475, 5.9),
@@ -9281,14 +9444,39 @@ Assets.Models = {
 	},
 	Park_Fountain = {
 		bounds = {
-			max = Vector3.new(9.838, 8.8, 9.887),
-			min = Vector3.new(-9.838, -0.3, -9.887),
+			max = Vector3.new(10.896, 9.925, 10.968),
+			min = Vector3.new(-10.858, -0.083, -11.003),
 		},
-		id = 100624313421572,
+		fx = {
+			bowl1 = Vector3.new(0.0, 5.1, 0.0),
+			bowl1R = 3.3,
+			bowl1Water = Vector3.new(0.0, 5.0, 0.0),
+			bowl2 = Vector3.new(0.0, 7.45, 0.0),
+			bowl2R = 1.75,
+			bowl2Water = Vector3.new(0.0, 7.38, 0.0),
+			frogs = { Vector3.new(-4.3487, 2.43, 4.3487), Vector3.new(4.3487, 2.43, 4.3487), Vector3.new(4.3487, 2.43, -4.3487), Vector3.new(-4.3487, 2.43, -4.3487) },
+			jet = Vector3.new(0.0, 9.75, -0.22),
+			jetTop = Vector3.new(0.0, 11.15, -0.22),
+			pool = Vector3.new(0.0, 1.05, 0.0),
+			poolR = 6.55,
+		},
+		id = 106247533045213,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Critters = {
+				collide = false,
+			},
+			Garden = {
+				collide = false,
+			},
+			Statue = {
+				collide = true,
+			},
+			Water = {
+				collide = false,
 			},
 		},
 	},

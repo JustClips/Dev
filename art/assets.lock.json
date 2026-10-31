@@ -9572,6 +9572,54 @@
    "id": 105912446843923,
    "sha": "623d76c5f9b853eb43a3bae90f6f3329f82ecbc613f8420d1170d2083b9d4c0f"
   },
+  "FountainFx_Arc": {
+   "id": 85655828997588,
+   "sha": "9346e102a3bbb3d0fb185ec78b7c2852ccd5aeccda1f783c86c76bd731e1ae15"
+  },
+  "FountainFx_Curtain1": {
+   "id": 105093208972415,
+   "sha": "2b23bfe9a0f4a229f87a6a38b0d263de8ed78ac609d39b1a56e9df9ecc8c290e"
+  },
+  "FountainFx_Curtain2": {
+   "id": 112416479700900,
+   "sha": "ff26288921c83881a17aea5a9f23509dcc0fc4962c18575daefaeebe75f82aa3"
+  },
+  "FountainFx_Drips1": {
+   "id": 100047620726122,
+   "sha": "ffaf985a8121c047399ea2e298decaebdfe89f7323ebc3801876b6a5135ef643"
+  },
+  "FountainFx_Drips2": {
+   "id": 116213540536783,
+   "sha": "aa02637f3d2dd4adae47ee61cc94daf654bcbbae420db2167f56e9a7a7dd6952"
+  },
+  "FountainFx_Drop": {
+   "id": 120408855976178,
+   "sha": "fcd1198292b6c9c61e194baa7de61b85fd0da861b2ac0dbd1d21b5087fcaf29d"
+  },
+  "FountainFx_Jet": {
+   "id": 108140881014884,
+   "sha": "10bfbbc23381f78eb4cf109c9521803a1e5847cc74b55067520b318d9a639644"
+  },
+  "FountainFx_Ripple": {
+   "id": 113883062450038,
+   "sha": "bb3dfb96558da7d54d6cfc81ffdb2b2917b0c573892524f1c435c2c277357025"
+  },
+  "FountainFx_Splash": {
+   "id": 87116512374203,
+   "sha": "5ca141330aa1d9341214bc2fe334e77e6bb13c699326a8d6b0c994338e1d0e08"
+  },
+  "FountainFx_SplashRing1": {
+   "id": 83728579322978,
+   "sha": "28fee4917d9fa246030ab30469c864a43bbc4e503ab7aa190aa61ad6930268df"
+  },
+  "FountainFx_SplashRing2": {
+   "id": 106927584275589,
+   "sha": "cdc1eef93127b05205e72691c958fc32b68366ea882c6f2fd35b68cb60321ca3"
+  },
+  "FountainFx_Umbrella": {
+   "id": 130639490746803,
+   "sha": "3c2edf8d749779ef6c1b909a45b86f2e9a5fd59e61168ca0377a354f6b346084"
+  },
   "Habitat": {
    "id": 114875698982833,
    "sha": "bc57dc1767ab1ef7f3b532dc8db91517f5247320ad7e933b977eec990e5a2021"
@@ -9637,8 +9685,8 @@
    "sha": "30834bcadda3cd10671b43466ebbb30f2f6b9a6facd1b5c88bf9bbeac218e59f"
   },
   "Park_Fountain": {
-   "id": 100624313421572,
-   "sha": "a7fa89bae26a659b1b0ceab79243c5542cce3bdf6c56ebf6bfc8a416d061e6cb"
+   "id": 106247533045213,
+   "sha": "bdbd6ee079f99e34b9f643a6eba02509c3c65ad179f33c9f13c7df933754a31c"
   },
   "Park_Gazebo": {
    "id": 76370855197849,

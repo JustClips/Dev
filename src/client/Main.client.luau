@@ -54,6 +54,7 @@ local ORDER = {
 	"BasePickerController",
 	"UpgradeController",
 	"WeatherController",
+	"FountainController",
 	"SpinController",
 	"BroadcastController",
 	"AdminController",

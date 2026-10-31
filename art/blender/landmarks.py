@@ -1,7 +1,7 @@
 """Zone landmarks: the big themed pieces that make each zone feel like a place.
 
-  Park         Park_Fountain, Park_Playground, Park_Gazebo, Park_Picnic, Park_Lamp,
-               Park_FlowerBed, Park_DuckPond
+  Park         Park_Playground, Park_Gazebo, Park_Picnic, Park_Lamp,
+               Park_FlowerBed, Park_DuckPond  (the fountain is in fountain.py)
   Beach        Beach_Lifeguard, Beach_HutA/B/C, Beach_IceCream, Beach_Volleyball,
                Beach_Sandcastle, Beach_Surfboards, Beach_Lighthouse, Beach_Boat
   City         City_ShopA/B/C/D, City_BusStop, City_HotDog, City_Newsstand,
@@ -110,33 +110,6 @@ def flowers(cx, cy, z, radius, count, seed):
 
 
 # ------------------------------------------------------------------------- Park
-
-def park_fountain(name):
-    a = Asset(name, "prop")
-    use(a)
-    p = [cyl(STONE, loc=(0, 0, 0.6), r=8, h=1.2, verts=24, smooth=False),
-         cyl(STONE_LIGHT, loc=(0, 0, 1.25), r=8.2, h=0.2, verts=24, smooth=False),
-         cyl(WATER, loc=(0, 0, 1.0), r=7.3, h=0.3, verts=24),
-         cyl(STONE, loc=(0, 0, 2.6), r=0.9, h=3.0, verts=12),
-         cyl(STONE, loc=(0, 0, 4.1), r=3.2, r2=3.6, h=0.6, verts=20, smooth=False),
-         cyl(WATER, loc=(0, 0, 4.42), r=3.2, h=0.1, verts=20),
-         cyl(STONE, loc=(0, 0, 5.4), r=0.5, h=2.0, verts=10),
-         cyl(STONE, loc=(0, 0, 6.5), r=1.5, r2=1.8, h=0.4, verts=16, smooth=False),
-         cyl(WATER, loc=(0, 0, 6.72), r=1.5, h=0.1, verts=16),
-         sphere(STONE_LIGHT, loc=(0, 0, 7.3), scale=0.5, seg=10, rings=6)]
-    # water spilling off the bowls
-    p.append(cyl(WATER, loc=(0, 0, 2.7), r=3.3, r2=3.5, h=3.2, verts=20, cap=False))
-    p.append(cyl(WATER, loc=(0, 0, 5.4), r=1.5, r2=1.7, h=2.0, verts=16, cap=False))
-    p.append(cone(WATER, loc=(0, 0, 8.0), r=0.5, h=1.6, verts=10))
-    # flower ring around the basin
-    p += flowers(0, 0, 0, 0, 0, 1)
-    for k in range(12):
-        ang = math.radians(k * 30 + 15)
-        p.append(sphere(LEAF_DARK if k % 2 else LEAF, loc=(math.cos(ang) * 9.2, math.sin(ang) * 9.2, 0.5), scale=(1.0, 1.0, 0.8), seg=10, rings=6))
-        p.append(sphere(FLOWERS[k % len(FLOWERS)], loc=(math.cos(ang) * 9.2, math.sin(ang) * 9.2, 1.25), scale=0.3, seg=8, rings=5))
-    a.part("Body", p, collide=True)
-    return a
-
 
 def park_playground(name):
     """Climbing tower with a slide, a swing set and a sandbox, on a rubber mat (20 x 14)."""
@@ -885,7 +858,6 @@ def snow_frozenpond(name):
 
 
 ALL = {
-    "Park_Fountain": lambda: park_fountain("Park_Fountain"),
     "Park_Playground": lambda: park_playground("Park_Playground"),
     "Park_Gazebo": lambda: park_gazebo("Park_Gazebo"),
     "Park_Picnic": lambda: park_picnic("Park_Picnic"),
