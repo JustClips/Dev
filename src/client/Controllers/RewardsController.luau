@@ -2,7 +2,8 @@
 -- Daily window (pink calendar on the left rail): 7 daily cards with Claim, the group reward
 -- and the event sign-up. Playtime window (green Gifts button, shows the time to the next
 -- gift): 6 gifts that unlock as you play. Also:
---   the stay offer: opening the Roblox menu pops "Stay 5 more minutes for a free potion",
+--   the leave screen: opening the Roblox menu shows "WAIT! DON'T LEAVE!" with what you earn
+--   by staying, and starts a "stay 5 minutes for a free potion" countdown,
 --   the event board in the plaza (its prompt signs you up),
 --   the badge on the rail button when something can be claimed.
 local GuiService = game:GetService("GuiService")
@@ -35,6 +36,7 @@ local C: any
 local gui: ScreenGui
 local giftsGui: ScreenGui
 local stayGui: ScreenGui
+local leaveGui: ScreenGui
 local badge: Frame
 local giftsBadge: Frame
 local giftsButton: GuiButton
@@ -317,14 +319,46 @@ local function renderStay()
 	end
 end
 
-local function offerStay()
+-- The leave screen (Dev, 2026-10-31): shown while the Roblox menu is open, in red behind the
+-- menu. Staying 24 hours vs a day offline (offline income stops at its cap), and the free
+-- potion countdown, which starts the moment the menu opens.
+local function renderLeave()
+	local data = State.data
+	if not leaveGui.Enabled or not data then
+		return
+	end
+	local earn = Ui.find(leaveGui, "Leave.Earn") :: TextLabel
+	local offline = Ui.find(leaveGui, "Leave.Offline") :: TextLabel
+	local potion = Ui.find(leaveGui, "Leave.Potion") :: TextLabel
+	local gold = '<font color="#FFD23C">'
+	local perDay = (data.IncomePerSec or 0) * 86400
+	if perDay > 0 then
+		earn.Text = `YOU'LL EARN {gold}+{Format.cash(perDay)} COINS</font> EVERY 24 HOURS!`
+		offline.Text = `OFFLINE YOU ONLY EARN {gold}+{Format.cash(data.OfflinePerDay or 0)} COINS</font> A DAY`
+		offline.Visible = true
+	else
+		earn.Text = `STAY AND HATCH PETS THAT EARN {gold}CASH</font> EVERY SECOND!`
+		offline.Visible = false
+	end
+	local left = stayEndsAt and stayEndsAt - os.clock()
+	potion.Visible = left ~= nil and left > 0
+	if left and left > 0 then
+		local reward = Rewards.Stay.Reward
+		local item = Items.ById[reward.Item or ""]
+		potion.Text = `STAY {Format.time(left)} MORE FOR A FREE {string.upper(if item then item.Name else "potion")}!`
+	end
+end
+
+-- Starts the stay countdown right away (no button to press).
+local function startStay()
 	local info = State.data and State.data.Rewards
 	if not info or not info.StayAvailable or stayEndsAt then
 		return
 	end
-	local popup = Ui.find(stayGui, "Popup") :: Frame
-	popup.Visible = true
-	Ui.popFrame(Ui.find(popup, "Window"))
+	stayEndsAt = os.clock() + Rewards.Stay.Minutes * 60
+	task.spawn(function()
+		Net.func("Rewards"):InvokeServer("StartStay")
+	end)
 end
 
 -------------------------------------------------------------------------- public
@@ -344,6 +378,7 @@ function RewardsController:Init(controllers)
 	gui = Ui.screen("Daily")
 	giftsGui = Ui.screen("Playtime")
 	stayGui = Ui.screen("Stay")
+	leaveGui = Ui.screen("Leave")
 	local hud = Ui.screen("Hud")
 	badge = Ui.find(hud, "Rail.RewardsButton.Badge")
 	giftsButton = Ui.find(hud, "Rail.GiftsButton")
@@ -416,17 +451,9 @@ function RewardsController:Start()
 		end
 	end)
 
-	local popup = Ui.find(stayGui, "Popup") :: Frame
-	Ui.button(Ui.find(popup, "Window.Close"), function()
-		popup.Visible = false
-	end)
-	Ui.button(Ui.find(popup, "Window.Stay"), function()
-		popup.Visible = false
-		act("StartStay")
-	end)
 	-- Opening the Roblox menu is the closest thing to "about to leave" a game can see (closing
 	-- the window or app can't be caught), so it plays an attention sound (Dev, 2026-10-31)
-	-- and shows the stay offer when there is one.
+	-- and shows the leave screen, starting the free potion countdown.
 	local lastAttention = -math.huge
 	task.spawn(function()
 		-- Loaded ahead, so the very first menu open isn't silent.
@@ -442,7 +469,12 @@ function RewardsController:Start()
 			lastAttention = os.clock()
 			Ui.sound("Attention")
 		end
-		offerStay()
+		startStay()
+		leaveGui.Enabled = true
+		renderLeave()
+	end)
+	GuiService.MenuClosed:Connect(function()
+		leaveGui.Enabled = false
 	end)
 
 	State.Changed:Connect(function(data)
@@ -459,6 +491,7 @@ function RewardsController:Start()
 			task.wait(1)
 			render()
 			renderStay()
+			renderLeave()
 		end
 	end)
 end

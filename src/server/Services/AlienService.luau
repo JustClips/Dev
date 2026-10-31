@@ -238,6 +238,19 @@ local function clearBase(session)
 	end
 end
 
+-- What a day away pays (offline income stops at the cap), for the leave screen.
+function AlienService:GetOfflinePerDay(player: Player): number
+	local session = S.DataService:GetSession(player)
+	if not session then
+		return 0
+	end
+	local data = session.Data
+	local cap = (if data.Gamepasses.VIP then Economy.OfflineCapSecondsVIP else Economy.OfflineCapSeconds)
+		+ Upgrades.stat(data.Upgrades, "OfflineCap") * 3600
+	return AlienService:GetBaseIncome(player) * S.BoostService:GetBaseCashMultiplier(player) * math.min(cap, 86400)
+		* Economy.OfflineIncomeRate * Upgrades.multiplier(data.Upgrades, "Offline")
+end
+
 local function grantOffline(player: Player, session)
 	local data = session.Data
 	if data.LastOnline <= 0 then

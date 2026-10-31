@@ -168,6 +168,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		Slots = S.AlienService:GetSlotCount(player),
 		SlotCashPrice = Economy.SlotCashPrices[(data.Flags.CashSlots or 0) + 1],
 		IncomePerSec = S.AlienService:GetIncomePerSec(player),
+		OfflinePerDay = S.AlienService:GetOfflinePerDay(player),
 		CashPacks = S.ShopService:GetCashPackAmounts(player),
 		CashMultiplier = S.BoostService:GetCashMultiplier(player),
 		CarriedEggs = carried,

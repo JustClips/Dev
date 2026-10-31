@@ -1119,17 +1119,33 @@ def rewards():
     write("Playtime", screen([dim(), window(gw, gh, "Playtime Gifts", "Gift", gift_body, header=SUCCESS, size=(gw, gh))],
                              order=10, enabled=False))
 
-    # Stay offer: pops when the player opens the Roblox menu (about to leave).
-    stay = plate("Window", U(0, 440, 0, 230), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, children=[
-        autoscale(),
-        plate("Header", U(1, 0, 0, 56), tint="#FF5FA2", children=[
-            icon("Icon", "PotionLuck", 42, U(0, 8, 0.5, 0), (0, 0.5)),
-            text("Title", "Wait! Free potion!", U(1, -130, 1, 0), U(0, 58, 0, 0), ts=28, display=True, stroke=3, xa="Left"),
-        ]),
-        button("Close", U(0, 48, 0, 48), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=28, ZIndex=5),
-        text("Text", "Stay 5 more minutes and get a free Luck Potion!", U(1, -40, 0, 64), U(0.5, 0, 0, 68), (0.5, 0), ts=20,
-             color=INK, heavy=True),
-        button("Stay", U(0, 260, 0, 58), U(0.5, 0, 1, -14), (0.5, 1), color=SUCCESS, label="Stay & get it!", ts=26),
+    # Leave screen (Dev, 2026-10-31, from a reference): opening the Roblox menu (about to
+    # leave) tints the whole screen red behind the menu, with big text at the top and bottom
+    # where the menu doesn't cover it: what you earn by staying 24 hours vs offline (real
+    # numbers, RewardsController), the free potion countdown, and gifts down the sides.
+    def big(name, value, pos, h, color, stroke=4, w=0.8):
+        return text(name, value, U(w, 0, h, 0), pos, (0.5, 0), ts=60, color=color, display=True, stroke=stroke, TextScaled=True,
+                    RichText=True, ZIndex=3, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 90, "MinTextSize": 10})])
+
+    def gift(name, pos, rot, px=150):
+        g = icon(name, "Gift", px, pos, (0.5, 0.5), Rotation=rot, ZIndex=2)
+        g["properties"]["Size"] = U(0, 0, px / 1080, 0)  # a share of the screen height
+        g["children"] = [node("Ratio", "UIAspectRatioConstraint", {"AspectRatio": 1, "DominantAxis": "Height"})]
+        return g
+
+    leave = frame("Leave", U(1, 0, 1, 0), bg="#7A0B12", BackgroundTransparency=0.15, ZIndex=1, children=[
+        node("Shade", "UIGradient", {"Color": {"keypoints": [[0, "#FF4040"], [0.5, "#5A0610"], [1, "#FF4040"]]}, "Rotation": 90}),
+        big("Title", "WAIT! DON'T LEAVE!", U(0.5, 0, 0.02, 0), 0.085, "#FF3B3B", 5, 0.62),
+        big("Earn", "YOU'LL EARN <font color=\"#FFD23C\">+$0 COINS</font> EVERY 24 HOURS!", U(0.5, 0, 0.105, 0), 0.05, "#7FE36B", 3.5),
+        big("Potion", "STAY 5:00 MORE FOR A FREE LUCK POTION!", U(0.5, 0, 0.16, 0), 0.035, WHITE, 3),
+        big("Title2", "WAIT! DON'T LEAVE!", U(0.5, 0, 0.75, 0), 0.1, "#FF3B3B", 5, 0.62),
+        big("Offline", "OFFLINE YOU ONLY EARN <font color=\"#FFD23C\">+$0 COINS</font> A DAY", U(0.5, 0, 0.86, 0), 0.055, "#E8E0B0",
+            3.5),
+        gift("GiftA", U(0.9, 0, 0.22, 0), 12),
+        gift("GiftB", U(0.95, 0, 0.5, 0), -10),
+        gift("GiftC", U(0.9, 0, 0.78, 0), 8),
+        gift("GiftD", U(0.08, 0, 0.3, 0), -14, 120),
+        gift("GiftE", U(0.06, 0, 0.7, 0), 10, 120),
     ])
     chip = plate("Chip", U(0, 0, 0, 40), U(0.5, 0, 0, 116), (0.5, 0), BG, stud=0.5, stroke=3, AutomaticSize="X", Visible=False,
                  children=[
@@ -1138,7 +1154,10 @@ def rewards():
                      text("Label", "Free potion in 5:00", U(0, 0, 1, 0), ts=19, color=ACCENT, display=True, stroke=2.5,
                           AutomaticSize="X", TextWrapped=False),
                  ])
-    write("Stay", screen([chip, frame("Popup", U(1, 0, 1, 0), Visible=False, children=[stay])], order=14))
+    write("Stay", screen([chip], order=14))
+    leave_screen = screen([leave], order=60, enabled=False, inset=True)
+    leave_screen["properties"]["ScreenInsets"] = "None"
+    write("Leave", leave_screen)
 
 
 def rebirth():

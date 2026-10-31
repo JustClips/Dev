@@ -34,6 +34,7 @@ local NOT_POPUPS = {
 	Hatch = true,
 	Loading = true,
 	Placing = true,
+	Leave = true,
 	Upgrades = true, -- UpgradeController selects the first hex itself
 }
 -- The button a window starts on, best first (else the top-left one).

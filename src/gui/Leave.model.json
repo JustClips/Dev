@@ -1,0 +1,632 @@
+{
+ "className": "ScreenGui",
+ "properties": {
+  "ResetOnSpawn": false,
+  "ZIndexBehavior": "Sibling",
+  "Enabled": false,
+  "DisplayOrder": 60,
+  "IgnoreGuiInset": true,
+  "ScreenInsets": "None"
+ },
+ "children": [
+  {
+   "name": "Leave",
+   "className": "Frame",
+   "properties": {
+    "Size": [
+     [
+      1,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "Position": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      0
+     ]
+    ],
+    "AnchorPoint": [
+     0,
+     0
+    ],
+    "BorderSizePixel": 0,
+    "BackgroundTransparency": 0.15,
+    "ZIndex": 1,
+    "BackgroundColor3": "#7A0B12"
+   },
+   "children": [
+    {
+     "name": "Shade",
+     "className": "UIGradient",
+     "properties": {
+      "Color": {
+       "keypoints": [
+        [
+         0,
+         "#FF4040"
+        ],
+        [
+         0.5,
+         "#5A0610"
+        ],
+        [
+         1,
+         "#FF4040"
+        ]
+       ]
+      },
+      "Rotation": 90
+     }
+    },
+    {
+     "name": "Title",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        0.62,
+        0
+       ],
+       [
+        0.085,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        0
+       ],
+       [
+        0.02,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "WAIT! DON'T LEAVE!",
+      "TextColor3": "#FF3B3B",
+      "TextSize": 60,
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "ZIndex": 3,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/Montserrat.json",
+       "weight": "Heavy",
+       "style": "Normal"
+      },
+      "TextScaled": true,
+      "RichText": true
+     },
+     "children": [
+      {
+       "name": "TextStroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#17191E",
+        "Thickness": 5,
+        "ApplyStrokeMode": "Contextual",
+        "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Fit",
+       "className": "UITextSizeConstraint",
+       "properties": {
+        "MaxTextSize": 90,
+        "MinTextSize": 7
+       }
+      }
+     ]
+    },
+    {
+     "name": "Earn",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        0.8,
+        0
+       ],
+       [
+        0.05,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        0
+       ],
+       [
+        0.105,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "YOU'LL EARN <font color=\"#FFD23C\">+$0 COINS</font> EVERY 24 HOURS!",
+      "TextColor3": "#7FE36B",
+      "TextSize": 60,
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "ZIndex": 3,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/Montserrat.json",
+       "weight": "Heavy",
+       "style": "Normal"
+      },
+      "TextScaled": true,
+      "RichText": true
+     },
+     "children": [
+      {
+       "name": "TextStroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#17191E",
+        "Thickness": 3.5,
+        "ApplyStrokeMode": "Contextual",
+        "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Fit",
+       "className": "UITextSizeConstraint",
+       "properties": {
+        "MaxTextSize": 90,
+        "MinTextSize": 7
+       }
+      }
+     ]
+    },
+    {
+     "name": "Potion",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        0.8,
+        0
+       ],
+       [
+        0.035,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        0
+       ],
+       [
+        0.16,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "STAY 5:00 MORE FOR A FREE LUCK POTION!",
+      "TextColor3": "#FFFFFF",
+      "TextSize": 60,
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "ZIndex": 3,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/Montserrat.json",
+       "weight": "Heavy",
+       "style": "Normal"
+      },
+      "TextScaled": true,
+      "RichText": true
+     },
+     "children": [
+      {
+       "name": "TextStroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#17191E",
+        "Thickness": 3,
+        "ApplyStrokeMode": "Contextual",
+        "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Fit",
+       "className": "UITextSizeConstraint",
+       "properties": {
+        "MaxTextSize": 90,
+        "MinTextSize": 7
+       }
+      }
+     ]
+    },
+    {
+     "name": "Title2",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        0.62,
+        0
+       ],
+       [
+        0.1,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        0
+       ],
+       [
+        0.75,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "WAIT! DON'T LEAVE!",
+      "TextColor3": "#FF3B3B",
+      "TextSize": 60,
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "ZIndex": 3,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/Montserrat.json",
+       "weight": "Heavy",
+       "style": "Normal"
+      },
+      "TextScaled": true,
+      "RichText": true
+     },
+     "children": [
+      {
+       "name": "TextStroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#17191E",
+        "Thickness": 5,
+        "ApplyStrokeMode": "Contextual",
+        "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Fit",
+       "className": "UITextSizeConstraint",
+       "properties": {
+        "MaxTextSize": 90,
+        "MinTextSize": 7
+       }
+      }
+     ]
+    },
+    {
+     "name": "Offline",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        0.8,
+        0
+       ],
+       [
+        0.055,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.5,
+        0
+       ],
+       [
+        0.86,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "OFFLINE YOU ONLY EARN <font color=\"#FFD23C\">+$0 COINS</font> A DAY",
+      "TextColor3": "#E8E0B0",
+      "TextSize": 60,
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "ZIndex": 3,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/Montserrat.json",
+       "weight": "Heavy",
+       "style": "Normal"
+      },
+      "TextScaled": true,
+      "RichText": true
+     },
+     "children": [
+      {
+       "name": "TextStroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#17191E",
+        "Thickness": 3.5,
+        "ApplyStrokeMode": "Contextual",
+        "LineJoinMode": "Round"
+       }
+      },
+      {
+       "name": "Fit",
+       "className": "UITextSizeConstraint",
+       "properties": {
+        "MaxTextSize": 90,
+        "MinTextSize": 7
+       }
+      }
+     ]
+    },
+    {
+     "name": "GiftA",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        0
+       ],
+       [
+        0.1388888888888889,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.9,
+        0
+       ],
+       [
+        0.22,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0.5
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "rbxassetid://106520216272455",
+      "ScaleType": "Fit",
+      "Rotation": 12,
+      "ZIndex": 2
+     },
+     "children": [
+      {
+       "name": "Ratio",
+       "className": "UIAspectRatioConstraint",
+       "properties": {
+        "AspectRatio": 1,
+        "DominantAxis": "Height"
+       }
+      }
+     ]
+    },
+    {
+     "name": "GiftB",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        0
+       ],
+       [
+        0.1388888888888889,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.95,
+        0
+       ],
+       [
+        0.5,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0.5
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "rbxassetid://106520216272455",
+      "ScaleType": "Fit",
+      "Rotation": -10,
+      "ZIndex": 2
+     },
+     "children": [
+      {
+       "name": "Ratio",
+       "className": "UIAspectRatioConstraint",
+       "properties": {
+        "AspectRatio": 1,
+        "DominantAxis": "Height"
+       }
+      }
+     ]
+    },
+    {
+     "name": "GiftC",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        0
+       ],
+       [
+        0.1388888888888889,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.9,
+        0
+       ],
+       [
+        0.78,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0.5
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "rbxassetid://106520216272455",
+      "ScaleType": "Fit",
+      "Rotation": 8,
+      "ZIndex": 2
+     },
+     "children": [
+      {
+       "name": "Ratio",
+       "className": "UIAspectRatioConstraint",
+       "properties": {
+        "AspectRatio": 1,
+        "DominantAxis": "Height"
+       }
+      }
+     ]
+    },
+    {
+     "name": "GiftD",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        0
+       ],
+       [
+        0.1111111111111111,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.08,
+        0
+       ],
+       [
+        0.3,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0.5
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "rbxassetid://106520216272455",
+      "ScaleType": "Fit",
+      "Rotation": -14,
+      "ZIndex": 2
+     },
+     "children": [
+      {
+       "name": "Ratio",
+       "className": "UIAspectRatioConstraint",
+       "properties": {
+        "AspectRatio": 1,
+        "DominantAxis": "Height"
+       }
+      }
+     ]
+    },
+    {
+     "name": "GiftE",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        0
+       ],
+       [
+        0.1111111111111111,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0.06,
+        0
+       ],
+       [
+        0.7,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0.5,
+       0.5
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "rbxassetid://106520216272455",
+      "ScaleType": "Fit",
+      "Rotation": 10,
+      "ZIndex": 2
+     },
+     "children": [
+      {
+       "name": "Ratio",
+       "className": "UIAspectRatioConstraint",
+       "properties": {
+        "AspectRatio": 1,
+        "DominantAxis": "Height"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

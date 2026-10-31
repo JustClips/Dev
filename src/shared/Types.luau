@@ -315,6 +315,7 @@ export type PlayerSnapshot = {
 	Slots: number,
 	SlotCashPrice: number?, -- price of the next pet slot bought with cash (nil = all bought)
 	IncomePerSec: number,
+	OfflinePerDay: number?,
 	CashPacks: { [string]: number },
 	CashMultiplier: number,
 	CarriedEggs: { Rarity },
