@@ -1406,60 +1406,6 @@ def codes():
                          order=10, enabled=False))
 
 
-# ---------------------------------------------------------------- Quests
-def quests():
-    """Quests window (screen "Quests", QuestController), opened by tapping the quest card
-    above the hotbar: the current story quest on top, then the 3 daily quests and the
-    daily chest. Quests pay out by themselves, so there are no claim buttons."""
-    def progress_bar(name, size, pos, anchor=(0, 0), ts=18):
-        return frame(name, size, pos, anchor, bg="#0B0E1E", children=[
-            border(INK, 3),
-            frame("Fill", U(0.3, 0, 1, 0), bg=SUCCESS),
-            text("Label", "0/0", U(1, 0, 1, 0), ts=ts, display=True, stroke=2.5, ZIndex=4),
-        ])
-
-    story = plate("Story", U(1, -28, 0, 140), U(0, 14, 0, 76), tint="#FFE9A8", stroke=3, children=[
-        icon("Icon", "Star", 84, U(0, 12, 0.5, 0), (0, 0.5)),
-        text("Step", "STORY QUEST 1/18", U(1, -330, 0, 24), U(0, 108, 0, 10), ts=18, color=SUB, display=True, xa="Left"),
-        text("Text", "", U(1, -330, 0, 40), U(0, 108, 0, 34), ts=28, color=INK, display=True, xa="Left",
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 10})]),
-        progress_bar("Bar", U(1, -330, 0, 32), U(0, 108, 0, 88), ts=20),
-        plate("Reward", U(0, 196, 0, 112), U(1, -14, 0.5, 0), (1, 0.5), tint=WHITE, stroke=3, children=[
-            text("Head", "REWARD", U(1, 0, 0, 22), U(0, 0, 0, 4), ts=16, color=SUB, display=True),
-            icon("Icon", "Gift", 52, U(0.5, 0, 0, 26), (0.5, 0)),
-            text("Label", "", U(1, -10, 0, 26), U(0.5, 0, 1, -4), (0.5, 1), ts=18, color=INK, display=True,
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 8})]),
-        ]),
-    ])
-    title = frame("DailyHead", U(1, -28, 0, 30), U(0, 14, 0, 226), children=[
-        text("Title", "DAILY QUESTS", U(0.5, 0, 1, 0), ts=24, color=INK, display=True, xa="Left"),
-        text("Resets", "New quests in 0:00", U(0.5, 0, 1, 0), U(1, 0, 0, 0), (1, 0), ts=18, color=SUB, heavy=True, xa="Right"),
-    ])
-
-    def daily(i):
-        return plate(f"Daily{i}", U(1, -28, 0, 54), U(0, 14, 0, 262 + (i - 1) * 60), tint=WHITE, stroke=3, children=[
-            icon("Icon", "Dust", 42, U(0, 8, 0.5, 0), (0, 0.5)),
-            text("Text", "", U(1, -470, 1, 0), U(0, 58, 0, 0), ts=20, color=INK, display=True, xa="Left",
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 9})]),
-            progress_bar("Bar", U(0, 180, 0, 28), U(1, -224, 0.5, 0), (1, 0.5), ts=16),
-            icon("RewardIcon", "Gift", 36, U(1, -176, 0.5, 0), (1, 0.5)),
-            text("Reward", "", U(0, 128, 1, 0), U(1, -10, 0, 0), (1, 0), ts=16, color=INK, display=True, xa="Left",
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 8})]),
-            frame("Done", U(1, 0, 1, 0), bg="#0B0E1E", BackgroundTransparency=0.45, Visible=False, ZIndex=6, children=[
-                text("Label", "DONE ✓", U(1, 0, 1, 0), ts=26, color=SUCCESS, display=True, stroke=3, ZIndex=7),
-            ]),
-        ])
-
-    chest = plate("Chest", U(1, -28, 0, 56), U(0, 14, 0, 446), tint="#9B6BFF", stroke=3, children=[
-        icon("Icon", "Gift", 46, U(0, 8, 0.5, 0), (0, 0.5)),
-        text("Text", "Finish all 3: Rare Egg", U(1, -260, 1, 0), U(0, 62, 0, 0), ts=22, display=True, stroke=2.5, xa="Left",
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 9})]),
-        text("Streak", "Streak: 0 days", U(0, 190, 1, 0), U(1, -12, 0, 0), (1, 0), ts=18, display=True, stroke=2, xa="Right"),
-    ])
-    body = [story, title, daily(1), daily(2), daily(3), chest]
-    write("Quests", screen([dim(), window(WIN_W, WIN_H, "Quests", "Star", body, header="#FFB020")], order=10, enabled=False))
-
-
 # ---------------------------------------------------------------- Garage
 def garage():
     """Gear window (screen "Garage", called "Tools" before 2026-10-30): a Tools tab (the tool ladder: buy the next one with
@@ -1693,7 +1639,6 @@ def main():
     group_reward()
     wheel()
     codes()
-    quests()
     merchant()
     upgrades()
     loading()

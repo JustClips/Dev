@@ -117,7 +117,6 @@ local ring: Frame
 local ringStroke: UIStroke
 local glow: Highlight
 local holdHint: Frame
-local questHit: TextButton
 local holdPulse: Frame
 
 local shownStep: string? = nil
@@ -457,7 +456,6 @@ local function update()
 		return
 	end
 	if os.clock() < nudgeUntil and not holding then
-		questHit.Visible = false
 		card.Visible = true
 		stepLabel.Visible = false
 		barFill.Parent.Visible = false
@@ -465,24 +463,22 @@ local function update()
 		textLabel.Text = nudgeText
 		return
 	end
-	-- The quest tracker (QuestController): tap it for the Quests window.
-	local quest = C.QuestController:Tracker()
-	if quest and not holding and not Ui.openModal() then
+	-- After the tutorial: the next starter goal (GoalController), until the last is done.
+	local goal = C.GoalController:Tracker()
+	if goal and not holding and not Ui.openModal() then
 		card.Visible = true
-		questHit.Visible = true
 		stepLabel.Visible = true
-		stepLabel.Text = quest.Label
-		textLabel.Text = quest.Text
-		cardIcon.Image = AssetLibrary.image(quest.Icon)
+		stepLabel.Text = goal.Label
+		textLabel.Text = goal.Text
+		cardIcon.Image = AssetLibrary.image(goal.Icon)
 		barFill.Parent.Visible = true
-		barFill.Size = UDim2.fromScale(math.clamp(quest.Fraction, 0, 1), 1)
+		barFill.Size = UDim2.fromScale(math.clamp(goal.Fraction, 0, 1), 1)
 	else
-		questHit.Visible = false
 		card.Visible = false
 	end
 end
 
--- Green flash + chime on the card (a quest was finished).
+-- Green flash + chime on the card (a starter goal was finished).
 function TutorialController:Flash()
 	if not celebrating then
 		task.spawn(celebrate, nil)
@@ -531,15 +527,6 @@ function TutorialController:Init(controllers)
 	ring = Ui.find(spot, "Ring")
 	ringStroke = Ui.find(ring, "Stroke")
 	doneGui = Ui.screen("TutorialDone")
-	-- Invisible button over the card: after the tutorial the card is the quest tracker.
-	questHit = Instance.new("TextButton")
-	questHit.Name = "QuestHit"
-	questHit.Text = ""
-	questHit.BackgroundTransparency = 1
-	questHit.Size = UDim2.fromScale(1, 1)
-	questHit.ZIndex = 20
-	questHit.Visible = false
-	questHit.Parent = card
 	glow = Instance.new("Highlight")
 	glow.Name = "TutorialGlow"
 	glow.FillColor = Color3.fromRGB(255, 226, 92)
@@ -567,9 +554,6 @@ function TutorialController:Start()
 	Ui.button(Ui.find(doneGui, "Window.Ok"), close)
 	Ui.button(Ui.find(doneGui, "Window.Close"), close)
 	Ui.button(Ui.find(doneGui, "Dim"), close)
-	Ui.button(questHit, function()
-		C.QuestController:Open()
-	end)
 	RunService.RenderStepped:Connect(function()
 		if glow.Enabled then
 			glow.FillTransparency = 0.6 + math.abs(math.sin(os.clock() * 3)) * 0.3
