@@ -7967,12 +7967,38 @@ Assets.Models = {
 		},
 		sign = Vector3.new(0.0, 11.4, -0.3),
 	},
+	BeachFx_Crab = {
+		bounds = {
+			max = Vector3.new(0.871, 0.917, 0.477),
+			min = Vector3.new(-0.871, -0.031, -0.733),
+		},
+		id = 123191323100399,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	BeachFx_Gull = {
+		bounds = {
+			max = Vector3.new(1.613, 0.445, 0.625),
+			min = Vector3.new(-1.612, -0.305, -0.94),
+		},
+		id = 134429652880118,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
 	Beach_Boat = {
 		bounds = {
-			max = Vector3.new(2.231, 1.12, 4.648),
-			min = Vector3.new(-2.231, -0.2, -4.648),
+			max = Vector3.new(2.85, 1.299, 4.595),
+			min = Vector3.new(-2.85, -0.05, -4.595),
 		},
-		id = 94962561371229,
+		id = 80528670161676,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -7981,78 +8007,190 @@ Assets.Models = {
 		},
 	},
 	Beach_HutA = {
-		bounds = {
-			max = Vector3.new(3.688, 7.672, 3.4),
-			min = Vector3.new(-3.688, 0.0, -4.2),
+		anim = {
+			Flag = {
+				amp = 18,
+				axis = "y",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.35,
+			},
 		},
-		id = 99490456547645,
+		bounds = {
+			max = Vector3.new(3.353, 9.84, 3.8),
+			min = Vector3.new(-3.353, -0.176, -4.3),
+		},
+		id = 117844247318140,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Flag = {
+				collide = false,
+				joint = Vector3.new(0.0, 9.6, 0.4),
 			},
 		},
 	},
 	Beach_HutB = {
-		bounds = {
-			max = Vector3.new(3.688, 7.672, 3.4),
-			min = Vector3.new(-3.688, 0.0, -4.2),
+		anim = {
+			Flag = {
+				amp = 18,
+				axis = "y",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.35,
+			},
 		},
-		id = 83893782488451,
+		bounds = {
+			max = Vector3.new(3.353, 9.84, 3.8),
+			min = Vector3.new(-3.353, -0.176, -4.3),
+		},
+		id = 86780527608346,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Flag = {
+				collide = false,
+				joint = Vector3.new(0.0, 9.6, 0.4),
 			},
 		},
 	},
 	Beach_HutC = {
-		bounds = {
-			max = Vector3.new(3.688, 7.672, 3.4),
-			min = Vector3.new(-3.688, 0.0, -4.2),
+		anim = {
+			Flag = {
+				amp = 18,
+				axis = "y",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.35,
+			},
 		},
-		id = 99557965915132,
+		bounds = {
+			max = Vector3.new(3.353, 9.84, 3.8),
+			min = Vector3.new(-3.353, -0.176, -4.3),
+		},
+		id = 96313687845398,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Flag = {
+				collide = false,
+				joint = Vector3.new(0.0, 9.6, 0.4),
 			},
 		},
 	},
 	Beach_IceCream = {
-		bounds = {
-			max = Vector3.new(3.025, 12.4, 2.1),
-			min = Vector3.new(-3.025, 0.0, -3.2),
+		anim = {
+			Cone = {
+				amp = 0,
+				axis = "y",
+				kind = "spin",
+				phase = 0.0,
+				speed = 0.08,
+			},
 		},
-		id = 76495201096349,
+		bounds = {
+			max = Vector3.new(3.277, 12.528, 2.066),
+			min = Vector3.new(-3.277, -0.064, -3.32),
+		},
+		id = 111624120840840,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Cone = {
+				collide = false,
+				joint = Vector3.new(0.0, 6.6, 0.0),
 			},
 		},
 	},
 	Beach_Lifeguard = {
-		bounds = {
-			max = Vector3.new(2.5, 13.0, 3.004),
-			min = Vector3.new(-3.35, -0.245, -9.138),
+		anim = {
+			Flag = {
+				amp = 18,
+				axis = "y",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.35,
+			},
 		},
-		id = 86430528234488,
+		bounds = {
+			max = Vector3.new(2.748, 13.04, 3.002),
+			min = Vector3.new(-3.374, -0.24, -8.972),
+		},
+		id = 137027619006218,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
 			},
+			Flag = {
+				collide = false,
+				joint = Vector3.new(-1.9, 12.8, 1.9),
+			},
 		},
 	},
 	Beach_Lighthouse = {
-		bounds = {
-			max = Vector3.new(8.468, 32.05, 7.87),
-			min = Vector3.new(-8.468, -0.6, -7.872),
+		anim = {
+			Beam_Glow = {
+				amp = 0,
+				axis = "y",
+				kind = "spin",
+				phase = 0.0,
+				speed = 0.12,
+			},
 		},
-		id = 113771946694717,
+		bounds = {
+			max = Vector3.new(9.0, 32.4, 8.155),
+			min = Vector3.new(-9.0, -0.146, -8.301),
+		},
+		fx = {
+			loops = { {
+					asset = "BeachFx_Gull",
+					bob = 0.5,
+					center = Vector3.new(0.0, 31.0, 0.0),
+					hop = 0.0,
+					phase = 0.0,
+					rx = 9,
+					rz = 7,
+					speed = 0.35,
+					wake = false,
+				}, {
+					asset = "BeachFx_Gull",
+					bob = 0.5,
+					center = Vector3.new(0.0, 33.5, 0.0),
+					hop = 0.0,
+					phase = 2.1,
+					rx = 12,
+					rz = 9,
+					speed = 0.28,
+					wake = false,
+				}, {
+					asset = "BeachFx_Gull",
+					bob = 0.5,
+					center = Vector3.new(0.0, 36.0, 0.0),
+					hop = 0.0,
+					phase = 4.2,
+					rx = 15,
+					rz = 11,
+					speed = 0.21,
+					wake = false,
+				} },
+		},
+		id = 91366531955509,
 		kind = "prop",
 		parts = {
+			Beam_Glow = {
+				collide = false,
+				glow = "FFF6C0",
+				joint = Vector3.new(0.0, 28.3, 0.0),
+			},
 			Body = {
 				collide = true,
 			},
@@ -8062,25 +8200,103 @@ Assets.Models = {
 			},
 		},
 	},
-	Beach_Sandcastle = {
-		bounds = {
-			max = Vector3.new(7.217, 7.6, 6.6),
-			min = Vector3.new(-7.418, -0.35, -6.6),
+	Beach_Palm = {
+		anim = {
+			Fronds = {
+				amp = 4,
+				axis = "z",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.4,
+			},
 		},
-		id = 73658242480314,
+		bounds = {
+			max = Vector3.new(2.122, 7.942, 3.391),
+			min = Vector3.new(-4.49, -0.375, -3.391),
+		},
+		id = 119455830739271,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Fronds = {
+				collide = false,
+				joint = Vector3.new(-1.0213, 7.0, 0.0),
+			},
+		},
+	},
+	Beach_Rock1 = {
+		bounds = {
+			max = Vector3.new(2.5, 2.235, 2.0),
+			min = Vector3.new(-2.11, -0.631, -1.888),
+		},
+		id = 107491054536143,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_Rock2 = {
+		bounds = {
+			max = Vector3.new(3.7, 3.295, 2.8),
+			min = Vector3.new(-3.228, -1.141, -2.644),
+		},
+		id = 123489060904356,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Beach_Sandcastle = {
+		anim = {
+			Flag = {
+				amp = 18,
+				axis = "y",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.35,
+			},
+		},
+		bounds = {
+			max = Vector3.new(6.75, 7.94, 6.75),
+			min = Vector3.new(-7.65, -0.05, -6.75),
+		},
+		fx = {
+			loops = { {
+					asset = "BeachFx_Crab",
+					bob = 0.0,
+					center = Vector3.new(0.0, 0.0, 0.0),
+					hop = 0.08,
+					phase = 0.0,
+					rx = 6.9,
+					rz = 6.9,
+					speed = 0.35,
+					wake = false,
+				} },
+		},
+		id = 121226232580134,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Flag = {
+				collide = false,
+				joint = Vector3.new(0.0, 7.7, 0.0),
 			},
 		},
 	},
 	Beach_Surfboards = {
 		bounds = {
-			max = Vector3.new(2.25, 5.934, 0.2),
-			min = Vector3.new(-2.25, 0.0, -1.168),
+			max = Vector3.new(2.399, 5.974, 0.264),
+			min = Vector3.new(-2.399, -0.039, -1.172),
 		},
-		id = 104723102306026,
+		id = 94837332498772,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8088,14 +8304,53 @@ Assets.Models = {
 			},
 		},
 	},
-	Beach_Volleyball = {
-		bounds = {
-			max = Vector3.new(5.18, 5.2, 6.075),
-			min = Vector3.new(-5.18, -0.05, -6.075),
+	Beach_Umbrella = {
+		anim = {
+			Canopy = {
+				amp = 1.5,
+				axis = "z",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.3,
+			},
 		},
-		id = 135111623835015,
+		bounds = {
+			max = Vector3.new(2.974, 4.46, 2.974),
+			min = Vector3.new(-2.974, -0.064, -2.974),
+		},
+		id = 109189508626630,
 		kind = "prop",
 		parts = {
+			Body = {
+				collide = true,
+			},
+			Canopy = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.0, 0.0),
+			},
+		},
+	},
+	Beach_Volleyball = {
+		anim = {
+			Ball = {
+				amp = 1.3,
+				axis = "y",
+				kind = "bounce",
+				phase = 0.0,
+				speed = 0.8,
+			},
+		},
+		bounds = {
+			max = Vector3.new(5.334, 5.65, 6.09),
+			min = Vector3.new(-5.334, -0.04, -6.09),
+		},
+		id = 133413022777253,
+		kind = "prop",
+		parts = {
+			Ball = {
+				collide = false,
+				joint = Vector3.new(-2.5, 1.6, -3.0),
+			},
 			Body = {
 				collide = true,
 			},
@@ -8140,12 +8395,55 @@ Assets.Models = {
 			},
 		},
 	},
+	CityFx_Pigeon = {
+		bounds = {
+			max = Vector3.new(0.305, 0.945, 0.741),
+			min = Vector3.new(-0.305, -0.024, -0.637),
+		},
+		id = 123067687463119,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	City_Bench = {
+		bounds = {
+			max = Vector3.new(1.734, 2.364, 0.63),
+			min = Vector3.new(-1.734, -0.063, -0.8),
+		},
+		id = 132669806243241,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
 	City_Billboard = {
 		bounds = {
-			max = Vector3.new(8.0, 15.5, 0.8),
-			min = Vector3.new(-8.0, 0.0, -1.438),
+			max = Vector3.new(8.049, 15.55, 0.846),
+			min = Vector3.new(-8.049, -0.29, -1.65),
 		},
-		id = 106945589050288,
+		id = 98723591730993,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Lamps_Glow = {
+				collide = false,
+				glow = "FFF4CC",
+			},
+		},
+	},
+	City_Bin = {
+		bounds = {
+			max = Vector3.new(0.933, 2.39, 0.91),
+			min = Vector3.new(-0.933, -0.04, -0.91),
+		},
+		id = 78740337182301,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8155,10 +8453,10 @@ Assets.Models = {
 	},
 	City_BusStop = {
 		bounds = {
-			max = Vector3.new(4.0, 5.1, 2.0),
-			min = Vector3.new(-5.185, 0.0, -2.0),
+			max = Vector3.new(4.139, 5.25, 2.039),
+			min = Vector3.new(-5.25, -0.064, -2.039),
 		},
-		id = 84785030601578,
+		id = 104735850499608,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8170,12 +8468,59 @@ Assets.Models = {
 			},
 		},
 	},
-	City_HotDog = {
+	City_Dumpster = {
 		bounds = {
-			max = Vector3.new(2.625, 7.01, 2.625),
-			min = Vector3.new(-3.017, 0.0, -2.625),
+			max = Vector3.new(2.248, 3.45, 1.494),
+			min = Vector3.new(-2.248, 0.0, -1.35),
 		},
-		id = 127597171878274,
+		id = 100335013668085,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	City_HotDog = {
+		anim = {
+			HotDog = {
+				amp = 0,
+				axis = "y",
+				kind = "spin",
+				phase = 0.0,
+				speed = 0.15,
+			},
+		},
+		bounds = {
+			max = Vector3.new(2.877, 7.117, 2.877),
+			min = Vector3.new(-3.054, 0.0, -2.877),
+		},
+		fx = {
+			puffs = { {
+					at = Vector3.new(0.6, 2.7, 0.3),
+					rate = 1.2,
+					size = 0.6,
+					tint = "steam",
+				} },
+		},
+		id = 115663046251901,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			HotDog = {
+				collide = false,
+				joint = Vector3.new(0.0, 6.5, 0.0),
+			},
+		},
+	},
+	City_Hydrant = {
+		bounds = {
+			max = Vector3.new(0.65, 2.14, 0.586),
+			min = Vector3.new(-0.65, -0.04, -0.625),
+		},
+		id = 124669735916724,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8185,10 +8530,10 @@ Assets.Models = {
 	},
 	City_Newsstand = {
 		bounds = {
-			max = Vector3.new(2.5, 4.9, 2.0),
-			min = Vector3.new(-2.5, 0.0, -2.8),
+			max = Vector3.new(2.548, 5.1, 2.048),
+			min = Vector3.new(-2.548, -0.048, -2.889),
 		},
-		id = 136876521185842,
+		id = 83190100624599,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8198,10 +8543,10 @@ Assets.Models = {
 	},
 	City_ShopA = {
 		bounds = {
-			max = Vector3.new(9.0, 17.1, 5.3),
-			min = Vector3.new(-9.0, 0.0, -7.253),
+			max = Vector3.new(9.0, 17.05, 5.458),
+			min = Vector3.new(-9.0, -0.058, -7.47),
 		},
-		id = 101456601940382,
+		id = 74479797605934,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8212,50 +8557,95 @@ Assets.Models = {
 				material = "Glass",
 			},
 		},
-		sign = Vector3.new(0.0, 6.8, -5.3),
+		sign = Vector3.new(0.0, 6.7, -5.4),
 	},
 	City_ShopB = {
-		bounds = {
-			max = Vector3.new(9.0, 14.0, 5.3),
-			min = Vector3.new(-9.0, 0.0, -7.253),
+		anim = {
+			Fan1 = {
+				amp = 0,
+				axis = "z",
+				kind = "spin",
+				phase = 0.0,
+				speed = 1.5,
+			},
+			Fan2 = {
+				amp = 0,
+				axis = "z",
+				kind = "spin",
+				phase = 0.0,
+				speed = 1.9,
+			},
 		},
-		id = 71896362697206,
+		bounds = {
+			max = Vector3.new(9.0, 14.139, 5.458),
+			min = Vector3.new(-9.0, -0.058, -7.47),
+		},
+		id = 101677224840436,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Fan1 = {
+				collide = false,
+				joint = Vector3.new(4.0, 13.4, 0.38),
+			},
+			Fan2 = {
+				collide = false,
+				joint = Vector3.new(-2.0, 13.4, 0.38),
 			},
 			Windows_Glass = {
 				collide = false,
 				material = "Glass",
 			},
 		},
-		sign = Vector3.new(0.0, 6.8, -5.3),
+		sign = Vector3.new(0.0, 6.7, -5.4),
 	},
 	City_ShopC = {
-		bounds = {
-			max = Vector3.new(9.0, 14.4, 5.3),
-			min = Vector3.new(-9.0, 0.0, -7.253),
+		anim = {
+			Garden = {
+				amp = 3,
+				axis = "z",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.4,
+			},
 		},
-		id = 131683329557698,
+		bounds = {
+			max = Vector3.new(9.0, 14.462, 5.458),
+			min = Vector3.new(-9.0, -0.058, -7.47),
+		},
+		id = 102959205065214,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Garden = {
+				collide = false,
+				joint = Vector3.new(0.0, 13.0, 1.0),
 			},
 			Windows_Glass = {
 				collide = false,
 				material = "Glass",
 			},
 		},
-		sign = Vector3.new(0.0, 6.8, -5.3),
+		sign = Vector3.new(0.0, 6.7, -5.4),
 	},
 	City_ShopD = {
 		bounds = {
-			max = Vector3.new(9.0, 15.6, 5.3),
-			min = Vector3.new(-9.0, 0.0, -7.253),
+			max = Vector3.new(9.0, 15.989, 5.458),
+			min = Vector3.new(-9.0, -0.058, -7.47),
 		},
-		id = 89200747192769,
+		fx = {
+			puffs = { {
+					at = Vector3.new(5.0, 16.1, 2.0),
+					rate = 0.8,
+					size = 1.2,
+					tint = "smoke",
+				} },
+		},
+		id = 138349349244108,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8266,14 +8656,47 @@ Assets.Models = {
 				material = "Glass",
 			},
 		},
-		sign = Vector3.new(0.0, 6.8, -5.3),
+		sign = Vector3.new(0.0, 6.7, -5.4),
 	},
 	City_Statue = {
 		bounds = {
-			max = Vector3.new(4.6, 12.359, 4.6),
-			min = Vector3.new(-4.971, 0.0, -4.6),
+			max = Vector3.new(4.292, 13.417, 4.292),
+			min = Vector3.new(-4.443, -0.05, -4.292),
 		},
-		id = 127705163053694,
+		fx = {
+			loops = { {
+					asset = "CityFx_Pigeon",
+					bob = 0.0,
+					center = Vector3.new(0.0, 0.0, 0.0),
+					hop = 0.12,
+					phase = 0.0,
+					rx = 5.6,
+					rz = 5.6,
+					speed = 0.25,
+					wake = false,
+				}, {
+					asset = "CityFx_Pigeon",
+					bob = 0.0,
+					center = Vector3.new(0.0, 0.0, 0.0),
+					hop = 0.12,
+					phase = 2.0,
+					rx = 5.6,
+					rz = 5.6,
+					speed = 0.21,
+					wake = false,
+				}, {
+					asset = "CityFx_Pigeon",
+					bob = 0.0,
+					center = Vector3.new(0.0, 0.0, 0.0),
+					hop = 0.12,
+					phase = 4.0,
+					rx = 5.6,
+					rz = 5.6,
+					speed = 0.17,
+					wake = false,
+				} },
+		},
+		id = 110194485089794,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8283,10 +8706,10 @@ Assets.Models = {
 	},
 	City_StreetLamp = {
 		bounds = {
-			max = Vector3.new(0.35, 9.45, 0.35),
-			min = Vector3.new(-0.35, 0.0, -2.7),
+			max = Vector3.new(0.839, 9.79, 0.458),
+			min = Vector3.new(-0.839, -0.04, -2.839),
 		},
-		id = 71248684853551,
+		id = 82264883451789,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8299,11 +8722,34 @@ Assets.Models = {
 		},
 	},
 	City_TrafficLight = {
-		bounds = {
-			max = Vector3.new(0.46, 8.05, 0.4),
-			min = Vector3.new(-0.46, 0.0, -4.15),
+		anim = {
+			Green_Glow = {
+				amp = 0.43,
+				axis = "y",
+				kind = "blink",
+				phase = 0.57,
+				speed = 0.1,
+			},
+			Red_Glow = {
+				amp = 0.45,
+				axis = "y",
+				kind = "blink",
+				phase = 0.0,
+				speed = 0.1,
+			},
+			Yellow_Glow = {
+				amp = 0.12,
+				axis = "y",
+				kind = "blink",
+				phase = 0.45,
+				speed = 0.1,
+			},
 		},
-		id = 77136224136586,
+		bounds = {
+			max = Vector3.new(0.548, 8.15, 0.466),
+			min = Vector3.new(-0.548, -0.05, -4.05),
+		},
+		id = 94693701248971,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -8316,6 +8762,10 @@ Assets.Models = {
 			Red_Glow = {
 				collide = false,
 				glow = "FF4A3C",
+			},
+			Yellow_Glow = {
+				collide = false,
+				glow = "FFD23A",
 			},
 		},
 	},
@@ -9399,7 +9849,7 @@ Assets.Models = {
 			max = Vector3.new(0.458, 0.199, 0.368),
 			min = Vector3.new(-0.5, -0.187, -0.346),
 		},
-		id = 78516068863706,
+		id = 96022502500527,
 		kind = "prop",
 		parts = {
 			Leaf = {
@@ -9510,6 +9960,19 @@ Assets.Models = {
 			},
 		},
 	},
+	ParkFx_Puff = {
+		bounds = {
+			max = Vector3.new(0.604, 0.5, 0.5),
+			min = Vector3.new(-0.692, -0.5, -0.5),
+		},
+		id = 77648568595188,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
 	Park_Bench = {
 		bounds = {
 			max = Vector3.new(1.734, 2.364, 0.63),
@@ -9542,32 +10005,73 @@ Assets.Models = {
 				amp = 5,
 				axis = "z",
 				kind = "sway",
+				phase = 0.0,
 				speed = 0.45,
 			},
 			Reeds2 = {
 				amp = 5,
 				axis = "z",
 				kind = "sway",
+				phase = 0.0,
 				speed = 0.52,
 			},
 			Reeds3 = {
 				amp = 5,
 				axis = "z",
 				kind = "sway",
+				phase = 0.0,
 				speed = 0.59,
 			},
 		},
 		bounds = {
-			max = Vector3.new(11.893, 3.177, 8.614),
-			min = Vector3.new(-12.436, -0.421, -9.414),
+			max = Vector3.new(11.884, 3.177, 8.614),
+			min = Vector3.new(-12.366, -0.377, -9.414),
 		},
 		fx = {
-			center = Vector3.new(1.2, 0.3, 0.0),
 			fish = { Vector3.new(4.0, 0.3, 1.5), Vector3.new(-2.0, 0.3, 2.5), Vector3.new(1.0, 0.3, -3.0) },
-			rx = 5.6,
-			rz = 4.0,
+			loops = { {
+					asset = "PondFx_Duck",
+					bob = 0.05,
+					center = Vector3.new(1.2, 0.3, 0.0),
+					hop = 0.0,
+					phase = 0.0,
+					rx = 5.6,
+					rz = 4.0,
+					speed = 0.22,
+					wake = true,
+				}, {
+					asset = "PondFx_Duckling",
+					bob = 0.05,
+					center = Vector3.new(1.2, 0.3, 0.0),
+					hop = 0.0,
+					phase = -0.47,
+					rx = 5.6,
+					rz = 4.0,
+					speed = 0.22,
+					wake = false,
+				}, {
+					asset = "PondFx_Duckling",
+					bob = 0.05,
+					center = Vector3.new(1.2, 0.3, 0.0),
+					hop = 0.0,
+					phase = -0.79,
+					rx = 5.6,
+					rz = 4.0,
+					speed = 0.22,
+					wake = false,
+				}, {
+					asset = "PondFx_Duckling",
+					bob = 0.05,
+					center = Vector3.new(1.2, 0.3, 0.0),
+					hop = 0.0,
+					phase = -1.11,
+					rx = 5.6,
+					rz = 4.0,
+					speed = 0.22,
+					wake = false,
+				} },
 		},
-		id = 139996489914457,
+		id = 121448121192855,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10518,12 +11022,46 @@ Assets.Models = {
 			},
 		},
 	},
+	SnowFx_Chair = {
+		bounds = {
+			max = Vector3.new(1.24, 0.18, 0.639),
+			min = Vector3.new(-1.25, -3.514, -0.65),
+		},
+		id = 119857359958969,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	SnowFx_Penguin = {
+		bounds = {
+			max = Vector3.new(0.716, 1.53, 0.522),
+			min = Vector3.new(-0.716, -0.03, -0.69),
+		},
+		id = 114568286025844,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
 	Snow_Cocoa = {
 		bounds = {
-			max = Vector3.new(3.12, 8.6, 2.2),
-			min = Vector3.new(-3.12, 0.0, -2.8),
+			max = Vector3.new(3.248, 8.55, 2.248),
+			min = Vector3.new(-3.248, -0.048, -2.888),
 		},
-		id = 88924491918794,
+		fx = {
+			puffs = { {
+					at = Vector3.new(0.0, 8.3, -1.8),
+					rate = 1.0,
+					size = 0.8,
+					tint = "steam",
+				} },
+		},
+		id = 126954493752152,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10533,10 +11071,33 @@ Assets.Models = {
 	},
 	Snow_FrozenPond = {
 		bounds = {
-			max = Vector3.new(13.584, 1.6, 10.9),
-			min = Vector3.new(-13.244, 0.0, -9.977),
+			max = Vector3.new(13.63, 1.6, 10.948),
+			min = Vector3.new(-13.344, -0.05, -10.114),
 		},
-		id = 135068180440942,
+		fx = {
+			loops = { {
+					asset = "SnowFx_Penguin",
+					bob = 0.0,
+					center = Vector3.new(0.0, 0.22, 0.0),
+					hop = 0.0,
+					phase = 0.0,
+					rx = 6.5,
+					rz = 4.5,
+					speed = 0.45,
+					wake = false,
+				}, {
+					asset = "SnowFx_Penguin",
+					bob = 0.0,
+					center = Vector3.new(0.0, 0.22, 0.0),
+					hop = 0.0,
+					phase = -0.5,
+					rx = 6.5,
+					rz = 4.5,
+					speed = 0.45,
+					wake = false,
+				} },
+		},
+		id = 93302173058713,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10546,10 +11107,23 @@ Assets.Models = {
 	},
 	Snow_Igloo = {
 		bounds = {
-			max = Vector3.new(4.2, 3.6, 4.2),
-			min = Vector3.new(-4.2, 0.0, -5.745),
+			max = Vector3.new(4.239, 3.65, 4.239),
+			min = Vector3.new(-4.239, -0.05, -6.11),
 		},
-		id = 112499049632279,
+		fx = {
+			loops = { {
+					asset = "SnowFx_Penguin",
+					bob = 0.0,
+					center = Vector3.new(0.0, 0.0, 0.0),
+					hop = 0.1,
+					phase = 0.0,
+					rx = 6.2,
+					rz = 6.2,
+					speed = 0.3,
+					wake = false,
+				} },
+		},
+		id = 114918746892984,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10559,10 +11133,18 @@ Assets.Models = {
 	},
 	Snow_Lodge = {
 		bounds = {
-			max = Vector3.new(8.2, 14.4, 6.521),
-			min = Vector3.new(-8.2, 0.0, -8.89),
+			max = Vector3.new(8.358, 12.55, 7.382),
+			min = Vector3.new(-8.358, -0.058, -8.869),
 		},
-		id = 91616300614966,
+		fx = {
+			puffs = { {
+					at = Vector3.new(-4.0, 12.4, 2.5),
+					rate = 0.8,
+					size = 1.3,
+					tint = "smoke",
+				} },
+		},
+		id = 134854835808435,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10574,12 +11156,77 @@ Assets.Models = {
 			},
 		},
 	},
+	Snow_Pine = {
+		anim = {
+			Canopy = {
+				amp = 1.2,
+				axis = "z",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.3,
+			},
+		},
+		bounds = {
+			max = Vector3.new(2.614, 8.3, 2.802),
+			min = Vector3.new(-3.05, -0.04, -2.802),
+		},
+		id = 110755789927548,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Canopy = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.0, 0.0),
+			},
+		},
+	},
+	Snow_Rock1 = {
+		bounds = {
+			max = Vector3.new(1.923, 2.156, 1.683),
+			min = Vector3.new(-1.981, -0.684, -1.667),
+		},
+		id = 83722149567166,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Snow_Rock2 = {
+		bounds = {
+			max = Vector3.new(3.367, 3.452, 2.563),
+			min = Vector3.new(-3.464, -1.104, -2.57),
+		},
+		id = 86608602175273,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
 	Snow_SkiLift = {
 		bounds = {
-			max = Vector3.new(3.8, 16.9, 19.5),
-			min = Vector3.new(-3.8, 0.0, -19.5),
+			max = Vector3.new(3.148, 17.0, 19.5),
+			min = Vector3.new(-3.148, -0.05, -19.5),
 		},
-		id = 81523817573377,
+		fx = {
+			lifts = { {
+					count = 4,
+					from = Vector3.new(-2.6, 12.3, -18.0),
+					speed = 0.04,
+					to = Vector3.new(-2.6, 16.3, 18.0),
+				}, {
+					count = 4,
+					from = Vector3.new(2.6, 16.3, 18.0),
+					speed = 0.04,
+					to = Vector3.new(2.6, 12.3, -18.0),
+				} },
+		},
+		id = 110747714728452,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10589,10 +11236,10 @@ Assets.Models = {
 	},
 	Snow_Sled = {
 		bounds = {
-			max = Vector3.new(1.0, 1.675, 1.68),
-			min = Vector3.new(-1.0, 0.02, -1.98),
+			max = Vector3.new(1.0, 1.867, 1.707),
+			min = Vector3.new(-1.0, -0.007, -2.44),
 		},
-		id = 121948992745255,
+		id = 105099184564890,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10601,15 +11248,28 @@ Assets.Models = {
 		},
 	},
 	Snow_Snowman = {
-		bounds = {
-			max = Vector3.new(2.476, 7.0, 1.6),
-			min = Vector3.new(-2.476, -0.2, -1.6),
+		anim = {
+			Scarf = {
+				amp = 12,
+				axis = "y",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.6,
+			},
 		},
-		id = 94329279446710,
+		bounds = {
+			max = Vector3.new(2.639, 7.133, 1.625),
+			min = Vector3.new(-2.639, -0.25, -1.65),
+		},
+		id = 132456694994449,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+			Scarf = {
+				collide = false,
+				joint = Vector3.new(-0.6, 4.5, -0.7),
 			},
 		},
 	},

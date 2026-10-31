@@ -49,8 +49,26 @@ def asset(name):
     return a
 
 
-def animate(a, part, kind, amp, speed, axis="y", joint=None):
-    a.extra["anim"][part] = {"kind": kind, "amp": amp, "speed": speed, "axis": axis}
+def animate(a, part, kind, amp, speed, axis="y", phase=0.0):
+    """kind: sway / swing / spin (amp degrees), bounce (amp studs), blink (amp = share of
+    each cycle the glow part is on, phase = where in the cycle it starts)."""
+    a.extra["anim"][part] = {"kind": kind, "amp": amp, "speed": speed, "axis": axis, "phase": phase}
+
+
+def fx_list(a, key, item):
+    a.extra.setdefault("fx", {}).setdefault(key, []).append(item)
+
+
+def loop(a, asset_name, center, rx, rz, speed, phase=0.0, bob=0.05, wake=False, hop=0.0):
+    """A critter that goes round an ellipse (Roblox radii rx, rz) about a Blender-space
+    centre. speed = laps per minute-ish (radians per second)."""
+    fx_list(a, "loops", {"asset": asset_name, "center": to_roblox(center), "rx": rx, "rz": rz,
+                         "speed": speed, "phase": phase, "bob": bob, "wake": wake, "hop": hop})
+
+
+def puff(a, at, rate=1.0, size=1.0, tint="white"):
+    """Smoke or steam puffs rising from a Blender-space point."""
+    fx_list(a, "puffs", {"at": to_roblox(at), "rate": rate, "size": size, "tint": tint})
 
 
 def sweep(color, path, profile, closed=True):
@@ -221,12 +239,10 @@ def park_duckpond(name="Park_DuckPond"):
             rails.append(sphere(WOOD_LIGHT, loc=(bx + side, y, z + 1.08), scale=0.16, seg=8, rings=5))
     a.part("Bridge", outlined([deck], 0.05) + planks + outlined(rails, 0.035), collide=True)
 
-    a.extra["fx"] = {
-        "center": to_roblox((-1.2, 0.0, POND_Z)),
-        "rx": 5.6,     # duck loop radii (Roblox x, z)
-        "rz": 4.0,
-        "fish": [to_roblox(v) for v in ((-4.0, 1.5, POND_Z), (2.0, 2.5, POND_Z), (-1.0, -3.0, POND_Z))],
-    }
+    # mum and three ducklings paddle round, ripples behind mum; a fish jumps now and then
+    for i, nm in enumerate(("PondFx_Duck", "PondFx_Duckling", "PondFx_Duckling", "PondFx_Duckling")):
+        loop(a, nm, (-1.2, 0.0, POND_Z), 5.6, 4.0, 0.22, phase=-i * 0.32 - (0.15 if i else 0), bob=0.05, wake=(i == 0))
+    a.extra.setdefault("fx", {})["fish"] = [to_roblox(v) for v in ((-4.0, 1.5, POND_Z), (2.0, 2.5, POND_Z), (-1.0, -3.0, POND_Z))]
     return a
 
 
@@ -291,6 +307,17 @@ def leaf_fx():
     lib._asset.paint(o, WHITE)
     stem = blob_tube(WHITE, [(0, 0.38, 0.0), (0, 0.55, 0.05)], lambda u: 0.025, seg=4)
     a.part("Body", [o, stem])
+    return a
+
+
+def puff_fx():
+    """Soft cartoon puff (three blobs), untextured so the client tints it smoke or steam."""
+    a = Asset("ParkFx_Puff", "prop")
+    use(a)
+    a.plain = True
+    a.part("Body", [sphere(WHITE, loc=(0, 0, 0), scale=0.5, seg=10, rings=6),
+                    sphere(WHITE, loc=(0.35, 0.1, 0.12), scale=0.36, seg=8, rings=5),
+                    sphere(WHITE, loc=(-0.3, -0.1, 0.18), scale=0.32, seg=8, rings=5)])
     return a
 
 
@@ -662,4 +689,5 @@ ALL = {
     "PondFx_Duckling": lambda: pond_duck("PondFx_Duckling", 0.55, YELLOW, "FFC22A", adult=False),
     "PondFx_Fish": pond_fish,
     "ParkFx_Leaf": leaf_fx,
+    "ParkFx_Puff": puff_fx,
 }

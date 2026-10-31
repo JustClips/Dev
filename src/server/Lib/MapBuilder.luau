@@ -986,7 +986,7 @@ function MapBuilder.buildBase(index: number): Model
 end
 
 -- Bins, dumpster, hydrant, bench, beach umbrella.
-local FIXED_SIZE = { Rock_Dark1 = true, Rock_Dark2 = true, Crystal_Purple = true, Mushroom_Glow = true, Mushroom_Mars = true }
+local FIXED_SIZE = { City_Bin = true, City_Dumpster = true, City_Hydrant = true, City_Bench = true, Beach_Umbrella = true }
 
 local function scatter(rng: Random, zone, names: { string }, count: number)
 	for _ = 1, count do
@@ -1140,9 +1140,9 @@ function MapBuilder.buildProps()
 	scatter(rng, Zones.ById.Crater, { "Park_Rock1", "Park_Rock2", "Park_Bush" }, 30)
 	-- Beach (id DarkSide): sandy rocks, palms, umbrellas. City (id Mars): bins, dumpsters,
 	-- hydrants, benches. (Prop names are kept from the Moon version.)
-	scatter(rng, Zones.ById.DarkSide, { "Rock_Mars1", "Rock_Mars2", "Crystal_Red", "Mushroom_Mars" }, 30)
-	scatter(rng, Zones.ById.Mars, { "Rock_Dark1", "Rock_Dark2", "Crystal_Purple", "Mushroom_Glow" }, 30)
-	scatter(rng, Zones.ById.Europa, { "Rock_Ice1", "Rock_Ice2", "Crystal_Ice", "Crystal_Ice" }, 30)
+	scatter(rng, Zones.ById.DarkSide, { "Beach_Rock1", "Beach_Rock2", "Beach_Palm", "Beach_Umbrella" }, 30)
+	scatter(rng, Zones.ById.Mars, { "City_Bin", "City_Dumpster", "City_Hydrant", "City_Bench" }, 30)
+	scatter(rng, Zones.ById.Europa, { "Snow_Rock1", "Snow_Rock2", "Snow_Pine", "Snow_Pine" }, 30)
 	-- Landmarks inside each zone's leaf field (Config/ZoneDecor; leaves keep clear of them).
 	for zoneId, list in ZoneDecor do
 		local zone = Zones.ById[zoneId]

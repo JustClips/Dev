@@ -1,12 +1,8 @@
 """Zone landmarks: the big themed pieces that make each zone feel like a place.
 
-  Park         (moved: the fountain is in fountain.py, the rest in parkdecor.py)
-  Beach        Beach_Lifeguard, Beach_HutA/B/C, Beach_IceCream, Beach_Volleyball,
-               Beach_Sandcastle, Beach_Surfboards, Beach_Lighthouse, Beach_Boat
-  City         City_ShopA/B/C/D, City_BusStop, City_HotDog, City_Newsstand,
-               City_TrafficLight, City_StreetLamp, City_Billboard, City_Statue
-  Snowy Peaks  Snow_Lodge, Snow_SkiLift, Snow_Igloo, Snow_Snowman, Snow_Cocoa,
-               Snow_Sled, Snow_FrozenPond
+  All zone pieces have moved to their own cartoon-style modules: fountain.py and
+  parkdecor.py (Park), beach.py (Beach), city.py (City), snowpeaks.py (Snowy Peaks).
+  This file keeps the old builders and shared helpers they were made from.
 
 Same conventions as earth.py: 1 m = 1 stud, front = -Y, origin on the ground in the
 middle of the footprint, one "Body" part that collides. Glowing bits (lamps, windows)
@@ -857,32 +853,4 @@ def snow_frozenpond(name):
 
 
 ALL = {
-    "Beach_Lifeguard": lambda: beach_lifeguard("Beach_Lifeguard"),
-    "Beach_HutA": lambda: beach_hut("Beach_HutA", PINK, "D8456A"),
-    "Beach_HutB": lambda: beach_hut("Beach_HutB", "6AB8FF", "2F6FC0"),
-    "Beach_HutC": lambda: beach_hut("Beach_HutC", YELLOW, "E08A2A"),
-    "Beach_IceCream": lambda: beach_icecream("Beach_IceCream"),
-    "Beach_Volleyball": lambda: beach_volleyball("Beach_Volleyball"),
-    "Beach_Sandcastle": lambda: beach_sandcastle("Beach_Sandcastle"),
-    "Beach_Surfboards": lambda: beach_surfboards("Beach_Surfboards"),
-    "Beach_Lighthouse": lambda: beach_lighthouse("Beach_Lighthouse"),
-    "Beach_Boat": lambda: beach_boat("Beach_Boat"),
-    "City_ShopA": lambda: city_shop("City_ShopA", "E8A07A", RED, "tank"),
-    "City_ShopB": lambda: city_shop("City_ShopB", "8EC8E8", "2F6FC0", "ac"),
-    "City_ShopC": lambda: city_shop("City_ShopC", "F2D98A", "3F9A3A", "garden"),
-    "City_ShopD": lambda: city_shop("City_ShopD", "C8A0E0", "8A4AC0", "chimney"),
-    "City_BusStop": lambda: city_busstop("City_BusStop"),
-    "City_HotDog": lambda: city_hotdog("City_HotDog"),
-    "City_Newsstand": lambda: city_newsstand("City_Newsstand"),
-    "City_TrafficLight": lambda: city_trafficlight("City_TrafficLight"),
-    "City_StreetLamp": lambda: city_streetlamp("City_StreetLamp"),
-    "City_Billboard": lambda: city_billboard("City_Billboard"),
-    "City_Statue": lambda: city_statue("City_Statue"),
-    "Snow_Lodge": lambda: snow_lodge("Snow_Lodge"),
-    "Snow_SkiLift": lambda: snow_skilift("Snow_SkiLift"),
-    "Snow_Igloo": lambda: snow_igloo("Snow_Igloo"),
-    "Snow_Snowman": lambda: snow_snowman("Snow_Snowman"),
-    "Snow_Cocoa": lambda: snow_cocoa("Snow_Cocoa"),
-    "Snow_Sled": lambda: snow_sled("Snow_Sled"),
-    "Snow_FrozenPond": lambda: snow_frozenpond("Snow_FrozenPond"),
 }

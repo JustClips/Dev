@@ -1,11 +1,13 @@
 --!strict
--- Small life for the park decor (art/blender/parkdecor.py). The server tags placed decor
--- that has moving bits "ParkFx". This client then:
---   * plays each part listed in the model's meta "anim" (sway / swing / spin about the
---     part's joint): swings, the spring duck, reeds, flowers, tree tops, the weathervane...
---   * swims a duck family round the duck pond with ripples behind them, and makes a fish
---     jump now and then (meta fx: center, rx, rz, fish)
---   * drops a few fluttering leaves from trees (meta fx: canopy, radius, leaves)
+-- Small life for the zone decor (art/blender/parkdecor.py, beach.py, city.py, snowpeaks.py).
+-- The server tags placed decor that has moving bits "ParkFx". This client then:
+--   * plays each part listed in the model's meta "anim" about the part's joint:
+--     sway / swing / spin (swings, reeds, flags, the lighthouse beam...), bounce (the beach
+--     ball) and blink (traffic lights)
+--   * sends critters round ellipses (meta fx.loops): ducks with ripples on the pond, crabs,
+--     gulls, pigeons, penguins; and makes a pond fish jump now and then (fx.fish)
+--   * puffs smoke or steam (fx.puffs) and runs ski lift chairs along the cable (fx.lifts)
+--   * drops a few fluttering leaves from trees (fx.canopy, radius, leaves)
 -- Everything is local and only runs while the camera is close.
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -21,7 +23,19 @@ local TAG = "ParkFx"
 local RANGE = 220
 
 type Fx = { part: MeshPart, base: CFrame, size: Vector3 }
-type Mover = { part: BasePart, base: CFrame, hub: CFrame, kind: string, amp: number, speed: number, axis: string, phase: number }
+type Mover = {
+	part: BasePart,
+	base: CFrame,
+	hub: CFrame,
+	kind: string,
+	amp: number,
+	speed: number,
+	axis: string,
+	phase: number,
+	on: boolean?,
+	color: Color3,
+	material: Enum.Material,
+}
 type Entry = { model: Model, folder: Folder, run: (number, number) -> (), visible: boolean }
 
 local entries: { [Model]: Entry } = {}
@@ -83,6 +97,12 @@ local function rotation(m: Mover, t: number): CFrame
 	return CFrame.Angles(a * math.sin(t * w + m.phase), 0, a * 0.6 * math.sin(t * w * 1.37 + m.phase + 1))
 end
 
+local PUFF_TINT = {
+	smoke = Color3.fromRGB(196, 198, 206),
+	steam = Color3.fromRGB(250, 252, 255),
+	white = Color3.fromRGB(250, 252, 255),
+}
+
 local function build(model: Model): Entry?
 	local meta = AssetLibrary.meta(model.Name) :: any
 	if not meta then
@@ -95,57 +115,120 @@ local function build(model: Model): Entry?
 	box.Parent = root
 	local seed = math.floor(pivot.Position.X * 7 + pivot.Position.Z * 13)
 	local rng = Random.new(seed)
+	local blinkOffset = rng:NextNumber()
+	local live = 0
 
-	-- parts that move about their joint
+	-- parts that move about their joint, bounce or blink
 	local movers: { Mover } = {}
 	for partName, spec in (meta.anim or {}) :: { [string]: any } do
 		local part = model:FindFirstChild(partName)
 		local pm = meta.parts and meta.parts[partName]
-		if part and part:IsA("BasePart") and pm and pm.joint then
-			local hub = CFrame.new(pm.joint * s)
+		if part and part:IsA("BasePart") and pm and (pm.joint or spec.kind == "blink") then
+			if string.sub(partName, 1, 4) == "Beam" then
+				part.Transparency = 0.55
+			end
 			table.insert(movers, {
 				part = part,
 				base = pivot:ToObjectSpace(part.CFrame),
-				hub = hub,
+				hub = if pm.joint then CFrame.new(pm.joint * s) else CFrame.new(),
 				kind = spec.kind,
 				amp = spec.amp,
 				speed = spec.speed,
 				axis = spec.axis or "y",
-				phase = rng:NextNumber(0, math.pi * 2),
+				phase = if spec.kind == "blink"
+					then (spec.phase or 0) + blinkOffset
+					else (spec.phase or 0) + rng:NextNumber(0, math.pi * 2),
+				color = part.Color,
+				material = part.Material,
 			})
 		end
 	end
+	live += #movers
 
 	local fx = meta.fx or {}
 
-	-- duck pond: mum, three ducklings, ripples, a jumping fish
-	local ducks: { Fx } = {}
+	-- critters going round an ellipse: ducks, crabs, gulls, pigeons, penguins
+	type Walker = { fx: Fx, spec: any, centre: CFrame, wake: boolean, i: number }
+	local walkers: { Walker } = {}
 	local wakes: { { fx: Fx, at: CFrame, born: number } } = {}
+	for i, spec in (fx.loops or {}) :: { any } do
+		local f = make(spec.asset, box)
+		if f then
+			table.insert(
+				walkers,
+				{ fx = f, spec = spec, centre = pivot * CFrame.new(spec.center * s), wake = spec.wake == true, i = i }
+			)
+			if spec.wake and #wakes == 0 then
+				for _ = 1, 4 do
+					local r = make("FountainFx_Ripple", box)
+					if r then
+						r.part.Transparency = 1
+						table.insert(wakes, { fx = r, at = CFrame.new(), born = -10 })
+					end
+				end
+			end
+		end
+	end
+	live += #walkers
+
+	-- a pond fish that jumps now and then
 	local fish: Fx?, fishSplash: Fx?, fishRipple: Fx?
-	local pondCentre: CFrame?
-	if fx.center and fx.rx then
-		pondCentre = pivot * CFrame.new(fx.center * s)
-		local mum = make("PondFx_Duck", box)
-		if mum then
-			table.insert(ducks, mum)
-		end
-		for _ = 1, 3 do
-			local d = make("PondFx_Duckling", box)
-			if d then
-				table.insert(ducks, d)
-			end
-		end
-		for _ = 1, 4 do
-			local r = make("FountainFx_Ripple", box)
-			if r then
-				r.part.Transparency = 1
-				table.insert(wakes, { fx = r, at = CFrame.new(), born = -10 })
-			end
-		end
+	if fx.fish and #fx.fish > 0 then
 		fish = make("PondFx_Fish", box)
 		fishSplash = make("FountainFx_Splash", box)
 		fishRipple = make("FountainFx_Ripple", box)
+		if fish then
+			live += 1
+		end
 	end
+
+	-- smoke and steam puffs
+	type Puff = { fx: Fx, at: Vector3, size: number, life: number, offset: number, drift: Vector3 }
+	local puffs: { Puff } = {}
+	for _, spec in (fx.puffs or {}) :: { any } do
+		local n = 4
+		local rate = math.max(spec.rate or 1, 0.1)
+		local at = (pivot * CFrame.new(spec.at * s)).Position
+		local a = rng:NextNumber(0, math.pi * 2)
+		local drift = Vector3.new(math.cos(a), 0, math.sin(a))
+		for k = 1, n do
+			local f = make("ParkFx_Puff", box)
+			if f then
+				f.part.Material = Enum.Material.SmoothPlastic
+				f.part.Color = PUFF_TINT[spec.tint] or PUFF_TINT.white
+				table.insert(
+					puffs,
+					{
+						fx = f,
+						at = at,
+						size = (spec.size or 1) * s,
+						life = n / rate,
+						offset = (k - 1) / rate,
+						drift = drift,
+					}
+				)
+			end
+		end
+	end
+	live += #puffs
+
+	-- ski lift chairs riding the cable
+	type Chair = { fx: Fx, from: Vector3, to: Vector3, speed: number, offset: number }
+	local chairs: { Chair } = {}
+	for _, spec in (fx.lifts or {}) :: { any } do
+		local from = (pivot * CFrame.new(spec.from * s)).Position
+		local to = (pivot * CFrame.new(spec.to * s)).Position
+		for k = 1, spec.count or 3 do
+			local f = make("SnowFx_Chair", box)
+			if f then
+				table.insert(
+					chairs,
+					{ fx = f, from = from, to = to, speed = spec.speed or 0.05, offset = (k - 1) / (spec.count or 3) }
+				)
+			end
+		end
+	end
+	live += #chairs
 
 	-- falling leaves under a tree
 	type Leaf = { fx: Fx, start: Vector3, born: number, life: number, spin: Vector3 }
@@ -177,90 +260,141 @@ local function build(model: Model): Entry?
 			end
 		end
 	end
+	live += #leaves
 
 	local nextWake = 0
 	local wakeIndex = 0
 	local fishStart, fishSpot, fishDir = -100, Vector3.zero, Vector3.xAxis
 
-	local function run(t: number, dt: number)
+	local function run(t: number, _dt: number)
 		for _, m in movers do
-			m.part.CFrame = pivot * m.hub * rotation(m, t) * m.hub:Inverse() * m.base
-		end
-		if pondCentre then
-			local c = pondCentre
-			local rx, rz = fx.rx * s, fx.rz * s
-			for i, d in ducks do
-				local th = t * 0.22 - (i - 1) * 0.32 - (if i > 1 then 0.15 else 0)
-				local pos = c * Vector3.new(math.cos(th) * rx, 0, math.sin(th) * rz)
-				local ahead = c * Vector3.new(math.cos(th + 0.05) * rx, 0, math.sin(th + 0.05) * rz)
-				local bob = 0.05 * math.sin(t * 4 + i)
-				local cf = CFrame.lookAt(pos, ahead) * CFrame.new(0, bob - 0.05 * s, 0) * CFrame.Angles(0, 0, 0.06 * math.sin(t * 3 + i))
-				put(d, cf, Vector3.one * s)
-				if i == 1 and t >= nextWake then
-					nextWake = t + 0.45
-					wakeIndex = wakeIndex % #wakes + 1
-					local w = wakes[wakeIndex]
-					if w then
-						w.at = CFrame.new(pos + Vector3.new(0, 0.02, 0))
-						w.born = t
-					end
+			if m.kind == "blink" then
+				local on = ((t * m.speed + m.phase) % 1) < m.amp
+				if on ~= m.on then
+					m.on = on
+					m.part.Material = if on then m.material else Enum.Material.SmoothPlastic
+					m.part.Color = if on then m.color else m.color:Lerp(Color3.new(0, 0, 0), 0.7)
 				end
-			end
-			for _, w in wakes do
-				local u = (t - w.born) / 1.6
-				if u >= 1 then
-					w.fx.part.Transparency = 1
-				else
-					local r = (0.5 + 1.2 * u) * s
-					put(w.fx, w.at, Vector3.new(r, s, r))
-					w.fx.part.Transparency = 0.25 + 0.75 * u
-				end
-			end
-			-- a fish jumps every few seconds
-			if fish and fx.fish and #fx.fish > 0 then
-				local u = (t - fishStart) / 1.1
-				if u > 4 then
-					fishStart = t
-					fishSpot = (pivot * CFrame.new(fx.fish[rng:NextInteger(1, #fx.fish)] * s)).Position
-					local a = rng:NextNumber(0, math.pi * 2)
-					fishDir = Vector3.new(math.cos(a), 0, math.sin(a))
-					u = 0
-				end
-				if u <= 1 then
-					local p = fishSpot + fishDir * (u - 0.5) * 2.2 * s + Vector3.new(0, 4 * u * (1 - u) * 1.6 * s - 0.2 * s, 0)
-					local pitch = math.rad(70) * (1 - 2 * u)
-					put(fish, CFrame.lookAt(p, p + fishDir) * CFrame.Angles(pitch, 0, 0), Vector3.one * s)
-					fish.part.Transparency = 0
-				else
-					fish.part.Transparency = 1
-				end
-				-- splash + ripple at the start and at the landing
-				local function splashAt(spot: Vector3, age: number)
-					if fishSplash and age >= 0 and age < 0.5 then
-						put(fishSplash, CFrame.new(spot.X, c.Position.Y, spot.Z), Vector3.new(1, 0.4 + 1.2 * math.sin(age / 0.5 * math.pi), 1) * s)
-						fishSplash.part.Transparency = age / 0.5 * 0.6
-						return true
-					end
-					return false
-				end
-				local landing = fishSpot + fishDir * 1.1 * s
-				local launch = fishSpot - fishDir * 1.1 * s
-				local age = (t - fishStart)
-				if not splashAt(launch, age) and not splashAt(landing, age - 1.1) and fishSplash then
-					fishSplash.part.Transparency = 1
-				end
-				if fishRipple then
-					local ru = (age - 1.1) / 1.4
-					if ru >= 0 and ru < 1 then
-						local r = (0.4 + 1.8 * ru) * s
-						put(fishRipple, CFrame.new(landing.X, c.Position.Y + 0.02, landing.Z), Vector3.new(r, s, r))
-						fishRipple.part.Transparency = 0.2 + 0.8 * ru
-					else
-						fishRipple.part.Transparency = 1
-					end
-				end
+			elseif m.kind == "bounce" then
+				local u = math.abs(math.sin(t * math.pi * m.speed + m.phase))
+				m.part.CFrame = pivot * CFrame.new(0, m.amp * s * u, 0) * m.base
+			else
+				m.part.CFrame = pivot * m.hub * rotation(m, t) * m.hub:Inverse() * m.base
 			end
 		end
+
+		for _, w in walkers do
+			local spec = w.spec
+			local c = w.centre
+			local rx, rz = spec.rx * s, spec.rz * s
+			local th = t * spec.speed + spec.phase
+			local pos = c * Vector3.new(math.cos(th) * rx, 0, math.sin(th) * rz)
+			local ahead = c * Vector3.new(math.cos(th + 0.05) * rx, 0, math.sin(th + 0.05) * rz)
+			local bob = spec.bob or 0
+			local flying = bob >= 0.3
+			local y = bob * s * math.sin(t * (if flying then 1.3 else 4) + w.i)
+			local roll = if flying then -0.35 else 0.06 * math.sin(t * 3 + w.i)
+			local hop = spec.hop or 0
+			if hop > 0 then
+				-- quick little steps with a waddle
+				y += hop * s * math.abs(math.sin(t * 9 + w.i))
+				roll = 0.14 * math.sin(t * 9 + w.i)
+			end
+			local cf = CFrame.lookAt(pos, ahead)
+				* CFrame.new(0, y - (if spec.wake then 0.05 * s else 0), 0)
+				* CFrame.Angles(0, 0, roll)
+			put(w.fx, cf, Vector3.one * s)
+			if w.wake and #wakes > 0 and t >= nextWake then
+				nextWake = t + 0.45
+				wakeIndex = wakeIndex % #wakes + 1
+				local r = wakes[wakeIndex]
+				r.at = CFrame.new(pos + Vector3.new(0, 0.02, 0))
+				r.born = t
+			end
+		end
+		for _, r in wakes do
+			local u = (t - r.born) / 1.6
+			if u >= 1 then
+				r.fx.part.Transparency = 1
+			else
+				local rr = (0.5 + 1.2 * u) * s
+				put(r.fx, r.at, Vector3.new(rr, s, rr))
+				r.fx.part.Transparency = 0.25 + 0.75 * u
+			end
+		end
+
+		-- a fish jumps every few seconds
+		if fish then
+			local u = (t - fishStart) / 1.1
+			if u > 4 then
+				fishStart = t
+				fishSpot = (pivot * CFrame.new(fx.fish[rng:NextInteger(1, #fx.fish)] * s)).Position
+				local a = rng:NextNumber(0, math.pi * 2)
+				fishDir = Vector3.new(math.cos(a), 0, math.sin(a))
+				u = 0
+			end
+			if u <= 1 then
+				local p = fishSpot
+					+ fishDir * (u - 0.5) * 2.2 * s
+					+ Vector3.new(0, 4 * u * (1 - u) * 1.6 * s - 0.2 * s, 0)
+				local pitch = math.rad(70) * (1 - 2 * u)
+				put(fish, CFrame.lookAt(p, p + fishDir) * CFrame.Angles(pitch, 0, 0), Vector3.one * s)
+				fish.part.Transparency = 0
+			else
+				fish.part.Transparency = 1
+			end
+			-- splash + ripple at the start and at the landing
+			local function splashAt(spot: Vector3, age: number)
+				if fishSplash and age >= 0 and age < 0.5 then
+					put(fishSplash, CFrame.new(spot), Vector3.new(1, 0.4 + 1.2 * math.sin(age / 0.5 * math.pi), 1) * s)
+					fishSplash.part.Transparency = age / 0.5 * 0.6
+					return true
+				end
+				return false
+			end
+			local landing = fishSpot + fishDir * 1.1 * s
+			local launch = fishSpot - fishDir * 1.1 * s
+			local age = (t - fishStart)
+			if not splashAt(launch, age) and not splashAt(landing, age - 1.1) and fishSplash then
+				fishSplash.part.Transparency = 1
+			end
+			if fishRipple then
+				local ru = (age - 1.1) / 1.4
+				if ru >= 0 and ru < 1 then
+					local r = (0.4 + 1.8 * ru) * s
+					put(fishRipple, CFrame.new(landing + Vector3.new(0, 0.02, 0)), Vector3.new(r, s, r))
+					fishRipple.part.Transparency = 0.2 + 0.8 * ru
+				else
+					fishRipple.part.Transparency = 1
+				end
+			end
+		end
+
+		-- puffs rise, grow, drift with the wind and fade
+		for _, p in puffs do
+			local u = ((t + p.offset) % p.life) / p.life
+			local pos = p.at
+				+ Vector3.new(0, 5 * p.size * u, 0)
+				+ p.drift * (1.6 * p.size * u * u)
+				+ Vector3.new(0.25 * p.size * math.sin(t * 1.7 + p.offset * 3), 0, 0)
+			put(p.fx, CFrame.new(pos) * CFrame.Angles(0, u * 2 + p.offset, 0), Vector3.one * p.size * (0.45 + 1.4 * u))
+			p.fx.part.Transparency = if u < 0.08 then 1 - u / 0.08 * 0.85 else 0.15 + 0.85 * u ^ 1.5
+		end
+
+		-- lift chairs: ride from -> to, fade at the towers, swing a little
+		for k, c in chairs do
+			local u = (t * c.speed + c.offset) % 1
+			local pos = c.from:Lerp(c.to, u)
+			local dir = Vector3.new(c.to.X - c.from.X, 0, c.to.Z - c.from.Z)
+			if dir.Magnitude < 0.01 then
+				dir = Vector3.zAxis
+			end
+			local cf = CFrame.lookAt(pos, pos + dir.Unit) * CFrame.Angles(0.05 * math.sin(t * 1.8 + k), 0, 0)
+			put(c.fx, cf, Vector3.one * s)
+			local edge = math.min(u, 1 - u)
+			c.fx.part.Transparency = if edge < 0.04 then 1 - edge / 0.04 else 0
+		end
+
 		for _, l in leaves do
 			local age = t - l.born
 			if age > l.life or age < 0 then
@@ -269,13 +403,21 @@ local function build(model: Model): Entry?
 			end
 			local fall = l.start.Y - groundY
 			local y = l.start.Y - fall * (age / l.life)
-			local p = Vector3.new(l.start.X + math.sin(age * 2.2) * 0.6 * s, math.max(y, groundY + 0.05), l.start.Z + math.cos(age * 1.7) * 0.4 * s)
-			put(l.fx, CFrame.new(p) * CFrame.Angles(age * l.spin.X, age * l.spin.Y, math.sin(age * 3) * 0.8), Vector3.one * s * 1.3)
+			local p = Vector3.new(
+				l.start.X + math.sin(age * 2.2) * 0.6 * s,
+				math.max(y, groundY + 0.05),
+				l.start.Z + math.cos(age * 1.7) * 0.4 * s
+			)
+			put(
+				l.fx,
+				CFrame.new(p) * CFrame.Angles(age * l.spin.X, age * l.spin.Y, math.sin(age * 3) * 0.8),
+				Vector3.one * s * 1.3
+			)
 			l.fx.part.Transparency = if age > l.life - 0.3 then (age - (l.life - 0.3)) / 0.3 else 0
 		end
 	end
 
-	if #movers == 0 and #ducks == 0 and #leaves == 0 then
+	if live == 0 then
 		box:Destroy()
 		return nil
 	end

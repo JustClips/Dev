@@ -15912,17 +15912,69 @@
   ],
   "tris": 2132
  },
+ "BeachFx_Crab": {
+  "bounds": {
+   "max": [
+    0.871,
+    0.917,
+    0.477
+   ],
+   "min": [
+    -0.871,
+    -0.031,
+    -0.733
+   ]
+  },
+  "kind": "prop",
+  "name": "BeachFx_Crab",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1240
+ },
+ "BeachFx_Gull": {
+  "bounds": {
+   "max": [
+    1.613,
+    0.445,
+    0.625
+   ],
+   "min": [
+    -1.612,
+    -0.305,
+    -0.94
+   ]
+  },
+  "kind": "prop",
+  "name": "BeachFx_Gull",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 728
+ },
  "Beach_Boat": {
   "bounds": {
    "max": [
-    2.231,
-    1.12,
-    4.648
+    2.85,
+    1.299,
+    4.595
    ],
    "min": [
-    -2.231,
-    -0.2,
-    -4.648
+    -2.85,
+    -0.05,
+    -4.595
    ]
   },
   "kind": "prop",
@@ -15936,19 +15988,28 @@
     "parent": null
    }
   },
-  "tris": 668
+  "tris": 1108
  },
  "Beach_HutA": {
+  "anim": {
+   "Flag": {
+    "amp": 18,
+    "axis": "y",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.35
+   }
+  },
   "bounds": {
    "max": [
-    3.688,
-    7.672,
-    3.4
+    3.353,
+    9.84,
+    3.8
    ],
    "min": [
-    -3.688,
-    0.0,
-    -4.2
+    -3.353,
+    -0.176,
+    -4.3
    ]
   },
   "kind": "prop",
@@ -15960,21 +16021,41 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Flag": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     9.6,
+     0.4
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 200
+  "tris": 2624
  },
  "Beach_HutB": {
+  "anim": {
+   "Flag": {
+    "amp": 18,
+    "axis": "y",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.35
+   }
+  },
   "bounds": {
    "max": [
-    3.688,
-    7.672,
-    3.4
+    3.353,
+    9.84,
+    3.8
    ],
    "min": [
-    -3.688,
-    0.0,
-    -4.2
+    -3.353,
+    -0.176,
+    -4.3
    ]
   },
   "kind": "prop",
@@ -15986,21 +16067,41 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Flag": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     9.6,
+     0.4
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 200
+  "tris": 2624
  },
  "Beach_HutC": {
+  "anim": {
+   "Flag": {
+    "amp": 18,
+    "axis": "y",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.35
+   }
+  },
   "bounds": {
    "max": [
-    3.688,
-    7.672,
-    3.4
+    3.353,
+    9.84,
+    3.8
    ],
    "min": [
-    -3.688,
-    0.0,
-    -4.2
+    -3.353,
+    -0.176,
+    -4.3
    ]
   },
   "kind": "prop",
@@ -16012,21 +16113,41 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Flag": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     9.6,
+     0.4
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 200
+  "tris": 2624
  },
  "Beach_IceCream": {
+  "anim": {
+   "Cone": {
+    "amp": 0,
+    "axis": "y",
+    "kind": "spin",
+    "phase": 0.0,
+    "speed": 0.08
+   }
+  },
   "bounds": {
    "max": [
-    3.025,
-    12.4,
-    2.1
+    3.277,
+    12.528,
+    2.066
    ],
    "min": [
-    -3.025,
-    0.0,
-    -3.2
+    -3.277,
+    -0.064,
+    -3.32
    ]
   },
   "kind": "prop",
@@ -16038,21 +16159,41 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Cone": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     6.6,
+     0
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 834
+  "tris": 2844
  },
  "Beach_Lifeguard": {
+  "anim": {
+   "Flag": {
+    "amp": 18,
+    "axis": "y",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.35
+   }
+  },
   "bounds": {
    "max": [
-    2.5,
-    13.0,
-    3.004
+    2.748,
+    13.04,
+    3.002
    ],
    "min": [
-    -3.35,
-    -0.245,
-    -9.138
+    -3.374,
+    -0.24,
+    -8.972
    ]
   },
   "kind": "prop",
@@ -16064,26 +16205,106 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Flag": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -1.9,
+     12.8,
+     1.9
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 698
+  "tris": 2924
  },
  "Beach_Lighthouse": {
+  "anim": {
+   "Beam_Glow": {
+    "amp": 0,
+    "axis": "y",
+    "kind": "spin",
+    "phase": 0.0,
+    "speed": 0.12
+   }
+  },
   "bounds": {
    "max": [
-    8.468,
-    32.05,
-    7.87
+    9.0,
+    32.4,
+    8.155
    ],
    "min": [
-    -8.468,
-    -0.6,
-    -7.872
+    -9.0,
+    -0.146,
+    -8.301
+   ]
+  },
+  "fx": {
+   "loops": [
+    {
+     "asset": "BeachFx_Gull",
+     "bob": 0.5,
+     "center": [
+      0,
+      31.0,
+      0
+     ],
+     "hop": 0.0,
+     "phase": 0.0,
+     "rx": 9,
+     "rz": 7,
+     "speed": 0.35,
+     "wake": false
+    },
+    {
+     "asset": "BeachFx_Gull",
+     "bob": 0.5,
+     "center": [
+      0,
+      33.5,
+      0
+     ],
+     "hop": 0.0,
+     "phase": 2.1,
+     "rx": 12,
+     "rz": 9,
+     "speed": 0.27999999999999997,
+     "wake": false
+    },
+    {
+     "asset": "BeachFx_Gull",
+     "bob": 0.5,
+     "center": [
+      0,
+      36.0,
+      0
+     ],
+     "hop": 0.0,
+     "phase": 4.2,
+     "rx": 15,
+     "rz": 11,
+     "speed": 0.20999999999999996,
+     "wake": false
+    }
    ]
   },
   "kind": "prop",
   "name": "Beach_Lighthouse",
   "parts": {
+   "Beam_Glow": {
+    "collide": false,
+    "glow": "FFF6C0",
+    "joint": [
+     0,
+     28.3,
+     0
+    ],
+    "material": null,
+    "parent": null
+   },
    "Body": {
     "collide": true,
     "glow": null,
@@ -16099,19 +16320,145 @@
     "parent": null
    }
   },
-  "tris": 1410
+  "tris": 4568
  },
- "Beach_Sandcastle": {
+ "Beach_Palm": {
+  "anim": {
+   "Fronds": {
+    "amp": 4,
+    "axis": "z",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.4
+   }
+  },
   "bounds": {
    "max": [
-    7.217,
-    7.6,
-    6.6
+    2.122,
+    7.942,
+    3.391
    ],
    "min": [
-    -7.418,
-    -0.35,
-    -6.6
+    -4.49,
+    -0.375,
+    -3.391
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Palm",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Fronds": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -1.0213,
+     7.0,
+     0.0
+    ],
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 2008
+ },
+ "Beach_Rock1": {
+  "bounds": {
+   "max": [
+    2.5,
+    2.235,
+    2.0
+   ],
+   "min": [
+    -2.11,
+    -0.631,
+    -1.888
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Rock1",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 376
+ },
+ "Beach_Rock2": {
+  "bounds": {
+   "max": [
+    3.7,
+    3.295,
+    2.8
+   ],
+   "min": [
+    -3.228,
+    -1.141,
+    -2.644
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Rock2",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 376
+ },
+ "Beach_Sandcastle": {
+  "anim": {
+   "Flag": {
+    "amp": 18,
+    "axis": "y",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.35
+   }
+  },
+  "bounds": {
+   "max": [
+    6.75,
+    7.94,
+    6.75
+   ],
+   "min": [
+    -7.65,
+    -0.05,
+    -6.75
+   ]
+  },
+  "fx": {
+   "loops": [
+    {
+     "asset": "BeachFx_Crab",
+     "bob": 0.0,
+     "center": [
+      0,
+      0.0,
+      0
+     ],
+     "hop": 0.08,
+     "phase": 0.0,
+     "rx": 6.9,
+     "rz": 6.9,
+     "speed": 0.35,
+     "wake": false
+    }
    ]
   },
   "kind": "prop",
@@ -16123,21 +16470,32 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Flag": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     7.7,
+     0
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 708
+  "tris": 4704
  },
  "Beach_Surfboards": {
   "bounds": {
    "max": [
-    2.25,
-    5.934,
-    0.2
+    2.399,
+    5.974,
+    0.264
    ],
    "min": [
-    -2.25,
-    0.0,
-    -1.168
+    -2.399,
+    -0.039,
+    -1.172
    ]
   },
   "kind": "prop",
@@ -16151,24 +16509,90 @@
     "parent": null
    }
   },
-  "tris": 588
+  "tris": 2700
  },
- "Beach_Volleyball": {
+ "Beach_Umbrella": {
+  "anim": {
+   "Canopy": {
+    "amp": 1.5,
+    "axis": "z",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.3
+   }
+  },
   "bounds": {
    "max": [
-    5.18,
-    5.2,
-    6.075
+    2.974,
+    4.46,
+    2.974
    ],
    "min": [
-    -5.18,
-    -0.05,
-    -6.075
+    -2.974,
+    -0.064,
+    -2.974
+   ]
+  },
+  "kind": "prop",
+  "name": "Beach_Umbrella",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Canopy": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0,
+     0
+    ],
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 984
+ },
+ "Beach_Volleyball": {
+  "anim": {
+   "Ball": {
+    "amp": 1.3,
+    "axis": "y",
+    "kind": "bounce",
+    "phase": 0.0,
+    "speed": 0.8
+   }
+  },
+  "bounds": {
+   "max": [
+    5.334,
+    5.65,
+    6.09
+   ],
+   "min": [
+    -5.334,
+    -0.04,
+    -6.09
    ]
   },
   "kind": "prop",
   "name": "Beach_Volleyball",
   "parts": {
+   "Ball": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -2.5,
+     1.6,
+     -3
+    ],
+    "material": null,
+    "parent": null
+   },
    "Body": {
     "collide": true,
     "glow": null,
@@ -16177,7 +16601,7 @@
     "parent": null
    }
   },
-  "tris": 500
+  "tris": 1652
  },
  "Boulder_1": {
   "bounds": {
@@ -16257,17 +16681,69 @@
   },
   "tris": 120
  },
+ "CityFx_Pigeon": {
+  "bounds": {
+   "max": [
+    0.305,
+    0.945,
+    0.741
+   ],
+   "min": [
+    -0.305,
+    -0.024,
+    -0.637
+   ]
+  },
+  "kind": "prop",
+  "name": "CityFx_Pigeon",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1312
+ },
+ "City_Bench": {
+  "bounds": {
+   "max": [
+    1.734,
+    2.364,
+    0.63
+   ],
+   "min": [
+    -1.734,
+    -0.063,
+    -0.8
+   ]
+  },
+  "kind": "prop",
+  "name": "City_Bench",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1560
+ },
  "City_Billboard": {
   "bounds": {
    "max": [
-    8.0,
-    15.5,
-    0.8
+    8.049,
+    15.55,
+    0.846
    ],
    "min": [
-    -8.0,
-    0.0,
-    -1.438
+    -8.049,
+    -0.29,
+    -1.65
    ]
   },
   "kind": "prop",
@@ -16279,21 +16755,54 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Lamps_Glow": {
+    "collide": false,
+    "glow": "FFF4CC",
+    "joint": null,
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 420
+  "tris": 2096
+ },
+ "City_Bin": {
+  "bounds": {
+   "max": [
+    0.933,
+    2.39,
+    0.91
+   ],
+   "min": [
+    -0.933,
+    -0.04,
+    -0.91
+   ]
+  },
+  "kind": "prop",
+  "name": "City_Bin",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 328
  },
  "City_BusStop": {
   "bounds": {
    "max": [
-    4.0,
-    5.1,
-    2.0
+    4.139,
+    5.25,
+    2.039
    ],
    "min": [
-    -5.185,
-    0.0,
-    -2.0
+    -5.25,
+    -0.064,
+    -2.039
    ]
   },
   "kind": "prop",
@@ -16314,19 +16823,68 @@
     "parent": null
    }
   },
-  "tris": 268
+  "tris": 1576
  },
- "City_HotDog": {
+ "City_Dumpster": {
   "bounds": {
    "max": [
-    2.625,
-    7.01,
-    2.625
+    2.248,
+    3.45,
+    1.494
    ],
    "min": [
-    -3.017,
+    -2.248,
     0.0,
-    -2.625
+    -1.35
+   ]
+  },
+  "kind": "prop",
+  "name": "City_Dumpster",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1000
+ },
+ "City_HotDog": {
+  "anim": {
+   "HotDog": {
+    "amp": 0,
+    "axis": "y",
+    "kind": "spin",
+    "phase": 0.0,
+    "speed": 0.15
+   }
+  },
+  "bounds": {
+   "max": [
+    2.877,
+    7.117,
+    2.877
+   ],
+   "min": [
+    -3.054,
+    0.0,
+    -2.877
+   ]
+  },
+  "fx": {
+   "puffs": [
+    {
+     "at": [
+      0.6,
+      2.7,
+      0.3
+     ],
+     "rate": 1.2,
+     "size": 0.6,
+     "tint": "steam"
+    }
    ]
   },
   "kind": "prop",
@@ -16338,21 +16896,58 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "HotDog": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     6.5,
+     0
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 2074
+  "tris": 1734
+ },
+ "City_Hydrant": {
+  "bounds": {
+   "max": [
+    0.65,
+    2.14,
+    0.586
+   ],
+   "min": [
+    -0.65,
+    -0.04,
+    -0.625
+   ]
+  },
+  "kind": "prop",
+  "name": "City_Hydrant",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 456
  },
  "City_Newsstand": {
   "bounds": {
    "max": [
-    2.5,
-    4.9,
-    2.0
+    2.548,
+    5.1,
+    2.048
    ],
    "min": [
-    -2.5,
-    0.0,
-    -2.8
+    -2.548,
+    -0.048,
+    -2.889
    ]
   },
   "kind": "prop",
@@ -16366,19 +16961,19 @@
     "parent": null
    }
   },
-  "tris": 204
+  "tris": 2160
  },
  "City_ShopA": {
   "bounds": {
    "max": [
     9.0,
-    17.1,
-    5.3
+    17.05,
+    5.458
    ],
    "min": [
     -9.0,
-    0.0,
-    -7.253
+    -0.058,
+    -7.47
    ]
   },
   "kind": "prop",
@@ -16401,22 +16996,38 @@
   },
   "sign": [
    0,
-   6.8,
-   -5.3
+   6.7,
+   -5.4
   ],
-  "tris": 510
+  "tris": 6320
  },
  "City_ShopB": {
+  "anim": {
+   "Fan1": {
+    "amp": 0,
+    "axis": "z",
+    "kind": "spin",
+    "phase": 0.0,
+    "speed": 1.5
+   },
+   "Fan2": {
+    "amp": 0,
+    "axis": "z",
+    "kind": "spin",
+    "phase": 0.0,
+    "speed": 1.9
+   }
+  },
   "bounds": {
    "max": [
     9.0,
-    14.0,
-    5.3
+    14.139,
+    5.458
    ],
    "min": [
     -9.0,
-    0.0,
-    -7.253
+    -0.058,
+    -7.47
    ]
   },
   "kind": "prop",
@@ -16429,41 +17040,25 @@
     "material": null,
     "parent": null
    },
-   "Windows_Glass": {
+   "Fan1": {
     "collide": false,
     "glow": null,
-    "joint": null,
-    "material": "Glass",
+    "joint": [
+     4,
+     13.4,
+     0.38
+    ],
+    "material": null,
     "parent": null
-   }
-  },
-  "sign": [
-   0,
-   6.8,
-   -5.3
-  ],
-  "tris": 492
- },
- "City_ShopC": {
-  "bounds": {
-   "max": [
-    9.0,
-    14.4,
-    5.3
-   ],
-   "min": [
-    -9.0,
-    0.0,
-    -7.253
-   ]
-  },
-  "kind": "prop",
-  "name": "City_ShopC",
-  "parts": {
-   "Body": {
-    "collide": true,
+   },
+   "Fan2": {
+    "collide": false,
     "glow": null,
-    "joint": null,
+    "joint": [
+     -2,
+     13.4,
+     0.38
+    ],
     "material": null,
     "parent": null
    },
@@ -16477,22 +17072,94 @@
   },
   "sign": [
    0,
-   6.8,
-   -5.3
+   6.7,
+   -5.4
   ],
-  "tris": 728
+  "tris": 6944
+ },
+ "City_ShopC": {
+  "anim": {
+   "Garden": {
+    "amp": 3,
+    "axis": "z",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.4
+   }
+  },
+  "bounds": {
+   "max": [
+    9.0,
+    14.462,
+    5.458
+   ],
+   "min": [
+    -9.0,
+    -0.058,
+    -7.47
+   ]
+  },
+  "kind": "prop",
+  "name": "City_ShopC",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Garden": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     13.0,
+     1
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Windows_Glass": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": "Glass",
+    "parent": null
+   }
+  },
+  "sign": [
+   0,
+   6.7,
+   -5.4
+  ],
+  "tris": 9512
  },
  "City_ShopD": {
   "bounds": {
    "max": [
     9.0,
-    15.6,
-    5.3
+    15.989,
+    5.458
    ],
    "min": [
     -9.0,
-    0.0,
-    -7.253
+    -0.058,
+    -7.47
+   ]
+  },
+  "fx": {
+   "puffs": [
+    {
+     "at": [
+      5,
+      16.1,
+      2
+     ],
+     "rate": 0.8,
+     "size": 1.2,
+     "tint": "smoke"
+    }
    ]
   },
   "kind": "prop",
@@ -16515,22 +17182,71 @@
   },
   "sign": [
    0,
-   6.8,
-   -5.3
+   6.7,
+   -5.4
   ],
-  "tris": 408
+  "tris": 6528
  },
  "City_Statue": {
   "bounds": {
    "max": [
-    4.6,
-    12.359,
-    4.6
+    4.292,
+    13.417,
+    4.292
    ],
    "min": [
-    -4.971,
-    0.0,
-    -4.6
+    -4.443,
+    -0.05,
+    -4.292
+   ]
+  },
+  "fx": {
+   "loops": [
+    {
+     "asset": "CityFx_Pigeon",
+     "bob": 0.0,
+     "center": [
+      0,
+      0.0,
+      0
+     ],
+     "hop": 0.12,
+     "phase": 0.0,
+     "rx": 5.6,
+     "rz": 5.6,
+     "speed": 0.25,
+     "wake": false
+    },
+    {
+     "asset": "CityFx_Pigeon",
+     "bob": 0.0,
+     "center": [
+      0,
+      0.0,
+      0
+     ],
+     "hop": 0.12,
+     "phase": 2.0,
+     "rx": 5.6,
+     "rz": 5.6,
+     "speed": 0.21,
+     "wake": false
+    },
+    {
+     "asset": "CityFx_Pigeon",
+     "bob": 0.0,
+     "center": [
+      0,
+      0.0,
+      0
+     ],
+     "hop": 0.12,
+     "phase": 4.0,
+     "rx": 5.6,
+     "rz": 5.6,
+     "speed": 0.16999999999999998,
+     "wake": false
+    }
    ]
   },
   "kind": "prop",
@@ -16544,19 +17260,19 @@
     "parent": null
    }
   },
-  "tris": 1064
+  "tris": 8092
  },
  "City_StreetLamp": {
   "bounds": {
    "max": [
-    0.35,
-    9.45,
-    0.35
+    0.839,
+    9.79,
+    0.458
    ],
    "min": [
-    -0.35,
-    0.0,
-    -2.7
+    -0.839,
+    -0.04,
+    -2.839
    ]
   },
   "kind": "prop",
@@ -16577,19 +17293,42 @@
     "parent": null
    }
   },
-  "tris": 108
+  "tris": 444
  },
  "City_TrafficLight": {
+  "anim": {
+   "Green_Glow": {
+    "amp": 0.43,
+    "axis": "y",
+    "kind": "blink",
+    "phase": 0.57,
+    "speed": 0.1
+   },
+   "Red_Glow": {
+    "amp": 0.45,
+    "axis": "y",
+    "kind": "blink",
+    "phase": 0.0,
+    "speed": 0.1
+   },
+   "Yellow_Glow": {
+    "amp": 0.12,
+    "axis": "y",
+    "kind": "blink",
+    "phase": 0.45,
+    "speed": 0.1
+   }
+  },
   "bounds": {
    "max": [
-    0.46,
-    8.05,
-    0.4
+    0.548,
+    8.15,
+    0.466
    ],
    "min": [
-    -0.46,
-    0.0,
-    -4.15
+    -0.548,
+    -0.05,
+    -4.05
    ]
   },
   "kind": "prop",
@@ -16615,9 +17354,16 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Yellow_Glow": {
+    "collide": false,
+    "glow": "FFD23A",
+    "joint": null,
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 338
+  "tris": 892
  },
  "Cliff_1": {
   "bounds": {
@@ -18926,6 +19672,32 @@
   },
   "tris": 44
  },
+ "ParkFx_Puff": {
+  "bounds": {
+   "max": [
+    0.604,
+    0.5,
+    0.5
+   ],
+   "min": [
+    -0.692,
+    -0.5,
+    -0.5
+   ]
+  },
+  "kind": "prop",
+  "name": "ParkFx_Puff",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 228
+ },
  "Park_Bench": {
   "bounds": {
    "max": [
@@ -18984,39 +19756,37 @@
     "amp": 5,
     "axis": "z",
     "kind": "sway",
+    "phase": 0.0,
     "speed": 0.45
    },
    "Reeds2": {
     "amp": 5,
     "axis": "z",
     "kind": "sway",
+    "phase": 0.0,
     "speed": 0.52
    },
    "Reeds3": {
     "amp": 5,
     "axis": "z",
     "kind": "sway",
+    "phase": 0.0,
     "speed": 0.5900000000000001
    }
   },
   "bounds": {
    "max": [
-    11.893,
+    11.884,
     3.177,
     8.614
    ],
    "min": [
-    -12.436,
-    -0.421,
+    -12.366,
+    -0.377,
     -9.414
    ]
   },
   "fx": {
-   "center": [
-    1.2,
-    0.3,
-    0.0
-   ],
    "fish": [
     [
      4.0,
@@ -19034,8 +19804,68 @@
      -3.0
     ]
    ],
-   "rx": 5.6,
-   "rz": 4.0
+   "loops": [
+    {
+     "asset": "PondFx_Duck",
+     "bob": 0.05,
+     "center": [
+      1.2,
+      0.3,
+      0.0
+     ],
+     "hop": 0.0,
+     "phase": 0.0,
+     "rx": 5.6,
+     "rz": 4.0,
+     "speed": 0.22,
+     "wake": true
+    },
+    {
+     "asset": "PondFx_Duckling",
+     "bob": 0.05,
+     "center": [
+      1.2,
+      0.3,
+      0.0
+     ],
+     "hop": 0.0,
+     "phase": -0.47,
+     "rx": 5.6,
+     "rz": 4.0,
+     "speed": 0.22,
+     "wake": false
+    },
+    {
+     "asset": "PondFx_Duckling",
+     "bob": 0.05,
+     "center": [
+      1.2,
+      0.3,
+      0.0
+     ],
+     "hop": 0.0,
+     "phase": -0.79,
+     "rx": 5.6,
+     "rz": 4.0,
+     "speed": 0.22,
+     "wake": false
+    },
+    {
+     "asset": "PondFx_Duckling",
+     "bob": 0.05,
+     "center": [
+      1.2,
+      0.3,
+      0.0
+     ],
+     "hop": 0.0,
+     "phase": -1.1099999999999999,
+     "rx": 5.6,
+     "rz": 4.0,
+     "speed": 0.22,
+     "wake": false
+    }
+   ]
   },
   "kind": "prop",
   "name": "Park_DuckPond",
@@ -20973,17 +21803,83 @@
   },
   "tris": 51598
  },
+ "SnowFx_Chair": {
+  "bounds": {
+   "max": [
+    1.24,
+    0.18,
+    0.639
+   ],
+   "min": [
+    -1.25,
+    -3.514,
+    -0.65
+   ]
+  },
+  "kind": "prop",
+  "name": "SnowFx_Chair",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 696
+ },
+ "SnowFx_Penguin": {
+  "bounds": {
+   "max": [
+    0.716,
+    1.53,
+    0.522
+   ],
+   "min": [
+    -0.716,
+    -0.03,
+    -0.69
+   ]
+  },
+  "kind": "prop",
+  "name": "SnowFx_Penguin",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1748
+ },
  "Snow_Cocoa": {
   "bounds": {
    "max": [
-    3.12,
-    8.6,
-    2.2
+    3.248,
+    8.55,
+    2.248
    ],
    "min": [
-    -3.12,
-    0.0,
-    -2.8
+    -3.248,
+    -0.048,
+    -2.888
+   ]
+  },
+  "fx": {
+   "puffs": [
+    {
+     "at": [
+      0,
+      8.3,
+      -1.8
+     ],
+     "rate": 1.0,
+     "size": 0.8,
+     "tint": "steam"
+    }
    ]
   },
   "kind": "prop",
@@ -20997,19 +21893,53 @@
     "parent": null
    }
   },
-  "tris": 788
+  "tris": 1724
  },
  "Snow_FrozenPond": {
   "bounds": {
    "max": [
-    13.584,
+    13.63,
     1.6,
-    10.9
+    10.948
    ],
    "min": [
-    -13.244,
-    0.0,
-    -9.977
+    -13.344,
+    -0.05,
+    -10.114
+   ]
+  },
+  "fx": {
+   "loops": [
+    {
+     "asset": "SnowFx_Penguin",
+     "bob": 0.0,
+     "center": [
+      0,
+      0.22,
+      0
+     ],
+     "hop": 0.0,
+     "phase": 0.0,
+     "rx": 6.5,
+     "rz": 4.5,
+     "speed": 0.45,
+     "wake": false
+    },
+    {
+     "asset": "SnowFx_Penguin",
+     "bob": 0.0,
+     "center": [
+      0,
+      0.22,
+      0
+     ],
+     "hop": 0.0,
+     "phase": -0.5,
+     "rx": 6.5,
+     "rz": 4.5,
+     "speed": 0.45,
+     "wake": false
+    }
    ]
   },
   "kind": "prop",
@@ -21023,19 +21953,38 @@
     "parent": null
    }
   },
-  "tris": 4080
+  "tris": 3424
  },
  "Snow_Igloo": {
   "bounds": {
    "max": [
-    4.2,
-    3.6,
-    4.2
+    4.239,
+    3.65,
+    4.239
    ],
    "min": [
-    -4.2,
-    0.0,
-    -5.745
+    -4.239,
+    -0.05,
+    -6.11
+   ]
+  },
+  "fx": {
+   "loops": [
+    {
+     "asset": "SnowFx_Penguin",
+     "bob": 0.0,
+     "center": [
+      0,
+      0.0,
+      0
+     ],
+     "hop": 0.1,
+     "phase": 0.0,
+     "rx": 6.2,
+     "rz": 6.2,
+     "speed": 0.3,
+     "wake": false
+    }
    ]
   },
   "kind": "prop",
@@ -21049,19 +21998,33 @@
     "parent": null
    }
   },
-  "tris": 1008
+  "tris": 1248
  },
  "Snow_Lodge": {
   "bounds": {
    "max": [
-    8.2,
-    14.4,
-    6.521
+    8.358,
+    12.55,
+    7.382
    ],
    "min": [
-    -8.2,
-    0.0,
-    -8.89
+    -8.358,
+    -0.058,
+    -8.869
+   ]
+  },
+  "fx": {
+   "puffs": [
+    {
+     "at": [
+      -4,
+      12.4,
+      2.5
+     ],
+     "rate": 0.8,
+     "size": 1.3,
+     "tint": "smoke"
+    }
    ]
   },
   "kind": "prop",
@@ -21082,19 +22045,149 @@
     "parent": null
    }
   },
-  "tris": 1540
+  "tris": 5978
+ },
+ "Snow_Pine": {
+  "anim": {
+   "Canopy": {
+    "amp": 1.2,
+    "axis": "z",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.3
+   }
+  },
+  "bounds": {
+   "max": [
+    2.614,
+    8.3,
+    2.802
+   ],
+   "min": [
+    -3.05,
+    -0.04,
+    -2.802
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_Pine",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Canopy": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.0,
+     0
+    ],
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1624
+ },
+ "Snow_Rock1": {
+  "bounds": {
+   "max": [
+    1.923,
+    2.156,
+    1.683
+   ],
+   "min": [
+    -1.981,
+    -0.684,
+    -1.667
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_Rock1",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 448
+ },
+ "Snow_Rock2": {
+  "bounds": {
+   "max": [
+    3.367,
+    3.452,
+    2.563
+   ],
+   "min": [
+    -3.464,
+    -1.104,
+    -2.57
+   ]
+  },
+  "kind": "prop",
+  "name": "Snow_Rock2",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 448
  },
  "Snow_SkiLift": {
   "bounds": {
    "max": [
-    3.8,
-    16.9,
+    3.148,
+    17.0,
     19.5
    ],
    "min": [
-    -3.8,
-    0.0,
+    -3.148,
+    -0.05,
     -19.5
+   ]
+  },
+  "fx": {
+   "lifts": [
+    {
+     "count": 4,
+     "from": [
+      -2.6,
+      12.3,
+      -18
+     ],
+     "speed": 0.04,
+     "to": [
+      -2.6,
+      16.3,
+      18
+     ]
+    },
+    {
+     "count": 4,
+     "from": [
+      2.6,
+      16.3,
+      18
+     ],
+     "speed": 0.04,
+     "to": [
+      2.6,
+      12.3,
+      -18
+     ]
+    }
    ]
   },
   "kind": "prop",
@@ -21108,19 +22201,19 @@
     "parent": null
    }
   },
-  "tris": 880
+  "tris": 1392
  },
  "Snow_Sled": {
   "bounds": {
    "max": [
     1.0,
-    1.675,
-    1.68
+    1.867,
+    1.707
    ],
    "min": [
     -1.0,
-    0.02,
-    -1.98
+    -0.007,
+    -2.44
    ]
   },
   "kind": "prop",
@@ -21134,19 +22227,28 @@
     "parent": null
    }
   },
-  "tris": 1224
+  "tris": 1124
  },
  "Snow_Snowman": {
+  "anim": {
+   "Scarf": {
+    "amp": 12,
+    "axis": "y",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.6
+   }
+  },
   "bounds": {
    "max": [
-    2.476,
-    7.0,
-    1.6
+    2.639,
+    7.133,
+    1.625
    ],
    "min": [
-    -2.476,
-    -0.2,
-    -1.6
+    -2.639,
+    -0.25,
+    -1.65
    ]
   },
   "kind": "prop",
@@ -21158,9 +22260,20 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Scarf": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -0.6,
+     4.5,
+     -0.7
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 1962
+  "tris": 2448
  },
  "Tool_Broom": {
   "bounds": {
