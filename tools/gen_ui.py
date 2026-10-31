@@ -1566,9 +1566,17 @@ def quests():
              (all three claimed = a free spin), with the time until new ones."""
     W, H = 640, 470
     fit = lambda mx, mn: [node("Fit", "UITextSizeConstraint", {"MaxTextSize": mx, "MinTextSize": mn})]
+    # Three tabs spread evenly over the window with the same margin on both sides.
+    TAB_GAP, TAB_M = 8, 16
+    TAB_W = (W - 2 * TAB_M - 2 * TAB_GAP) // 3
+    tab_x = [TAB_M + i * (TAB_W + TAB_GAP) for i in range(3)]
+    # Quest rows: a text column on the left, then the reward and the button on the right,
+    # with clear gaps so nothing runs under anything else (Dev, 2026-10-31).
+    BTN_W, REW_W, GAP, PAD = 116, 158, 18, 12
+    COL = PAD + BTN_W + GAP + REW_W + GAP + PAD  # width taken off the left column
 
     def tab(name, label, x):
-        return button(name, U(0, 180, 0, 46), U(0, x, 0, 74), color="#4C8DFF", label=label, ts=22, children=[badge(px=24)])
+        return button(name, U(0, TAB_W, 0, 46), U(0, x, 0, 76), color="#4C8DFF", label=label, ts=22, children=[badge(px=24)])
 
     def progress_bar(name, size, pos):
         return frame(name, size, pos, bg="#D9DEE8", children=[
@@ -1584,7 +1592,7 @@ def quests():
                  TextScaled=True, children=fit(17, 8)),
         ])
 
-    job = frame("Job", U(1, -28, 0, 320), U(0, 14, 0, 130), children=[
+    job = frame("Job", U(1, -2 * TAB_M, 0, 320), U(0, TAB_M, 0, 134), children=[
         plate("Card", U(1, 0, 0, 230), tint=WHITE, stroke=3, children=[
             frame("Stripe", U(1, 0, 0, 8), bg="#4C8DFF", ZIndex=2),
             icon("Npc", "TreasureMap", 96, U(0, 14, 0, 24)),
@@ -1603,15 +1611,15 @@ def quests():
 
     def row(i):
         return plate(f"Row{i}", U(1, 0, 0, 70), tint=WHITE, stroke=3, LayoutOrder=i, children=[
-            text("Text", "", U(1, -330, 0, 28), U(0, 12, 0, 6), ts=20, color=INK, display=True, xa="Left", TextScaled=True,
+            text("Text", "", U(1, -COL, 0, 28), U(0, PAD, 0, 6), ts=20, color=INK, display=True, xa="Left", TextScaled=True,
                  children=fit(20, 9)),
-            progress_bar("Bar", U(1, -330, 0, 26), U(0, 12, 0, 36)),
-            reward_box("Reward", U(0, 170, 0, 50), U(1, -148, 0.5, 0), (1, 0.5)),
-            button("Claim", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="Claim", ts=22),
+            progress_bar("Bar", U(1, -COL, 0, 24), U(0, PAD, 0, 38)),
+            reward_box("Reward", U(0, REW_W, 0, 50), U(1, -(PAD + BTN_W + GAP), 0.5, 0), (1, 0.5)),
+            button("Claim", U(0, BTN_W, 0, 50), U(1, -PAD, 0.5, 0), (1, 0.5), color=SUCCESS, label="Claim", ts=22),
         ])
 
-    daily = frame("Daily", U(1, -28, 0, 330), U(0, 14, 0, 130), Visible=False, children=[
-        frame("List", U(1, 0, 0, 234), children=[vlist(8)] + [row(i) for i in (1, 2, 3)]),
+    daily = frame("Daily", U(1, -2 * TAB_M, 0, 330), U(0, TAB_M, 0, 134), Visible=False, children=[
+        frame("List", U(1, 0, 0, 234), children=[vlist(8), padding(2, 2, 2, 0)] + [row(i) for i in (1, 2, 3)]),
         plate("Bonus", U(1, 0, 0, 62), U(0, 0, 0, 240), tint="#4C8DFF", stud=0.3, stroke=3, children=[
             icon("Icon", "Spin", 48, U(0, 8, 0.5, 0), (0, 0.5)),
             text("Text", "Claim all 3 for a FREE SPIN!", U(1, -220, 1, -8), U(0, 64, 0, 4), ts=19, display=True, stroke=2.5,
@@ -1624,20 +1632,22 @@ def quests():
     # Zones tab (2026-10-31): one row per zone questline ("Row1".."Row5": who, quest, bar,
     # reward, and a Go button that takes you to that zone's quest giver).
     def zone_row(i):
-        return plate(f"Row{i}", U(1, -12, 0, 92), tint=WHITE, stroke=3, LayoutOrder=i, children=[
-            text("Who", "", U(1, -330, 0, 20), U(0, 12, 0, 4), ts=16, color="#4C8DFF", display=True, xa="Left", TextScaled=True,
+        return plate(f"Row{i}", U(1, 0, 0, 92), tint=WHITE, stroke=3, LayoutOrder=i, children=[
+            text("Who", "", U(1, -COL, 0, 20), U(0, PAD, 0, 8), ts=16, color="#4C8DFF", display=True, xa="Left", TextScaled=True,
                  children=fit(16, 8)),
-            text("Text", "", U(1, -330, 0, 26), U(0, 12, 0, 26), ts=20, color=INK, display=True, xa="Left", TextScaled=True,
+            text("Text", "", U(1, -COL, 0, 24), U(0, PAD, 0, 30), ts=20, color=INK, display=True, xa="Left", TextScaled=True,
                  children=fit(20, 9)),
-            progress_bar("Bar", U(1, -330, 0, 26), U(0, 12, 0, 58)),
-            reward_box("Reward", U(0, 170, 0, 50), U(1, -148, 0.5, 0), (1, 0.5)),
-            button("Go", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color="#4C8DFF", label="Go", ts=22),
+            progress_bar("Bar", U(1, -COL, 0, 24), U(0, PAD, 0, 60)),
+            reward_box("Reward", U(0, REW_W, 0, 50), U(1, -(PAD + BTN_W + GAP), 0.5, 0), (1, 0.5)),
+            button("Go", U(0, BTN_W, 0, 50), U(1, -PAD, 0.5, 0), (1, 0.5), color="#4C8DFF", label="Go", ts=22),
         ])
 
-    zones = frame("Zones", U(1, -28, 0, 326), U(0, 14, 0, 130), Visible=False, children=[
-        scroller("List", U(1, 0, 1, 0), U(0, 0, 0, 0), [vlist(8)] + [zone_row(i) for i in (1, 2, 3, 4, 5)]),
+    # The list is padded so row outlines aren't clipped and the scroll bar has its own lane.
+    zones = frame("Zones", U(1, -2 * TAB_M, 0, 326), U(0, TAB_M, 0, 132), Visible=False, children=[
+        scroller("List", U(1, 0, 1, 0), U(0, 0, 0, 0), [vlist(8), padding(4, 16, 4, 4)] +
+                 [zone_row(i) for i in (1, 2, 3, 4, 5)]),
     ])
-    body = [tab("JobsTab", "Jobs", 14), tab("DailyTab", "Daily", 206), tab("ZonesTab", "Zones", 398), job, daily, zones]
+    body = [tab("JobsTab", "Jobs", tab_x[0]), tab("DailyTab", "Daily", tab_x[1]), tab("ZonesTab", "Zones", tab_x[2]), job, daily, zones]
     write("Quests", screen([dim(), window(W, H, "Quests", "TreasureMap", body, header="#4C8DFF", size=(W, H))],
                           order=10, enabled=False))
 
