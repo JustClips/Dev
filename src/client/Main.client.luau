@@ -8,6 +8,7 @@ local Ui = require(Client:WaitForChild("Ui"))
 local ORDER = {
 	"LoadingController",
 	"HudController",
+	"FlyController",
 	"HotbarController",
 	"LeafController",
 	"DumpController",

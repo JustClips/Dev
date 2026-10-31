@@ -463,11 +463,12 @@ local function isModal(scale: UIScale): boolean
 end
 
 -- Count badges (red square, white outline, big white number). Ui.setBadge shows the count
--- (nil/0 hides it, a string such as "!" shows as is), widens the badge for 2-3 digits and
+-- (nil/0 hides it; anything else shows a red "!"), and
 -- pops it when the count goes up. Every 10 seconds visible badges give a little wiggle
 -- so they catch the eye.
 local badgeCounts: { [GuiObject]: string } = setmetatable({}, { __mode = "k" }) :: any
 local wiggleStarted = false
+local BADGE_TILT = 12 -- badges sit a little tilted, like a sticker
 
 local function badgePop(badge: GuiObject)
 	if Ui.reducedMotion() then
@@ -497,7 +498,7 @@ local function startWiggle()
 				for badge in badgeCounts do
 					if badge.Parent and badge.Visible then
 						badge.Rotation = -14
-						TweenService:Create(badge, TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), { Rotation = 0 }):Play()
+						TweenService:Create(badge, TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), { Rotation = BADGE_TILT }):Play()
 					end
 				end
 			end
@@ -537,12 +538,14 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 		liftHost(badge, false)
 		return
 	end
+	-- Every badge reads "!" (Dev, 2026-10-31: like the Shop "!" in his reference); the count
+	-- is still tracked so the badge pops when it goes up.
 	local label = badge:FindFirstChild("Label") :: TextLabel?
 	if label then
-		label.Text = shown
+		label.Text = "!"
 	end
 	local px = badge.Size.Y.Offset
-	badge.Size = UDim2.fromOffset(px + math.max(0, #shown - 1) * math.floor(px * 0.4), px)
+	badge.Size = UDim2.fromOffset(px, px)
 	local before = badgeCounts[badge]
 	badgeCounts[badge] = shown
 	badge.Visible = true

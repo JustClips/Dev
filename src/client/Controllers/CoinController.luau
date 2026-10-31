@@ -379,6 +379,10 @@ local function step()
 				Ui.sound("Coin", 1 + streak * 0.05)
 				bump(coin.value, root)
 				pop(part.Position)
+				-- A coin also flies into the wallet's coin (FlyController).
+				if C and C.FlyController then
+					C.FlyController:CoinsFromWorld(part.Position)
+				end
 				remove(coin)
 			end
 		end
@@ -392,7 +396,11 @@ local function step()
 	end
 end
 
-function CoinController:Init() end
+local C: any
+
+function CoinController:Init(controllers)
+	C = controllers
+end
 
 function CoinController:Start()
 	folder = Instance.new("Folder")

@@ -199,6 +199,7 @@ local function pickedUp(d: Drop)
 	if d.cash then
 		Ui.sound("Coin", 1.1)
 		C.HudController:Toast(`Coin pouch! +{Format.cash(d.cash)}`, "Sell")
+		C.FlyController:CoinsFromWorld(d.root.Position, 6)
 	else
 		Ui.sound("Gift")
 	end

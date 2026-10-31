@@ -221,9 +221,14 @@ def badge(z=6, px=30):
     """Count badge: a red square with a white outline and a big white number (Dev wanted the
     square back, with a number you can read). Controllers set it with Ui.setBadge, which
     widens it for 2-3 digits and pops it when the count goes up."""
-    return frame("Badge", U(0, px, 0, px), U(1, 6, 0, -10), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, children=[
+    # Dev, 2026-10-31: every badge is a tilted red "!" sticker now (Ui.setBadge), not a number.
+    return frame("Badge", U(0, px, 0, px), U(1, 6, 0, -10), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, Rotation=12,
+                 children=[
         node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2.5, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
-        text("Label", "1", U(1, 0, 1, 0), ts=px - 6, display=True, stroke=2, ZIndex=z + 1),
+        frame("Edge", U(1, 6, 1, 6), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=z, children=[
+            node("Stroke", "UIStroke", {"Color": INK, "Thickness": 2, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
+        ]),
+        text("Label", "!", U(1, 0, 1, 0), ts=px - 4, display=True, stroke=2, ZIndex=z + 1),
     ])
 
 
@@ -396,6 +401,12 @@ def auto_toggle(name, label, ico, order):
 
 
 def hud():
+    # Rebirth tile shows how close the next rebirth is ("60%", RebirthController), like
+    # Dev's reference.
+    rebirth_tile = rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 4)
+    rebirth_tile["children"].append(
+        text("Progress", "0%", U(1, -4, 0, 24), U(0.5, 0, 0, 1), (0.5, 0), ts=21, color=WHITE, display=True, stroke=3, ZIndex=5,
+             Visible=False))
     # Phones: tiles 26% smaller (Dev, 2026-10-31: the left side was too full to see where
     # you walk), same spot.
     rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
@@ -404,7 +415,7 @@ def hud():
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 2),
         rail_tile("UpgradesButton", "Upgrades", "Upgrade", "#FF9A3C", 3),
-        rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 4),
+        rebirth_tile,
         rail_tile("RewardsButton", "Daily", "Daily", "#FF5FA2", 5),
         rail_tile("GiftsButton", "Gifts", "Gift", "#3DDC5A", 6),
     ])
@@ -498,18 +509,30 @@ def hud():
     # Wallet: two dark strips with big outlined numbers (readable on a phone at 60% size).
     # Cash: coin, amount, income under it, green + for the cash shop. Bag: leaf bag icon and
     # a thick bar with "310 / 500" inside; it turns red with FULL when the bag is full.
-    wallet = plate("Wallet", U(0, 248, 0, 94), U(0, 14, 1, -14), (0, 1), tint=BG, stroke=3, children=[
-        # One panel (Dev, 2026-10-31: the two strips took too much of the left side on
-        # phones): cash on top, the bag bar under it. Smaller still on phones.
+    # Wallet (Dev, 2026-10-31, from a reference): rebirth count on top, then cash with its +,
+    # then Friend Boost with a + that invites friends, then the bag bar.
+    wallet = plate("Wallet", U(0, 260, 0, 152), U(0, 14, 1, -14), (0, 1), tint=BG, stroke=3, children=[
         autoscale(compact=0.85),
-        frame("CashPanel", U(1, 0, 0, 52), children=[
+        frame("RebirthRow", U(1, 0, 0, 30), children=[
+            icon("Icon", "Rebirth", 30, U(0, 10, 0.5, 2), (0, 0.5)),
+            text("Value", "0", U(1, -56, 0, 26), U(0, 48, 0.5, 2), (0, 0.5), ts=22, color="#E9B5FF", display=True, xa="Left",
+                 stroke=2.5),
+        ]),
+        frame("CashPanel", U(1, 0, 0, 52), U(0, 0, 0, 30), children=[
             icon("Icon", "Cash", 44, U(0, 4, 0.5, 0), (0, 0.5)),
             text("Cash", "$0", U(1, -104, 0, 30), U(0, 52, 0, 3), ts=28, color=WHITE, display=True, xa="Left", stroke=2.5,
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 12})]),
             text("Income", "+$0/s", U(1, -104, 0, 18), U(0, 52, 0, 32), ts=16, color=ACCENT, display=True, xa="Left", stroke=2),
             button("PlusButton", U(0, 40, 0, 40), U(1, -6, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=30, stroke=3),
         ]),
-        frame("BackpackPanel", U(1, 0, 0, 40), U(0, 0, 0, 52), children=[
+        frame("FriendRow", U(1, 0, 0, 30), U(0, 0, 0, 82), children=[
+            icon("Icon", "Group", 30, U(0, 10, 0.5, 0), (0, 0.5)),
+            text("Value", "Friend Boost: +0%", U(1, -90, 0, 24), U(0, 48, 0.5, 0), (0, 0.5), ts=17, color="#7FD3FF",
+                 display=True, xa="Left", stroke=2,
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
+            button("InviteButton", U(0, 32, 0, 28), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=24, stroke=3),
+        ]),
+        frame("BackpackPanel", U(1, 0, 0, 40), U(0, 0, 0, 112), children=[
             icon("Icon", "Backpack", 36, U(0, 6, 0.5, 0), (0, 0.5), ZIndex=4),
             frame("Bar", U(1, -56, 0, 26), U(0, 48, 0.5, 0), (0, 0.5), bg="#14171D", children=[
                 border(INK, 2),
@@ -976,17 +999,63 @@ def reward_card(name, top, order, w, h, ico_px, wrap=False):
     ])
 
 
+DAY_COLORS = {1: "#3FB4FF", 2: "#3FB4FF", 3: "#3FB4FF", 4: "#A35CFF", 5: "#A35CFF", 6: "#FFB020", 7: "#FF5FA2"}
+
+
+def daily_card(i, w, h, big=False):
+    """Daily card like Dev's reference (2026-10-31): a bright colour block with rays behind the
+    prize, "DAY 3" big on top, the prize, its name, and a status button at the bottom
+    (CLAIMED / CLAIM! / a countdown / LOCKED; RewardsController sets it). Day 7 is tall, with
+    a rainbow and "THE BEST!" under the title."""
+    color = DAY_COLORS[i]
+    ico = 128 if big else 66
+    kids = [
+        border(INK, 3),
+        studs(WHITE if big else color, 0.55),
+        node("Rays", "ImageLabel", base(U(0, ico * 2, 0, ico * 2), U(0.5, 0, 0.5, -8 if big else -4), (0.5, 0.5),
+                                        BackgroundTransparency=1, Image=img("Rays"), ImageColor3=WHITE,
+                                        ImageTransparency=0.6, ZIndex=1)),
+        text("Day", f"DAY {i}", U(1, -8, 0, 44 if big else 30), U(0.5, 0, 0, 4), (0.5, 0), ts=40 if big else 26,
+             color=PREMIUM if big else WHITE, display=True, stroke=3, ZIndex=4),
+        icon("Icon", "Gift", ico, U(0.5, 0, 0.5, -8 if big else -4), (0.5, 0.5)),
+        text("Reward", "", U(1, -10, 0, 34 if big else 22), U(0.5, 0, 1, -44), (0.5, 1), ts=19 if big else 16, display=True,
+             stroke=2.5, ZIndex=4, TextScaled=True,
+             children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 19 if big else 16, "MinTextSize": 8})]),
+        button("Status", U(1, -16, 0, 34), U(0.5, 0, 1, -6), (0.5, 1), color=DANGER, label="LOCKED", ts=20, stroke=3,
+               ZIndex=5),
+        frame("Done", U(1, 0, 1, 0), bg="#0B0E1E", BackgroundTransparency=0.55, Visible=False, ZIndex=4),
+    ]
+    if big:
+        kids.append(text("Best", "THE BEST!", U(1, -8, 0, 26), U(0.5, 0, 0, 48), (0.5, 0), ts=22, color=WHITE, display=True,
+                         stroke=3, Rotation=-4, ZIndex=4))
+        kids.append(node("Rainbow", "UIGradient", {"Color": {"keypoints": [
+            [0, "#FF7EB6"], [0.25, "#FFD43B"], [0.5, "#7CF5C8"], [0.75, "#7FD3FF"], [1, "#C59BFF"]]}, "Rotation": 35}))
+    p = base(U(0, w, 0, h), BackgroundColor3=WHITE if big else color, Text="", AutoButtonColor=False, ZIndex=1)
+    return node(f"Day{i}", "TextButton", p, kids)
+
+
 def rewards():
-    days = frame("Days", U(1, -24, 0, 140), U(0, 12, 0, 116), children=[
-        hlist(10, "Center", "Center"),
-    ] + [reward_card(f"Day{i}", f"Day {i}", i, 102, 136, 64, wrap=True) for i in range(1, 8)])
-    group = plate("Group", U(0.5, -18, 0, 100), U(0, 12, 0, 358), tint="#4C8DFF", stud=0.3, stroke=3, children=[
+    # Daily window (restyled 2026-10-31 from Dev's reference): days 1-6 in two rows of three,
+    # a tall day 7 on the right, the claim button and streak up in the header, the event
+    # strip along the bottom.
+    cw, ch, gap, x0, y0 = 182, 152, 10, 12, 76
+    cards = []
+    for i in range(1, 7):
+        col, row = (i - 1) % 3, (i - 1) // 3
+        c = daily_card(i, cw, ch)
+        c["properties"]["Position"] = U(0, col * (cw + gap), 0, row * (ch + gap))
+        cards.append(c)
+    seven = daily_card(7, 796 - 3 * (cw + gap), 2 * ch + gap, big=True)
+    seven["properties"]["Position"] = U(0, 3 * (cw + gap), 0, 0)
+    cards.append(seven)
+    days = frame("Days", U(0, 796, 0, 2 * ch + gap), U(0, x0, 0, y0), children=cards)
+    group = plate("Group", U(0.5, -18, 0, 100), U(0, 12, 0, 358), tint="#4C8DFF", stud=0.3, stroke=3, Visible=False, children=[
         icon("Icon", "Group", 70, U(0, 4, 0.5, 0), (0, 0.5)),
         text("Text", "Join our group for 2 Luck Potions + cash!", U(1, -220, 1, -8), U(0, 78, 0, 4), ts=16, display=True,
              stroke=2, xa="Left"),
         button("Claim", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="Claim", ts=22),
     ])
-    event = plate("Event", U(0.5, -18, 0, 100), U(1, -12, 0, 358), (1, 0), tint="#FF78E6", stud=0.3, stroke=3, children=[
+    event = plate("Event", U(1, -24, 0, 98), U(0, 12, 0, 410), tint="#FF78E6", stud=0.3, stroke=3, children=[
         icon("Icon", "Event", 70, U(0, 4, 0.5, 0), (0, 0.5)),
         text("Name", "Egg Rain Weekend", U(1, -220, 0, 28), U(0, 78, 0, 6), ts=21, display=True, stroke=2.5, xa="Left",
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 10})]),
@@ -995,12 +1064,14 @@ def rewards():
         button("SignUp", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color=PREMIUM, label="Sign up", ts=20, label_color=INK),
     ])
     body = [
-        text("Streak", "Streak: 0 days", U(1, -32, 0, 30), U(0.5, 0, 0, 80), (0.5, 0), ts=22, color=SUB, heavy=True),
+        text("Streak", "STREAK 0", U(0, 150, 0, 30), U(1, -282, 0, 32), (1, 0.5), ts=20, color=WHITE, display=True, stroke=2.5,
+             xa="Right", ZIndex=5),
+        button("ClaimDaily", U(0, 200, 0, 48), U(1, -40, 0, 32), (1, 0.5), color=PREMIUM, label="CLAIM!", ts=24, label_color=WHITE,
+               ZIndex=5),
         days,
-        button("ClaimDaily", U(0, 300, 0, 56), U(0.5, 0, 0, 274), (0.5, 0), color=SUCCESS, label="Claim Day 1", ts=26),
         group, event,
     ]
-    write("Daily", screen([dim(), window(WIN_W, WIN_H, "Daily Rewards", "Daily", body, header="#FF5FA2")], order=10, enabled=False))
+    write("Daily", screen([dim(), window(WIN_W, WIN_H, "Daily Rewards", "Daily", body, header="#3FB4FF")], order=10, enabled=False))
 
     # Playtime gifts: their own window (green Gifts button on the rail).
     gifts = frame("Gifts", U(1, -24, 0, 340), U(0, 12, 0, 124), children=[

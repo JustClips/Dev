@@ -10,6 +10,7 @@ local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
+local SocialService = game:GetService("SocialService")
 
 local Client = script.Parent.Parent
 local State = require(Client.State)
@@ -60,6 +61,85 @@ local TOAST_ICONS: { [string]: string } = {
 	Rare = "Icon_Gift",
 }
 
+-- Reward news flies to where the reward went (Dev, 2026-10-31): cash ("+$10M", sales) to the
+-- wallet's coin, eggs and items to the bag. Other messages stay plain toasts.
+local function flyTarget(text: string, kind: string): string?
+	if kind == "Bad" or kind == "Info" then
+		return nil
+	end
+	if kind == "Egg" or kind == "Rare" or string.find(text, "in your bag", 1, true) then
+		return "Bag"
+	end
+	if kind == "Sell" or string.find(text, "+$", 1, true) then
+		return "Cash"
+	end
+	return nil
+end
+
+local flying = 0
+local function flyToast(text: string, k: string, target: string)
+	local template = el.ToastTemplate :: Frame
+	local toast = template:Clone()
+	toast.Name = "FlyToast"
+	local label = toast:FindFirstChild("Text") :: TextLabel
+	label.Text = text
+	label.TextColor3 = TOAST_COLORS[k] or TOAST_COLORS.Info
+	local iconName = TOAST_ICONS[k] or (if target == "Cash" then "Icon_Cash" else "Icon_Gift")
+	local iconLabel = toast:FindFirstChild("Icon") :: ImageLabel
+	iconLabel.Visible = true
+	iconLabel.Image = AssetLibrary.image(iconName)
+	local s = Ui.scale()
+	local slot = flying
+	flying += 1
+	-- Pops up under the World Cleaned bar (a little lower for each one already flying).
+	local toastsAt = (el.Toasts :: GuiObject).AbsolutePosition - hud.AbsolutePosition
+	local start = Vector2.new(hud.AbsoluteSize.X / 2 + math.random(-30, 30) * s, toastsAt.Y + (24 + (slot % 4) * 40) * s)
+	toast.AnchorPoint = Vector2.new(0.5, 0.5)
+	toast.Position = UDim2.fromOffset(start.X, start.Y)
+	toast.ZIndex = 55
+	toast.Visible = true
+	local pop = Instance.new("UIScale")
+	pop.Name = "Pop"
+	pop.Scale = if Ui.reducedMotion() then s else s * 0.4
+	pop.Parent = toast
+	toast.Parent = hud
+	TweenService:Create(pop, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = s * 1.1 }):Play()
+	task.delay(1.3, function()
+		if not toast.Parent then
+			flying -= 1
+			return
+		end
+		local fly = C.FlyController
+		local from = toast.AbsolutePosition + toast.AbsoluteSize / 2
+		local goalAbs = if target == "Cash" then fly.CashAbsolute() else fly.BagAbsolute()
+		local goal = goalAbs - hud.AbsolutePosition
+		if target == "Cash" then
+			fly:Coins(fly.ToLayer(from), 6)
+		else
+			fly:ToBag(AssetLibrary.image(iconName), fly.ToLayer(iconLabel.AbsolutePosition + iconLabel.AbsoluteSize / 2))
+		end
+		local info = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+		TweenService:Create(toast, info, { Position = UDim2.fromOffset(goal.X, goal.Y) }):Play()
+		TweenService:Create(pop, info, { Scale = s * 0.2 }):Play()
+		task.delay(0.3, function()
+			local fade = TweenInfo.new(0.2)
+			for _, child in toast:GetDescendants() do
+				if child:IsA("TextLabel") then
+					TweenService:Create(child, fade, { TextTransparency = 1 }):Play()
+				elseif child:IsA("ImageLabel") then
+					TweenService:Create(child, fade, { ImageTransparency = 1 }):Play()
+				elseif child:IsA("UIStroke") then
+					TweenService:Create(child, fade, { Transparency = 1 }):Play()
+				end
+			end
+		end)
+		task.delay(0.55, function()
+			toast:Destroy()
+			flying -= 1
+		end)
+	end)
+end
+
 -- Bold outlined text under the Moon bar, with an icon for cash and eggs. The same message
 -- again while it's still up bumps a "x2" counter instead of stacking a copy.
 function HudController:Toast(text: string, kind: string?)
@@ -85,6 +165,11 @@ function HudController:Toast(text: string, kind: string?)
 	end
 	if k == "Bad" then
 		Ui.sound("Error")
+	end
+	local target = flyTarget(text, k)
+	if target and C and C.FlyController and flying < 6 then
+		flyToast(text, k, target)
+		return
 	end
 	local template = el.ToastTemplate :: Frame
 	local toast = template:Clone()
@@ -275,6 +360,27 @@ local function render(data)
 	el.BackpackAmount.Size = if fraction >= 1 then UDim2.new(1, -70, 1, 0) else UDim2.new(1, -12, 1, 0)
 	el.BackpackFill.BackgroundColor3 = if fraction >= 1 then DANGER else LEAF
 
+	-- Rebirth count, Friend Boost and the % to the next rebirth on the Rebirth tile (Dev,
+	-- 2026-10-31).
+	el.RebirthCount.Text = Format.number(data.Rebirths)
+	local friends = math.min(data.FriendsHere or 0, Economy.FriendLuckMaxFriends)
+	el.FriendValue.Text = `Friend Boost: +{math.floor(friends * Economy.FriendLuckPerFriend * 100 + 0.5)}%`
+	local progress = el.RebirthProgress :: TextLabel
+	local cost = data.RebirthCost
+	if cost and BigNum.gte(cost, 1) then
+		local ratio = math.clamp(BigNum.toNumber(BigNum.div(data.Cash, cost)), 0, 1)
+		progress.Visible = true
+		if ratio >= 1 then
+			progress.Text = "READY!"
+			progress.TextColor3 = Color3.fromRGB(124, 255, 140)
+		else
+			progress.Text = `{math.floor(ratio * 100)}%`
+			progress.TextColor3 = Color3.new(1, 1, 1)
+		end
+	else
+		progress.Visible = false
+	end
+
 	setToggle(el.AutoButton, data.Gamepasses.AutoSweep == true, data.AutoSweep)
 	setToggle(el.AutoSellButton, data.Gamepasses.SellAnywhere == true, data.AutoSell)
 	revealRail(data)
@@ -457,14 +563,7 @@ local function renderBoosts()
 	if data and (data.Boosts.Speed or 0) > now then
 		add("Speed", "Icon_PotionSpeed", `+{Items.SpeedBonus}`, data.Boosts.Speed, "Speed Potion", `You run {Items.SpeedBonus} faster.`)
 	end
-	-- Friend boost: +10% luck per friend in this server, no timer ("+20%").
-	local friends = if data then math.min(data.FriendsHere or 0, Economy.FriendLuckMaxFriends) else 0
-	if friends > 0 then
-		local pct = math.floor(friends * Economy.FriendLuckPerFriend * 100 + 0.5)
-		local each = math.floor(Economy.FriendLuckPerFriend * 100 + 0.5)
-		add("Friends", "Icon_Group", `+{pct}%`, 0, "Friend Boost",
-			`{friends} friend{if friends == 1 then "" else "s"} in this server: +{pct}% egg luck. Every friend here adds {each}%.`)
-	end
+	-- The friend boost shows in the wallet (FriendRow), not as a chip.
 	local seen = {}
 	for i, entry in entries do
 		seen[entry.key] = true
@@ -686,6 +785,10 @@ function HudController:Init(controllers)
 	el.Cash = Ui.find(hud, "Wallet.CashPanel.Cash")
 	el.Income = Ui.find(hud, "Wallet.CashPanel.Income")
 	el.PlusButton = Ui.find(hud, "Wallet.CashPanel.PlusButton")
+	el.RebirthCount = Ui.find(hud, "Wallet.RebirthRow.Value")
+	el.FriendValue = Ui.find(hud, "Wallet.FriendRow.Value")
+	el.InviteButton = Ui.find(hud, "Wallet.FriendRow.InviteButton")
+	el.RebirthProgress = Ui.find(hud, "Rail.RebirthButton.Progress")
 	el.BackpackFill = Ui.find(hud, "Wallet.BackpackPanel.Bar.Fill")
 	el.BackpackAmount = Ui.find(hud, "Wallet.BackpackPanel.Bar.Amount")
 	el.BackpackFull = Ui.find(hud, "Wallet.BackpackPanel.Full")
@@ -812,6 +915,20 @@ function HudController:Start()
 	end)
 	Ui.button(el.PlusButton, function()
 		C.ShopController:Open("Cash")
+	end)
+	-- Friend Boost +: Roblox's invite friends prompt (each friend here adds egg luck).
+	Ui.button(el.InviteButton, function()
+		local player = Players.LocalPlayer
+		local ok, can = pcall(function()
+			return SocialService:CanSendGameInviteAsync(player)
+		end)
+		if ok and can then
+			pcall(function()
+				SocialService:PromptGameInvite(player)
+			end)
+		else
+			HudController:Toast("Invites aren't available right now", "Info")
+		end
 	end)
 	Ui.button(Ui.find(hud, "Pills.BaseButton"), function()
 		teleport("Base")

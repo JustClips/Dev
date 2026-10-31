@@ -218,7 +218,6 @@ local SOURCE_TEXT = {
 	SellAnywhere = "Sold",
 	SellPet = "Sold pet",
 }
-local POP_SECONDS = 1.6
 local livePops = 0
 
 local function sourceText(source: string?): string
@@ -257,21 +256,37 @@ function OfferController:ShowGained(amount: any, source: string?)
 	task.delay(0.22, function()
 		TweenService:Create(scale, TweenInfo.new(0.18, Enum.EasingStyle.Quad), { Scale = 1 }):Play()
 	end)
-	TweenService:Create(pop, TweenInfo.new(POP_SECONDS, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		Position = pop.Position - UDim2.fromOffset(0, 90),
+	-- Rises a little, then flies into the wallet's coin while coins burst out of it (Dev,
+	-- 2026-10-31: what you get should fly to where it goes).
+	TweenService:Create(pop, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = pop.Position - UDim2.fromOffset(0, 40),
 		Rotation = 0,
 	}):Play()
-	task.delay(POP_SECONDS - 0.45, function()
-		local fade = TweenInfo.new(0.45)
-		TweenService:Create(amountLabel, fade, { TextTransparency = 1 }):Play()
-		TweenService:Create(sourceLabel, fade, { TextTransparency = 1 }):Play()
-		for _, stroke in pop:GetDescendants() do
-			if stroke:IsA("UIStroke") then
-				TweenService:Create(stroke, fade, { Transparency = 1 }):Play()
-			end
+	task.delay(0.75, function()
+		if not pop.Parent then
+			return
 		end
+		local fly = C.FlyController
+		local from = pop.AbsolutePosition + pop.AbsoluteSize / 2
+		fly:Coins(fly.ToLayer(from), 8)
+		local goal = fly.CashAbsolute() - gainedGui.AbsolutePosition
+		local info = TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+		pop.AnchorPoint = Vector2.new(0.5, 0.5)
+		pop.Position = UDim2.fromOffset(from.X - gainedGui.AbsolutePosition.X, from.Y - gainedGui.AbsolutePosition.Y)
+		TweenService:Create(pop, info, { Position = UDim2.fromOffset(goal.X, goal.Y) }):Play()
+		TweenService:Create(scale, info, { Scale = 0.25 }):Play()
+		task.delay(0.3, function()
+			local fade = TweenInfo.new(0.15)
+			TweenService:Create(amountLabel, fade, { TextTransparency = 1 }):Play()
+			TweenService:Create(sourceLabel, fade, { TextTransparency = 1 }):Play()
+			for _, stroke in pop:GetDescendants() do
+				if stroke:IsA("UIStroke") then
+					TweenService:Create(stroke, fade, { Transparency = 1 }):Play()
+				end
+			end
+		end)
 	end)
-	task.delay(POP_SECONDS, function()
+	task.delay(1.25, function()
 		pop:Destroy()
 		livePops -= 1
 	end)
@@ -298,7 +313,10 @@ local function showWelcome(info)
 	doubleButton.Visible = double ~= nil and double.Id ~= 0
 	-- Collect sits next to the 2x button, or alone in the middle when 2x isn't on sale.
 	local collect = Ui.find(welcomeGui, "Window.Collect") :: GuiObject
-	collect.Position = UDim2.new(0.5, if doubleButton.Visible then -100 else 0, 1, -16)
+	-- Only X moves: the window lays the buttons out at the same height (setting Y here put
+	-- Collect a few px lower than 2x).
+	local doubleAt = doubleButton.Position
+	collect.Position = UDim2.new(0.5, if doubleButton.Visible then -100 else 0, doubleAt.Y.Scale, doubleAt.Y.Offset)
 	if double then
 		Ui.setText(doubleButton, `2x for {Ui.ROBUX} {double.Price}`)
 	end

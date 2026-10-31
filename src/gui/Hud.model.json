@@ -372,6 +372,7 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
+        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -385,6 +386,51 @@
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
+        },
+        {
+         "name": "Edge",
+         "className": "Frame",
+         "properties": {
+          "Size": [
+           [
+            1,
+            6
+           ],
+           [
+            1,
+            6
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "ZIndex": 6,
+          "BackgroundTransparency": 1
+         },
+         "children": [
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#17191E",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Border",
+            "LineJoinMode": "Miter"
+           }
+          }
+         ]
         },
         {
          "name": "Label",
@@ -416,9 +462,9 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "1",
+          "Text": "!",
           "TextColor3": "#FFFFFF",
-          "TextSize": 24,
+          "TextSize": 26,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -740,6 +786,7 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
+        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -753,6 +800,51 @@
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
+        },
+        {
+         "name": "Edge",
+         "className": "Frame",
+         "properties": {
+          "Size": [
+           [
+            1,
+            6
+           ],
+           [
+            1,
+            6
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "ZIndex": 6,
+          "BackgroundTransparency": 1
+         },
+         "children": [
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#17191E",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Border",
+            "LineJoinMode": "Miter"
+           }
+          }
+         ]
         },
         {
          "name": "Label",
@@ -784,9 +876,9 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "1",
+          "Text": "!",
           "TextColor3": "#FFFFFF",
-          "TextSize": 24,
+          "TextSize": 26,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -1108,6 +1200,7 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
+        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -1121,6 +1214,51 @@
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
+        },
+        {
+         "name": "Edge",
+         "className": "Frame",
+         "properties": {
+          "Size": [
+           [
+            1,
+            6
+           ],
+           [
+            1,
+            6
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "ZIndex": 6,
+          "BackgroundTransparency": 1
+         },
+         "children": [
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#17191E",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Border",
+            "LineJoinMode": "Miter"
+           }
+          }
+         ]
         },
         {
          "name": "Label",
@@ -1152,9 +1290,9 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "1",
+          "Text": "!",
           "TextColor3": "#FFFFFF",
-          "TextSize": 24,
+          "TextSize": 26,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -1476,6 +1614,7 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
+        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -1489,6 +1628,51 @@
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
+        },
+        {
+         "name": "Edge",
+         "className": "Frame",
+         "properties": {
+          "Size": [
+           [
+            1,
+            6
+           ],
+           [
+            1,
+            6
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "ZIndex": 6,
+          "BackgroundTransparency": 1
+         },
+         "children": [
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#17191E",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Border",
+            "LineJoinMode": "Miter"
+           }
+          }
+         ]
         },
         {
          "name": "Label",
@@ -1520,9 +1704,9 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "1",
+          "Text": "!",
           "TextColor3": "#FFFFFF",
-          "TextSize": 24,
+          "TextSize": 26,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -1545,6 +1729,63 @@
            }
           }
          ]
+        }
+       ]
+      },
+      {
+       "name": "Progress",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -4
+         ],
+         [
+          0,
+          24
+         ]
+        ],
+        "Position": [
+         [
+          0.5,
+          0
+         ],
+         [
+          0,
+          1
+         ]
+        ],
+        "AnchorPoint": [
+         0.5,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Text": "0%",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 21,
+        "TextXAlignment": "Center",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "ZIndex": 5,
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "Heavy",
+         "style": "Normal"
+        },
+        "Visible": false
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#17191E",
+          "Thickness": 3,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
         }
        ]
       }
@@ -1844,6 +2085,7 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
+        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -1857,6 +2099,51 @@
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
+        },
+        {
+         "name": "Edge",
+         "className": "Frame",
+         "properties": {
+          "Size": [
+           [
+            1,
+            6
+           ],
+           [
+            1,
+            6
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "ZIndex": 6,
+          "BackgroundTransparency": 1
+         },
+         "children": [
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#17191E",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Border",
+            "LineJoinMode": "Miter"
+           }
+          }
+         ]
         },
         {
          "name": "Label",
@@ -1888,9 +2175,9 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "1",
+          "Text": "!",
           "TextColor3": "#FFFFFF",
-          "TextSize": 24,
+          "TextSize": 26,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -2212,6 +2499,7 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
+        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -2225,6 +2513,51 @@
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
+        },
+        {
+         "name": "Edge",
+         "className": "Frame",
+         "properties": {
+          "Size": [
+           [
+            1,
+            6
+           ],
+           [
+            1,
+            6
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "ZIndex": 6,
+          "BackgroundTransparency": 1
+         },
+         "children": [
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#17191E",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Border",
+            "LineJoinMode": "Miter"
+           }
+          }
+         ]
         },
         {
          "name": "Label",
@@ -2256,9 +2589,9 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "1",
+          "Text": "!",
           "TextColor3": "#FFFFFF",
-          "TextSize": 24,
+          "TextSize": 26,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -2573,6 +2906,7 @@
       "BorderSizePixel": 0,
       "Visible": false,
       "ZIndex": 6,
+      "Rotation": 12,
       "BackgroundTransparency": 0,
       "BackgroundColor3": "#FF2E4D"
      },
@@ -2586,6 +2920,51 @@
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Miter"
        }
+      },
+      {
+       "name": "Edge",
+       "className": "Frame",
+       "properties": {
+        "Size": [
+         [
+          1,
+          6
+         ],
+         [
+          1,
+          6
+         ]
+        ],
+        "Position": [
+         [
+          0.5,
+          0
+         ],
+         [
+          0.5,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0.5,
+         0.5
+        ],
+        "BorderSizePixel": 0,
+        "ZIndex": 6,
+        "BackgroundTransparency": 1
+       },
+       "children": [
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#17191E",
+          "Thickness": 2,
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Miter"
+         }
+        }
+       ]
       },
       {
        "name": "Label",
@@ -2617,9 +2996,9 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Text": "1",
+        "Text": "!",
         "TextColor3": "#FFFFFF",
-        "TextSize": 18,
+        "TextSize": 20,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -3754,6 +4133,7 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
+        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -3767,6 +4147,51 @@
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
+        },
+        {
+         "name": "Edge",
+         "className": "Frame",
+         "properties": {
+          "Size": [
+           [
+            1,
+            6
+           ],
+           [
+            1,
+            6
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "ZIndex": 6,
+          "BackgroundTransparency": 1
+         },
+         "children": [
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#17191E",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Border",
+            "LineJoinMode": "Miter"
+           }
+          }
+         ]
         },
         {
          "name": "Label",
@@ -3798,9 +4223,9 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "1",
+          "Text": "!",
           "TextColor3": "#FFFFFF",
-          "TextSize": 24,
+          "TextSize": 26,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -6108,7 +6533,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://94165056461088",
+        "Image": "rbxassetid://104495252593301",
         "ScaleType": "Fit",
         "LayoutOrder": 1,
         "Visible": false,
@@ -6395,11 +6820,11 @@
     "Size": [
      [
       0,
-      248
+      260
      ],
      [
       0,
-      94
+      152
      ]
     ],
     "Position": [
@@ -6461,6 +6886,131 @@
      }
     },
     {
+     "name": "RebirthRow",
+     "className": "Frame",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        30
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1
+     },
+     "children": [
+      {
+       "name": "Icon",
+       "className": "ImageLabel",
+       "properties": {
+        "Size": [
+         [
+          0,
+          30
+         ],
+         [
+          0,
+          30
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          10
+         ],
+         [
+          0.5,
+          2
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0.5
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Image": "rbxassetid://95864030518587",
+        "ScaleType": "Fit",
+        "ZIndex": 3
+       }
+      },
+      {
+       "name": "Value",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -56
+         ],
+         [
+          0,
+          26
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          48
+         ],
+         [
+          0.5,
+          2
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0.5
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Text": "0",
+        "TextColor3": "#E9B5FF",
+        "TextSize": 22,
+        "TextXAlignment": "Left",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "ZIndex": 2,
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "Heavy",
+         "style": "Normal"
+        }
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#17191E",
+          "Thickness": 2.5,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
      "name": "CashPanel",
      "className": "Frame",
      "properties": {
@@ -6481,7 +7031,7 @@
        ],
        [
         0,
-        0
+        30
        ]
       ],
       "AnchorPoint": [
@@ -6522,7 +7072,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://94165056461088",
+        "Image": "rbxassetid://104495252593301",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -6871,6 +7421,360 @@
      ]
     },
     {
+     "name": "FriendRow",
+     "className": "Frame",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        30
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        82
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1
+     },
+     "children": [
+      {
+       "name": "Icon",
+       "className": "ImageLabel",
+       "properties": {
+        "Size": [
+         [
+          0,
+          30
+         ],
+         [
+          0,
+          30
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          10
+         ],
+         [
+          0.5,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0.5
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Image": "rbxassetid://130505386349517",
+        "ScaleType": "Fit",
+        "ZIndex": 3
+       }
+      },
+      {
+       "name": "Value",
+       "className": "TextLabel",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -90
+         ],
+         [
+          0,
+          24
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          48
+         ],
+         [
+          0.5,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0.5
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 1,
+        "Text": "Friend Boost: +0%",
+        "TextColor3": "#7FD3FF",
+        "TextSize": 17,
+        "TextXAlignment": "Left",
+        "TextYAlignment": "Center",
+        "TextWrapped": true,
+        "ZIndex": 2,
+        "FontFace": {
+         "family": "rbxasset://fonts/families/Montserrat.json",
+         "weight": "Heavy",
+         "style": "Normal"
+        },
+        "TextScaled": true
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#17191E",
+          "Thickness": 2,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Fit",
+         "className": "UITextSizeConstraint",
+         "properties": {
+          "MaxTextSize": 17,
+          "MinTextSize": 7
+         }
+        }
+       ]
+      },
+      {
+       "name": "InviteButton",
+       "className": "TextButton",
+       "properties": {
+        "Size": [
+         [
+          0,
+          32
+         ],
+         [
+          0,
+          28
+         ]
+        ],
+        "Position": [
+         [
+          1,
+          -10
+         ],
+         [
+          0.5,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         1,
+         0.5
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundColor3": "#3DDC5A",
+        "Text": "",
+        "AutoButtonColor": false,
+        "ZIndex": 1
+       },
+       "children": [
+        {
+         "name": "Stroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#17191E",
+          "Thickness": 3,
+          "ApplyStrokeMode": "Border",
+          "LineJoinMode": "Round"
+         }
+        },
+        {
+         "name": "Shine",
+         "className": "UIGradient",
+         "properties": {
+          "Color": {
+           "keypoints": [
+            [
+             0,
+             "#FFFFFF"
+            ],
+            [
+             0.55,
+             "#FFFFFF"
+            ],
+            [
+             1,
+             "#BCC4D4"
+            ]
+           ]
+          },
+          "Rotation": 90
+         }
+        },
+        {
+         "name": "Studs",
+         "className": "ImageLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            0
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            0
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Image": "rbxassetid://117181516497135",
+          "ScaleType": "Tile",
+          "TileSize": [
+           [
+            0,
+            48
+           ],
+           [
+            0,
+            48
+           ]
+          ],
+          "ImageColor3": "#3DDC5A",
+          "ImageTransparency": 0.45,
+          "ZIndex": 0
+         },
+         "children": []
+        },
+        {
+         "name": "Bevel",
+         "className": "Frame",
+         "properties": {
+          "Size": [
+           [
+            1,
+            -6
+           ],
+           [
+            1,
+            -6
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "ZIndex": 0,
+          "BackgroundTransparency": 1
+         },
+         "children": [
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#FFFFFF",
+            "Thickness": 2,
+            "Transparency": 0.55,
+            "ApplyStrokeMode": "Border",
+            "LineJoinMode": "Miter"
+           }
+          }
+         ]
+        },
+        {
+         "name": "Label",
+         "className": "TextLabel",
+         "properties": {
+          "Size": [
+           [
+            1,
+            -12
+           ],
+           [
+            1,
+            0
+           ]
+          ],
+          "Position": [
+           [
+            0,
+            6
+           ],
+           [
+            0,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0,
+           0
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Text": "+",
+          "TextColor3": "#FFFFFF",
+          "TextSize": 24,
+          "TextXAlignment": "Center",
+          "TextYAlignment": "Center",
+          "TextWrapped": true,
+          "ZIndex": 2,
+          "FontFace": {
+           "family": "rbxasset://fonts/families/Montserrat.json",
+           "weight": "Heavy",
+           "style": "Normal"
+          }
+         },
+         "children": [
+          {
+           "name": "TextStroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#17191E",
+            "Thickness": 2.5,
+            "ApplyStrokeMode": "Contextual",
+            "LineJoinMode": "Round"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
      "name": "BackpackPanel",
      "className": "Frame",
      "properties": {
@@ -6891,7 +7795,7 @@
        ],
        [
         0,
-        52
+        112
        ]
       ],
       "AnchorPoint": [
@@ -6932,7 +7836,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://113613600966297",
+        "Image": "rbxassetid://138588542025552",
         "ScaleType": "Fit",
         "ZIndex": 4
        }
@@ -10815,7 +11719,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://113613600966297",
+        "Image": "rbxassetid://138588542025552",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -10998,6 +11902,7 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
+        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -11011,6 +11916,51 @@
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
+        },
+        {
+         "name": "Edge",
+         "className": "Frame",
+         "properties": {
+          "Size": [
+           [
+            1,
+            6
+           ],
+           [
+            1,
+            6
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "ZIndex": 6,
+          "BackgroundTransparency": 1
+         },
+         "children": [
+          {
+           "name": "Stroke",
+           "className": "UIStroke",
+           "properties": {
+            "Color": "#17191E",
+            "Thickness": 2,
+            "ApplyStrokeMode": "Border",
+            "LineJoinMode": "Miter"
+           }
+          }
+         ]
         },
         {
          "name": "Label",
@@ -11042,9 +11992,9 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "1",
+          "Text": "!",
           "TextColor3": "#FFFFFF",
-          "TextSize": 24,
+          "TextSize": 26,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,

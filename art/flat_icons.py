@@ -220,20 +220,21 @@ def _house():
     ]
 
 
-@icon("Cash")  # gold coin stack
+@icon("Cash")  # two shiny gold coins (redrawn 2026-10-31: Dev found the old stack ugly)
 def _cash():
-    shapes = []
-    for i, y in enumerate((392, 340, 288)):
-        shapes.append(ellipse(236, y + 22, 150, 52, GOLD, shade=False))
-        shapes.append(rect(86, y - 30, 300, 52, GOLD, shade=False, line=False))
-        shapes.append(ellipse(236, y - 30, 150, 52, YELLOW, shade=False))
-    shapes += [
-        circle(330, 190, 128, GOLD),
-        circle(330, 190, 92, YELLOW, body=False, shade=False),
-        text(330, 196, "$", 150, fill=GOLD),
-        hl(270, 120, 26, 16, rot=-35),
+    def coin(cx, cy, r, tilt=0):
+        return [
+            circle(cx, cy, r, GOLD),
+            circle(cx, cy, r * 0.74, "#FFB21E", body=False, shade=False),
+            circle(cx + r * 0.05, cy + r * 0.05, r * 0.66, YELLOW, body=False, shade=False, line=False),
+            poly(star_points(cx + r * 0.02, cy + r * 0.04, r * 0.42, r * 0.19), "#FFB21E", body=False, shade=False,
+                 line=False),
+            poly(star_points(cx, cy, r * 0.42, r * 0.19), "#FFE88A", body=False, shade=False),
+            hl(cx - r * 0.5, cy - r * 0.52, r * 0.2, r * 0.09, rot=-40, opacity=0.8),
+        ]
+    return coin(330, 330, 150) + coin(196, 210, 160) + [
+        hl(118, 120, 9, 9, rot=0, opacity=0.9),
     ]
-    return shapes
 
 
 @icon("Dust")  # a pile of autumn leaves
@@ -599,14 +600,24 @@ def _w_rainbowmoon():
     return out + [hl(160, 140, 40, 22, rot=-35)]
 
 
-@icon("Backpack")
+@icon("Backpack")  # adventure backpack (redrawn 2026-10-31)
 def _backpack():
+    body, flap, pocket = "#FF8A2B", "#D9601A", "#FFB14A"
     return [
-        rect(96, 120, 320, 340, ORANGE, r=70),
-        path("M 190 130 C 190 50 322 50 322 130 L 290 130 C 290 90 222 90 222 130 Z", DBROWN),
-        rect(140, 300, 232, 130, darker(ORANGE, 0.9), r=30, shade=False),
-        rect(230, 300, 52, 36, YELLOW, r=10, shade=False),
-        hl(150, 180, 22, 44, rot=20),
+        path("M 188 112 C 188 40 324 40 324 112 L 296 112 C 296 74 216 74 216 112 Z", DBROWN),
+        rect(60, 210, 70, 190, darker(body, 0.85), r=30),
+        rect(382, 210, 70, 190, darker(body, 0.85), r=30),
+        rect(100, 100, 312, 380, body, r=90),
+        path("M 100 200 C 100 120 160 100 256 100 C 352 100 412 120 412 200 L 412 250 C 330 280 182 280 100 250 Z",
+             flap),
+        rect(150, 300, 212, 140, pocket, r=36, shade=False),
+        stroke_line("M 176 330 L 336 330", width=10, color=darker(pocket, 0.75)),
+        rect(150, 210, 34, 120, DBROWN, r=12, shade=False),
+        rect(328, 210, 34, 120, DBROWN, r=12, shade=False),
+        rect(140, 312, 54, 40, YELLOW, r=10, shade=False),
+        rect(318, 312, 54, 40, YELLOW, r=10, shade=False),
+        hl(160, 150, 40, 18, rot=-20, opacity=0.6),
+        hl(190, 390, 18, 9, rot=0, opacity=0.5),
     ]
 
 

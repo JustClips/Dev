@@ -119,9 +119,12 @@ local function fill()
 		rowIcon.Image = AssetLibrary.image(image)
 		rowIcon.ImageColor3 = tint or WHITE
 		local nameLabel = row:FindFirstChild("Name") :: TextLabel
-		nameLabel.Text = if seg.Weight <= 1 then `{name} (JACKPOT)` else name
+		-- JACKPOT sits on the chance line (Dev, 2026-10-31: "Legendary Egg (JACKPOT)" spilled
+		-- out of the row).
+		nameLabel.Text = name
 		local chanceLabel = row:FindFirstChild("Chance") :: TextLabel
-		chanceLabel.Text = percent(seg.Weight)
+		chanceLabel.Text = if seg.Weight <= 1 then `{percent(seg.Weight)}  JACKPOT!` else percent(seg.Weight)
+		chanceLabel.TextColor3 = if seg.Weight <= 1 then Color3.fromRGB(230, 60, 170) else chanceLabel.TextColor3
 	end
 	for name, key in BUYS do
 		local button = Ui.find(gui, `Window.Side.Buy.{name}`) :: GuiButton
@@ -149,10 +152,45 @@ local function celebrate(index: number)
 	TweenService:Create(scale, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 end
 
--- The prize card over the wheel (Dev 2026-10-31: show what you won inside the wheel frame,
--- not only in a toast). Square, solid, Montserrat like the rest of the UI.
+-- The win over the wheel (Dev 2026-10-31: the plain "YOU WON!" card was boring): spinning
+-- rays, a tilted title sticker that bounces in, the prize big in the middle with a bob,
+-- confetti bursting out, and the prize name on a solid plate. A jackpot goes pink with more
+-- confetti. Square corners, Montserrat, like the rest of the UI.
 local prizeCard: Frame?
 local prizeToken = 0
+local HEAVY = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+local PINK = Color3.fromRGB(255, 90, 200)
+local CONFETTI = {
+	Color3.fromRGB(255, 212, 59),
+	Color3.fromRGB(255, 90, 200),
+	Color3.fromRGB(76, 168, 255),
+	Color3.fromRGB(92, 214, 92),
+	Color3.fromRGB(255, 154, 60),
+	Color3.fromRGB(197, 155, 255),
+}
+
+local function label(parent: Instance, name: string, size: UDim2, pos: UDim2, textSize: number, z: number): TextLabel
+	local l = Instance.new("TextLabel")
+	l.Name = name
+	l.BackgroundTransparency = 1
+	l.AnchorPoint = Vector2.new(0.5, 0.5)
+	l.Position = pos
+	l.Size = size
+	l.FontFace = HEAVY
+	l.TextScaled = true
+	l.TextColor3 = WHITE
+	l.ZIndex = z
+	local fit = Instance.new("UITextSizeConstraint")
+	fit.MaxTextSize = textSize
+	fit.Parent = l
+	local stroke = Instance.new("UIStroke")
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+	stroke.Thickness = 3
+	stroke.Color = Color3.fromRGB(23, 25, 30)
+	stroke.Parent = l
+	l.Parent = parent
+	return l
+end
 
 local function makePrizeCard(): Frame
 	local area = Ui.find(gui, "Window.WheelArea") :: Frame
@@ -160,58 +198,86 @@ local function makePrizeCard(): Frame
 	card.Name = "PrizeCard"
 	card.AnchorPoint = Vector2.new(0.5, 0.5)
 	card.Position = UDim2.fromScale(0.5, 0.5)
-	card.Size = UDim2.fromOffset(250, 210)
-	card.BackgroundColor3 = Color3.fromRGB(30, 34, 52)
-	card.BorderSizePixel = 0
+	card.Size = UDim2.fromOffset(400, 400)
+	card.BackgroundTransparency = 1
 	card.ZIndex = 20
 	card.Visible = false
-	local stroke = Instance.new("UIStroke")
-	stroke.Name = "Edge"
-	stroke.Thickness = 4
-	stroke.Color = GOLD
-	stroke.Parent = card
 	local scale = Instance.new("UIScale")
 	scale.Parent = card
-	local title = Instance.new("TextLabel")
-	title.Name = "Title"
-	title.BackgroundColor3 = GOLD
-	title.BorderSizePixel = 0
-	title.Size = UDim2.new(1, 0, 0, 40)
-	title.Font = Enum.Font.Montserrat
-	title.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
-	title.Text = "YOU WON!"
-	title.TextColor3 = WHITE
-	title.TextSize = 26
-	title.ZIndex = 21
-	local tStroke = Instance.new("UIStroke")
-	tStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
-	tStroke.Thickness = 2
-	tStroke.Color = Color3.fromRGB(90, 55, 0)
-	tStroke.Parent = title
-	title.Parent = card
+	-- A dark square behind it all so the wheel steps back.
+	local back = Instance.new("Frame")
+	back.Name = "Back"
+	back.AnchorPoint = Vector2.new(0.5, 0.5)
+	back.Position = UDim2.fromScale(0.5, 0.52)
+	back.Size = UDim2.fromOffset(290, 290)
+	back.BackgroundColor3 = Color3.fromRGB(30, 34, 52)
+	back.BorderSizePixel = 0
+	back.ZIndex = 20
+	local edge = Instance.new("UIStroke")
+	edge.Name = "Edge"
+	edge.Thickness = 5
+	edge.Color = GOLD
+	edge.Parent = back
+	back.Parent = card
+	local rays = Instance.new("ImageLabel")
+	rays.Name = "Rays"
+	rays.BackgroundTransparency = 1
+	rays.AnchorPoint = Vector2.new(0.5, 0.5)
+	rays.Position = UDim2.fromScale(0.5, 0.48)
+	rays.Size = UDim2.fromOffset(330, 330)
+	rays.Image = AssetLibrary.image("Rays")
+	rays.ImageColor3 = GOLD
+	rays.ImageTransparency = 0.25
+	rays.ZIndex = 21
+	rays.Parent = card
 	local icon = Instance.new("ImageLabel")
 	icon.Name = "Icon"
 	icon.BackgroundTransparency = 1
-	icon.AnchorPoint = Vector2.new(0.5, 0)
-	icon.Position = UDim2.new(0.5, 0, 0, 48)
-	icon.Size = UDim2.fromOffset(104, 104)
+	icon.AnchorPoint = Vector2.new(0.5, 0.5)
+	icon.Position = UDim2.fromScale(0.5, 0.48)
+	icon.Size = UDim2.fromOffset(150, 150)
 	icon.ScaleType = Enum.ScaleType.Fit
-	icon.ZIndex = 21
+	icon.ZIndex = 23
 	icon.Parent = card
-	local name = Instance.new("TextLabel")
-	name.Name = "PrizeName"
-	name.BackgroundTransparency = 1
-	name.Position = UDim2.new(0, 8, 1, -54)
-	name.Size = UDim2.new(1, -16, 0, 46)
-	name.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
-	name.TextScaled = true
-	name.TextColor3 = WHITE
-	name.ZIndex = 21
-	local nStroke = Instance.new("UIStroke")
-	nStroke.Thickness = 2
-	nStroke.Color = Color3.new(0, 0, 0)
-	nStroke.Parent = name
-	name.Parent = card
+	-- Title sticker, tilted, on top edge.
+	local sticker = Instance.new("Frame")
+	sticker.Name = "Sticker"
+	sticker.AnchorPoint = Vector2.new(0.5, 0.5)
+	sticker.Position = UDim2.fromScale(0.5, 0.17)
+	sticker.Size = UDim2.fromOffset(250, 58)
+	sticker.BackgroundColor3 = GOLD
+	sticker.BorderSizePixel = 0
+	sticker.Rotation = -6
+	sticker.ZIndex = 24
+	local sStroke = Instance.new("UIStroke")
+	sStroke.Thickness = 4
+	sStroke.Color = Color3.fromRGB(23, 25, 30)
+	sStroke.Parent = sticker
+	sticker.Parent = card
+	local stickerScale = Instance.new("UIScale")
+	stickerScale.Parent = sticker
+	label(sticker, "Title", UDim2.new(1, -12, 1, -6), UDim2.fromScale(0.5, 0.5), 38, 25)
+	-- Prize name plate along the bottom.
+	local plate = Instance.new("Frame")
+	plate.Name = "Plate"
+	plate.AnchorPoint = Vector2.new(0.5, 0.5)
+	plate.Position = UDim2.fromScale(0.5, 0.8)
+	plate.Size = UDim2.fromOffset(270, 54)
+	plate.BackgroundColor3 = Color3.fromRGB(61, 220, 90)
+	plate.BorderSizePixel = 0
+	plate.ZIndex = 24
+	local pStroke = Instance.new("UIStroke")
+	pStroke.Thickness = 4
+	pStroke.Color = Color3.fromRGB(23, 25, 30)
+	pStroke.Parent = plate
+	plate.Parent = card
+	label(plate, "PrizeName", UDim2.new(1, -14, 1, -8), UDim2.fromScale(0.5, 0.5), 30, 25)
+	local confetti = Instance.new("Frame")
+	confetti.Name = "Confetti"
+	confetti.BackgroundTransparency = 1
+	confetti.Size = UDim2.fromScale(1, 1)
+	confetti.ZIndex = 26
+	confetti.Parent = card
 	card.Parent = area
 	return card
 end
@@ -220,6 +286,43 @@ local function hidePrize()
 	prizeToken += 1
 	if prizeCard then
 		prizeCard.Visible = false
+	end
+end
+
+-- Confetti: little squares that shoot out of the prize, fall and spin.
+local function burstConfetti(card: Frame, amount: number)
+	local holder = card:FindFirstChild("Confetti") :: Frame
+	holder:ClearAllChildren()
+	if Ui.reducedMotion() then
+		return
+	end
+	for _ = 1, amount do
+		local bit = Instance.new("Frame")
+		bit.BorderSizePixel = 0
+		bit.AnchorPoint = Vector2.new(0.5, 0.5)
+		bit.BackgroundColor3 = CONFETTI[math.random(#CONFETTI)]
+		local w = math.random(8, 14)
+		bit.Size = UDim2.fromOffset(w, math.floor(w * 0.6))
+		bit.Position = UDim2.fromScale(0.5, 0.48)
+		bit.Rotation = math.random(0, 360)
+		bit.ZIndex = 26
+		bit.Parent = holder
+		local angle = math.random() * math.pi * 2
+		local dist = math.random(120, 230)
+		local out = UDim2.new(0.5, math.cos(angle) * dist, 0.48, math.sin(angle) * dist - 40)
+		TweenService:Create(bit, TweenInfo.new(0.55, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Position = out,
+			Rotation = bit.Rotation + math.random(-360, 360),
+		}):Play()
+		task.delay(0.55, function()
+			if bit.Parent then
+				TweenService:Create(bit, TweenInfo.new(1.1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+					Position = out + UDim2.fromOffset(math.random(-20, 20), 140),
+					BackgroundTransparency = 1,
+					Rotation = bit.Rotation + math.random(-360, 360),
+				}):Play()
+			end
+		end)
 	end
 end
 
@@ -235,22 +338,43 @@ local function showPrize(index: number)
 	icon.Image = AssetLibrary.image(image)
 	icon.ImageColor3 = tint or WHITE
 	local jackpot = seg.Weight <= 1
-	local edge = card:FindFirstChild("Edge") :: UIStroke
-	edge.Color = if jackpot then Color3.fromRGB(255, 90, 200) else GOLD
-	local title = card:FindFirstChild("Title") :: TextLabel
-	title.Text = if jackpot then "JACKPOT!" else "YOU WON!"
-	title.BackgroundColor3 = if jackpot then Color3.fromRGB(255, 90, 200) else GOLD;
-	(card:FindFirstChild("PrizeName") :: TextLabel).Text = name
+	local color = if jackpot then PINK else GOLD
+	local back = card:FindFirstChild("Back") :: Frame
+	;(back:FindFirstChild("Edge") :: UIStroke).Color = color
+	;(card:FindFirstChild("Rays") :: ImageLabel).ImageColor3 = color
+	local sticker = card:FindFirstChild("Sticker") :: Frame
+	sticker.BackgroundColor3 = color
+	;(sticker:FindFirstChild("Title") :: TextLabel).Text = if jackpot then "JACKPOT!" else "YOU WON!"
+	;(Ui.find(card, "Plate.PrizeName") :: TextLabel).Text = name
 	card.Visible = true
 	local scale = card:FindFirstChildOfClass("UIScale") :: UIScale
+	local stickerScale = sticker:FindFirstChildOfClass("UIScale") :: UIScale
 	if Ui.reducedMotion() then
 		scale.Scale = 1
+		stickerScale.Scale = 1
 	else
 		scale.Scale = 0.3
 		TweenService:Create(scale, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+		stickerScale.Scale = 0
+		task.delay(0.2, function()
+			TweenService:Create(stickerScale, TweenInfo.new(0.4, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+		end)
 	end
+	burstConfetti(card, if jackpot then 60 else 30)
 	prizeToken += 1
 	local token = prizeToken
+	-- Rays turn, the prize bobs and the title wiggles while it's up.
+	task.spawn(function()
+		local rays = card:FindFirstChild("Rays") :: ImageLabel
+		local t0 = os.clock()
+		while token == prizeToken and card.Visible do
+			local t = os.clock() - t0
+			rays.Rotation = t * 40
+			icon.Position = UDim2.new(0.5, 0, 0.48, math.sin(t * 4) * 6)
+			sticker.Rotation = -6 + math.sin(t * 5) * 3
+			RunService.RenderStepped:Wait()
+		end
+	end)
 	task.delay(3.5, function()
 		if token == prizeToken and card.Visible then
 			card.Visible = false

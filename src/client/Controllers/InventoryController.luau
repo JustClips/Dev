@@ -134,13 +134,30 @@ local function tileFor(entry: BagItems.Entry, data): TextButton
 		passiveLabel.Visible = passive ~= nil
 		passiveLabel.Text = passive or ""
 	end
+	-- The NEW tag goes as soon as you hover the tile (PC) or touch it (phones), as well as
+	-- when the bag closes (Dev, 2026-10-31).
+	local function clearNew()
+		if fresh[entry.key] then
+			fresh[entry.key] = nil
+		end
+		if newTag then
+			newTag.Visible = false
+		end
+	end
 	Ui.button(tile, function()
+		clearNew()
 		if os.clock() - justDragged < 0.3 then
 			return
 		end
 		useEntry(entry)
 	end)
+	tile.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			clearNew()
+		end
+	end)
 	tile.MouseEnter:Connect(function()
+		clearNew()
 		local d = State.data
 		if d then
 			showInfo(describe(entry, d))

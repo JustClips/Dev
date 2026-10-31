@@ -19,6 +19,7 @@ Sounds.Sfx = {
 	Pop = { Id = id(15675055424), Volume = 0.55 }, -- Roblox_UI_Cute_Pop
 	Notify = { Id = id(15675085146), Volume = 0.4 }, -- Roblox_UI_Indicator
 	Error = { Id = id(15675062723), Volume = 0.45 }, -- Roblox_UI_Whistle_Low
+	Attention = { Id = id(17208361335), Volume = 0.8 }, -- Roblox GUI - Notification High (Roblox menu opened)
 	Tutorial = { Id = id(15675043410), Volume = 0.5 }, -- Roblox_UI_Tonal_Stinger
 	Announce = { Id = id(15675085146), Volume = 0.35 },
 	-- Sweeping and selling

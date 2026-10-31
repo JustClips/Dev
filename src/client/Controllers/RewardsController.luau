@@ -171,35 +171,55 @@ local function giftStatus(info): (number, number?)
 	return ready, nextIn
 end
 
+local RED = Color3.fromRGB(255, 77, 94)
+
+local function dailyCountdown(info): number
+	-- 24 hours after your last claim (server clock, ticked on locally).
+	local nextAt = if type(info.DailyNextAt) == "number" and info.DailyNextAt > 0
+		then info.DailyNextAt
+		else (Rewards.day(info.Now) + 1) * 86400
+	return math.max(0, nextAt - (info.Now + (os.clock() - playtimeAt)))
+end
+
+-- Cards like Dev's reference (2026-10-31): each has a status button. Claimed days say
+-- CLAIMED, today's says CLAIM! (or counts down to it), later days say LOCKED.
 local function renderDaily(info)
+	local left = dailyCountdown(info)
+	local nextDay = if info.DailyReady then info.DailyIndex else (info.DailyIndex % #Rewards.Daily) + 1
 	for i, reward in Rewards.Daily do
 		local card = Ui.find(gui, `Window.Days.Day{i}`) :: GuiButton
 		fillCard(card, reward, info.DailyPet)
 		local claimed = if info.DailyReady then i < info.DailyIndex else i <= info.DailyIndex
-		-- A new streak (DailyIndex 1 while ready) shows no ticks.
-		if info.DailyReady and info.DailyIndex == 1 then
+		-- A new streak (DailyIndex 1 while ready) shows no ticks; after day 7 the week
+		-- starts over, so nothing shows as claimed while day 1 counts down.
+		if (info.DailyReady and info.DailyIndex == 1) or (not info.DailyReady and nextDay == 1) then
 			claimed = false
 		end
-		local isToday = i == info.DailyIndex
 		;(card:FindFirstChild("Done") :: Frame).Visible = claimed
-		setCardColor(card, if isToday then TODAY else WHITE)
+		local status = card:FindFirstChild("Status") :: GuiButton
+		if claimed then
+			setButton(status, "CLAIMED", GREY)
+		elseif i == nextDay and info.DailyReady then
+			setButton(status, "CLAIM!", GREEN)
+		elseif i == nextDay then
+			setButton(status, Format.countdown(left), RED)
+		else
+			setButton(status, "LOCKED", RED)
+		end
 		local stroke = card:FindFirstChild("Stroke") :: UIStroke?
 		if stroke then
-			stroke.Color = if isToday and info.DailyReady then GOLD else INK
-			stroke.Thickness = if isToday and info.DailyReady then 5 else 3
+			local hot = i == nextDay and info.DailyReady
+			stroke.Color = if hot then GOLD else INK
+			stroke.Thickness = if hot then 5 else 3
 		end
 	end
-	;(Ui.find(gui, "Window.Streak") :: TextLabel).Text = `Streak: {info.DailyStreak} day{if info.DailyStreak == 1 then "" else "s"}`
+	local streak = Ui.find(gui, "Window.Streak") :: TextLabel
+	streak.Text = `STREAK {info.DailyStreak}`
 	local claim = Ui.find(gui, "Window.ClaimDaily") :: GuiButton
 	if info.DailyReady then
-		setButton(claim, `Claim Day {info.DailyIndex}`, GREEN)
+		setButton(claim, "CLAIM!", GREEN)
 	else
-		-- 24 hours after your last claim (server clock, ticked on locally).
-		local nextAt = if type(info.DailyNextAt) == "number" and info.DailyNextAt > 0
-			then info.DailyNextAt
-			else (Rewards.day(info.Now) + 1) * 86400
-		local left = math.max(0, nextAt - (info.Now + (os.clock() - playtimeAt)))
-		setButton(claim, `Next in {Format.countdown(left)}`, GREY)
+		setButton(claim, Format.countdown(left), GREY)
 	end
 end
 
@@ -339,8 +359,33 @@ function RewardsController:Start()
 	Ui.button(Ui.find(gui, "Dim"), function()
 		Ui.close("Daily")
 	end)
-	Ui.button(Ui.find(gui, "Window.ClaimDaily"), function()
+	local function claimDaily()
+		local info = State.data and State.data.Rewards
+		if info and not info.DailyReady then
+			C.HudController:Toast(`Next reward in {Format.countdown(dailyCountdown(info))}`, "Info")
+			return
+		end
 		act("ClaimDaily")
+	end
+	Ui.button(Ui.find(gui, "Window.ClaimDaily"), claimDaily)
+	for i in Rewards.Daily do
+		local card = Ui.find(gui, `Window.Days.Day{i}`) :: GuiButton
+		Ui.button(card, claimDaily)
+		Ui.button(card:FindFirstChild("Status") :: GuiButton, claimDaily)
+	end
+	-- Rays spin slowly behind every prize while the window is open.
+	local rays: { ImageLabel } = {}
+	for i in Rewards.Daily do
+		rays[i] = Ui.find(gui, `Window.Days.Day{i}.Rays`)
+	end
+	game:GetService("RunService").RenderStepped:Connect(function()
+		if not gui.Enabled then
+			return
+		end
+		local angle = (os.clock() * 25) % 360
+		for i, ray in rays do
+			ray.Rotation = if i == 7 then -angle else angle
+		end
 	end)
 	Ui.button(giftsButton, function()
 		RewardsController:ToggleGifts()
@@ -378,7 +423,26 @@ function RewardsController:Start()
 		popup.Visible = false
 		act("StartStay")
 	end)
-	GuiService.MenuOpened:Connect(offerStay)
+	-- Opening the Roblox menu is the closest thing to "about to leave" a game can see (closing
+	-- the window or app can't be caught), so it plays an attention sound (Dev, 2026-10-31)
+	-- and shows the stay offer when there is one.
+	local lastAttention = -math.huge
+	task.spawn(function()
+		-- Loaded ahead, so the very first menu open isn't silent.
+		local def = require(Shared.Config.Sounds).Sfx.Attention
+		local preload = Instance.new("Sound")
+		preload.SoundId = def.Id
+		pcall(function()
+			game:GetService("ContentProvider"):PreloadAsync({ preload })
+		end)
+	end)
+	GuiService.MenuOpened:Connect(function()
+		if os.clock() - lastAttention > 15 then
+			lastAttention = os.clock()
+			Ui.sound("Attention")
+		end
+		offerStay()
+	end)
 
 	State.Changed:Connect(function(data)
 		local info = data.Rewards
