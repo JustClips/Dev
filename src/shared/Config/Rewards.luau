@@ -20,6 +20,8 @@ export type Reward = {
 	Amount: number?, -- Item, Spin
 	Rarity: string?, -- Egg
 	Pet: string?, -- Pet: a pet id, or "Daily" for the player's next daily exclusive
+	Huge: boolean?, -- Pet: give it as a Huge
+	Zone: string?, -- Egg: which zone's egg (default: best unlocked zone that drops it)
 	Bonus: Reward?, -- given along with this one (shown as "+ ...")
 }
 

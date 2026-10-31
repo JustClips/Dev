@@ -71,10 +71,10 @@ local function givePet(player: Player, data, reward: Rewards.Reward): string
 		return ""
 	end
 	local uid = S.DataService:NewUid(data, "p")
-	data.Pets[uid] = { Id = def.Id, Weight = Weights.rollPet(rng, def.Rarity, def.Rarity) }
+	data.Pets[uid] = { Id = def.Id, Weight = Weights.rollPet(rng, def.Rarity, def.Rarity), Huge = if reward.Huge then true else nil }
 	data.Index[def.Id] = true
 	S.InventoryService:Touch(player)
-	return def.Name
+	return if reward.Huge then `Huge {def.Name}` else def.Name
 end
 
 local function grantOne(player: Player, data, reward: Rewards.Reward, sku: string): string
@@ -92,8 +92,9 @@ local function grantOne(player: Player, data, reward: Rewards.Reward, sku: strin
 		return if amount > 1 then `{item.Name} x{amount}` else item.Name
 	elseif reward.Kind == "Egg" then
 		local rarity = reward.Rarity or "Common"
-		S.InventoryService:AddEgg(player, rarity, eggZone(data, rarity), true)
-		return `{rarity} Egg`
+		local zone = if reward.Zone and Zones.ById[reward.Zone] then reward.Zone else eggZone(data, rarity)
+		S.InventoryService:AddEgg(player, rarity, zone, true)
+		return if reward.Zone and Zones.ById[reward.Zone] then `{rarity} {Zones.ById[reward.Zone].Name} Egg` else `{rarity} Egg`
 	elseif reward.Kind == "Spin" then
 		local amount = reward.Amount or 1
 		data.Spins = (data.Spins or 0) + amount

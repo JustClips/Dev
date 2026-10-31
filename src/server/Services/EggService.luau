@@ -403,6 +403,9 @@ local function foundEgg(player: Player, position: Vector3, rarity: string, zone:
 	end
 	local egg = EggService:SpawnEgg(position, rarity, player, zone)
 	session.Data.Stats.EggsFound += 1
+	if zone then
+		S.QuestService:ZoneCount(player, zone, "Eggs", 1)
+	end
 	session.Runtime.TutorialEggSpawned = true
 	trackTutorialEgg(player, session, egg)
 	S.AnalyticsService:Custom(player, "EggFound", 1, { Rarity = rarity })
@@ -418,6 +421,7 @@ function EggService:OnTileCleared(player: Player, zone, position: Vector3)
 	end
 	local stats = session.Data.Stats
 	stats.TilesCleared += 1
+	S.QuestService:ZoneCount(player, zone.Id, "Leaves", 1)
 	-- Tutorial: the first egg is guaranteed early (GAME_PLAN §4).
 	if stats.EggsFound == 0 and not session.Runtime.TutorialEggSpawned and stats.TilesCleared >= Economy.TutorialEggTile then
 		foundEgg(player, position, "Common", zone.Id)

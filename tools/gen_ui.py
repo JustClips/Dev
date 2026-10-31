@@ -1602,7 +1602,23 @@ def quests():
         ]),
         text("Timer", "New quests in 0:00", U(1, 0, 0, 22), U(0.5, 0, 0, 308), (0.5, 0), ts=17, color=SUB, display=True),
     ])
-    body = [tab("JobsTab", "Jobs", 14), tab("DailyTab", "Daily", 206), job, daily]
+    # Zones tab (2026-10-31): one row per zone questline ("Row1".."Row5": who, quest, bar,
+    # reward, and a Go button that takes you to that zone's quest giver).
+    def zone_row(i):
+        return plate(f"Row{i}", U(1, -12, 0, 92), tint=WHITE, stroke=3, LayoutOrder=i, children=[
+            text("Who", "", U(1, -330, 0, 20), U(0, 12, 0, 4), ts=16, color="#4C8DFF", display=True, xa="Left", TextScaled=True,
+                 children=fit(16, 8)),
+            text("Text", "", U(1, -330, 0, 26), U(0, 12, 0, 26), ts=20, color=INK, display=True, xa="Left", TextScaled=True,
+                 children=fit(20, 9)),
+            progress_bar("Bar", U(1, -330, 0, 26), U(0, 12, 0, 58)),
+            reward_box("Reward", U(0, 170, 0, 50), U(1, -148, 0.5, 0), (1, 0.5)),
+            button("Go", U(0, 124, 0, 50), U(1, -10, 0.5, 0), (1, 0.5), color="#4C8DFF", label="Go", ts=22),
+        ])
+
+    zones = frame("Zones", U(1, -28, 0, 326), U(0, 14, 0, 130), Visible=False, children=[
+        scroller("List", U(1, 0, 1, 0), U(0, 0, 0, 0), [vlist(8)] + [zone_row(i) for i in (1, 2, 3, 4, 5)]),
+    ])
+    body = [tab("JobsTab", "Jobs", 14), tab("DailyTab", "Daily", 206), tab("ZonesTab", "Zones", 398), job, daily, zones]
     write("Quests", screen([dim(), window(W, H, "Quests", "TreasureMap", body, header="#4C8DFF", size=(W, H))],
                           order=10, enabled=False))
 

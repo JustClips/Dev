@@ -27,6 +27,7 @@ local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
 local Weather = require(Shared.Config.Weather)
 local Zones = require(Shared.Config.Zones)
+local ZoneQuests = require(Shared.Config.ZoneQuests)
 
 local MAX_TOASTS = 4
 local TOAST_SECONDS = 3
@@ -307,8 +308,12 @@ local function renderZones(data)
 				price.Text = `Rebirth {zone.RequiredRebirths}`
 				price.TextColor3 = LOCKED
 			else
-				price.Text = Format.cash(zone.UnlockCost)
-				price.TextColor3 = if BigNum.gte(data.Cash, zone.UnlockCost) then GREEN else LOCKED
+				-- Zone Pass from the previous zone's questline: half price.
+				local passes = data.Flags and data.Flags.ZonePass
+				local hasPass = type(passes) == "table" and passes[zoneId] == true
+				local cost = if hasPass then math.floor(zone.UnlockCost * ZoneQuests.PassDiscount) else zone.UnlockCost
+				price.Text = if hasPass then `PASS {Format.cash(cost)}` else Format.cash(cost)
+				price.TextColor3 = if BigNum.gte(data.Cash, cost) then GREEN else LOCKED
 			end
 		end
 	end

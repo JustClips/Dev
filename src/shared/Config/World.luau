@@ -100,6 +100,25 @@ function World.questCFrame(i: number): CFrame
 	return World.baseCFrame(i) * CFrame.new(World.Base.Quest) * CFrame.Angles(0, math.rad(-90), 0)
 end
 
+-- Zone quest NPCs (QuestService, Config/ZoneQuests): one just inside each zone, beside the
+-- path from the gate, facing the people walking in. Y is the zone floor (the server
+-- raycasts the real ground). The Backyard one stands by the Park gate.
+World.ZoneNpc = {
+	Landing = Vector3.new(16, 0, -186),
+	Crater = Vector3.new(16, -8, -242),
+	DarkSide = Vector3.new(16, 0, -496),
+	Mars = Vector3.new(16, 0, -748),
+	Europa = Vector3.new(16, 0, -1000),
+} :: { [string]: Vector3 }
+
+function World.zoneNpcCFrame(zoneId: string): CFrame?
+	local at = World.ZoneNpc[zoneId]
+	if not at then
+		return nil
+	end
+	return CFrame.lookAt(at, at + Vector3.new(-1, 0, 1))
+end
+
 -- CFrame of base i on its platform floor, facing the field.
 function World.baseCFrame(i: number): CFrame
 	local side = if i <= 4 then -1 else 1

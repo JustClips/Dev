@@ -186,6 +186,7 @@ function DustBunnyService:TryCatch(player: Player, position: Vector3, radius: nu
 				local data = S.DataService:GetData(player)
 				if data then
 					data.Stats.Bunnies = (data.Stats.Bunnies or 0) + 1
+					S.QuestService:ZoneCount(player, bunny.zone.Id, "Bunnies", 1)
 				end
 				task.delay(Economy.Bunnies.RespawnSeconds, function()
 					place(bunny)

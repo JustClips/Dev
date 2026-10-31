@@ -9,6 +9,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local World = require(Shared.Config.World)
+local ZoneQuests = require(Shared.Config.ZoneQuests)
 local Zones = require(Shared.Config.Zones)
 
 local TELEPORT_COOLDOWN = 3
@@ -41,13 +42,20 @@ function ZoneService:Unlock(player: Player, zoneId: string): (boolean, string)
 	if data.Rebirths < zone.RequiredRebirths then
 		return false, `Rebirth {zone.RequiredRebirths} needed for {zone.Name}`
 	end
-	if not S.BackpackService:TrySpend(player, zone.UnlockCost, "Zone_" .. zoneId) then
-		return false, `Need {Format.cash(zone.UnlockCost)} to open {zone.Name}`
+	-- Zone Pass (the previous zone's questline): half price for you.
+	local passes = data.Flags.ZonePass
+	local hasPass = type(passes) == "table" and passes[zoneId] == true
+	local cost = if hasPass then math.floor(zone.UnlockCost * ZoneQuests.PassDiscount) else zone.UnlockCost
+	if not S.BackpackService:TrySpend(player, cost, "Zone_" .. zoneId) then
+		return false, `Need {Format.cash(cost)} to open {zone.Name}`
 	end
 	data.ZonesUnlocked[zoneId] = true
+	if hasPass then
+		passes[zoneId] = nil
+	end
 	S.AnalyticsService:ZoneUnlocked(player, zoneId)
 	S.StateService:Mark(player)
-	return true, `{zone.Name} unlocked!`
+	return true, if hasPass then `{zone.Name} unlocked with your Zone Pass!` else `{zone.Name} unlocked!`
 end
 
 local function setupGate(zone)

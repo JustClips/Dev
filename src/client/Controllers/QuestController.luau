@@ -8,6 +8,10 @@
 --   NPC      the Quest Master on the left of every base (prompt Opens = "Quests"): his
 --            dialog hands over finished jobs. A bouncing "!" floats over your own one
 --            while something is ready.
+--   Zones    each zone's quest giver (Config/ZoneQuests, prompt Opens = "ZoneQuest" with a
+--            Zone attribute): their story dialog hands over finished steps. The Zones tab
+--            lists every questline with a Go button, and a "!" floats over any zone NPC
+--            with a finished step. GuideTarget() lets the arrow path lead to them.
 local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -24,6 +28,8 @@ local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Quests = require(Shared.Config.Quests)
+local World = require(Shared.Config.World)
+local ZoneQuests = require(Shared.Config.ZoneQuests)
 
 local QuestController = {}
 
@@ -40,6 +46,9 @@ local gui: ScreenGui
 local tab = "Jobs"
 local busy = false
 local marker: BillboardGui? = nil
+local zoneMarkers: { [string]: BillboardGui } = {}
+local guide: { Zone: string, Until: number }? = nil -- arrow to a zone NPC after pressing Go
+local GUIDE_SECONDS = 60
 
 local function invoke(action: string, arg: any?): (boolean, string?)
 	local ok, a, b = pcall(function()
@@ -68,6 +77,8 @@ local function rewardIcon(kind: string?, item: string?): string
 		return AssetLibrary.image("Icon_Egg")
 	elseif kind == "Spin" then
 		return AssetLibrary.image("Icon_Spin")
+	elseif kind == "Pet" then
+		return AssetLibrary.image("Icon_Alien")
 	end
 	return AssetLibrary.image("Icon_Cash")
 end
@@ -172,11 +183,55 @@ local function renderDaily(daily)
 	;(page:FindFirstChild("Timer") :: TextLabel).Text = `New quests in {Format.countdown(left)}`
 end
 
+local function zoneEntry(zoneId: string): any
+	local quests = State.data and State.data.Quests
+	for _, z in (quests and quests.Zones) or {} do
+		if z.Zone == zoneId then
+			return z
+		end
+	end
+	return nil
+end
+
+local function renderZones(list)
+	local page = Ui.find(gui, "Window.Zones") :: Frame
+	for i = 1, 5 do
+		local row = Ui.find(page, `List.Row{i}`) :: Frame
+		local z = list[i]
+		row.Visible = z ~= nil
+		if not z then
+			continue
+		end
+		;(row:FindFirstChild("Who") :: TextLabel).Text = string.upper(`{z.Npc} · {z.ZoneName}`)
+		local textLabel = row:FindFirstChild("Text") :: TextLabel
+		local bar = row:FindFirstChild("Bar") :: Frame
+		local reward = row:FindFirstChild("Reward") :: Frame
+		local go = row:FindFirstChild("Go") :: GuiButton
+		if not z.Open then
+			textLabel.Text = `Unlock the {z.ZoneName} to meet {z.Npc}`
+			setBar(bar, 0, "LOCKED")
+			reward.Visible = false
+			paint(go, "Locked", GREY)
+		elseif z.Finished then
+			textLabel.Text = "All quests done!"
+			setBar(bar, 1, `{z.Steps}/{z.Steps}`)
+			reward.Visible = false
+			paint(go, "Go", BLUE)
+		else
+			textLabel.Text = `{z.Step}/{z.Steps}  {z.Text}`
+			setBar(bar, z.Fraction, if z.Done then "DONE!" else z.Progress)
+			reward.Visible = true
+			setReward(reward, z)
+			paint(go, if z.Done then "Claim" else "Go", if z.Done then GREEN else BLUE)
+		end
+	end
+end
+
 local function render()
 	local quests = State.data and State.data.Quests
 	renderStrip(quests)
 	if marker then
-		marker.Enabled = quests ~= nil and quests.Ready > 0
+		marker.Enabled = quests ~= nil and quests.Ready - (quests.ZoneReady or 0) > 0
 	end
 	if not Ui.isOpen(gui) then
 		return
@@ -187,8 +242,17 @@ local function render()
 	end
 	local jobsTab = Ui.find(gui, "Window.JobsTab") :: GuiButton
 	local dailyTab = Ui.find(gui, "Window.DailyTab") :: GuiButton
+	local zonesTab = Ui.find(gui, "Window.ZonesTab") :: GuiButton
 	paint(jobsTab, "Jobs", if tab == "Jobs" then BLUE else DARK_BLUE)
 	paint(dailyTab, "Daily", if tab == "Daily" then BLUE else DARK_BLUE)
+	paint(zonesTab, "Zones", if tab == "Zones" then BLUE else DARK_BLUE)
+	local zonesReady = 0
+	for _, z in quests.Zones or {} do
+		if z.Done then
+			zonesReady += 1
+		end
+	end
+	Ui.setBadge(zonesTab:FindFirstChild("Badge") :: GuiObject, if zonesReady > 0 then zonesReady else nil)
 	local dailyReady = 0
 	if quests.Daily then
 		for _, q in quests.Daily.List do
@@ -206,6 +270,11 @@ local function render()
 	local dailyPage = Ui.find(gui, "Window.Daily") :: Frame
 	jobPage.Visible = tab == "Jobs" and quests.Job ~= nil
 	dailyPage.Visible = tab == "Daily" and quests.Daily ~= nil
+	local zonesPage = Ui.find(gui, "Window.Zones") :: Frame
+	zonesPage.Visible = tab == "Zones" and quests.Zones ~= nil
+	if quests.Zones then
+		renderZones(quests.Zones)
+	end
 	if quests.Job then
 		renderJob(quests.Job)
 	end
@@ -291,6 +360,62 @@ local function goToMaster()
 	end)
 end
 
+-- Zones tab Go: teleport to that zone and let the arrow lead to its quest giver.
+local function goToZoneNpc(i: number)
+	local quests = State.data and State.data.Quests
+	local z = quests and quests.Zones and quests.Zones[i]
+	if not z then
+		return
+	end
+	if not z.Open then
+		C.HudController:Toast(`Unlock the {z.ZoneName} first!`, "Info")
+		return
+	end
+	Ui.close("Quests")
+	guide = { Zone = z.Zone, Until = os.clock() + GUIDE_SECONDS }
+	task.spawn(function()
+		local spot = World.ZoneNpc[z.Zone]
+		local character = Players.LocalPlayer.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if root and spot and (root.Position - spot).Magnitude < 90 then
+			return
+		end
+		local target = if z.Zone == "Landing" then "Rocket" else z.Zone
+		local ok, message = pcall(function()
+			return Net.func("Teleport"):InvokeServer(target)
+		end)
+		if ok and message and type(message) == "string" and message ~= "" then
+			C.HudController:Toast(message, "Info")
+		end
+	end)
+end
+
+-- Where the arrow path should lead for zone quests: the NPC of a finished step in the zone
+-- you're standing in, or the one you just pressed Go for.
+function QuestController:GuideTarget(position: Vector3): Vector3?
+	local quests = State.data and State.data.Quests
+	if not quests or not quests.Zones then
+		return nil
+	end
+	if guide and os.clock() > guide.Until then
+		guide = nil
+	end
+	for _, z in quests.Zones do
+		local spot = World.ZoneNpc[z.Zone]
+		if spot and z.Open then
+			local guided = guide ~= nil and guide.Zone == z.Zone
+			local nearby = (spot - position).Magnitude < 260
+			if (z.Done and nearby) or guided then
+				if guided and (spot - position).Magnitude < 12 then
+					guide = nil
+				end
+				return spot + Vector3.new(-3, 0, 3)
+			end
+		end
+	end
+	return nil
+end
+
 -------------------------------------------------------------------------- NPC dialog
 
 local talk: () -> ()
@@ -372,6 +497,135 @@ talk = function()
 	})
 end
 
+-------------------------------------------------------------------------- zone NPC dialog
+
+local talkZone: (zoneId: string) -> ()
+
+local function claimZone(zoneId: string)
+	if busy then
+		return
+	end
+	local line = ZoneQuests.ByZone[zoneId]
+	local before = zoneEntry(zoneId)
+	busy = true
+	local ok, got = invoke("ClaimZone", zoneId)
+	busy = false
+	if not ok then
+		C.DialogController:Say(got or "Hmm, that didn't work.", {
+			{ text = "Okay", color = GREY, pick = function()
+				talkZone(zoneId)
+			end },
+		})
+		return
+	end
+	Ui.sound("Reveal")
+	C.HudController:Toast(`Quest reward: {got}!`, "Good")
+	task.wait(0.35)
+	local lastStep = before and before.Last
+	if lastStep and line then
+		local pass = if line.Next and line.NextNpc
+			then ` And take this Zone Pass: the gate to the next zone costs you HALF now. {line.NextNpc} is waiting for you there!`
+			else ""
+		C.DialogController:Say(`You did it all! Here's your {got}!{pass}`, {
+			{ text = "Thank you!", color = GREEN, pick = bye },
+		})
+		return
+	end
+	local z = zoneEntry(zoneId)
+	local nextLine = if z and z.Say and not z.Done then ` Next: {z.Say}` else ""
+	C.DialogController:Say(`Thanks a bunch! Here's your reward: {got}!{nextLine}`, {
+		{ text = "On it!", color = GREEN, pick = bye },
+	})
+end
+
+talkZone = function(zoneId: string)
+	local line = ZoneQuests.ByZone[zoneId]
+	local z = zoneEntry(zoneId)
+	if not line then
+		C.DialogController:Close()
+		return
+	end
+	if not z or not z.Open then
+		C.DialogController:Say("Hi there! Finish the tutorial first, then come see me for quests.", {
+			{ text = "Okay!", color = GREEN, pick = bye },
+		})
+		return
+	end
+	if z.Finished then
+		C.DialogController:Say(line.Done, {
+			{ text = "Bye!", color = GREEN, pick = bye },
+		})
+		return
+	end
+	if z.Done then
+		C.DialogController:Say(`You did it: {z.Text}! I've got {z.Reward} for you.`, {
+			{ text = `Claim {z.Reward}!`, color = GREEN, pick = function()
+				claimZone(zoneId)
+			end },
+		})
+		return
+	end
+	local hello = if z.Fresh then line.Hello .. " " else ""
+	C.DialogController:Say(`{hello}{z.Say} ({z.Progress}) I'll give you {z.Reward}!`, {
+		{ text = "On it!", color = GREEN, pick = bye },
+		{
+			text = "Show my quests",
+			color = BLUE,
+			pick = function()
+				C.DialogController:Close()
+				QuestController:Open("Zones")
+			end,
+		},
+	})
+end
+
+-- A bouncing "!" over every zone NPC with a finished step.
+local function updateZoneMarkers()
+	local quests = State.data and State.data.Quests
+	local folder = Workspace:FindFirstChild("ZoneNpcs")
+	for _, line in ZoneQuests.Lines do
+		local z = zoneEntry(line.Zone)
+		local npc = folder and folder:FindFirstChild("ZoneNpc_" .. line.Zone)
+		local head = npc and npc:FindFirstChild("Head") :: BasePart?
+		local board = zoneMarkers[line.Zone]
+		if head and (not board or board.Adornee ~= head) then
+			if board then
+				board:Destroy()
+			end
+			board = Instance.new("BillboardGui")
+			board.Name = "ZoneQuestMarker"
+			board.Adornee = head
+			board.Size = UDim2.fromScale(2.4, 2.4)
+			board.StudsOffsetWorldSpace = Vector3.new(0, 4.6, 0)
+			board.AlwaysOnTop = true
+			board.LightInfluence = 0
+			board.MaxDistance = 260
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.fromScale(1, 1)
+			label.BackgroundTransparency = 1
+			label.Text = "!"
+			label.TextScaled = true
+			label.TextColor3 = GOLD
+			label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+			label.Parent = board
+			local stroke = Instance.new("UIStroke")
+			stroke.Thickness = 4
+			stroke.Color = Color3.fromRGB(23, 25, 30)
+			stroke.Parent = label
+			board.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+			zoneMarkers[line.Zone] = board
+		end
+		if board then
+			-- "!" when a step is done, or a fresh questline nobody has started yet.
+			board.Enabled = quests ~= nil and z ~= nil and z.Open and (z.Done == true or z.Fresh == true)
+			local label = board:FindFirstChildOfClass("TextLabel")
+			if label then
+				label.TextColor3 = if z and z.Done then GOLD else Color3.fromRGB(120, 210, 255)
+			end
+		end
+	end
+end
+
 -------------------------------------------------------------------------- "!" over your Quest Master
 
 local function buildMarker()
@@ -451,7 +705,26 @@ function QuestController:Start()
 		end)
 	end
 	Ui.button(Ui.find(gui, "Window.Daily.Bonus.Claim"), claimBonus)
+	Ui.button(Ui.find(gui, "Window.ZonesTab"), function()
+		tab = "Zones"
+		render()
+	end)
+	for i = 1, 5 do
+		Ui.button(Ui.find(gui, `Window.Zones.List.Row{i}.Go`), function()
+			goToZoneNpc(i)
+		end)
+	end
 	ProximityPromptService.PromptTriggered:Connect(function(prompt)
+		if prompt:GetAttribute("Opens") == "ZoneQuest" then
+			local zoneId = prompt:GetAttribute("Zone")
+			local line = type(zoneId) == "string" and ZoneQuests.ByZone[zoneId]
+			if line then
+				local at = prompt.Parent
+				C.DialogController:Open(line.Npc, if at and at:IsA("BasePart") then at else nil)
+				talkZone(zoneId :: string)
+			end
+			return
+		end
 		if prompt:GetAttribute("Opens") ~= "Quests" then
 			return
 		end
@@ -461,7 +734,9 @@ function QuestController:Start()
 	end)
 	Net.event("QuestReady").OnClientEvent:Connect(function(info)
 		Ui.sound("Tutorial")
-		if info.Job then
+		if info.Npc then
+			C.HudController:Toast(`Quest done: {info.Text}! Go see {info.Npc}.`, "Good")
+		elseif info.Job then
 			C.HudController:Toast(`Job done: {info.Text}! Go see the Quest Master.`, "Good")
 		else
 			C.HudController:Toast(`Daily quest done: {info.Text}! Claim it in Quests.`, "Good")
@@ -475,17 +750,24 @@ function QuestController:Start()
 	local t = 0
 	RunService.Heartbeat:Connect(function(dt)
 		t += dt
+		local bob = Vector3.new(0, 4.6 + math.abs(math.sin(t * 3)) * 0.8, 0)
 		if marker and marker.Enabled then
-			marker.StudsOffsetWorldSpace = Vector3.new(0, 4.6 + math.abs(math.sin(t * 3)) * 0.8, 0)
+			marker.StudsOffsetWorldSpace = bob
+		end
+		for _, board in zoneMarkers do
+			if board.Enabled then
+				board.StudsOffsetWorldSpace = bob
+			end
 		end
 	end)
 	task.spawn(function()
 		while true do
 			task.wait(1)
 			buildMarker()
+			updateZoneMarkers()
 			if marker then
 				local quests = State.data and State.data.Quests
-				marker.Enabled = quests ~= nil and quests.Ready > 0
+				marker.Enabled = quests ~= nil and quests.Ready - (quests.ZoneReady or 0) > 0
 			end
 			if Ui.isOpen(gui) then
 				render()

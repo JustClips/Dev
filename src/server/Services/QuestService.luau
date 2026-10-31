@@ -15,6 +15,13 @@
 --   "ClaimBonus"      all daily quests claimed -> the bonus (anywhere)
 --
 -- The Quest Masters themselves stand on the left of every base (Lib/Npc, stall: MapBuilder).
+--
+-- Zone questlines (Config/ZoneQuests): one quest giver inside every zone with a chain of
+-- quests that only count what you do in that zone (Stats.Zone[zoneId] counters, bumped
+-- through ZoneCount). Save: Flags.ZoneQuest[zoneId] = { Step, Base }, Flags.ZonePass
+-- (next zone half price, ZoneService:Unlock), Flags.ZoneVisited (first-visit egg given).
+--   "ClaimZone", zoneId   the finished step's reward; you must be at that zone's NPC
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -22,11 +29,15 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Aliens = require(Shared.Config.Aliens)
 local BigNum = require(Shared.BigNum)
 local Eggs = require(Shared.Config.Eggs)
+local Format = require(Shared.Format)
+local Grid = require(Shared.Grid)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Quests = require(Shared.Config.Quests)
 local Rewards = require(Shared.Config.Rewards)
 local World = require(Shared.Config.World)
+local ZoneQuests = require(Shared.Config.ZoneQuests)
+local Zones = require(Shared.Config.Zones)
 local Npc = require(script.Parent.Parent.Lib.Npc)
 
 local QuestService = {}
@@ -34,6 +45,8 @@ local QuestService = {}
 local S: any
 local folder: Folder
 local roots: { BasePart } = {}
+local zoneFolder: Folder
+local zoneRoots: { [string]: BasePart } = {}
 local CLAIM_DISTANCE = 18 -- a little looser than the Talk prompt
 
 local function now(): number
@@ -184,10 +197,96 @@ local function rewardOfDaily(kind: string): Quests.Reward
 	return { Kind = "Cash", Seconds = 300, Floor = 0.3 }
 end
 
+
+-------------------------------------------------------------------------- zone questlines
+
+-- Called by the services that count things (sweeps, eggs found, bunnies, hatches).
+function QuestService:ZoneCount(player: Player, zoneId: string?, kind: string, n: number)
+	local data = S.DataService:GetData(player)
+	if not data or type(zoneId) ~= "string" then
+		return
+	end
+	local all = data.Stats.Zone
+	if type(all) ~= "table" then
+		all = {}
+		data.Stats.Zone = all
+	end
+	local z = all[zoneId]
+	if type(z) ~= "table" then
+		z = {}
+		all[zoneId] = z
+	end
+	z[kind] = (z[kind] or 0) + n
+end
+
+local function zoneCounters(data, zoneId: string): { [string]: number }
+	local all = data.Stats.Zone
+	local z = type(all) == "table" and all[zoneId]
+	return if type(z) == "table" then z else {}
+end
+
+-- Different pets of this zone in your Index (daily exclusives don't count).
+local function zonePets(data, zoneId: string): number
+	local n = 0
+	for id in data.Index do
+		local def = Aliens.ById[id]
+		if def and not def.Exclusive and (def.Zone or "Landing") == zoneId then
+			n += 1
+		end
+	end
+	return n
+end
+
+local function zoneOpen(data, zoneId: string): boolean
+	if data.Flags.TutorialDone ~= true then
+		return false
+	end
+	return zoneId == Zones.StartZone or data.ZonesUnlocked[zoneId] == true
+end
+
+-- Where the player is on a zone's chain: the step number (nil = zone not open yet), the
+-- step (nil = chain finished) and its progress.
+local function zoneState(data, line: ZoneQuests.Line): (number?, ZoneQuests.Step?, number)
+	if not zoneOpen(data, line.Zone) then
+		return nil, nil, 0
+	end
+	local all = data.Flags.ZoneQuest
+	if type(all) ~= "table" then
+		all = {}
+		data.Flags.ZoneQuest = all
+	end
+	local st = all[line.Zone]
+	if type(st) ~= "table" or type(st.Step) ~= "number" or type(st.Base) ~= "table" then
+		st = { Step = 1, Base = table.clone(zoneCounters(data, line.Zone)) }
+		all[line.Zone] = st
+	end
+	local step = line.Steps[st.Step]
+	if not step then
+		return st.Step, nil, 0
+	end
+	local value = 0
+	if ZoneQuests.Counted[step.Kind] then
+		local now_ = zoneCounters(data, line.Zone)[step.Kind] or 0
+		local from = st.Base[step.Kind] or 0
+		if from > now_ then
+			st.Base[step.Kind] = now_
+			from = now_
+		end
+		value = now_ - from
+	elseif step.Kind == "Pets" then
+		value = zonePets(data, line.Zone)
+	end
+	return st.Step, step, math.clamp(value, 0, step.Goal)
+end
+
+local function zoneProgressText(step: ZoneQuests.Step, progress: number): string
+	return `{Format.number(progress)}/{Format.number(step.Goal)}`
+end
+
 -------------------------------------------------------------------------- update + notify
 
 -- Fires QuestReady once per finished quest (not for ones already done when you joined).
-local function notifyReady(player: Player, key: string, text: string, isJob: boolean)
+local function notifyReady(player: Player, key: string, text: string, isJob: boolean, npc: string?)
 	local session = S.DataService:GetSession(player)
 	if not session then
 		return
@@ -205,7 +304,7 @@ local function notifyReady(player: Player, key: string, text: string, isJob: boo
 	if not rt.QuestPrimed then
 		return
 	end
-	Net.fire("QuestReady", player, { Text = text, Job = isJob })
+	Net.fire("QuestReady", player, { Text = text, Job = isJob, Npc = npc })
 end
 
 function QuestService:Update(player: Player)
@@ -224,6 +323,12 @@ function QuestService:Update(player: Player)
 			if not q.Claimed and dailyProgress(q, data, now_) >= Quests.target(q) then
 				notifyReady(player, `D{daily.Day}_{i}`, Quests.text(q), false)
 			end
+		end
+	end
+	for _, line in ZoneQuests.Lines do
+		local n, step, p = zoneState(data, line)
+		if n and step and p >= step.Goal then
+			notifyReady(player, `Z{line.Zone}_{n}`, ZoneQuests.text(step), false, line.Npc)
 		end
 	end
 	local session = S.DataService:GetSession(player)
@@ -283,6 +388,48 @@ local function claimDaily(player: Player, index: any): (boolean, string?)
 	return true, got
 end
 
+local function claimZone(player: Player, zoneId: any): (boolean, string?)
+	local data = S.DataService:GetData(player)
+	if not data then
+		return false, "Still loading"
+	end
+	local line = type(zoneId) == "string" and ZoneQuests.ByZone[zoneId]
+	if not line then
+		return false, "Unknown zone"
+	end
+	local root = zoneRoots[line.Zone]
+	if not root or not Npc.isNear(player, { root }, ZoneQuests.ClaimDistance) then
+		return false, `Talk to {line.Npc} to claim it!`
+	end
+	local n, step, progress = zoneState(data, line)
+	if not n then
+		return false, `Unlock {Zones.ById[line.Zone].Name} first!`
+	end
+	if not step then
+		return false, "You've done all my quests!"
+	end
+	if progress < step.Goal then
+		return false, "That one isn't done yet!"
+	end
+	local got = S.RewardService:Grant(player, step.Reward, `ZoneQuest_{line.Zone}_{n}`)
+	local st = data.Flags.ZoneQuest[line.Zone]
+	st.Step = n + 1
+	st.Base = table.clone(zoneCounters(data, line.Zone))
+	-- The last step: a Zone Pass for the next zone (if it's still locked).
+	if n == #line.Steps and line.Next and data.ZonesUnlocked[line.Next] ~= true then
+		local passes = data.Flags.ZonePass
+		if type(passes) ~= "table" then
+			passes = {}
+			data.Flags.ZonePass = passes
+		end
+		passes[line.Next] = true
+		got ..= ` + {Zones.ById[line.Next].Name} Zone Pass`
+	end
+	S.AnalyticsService:Custom(player, "ZoneQuest", n, { Zone = line.Zone })
+	S.StateService:Mark(player)
+	return true, got
+end
+
 local function claimBonus(player: Player): (boolean, string?)
 	local data = S.DataService:GetData(player)
 	if not data then
@@ -323,7 +470,11 @@ local function rewardText(r: Quests.Reward?): string
 			text ..= ` x{r.Amount}`
 		end
 	elseif r.Kind == "Egg" then
-		text = `{r.Rarity or "Common"} Egg`
+		local zone = (r :: any).Zone and Zones.ById[(r :: any).Zone]
+		text = if zone then `{r.Rarity or "Common"} {zone.Name} Egg` else `{r.Rarity or "Common"} Egg`
+	elseif r.Kind == "Pet" then
+		local def = Aliens.ById[(r :: any).Pet or ""]
+		text = if def then (if (r :: any).Huge then `Huge {def.Name}` else def.Name) else "Pet"
 	elseif r.Kind == "Spin" then
 		text = if (r.Amount or 1) > 1 then `{r.Amount} Spins` else "Free Spin"
 	else
@@ -391,6 +542,37 @@ function QuestService:Snapshot(player: Player): any
 			out.Ready += 1
 		end
 	end
+	local zones = {}
+	for i, line in ZoneQuests.Lines do
+		local n, step, p = zoneState(data, line)
+		local entry: any = {
+			Zone = line.Zone,
+			ZoneName = Zones.ById[line.Zone].Name,
+			Npc = line.Npc,
+			Open = n ~= nil,
+			Steps = #line.Steps,
+			Step = n or 0,
+			Finished = n ~= nil and step == nil,
+		}
+		if step then
+			entry.Text = ZoneQuests.text(step)
+			entry.Say = step.Say
+			entry.Progress = zoneProgressText(step, p)
+			entry.Fraction = p / step.Goal
+			entry.Done = p >= step.Goal
+			entry.Fresh = n == 1 and p == 0
+			entry.Reward = rewardText(step.Reward :: any)
+			entry.RewardKind = step.Reward.Kind
+			entry.RewardItem = step.Reward.Item or step.Reward.Rarity
+			entry.Last = n == #line.Steps
+			if entry.Done then
+				out.Ready += 1
+				out.ZoneReady = (out.ZoneReady or 0) + 1
+			end
+		end
+		zones[i] = entry
+	end
+	out.Zones = zones
 	return out
 end
 
@@ -414,6 +596,72 @@ local function build(index: number)
 	end
 end
 
+-- A zone's quest giver, standing on the real ground at World.ZoneNpc.
+local function buildZoneNpc(line: ZoneQuests.Line)
+	local cf = World.zoneNpcCFrame(line.Zone)
+	if not cf then
+		return
+	end
+	-- Only the terrain counts as ground (not trees or props).
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Include
+	params.FilterDescendantsInstances = { Workspace.Terrain }
+	local hit = Workspace:Raycast(cf.Position + Vector3.new(0, 20, 0), Vector3.new(0, -40, 0), params)
+	if hit then
+		cf = cf - cf.Position + Vector3.new(cf.Position.X, hit.Position.Y, cf.Position.Z)
+	end
+	local root = Npc.build({
+		Name = "ZoneNpc_" .. line.Zone,
+		Title = line.Npc,
+		Sub = line.Sub,
+		TitleColor = line.Color,
+		Opens = "ZoneQuest",
+		Skin = line.Skin,
+		Shirt = line.Shirt,
+		Pants = line.Pants,
+	}, cf, zoneFolder)
+	if root then
+		local prompt = root:FindFirstChild("TalkPrompt")
+		if prompt then
+			prompt:SetAttribute("Zone", line.Zone)
+		end
+		(root.Parent :: Instance):SetAttribute("Zone", line.Zone)
+		zoneRoots[line.Zone] = root
+	end
+end
+
+-- The first time you walk into an unlocked zone: a free egg of that zone.
+local function checkVisits()
+	for _, player in Players:GetPlayers() do
+		local data = S.DataService:GetData(player)
+		local character = player.Character
+		local hrp = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if not data or not hrp or data.Flags.TutorialDone ~= true then
+			continue
+		end
+		local zone = Grid.zoneAt(hrp.Position)
+		local rarity = zone and ZoneQuests.FirstVisitEgg[zone.Id]
+		if not zone or not rarity or data.ZonesUnlocked[zone.Id] ~= true then
+			continue
+		end
+		local seen = data.Flags.ZoneVisited
+		if type(seen) ~= "table" then
+			seen = {}
+			data.Flags.ZoneVisited = seen
+		end
+		if seen[zone.Id] then
+			continue
+		end
+		seen[zone.Id] = true
+		S.InventoryService:AddEgg(player, rarity, zone.Id, true)
+		S.AnalyticsService:Custom(player, "ZoneFirstVisit", 1, { Zone = zone.Id })
+		local line = ZoneQuests.ByZone[zone.Id]
+		local talk = if line then ` Talk to {line.Npc} for quests!` else ""
+		Net.fire("Notify", player, `Welcome to the {zone.Name}! A free {rarity} {zone.Name} Egg is in your bag.{talk}`, "Egg")
+		S.StateService:Mark(player)
+	end
+end
+
 function QuestService:IsNear(player: Player): boolean
 	return Npc.isNear(player, roots, CLAIM_DISTANCE)
 end
@@ -423,6 +671,9 @@ function QuestService:Init(services)
 	folder = Instance.new("Folder")
 	folder.Name = "QuestMasters"
 	folder.Parent = Workspace
+	zoneFolder = Instance.new("Folder")
+	zoneFolder.Name = "ZoneNpcs"
+	zoneFolder.Parent = Workspace
 end
 
 function QuestService:Start()
@@ -433,12 +684,26 @@ function QuestService:Start()
 			return claimDaily(player, arg)
 		elseif action == "ClaimBonus" then
 			return claimBonus(player)
+		elseif action == "ClaimZone" then
+			return claimZone(player, arg)
 		end
 		return false, "Unknown action"
 	end)
 	for i = 1, World.BaseCount do
 		task.spawn(build, i)
 	end
+	-- Zone NPCs wait a moment so the runtime terrain is there to stand on.
+	task.delay(4, function()
+		for _, line in ZoneQuests.Lines do
+			task.spawn(buildZoneNpc, line)
+		end
+	end)
+	task.spawn(function()
+		while true do
+			task.wait(2)
+			checkVisits()
+		end
+	end)
 end
 
 return QuestService

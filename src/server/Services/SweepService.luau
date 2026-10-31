@@ -76,12 +76,14 @@ local function sweepArea(player: Player, session, position: Vector3, radius: num
 		if S.DustService:TakeGolden(id) then
 			mult *= goldenMult
 			goldenHits += 1
+			S.QuestService:ZoneCount(player, tileZone.Id, "Golden", 1)
 		end
 		-- Trash (cans, bottles...) lying among the leaves pays more.
 		local trash = Grid.trashKind(id)
 		if trash then
 			mult *= Economy.TrashMult
 			trashHits += 1
+			S.QuestService:ZoneCount(player, tileZone.Id, "Trash", 1)
 			trashKind = trash
 		end
 		if critChance > 0 and rng:NextNumber() < critChance then

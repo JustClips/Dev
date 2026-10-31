@@ -125,6 +125,10 @@ local function targetFor(data): Vector3?
 	if hasBase and quests and quests.Job and quests.Job.Done then
 		return (World.questCFrame(data.BaseIndex) * CFrame.new(0, 0, -4.5)).Position
 	end
+	-- A zone quest giver: a finished step nearby, or the one you pressed Go for.
+	if me then
+		return C.QuestController:GuideTarget(me.Position)
+	end
 	return nil
 end
 

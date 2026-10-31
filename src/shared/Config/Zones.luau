@@ -158,6 +158,11 @@ local Zones = {
 
 for _, zone in List do
 	Zones.ById[zone.Id] = zone
+	-- Keep leaves off the spot where the zone's quest NPC stands.
+	local npc = World.ZoneNpc[zone.Id]
+	if npc then
+		table.insert(zone.Exclusions, { Center = Vector2.new(npc.X, npc.Z), Radius = 5 })
+	end
 end
 
 return Zones

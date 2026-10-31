@@ -256,6 +256,7 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	local pet = { Id = def.Id, Mutation = mutation, Huge = if huge then true else nil, Weight = weight }
 	data.Pets[petUid] = pet
 	data.Stats.Hatches += 1
+	S.QuestService:ZoneCount(player, entry.Zone or "Landing", "Hatches", 1)
 	-- Tutorial: the first pet goes on your base by itself once the hatch show has played.
 	if data.Stats.Hatches == 1 and not data.Flags.TutorialDone then
 		task.delay(3, function()
