@@ -149,6 +149,11 @@ export type MutationDef = {
 	IncomeMult: number,
 	Color: Color3,
 	WeatherOnly: boolean?, -- never rolled normally, only during its weather
+	PassiveMult: number?, -- passive strength, always
+	Seasons: { string }?, -- weather/moon ids (or "Night") that power the pet up
+	SeasonPerk: { Stat: string, Value: number }?, -- extra stat per pet while in season
+	SeasonIncome: number?, -- pet income mult while in season
+	SeasonText: string?, -- "every night" (default: "during <weather names>")
 }
 
 export type ProductKind =

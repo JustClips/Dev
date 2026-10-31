@@ -6,30 +6,47 @@ type RarityDef = Types.RarityDef
 type MutationDef = Types.MutationDef
 
 local Rarities: { RarityDef } = {
-	{ Name = "Common", Order = 1, Weight = 100, HatchSeconds = 3, Color = Color3.fromRGB(190, 190, 190) },
-	{ Name = "Uncommon", Order = 2, Weight = 32, HatchSeconds = 10, Color = Color3.fromRGB(90, 220, 110) },
-	{ Name = "Rare", Order = 3, Weight = 9, HatchSeconds = 30, Color = Color3.fromRGB(70, 150, 255) },
-	{ Name = "Epic", Order = 4, Weight = 2.5, HatchSeconds = 120, Color = Color3.fromRGB(170, 90, 255) },
-	{ Name = "Legendary", Order = 5, Weight = 0.6, HatchSeconds = 300, Color = Color3.fromRGB(255, 200, 40) },
-	{ Name = "Mythic", Order = 6, Weight = 0.12, HatchSeconds = 900, Color = Color3.fromRGB(255, 60, 70) },
-	{ Name = "Cosmic", Order = 7, Weight = 0.02, HatchSeconds = 1800, Color = Color3.fromRGB(255, 120, 230) },
+	{ Name = "Common", Order = 1, Weight = 100, HatchSeconds = 15, Color = Color3.fromRGB(190, 190, 190) },
+	{ Name = "Uncommon", Order = 2, Weight = 32, HatchSeconds = 45, Color = Color3.fromRGB(90, 220, 110) },
+	{ Name = "Rare", Order = 3, Weight = 9, HatchSeconds = 120, Color = Color3.fromRGB(70, 150, 255) },
+	{ Name = "Epic", Order = 4, Weight = 2.5, HatchSeconds = 300, Color = Color3.fromRGB(170, 90, 255) },
+	{ Name = "Legendary", Order = 5, Weight = 0.6, HatchSeconds = 720, Color = Color3.fromRGB(255, 200, 40) },
+	{ Name = "Mythic", Order = 6, Weight = 0.12, HatchSeconds = 1800, Color = Color3.fromRGB(255, 60, 70) },
+	{ Name = "Cosmic", Order = 7, Weight = 0.02, HatchSeconds = 3600, Color = Color3.fromRGB(255, 120, 230) },
 }
 
+-- PassiveMult: the pet's passive is this much stronger, always (shared/PetPassives).
+-- Seasons: weathers/moons (Config/Weather ids, or "Night") when the pet is "in season":
+-- its passive gets PetPassives.SeasonMult more, plus SeasonPerk (one stat bonus per pet)
+-- and SeasonIncome (pet income mult). Dev, 2026-10-31: "if pet is mutated with disco his
+-- passive gets buffed while its disco".
 local Mutations: { MutationDef } = {
 	-- Checked rarest first.
-	{ Name = "MoonDusted", Label = "Sparkly", Chance = 500, IncomeMult = 5, Color = Color3.fromRGB(220, 235, 255) },
-	{ Name = "Rainbow", Label = "Rainbow", Chance = 100, IncomeMult = 3, Color = Color3.fromRGB(255, 120, 230) },
-	{ Name = "Golden", Label = "Golden", Chance = 20, IncomeMult = 2, Color = Color3.fromRGB(255, 205, 50) },
+	{ Name = "MoonDusted", Label = "Sparkly", Chance = 500, IncomeMult = 5, Color = Color3.fromRGB(220, 235, 255),
+		PassiveMult = 3, Seasons = { "Night" }, SeasonPerk = { Stat = "PetIncome", Value = 0.25 }, SeasonText = "every night" },
+	{ Name = "Rainbow", Label = "Rainbow", Chance = 100, IncomeMult = 3, Color = Color3.fromRGB(255, 120, 230),
+		PassiveMult = 2, Seasons = { "Rainbow", "RainbowMoon" }, SeasonPerk = { Stat = "Luck", Value = 0.25 } },
+	{ Name = "Golden", Label = "Golden", Chance = 20, IncomeMult = 2, Color = Color3.fromRGB(255, 205, 50),
+		PassiveMult = 1.5, Seasons = { "GoldenHour", "GoldMoon" }, SeasonPerk = { Stat = "Golden", Value = 0.3 } },
 	-- Weather mutations: only during their weather (Config/Weather), never in the roll above.
-	{ Name = "Starstruck", Label = "Starstruck", Chance = 0, IncomeMult = 5, Color = Color3.fromRGB(255, 225, 110), WeatherOnly = true },
-	{ Name = "Starlit", Label = "Starlit", Chance = 0, IncomeMult = 4, Color = Color3.fromRGB(120, 255, 210), WeatherOnly = true },
-	{ Name = "Bloodlit", Label = "Bloodlit", Chance = 0, IncomeMult = 4, Color = Color3.fromRGB(230, 40, 50), WeatherOnly = true },
-	{ Name = "Disco", Label = "Disco", Chance = 0, IncomeMult = 3, Color = Color3.fromRGB(200, 90, 255), WeatherOnly = true },
-	{ Name = "Shocked", Label = "Charged", Chance = 0, IncomeMult = 2.5, Color = Color3.fromRGB(255, 230, 70), WeatherOnly = true },
-	{ Name = "Frozen", Label = "Frozen", Chance = 0, IncomeMult = 2, Color = Color3.fromRGB(170, 225, 255), WeatherOnly = true },
-	{ Name = "Windswept", Label = "Windswept", Chance = 0, IncomeMult = 1.5, Color = Color3.fromRGB(255, 165, 70), WeatherOnly = true },
-	{ Name = "Wet", Label = "Wet", Chance = 0, IncomeMult = 1.5, Color = Color3.fromRGB(80, 160, 255), WeatherOnly = true },
+	{ Name = "Starstruck", Label = "Starstruck", Chance = 0, IncomeMult = 5, Color = Color3.fromRGB(255, 225, 110), WeatherOnly = true,
+		PassiveMult = 3, Seasons = { "Starfall" }, SeasonPerk = { Stat = "CritMult", Value = 2 } },
+	{ Name = "Starlit", Label = "Starlit", Chance = 0, IncomeMult = 4, Color = Color3.fromRGB(120, 255, 210), WeatherOnly = true,
+		PassiveMult = 2.5, Seasons = { "Aurora" }, SeasonPerk = { Stat = "Luck", Value = 0.3 } },
+	{ Name = "Bloodlit", Label = "Bloodlit", Chance = 0, IncomeMult = 4, Color = Color3.fromRGB(230, 40, 50), WeatherOnly = true,
+		PassiveMult = 2.5, Seasons = { "BloodMoon" }, SeasonPerk = { Stat = "Huge", Value = 0.5 } },
+	{ Name = "Disco", Label = "Disco", Chance = 0, IncomeMult = 3, Color = Color3.fromRGB(200, 90, 255), WeatherOnly = true,
+		PassiveMult = 2, Seasons = { "Disco" }, SeasonIncome = 2, SeasonPerk = { Stat = "Cash", Value = 0.15 } },
+	{ Name = "Shocked", Label = "Charged", Chance = 0, IncomeMult = 2.5, Color = Color3.fromRGB(255, 230, 70), WeatherOnly = true,
+		PassiveMult = 1.75, Seasons = { "Thunderstorm" }, SeasonPerk = { Stat = "WeatherMut", Value = 0.5 } },
+	{ Name = "Frozen", Label = "Frozen", Chance = 0, IncomeMult = 2, Color = Color3.fromRGB(170, 225, 255), WeatherOnly = true,
+		PassiveMult = 1.5, Seasons = { "Snow" }, SeasonPerk = { Stat = "ComboKeep", Value = 0.25 } },
+	{ Name = "Windswept", Label = "Windswept", Chance = 0, IncomeMult = 1.5, Color = Color3.fromRGB(255, 165, 70), WeatherOnly = true,
+		PassiveMult = 1.25, Seasons = { "Windy" }, SeasonPerk = { Stat = "DustValue", Value = 0.3 } },
+	{ Name = "Wet", Label = "Wet", Chance = 0, IncomeMult = 1.5, Color = Color3.fromRGB(80, 160, 255), WeatherOnly = true,
+		PassiveMult = 1.25, Seasons = { "Rain" }, SeasonPerk = { Stat = "HatchSpeed", Value = 0.3 } },
 }
+
 
 local Eggs = {
 	Rarities = Rarities,
@@ -40,6 +57,8 @@ local Eggs = {
 	ShowerWeights = { Rare = 60, Epic = 28, Legendary = 9, Mythic = 3 } :: { [string]: number },
 	-- "Faster Hatch" gamepass multiplier on hatch time.
 	FasterHatchMult = 0.5,
+	-- A brand-new player's first egg opens after this many seconds (HatchService).
+	FirstEggSeconds = 3,
 }
 
 for _, r in Rarities do

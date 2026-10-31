@@ -23,7 +23,11 @@ local AlienService = {}
 
 local S: any
 
-local alienIncome = Aliens.income
+-- Cash per second of one placed pet before multipliers, with its mutation's season
+-- (Disco pets earn 2x during Disco, shared/PetPassives).
+local function alienIncome(pet: any, seasons: any?): number
+	return Aliens.income(pet) * PetPassives.incomeMult(pet.Mutation, seasons or PetPassives.seasons())
+end
 
 function AlienService:GetSlotCount(player: Player): number
 	local data = S.DataService:GetData(player)
@@ -58,9 +62,10 @@ function AlienService:GetBaseIncome(player: Player): number
 		return 0
 	end
 	local total = 0
+	local seasons = PetPassives.seasons()
 	for _, pet in data.Pets do
 		if pet.Placed then
-			total += alienIncome(pet)
+			total += alienIncome(pet, seasons)
 		end
 	end
 	return total * Upgrades.multiplier(data.Upgrades, "PetIncome")
@@ -140,6 +145,7 @@ function AlienService:RefreshBase(player: Player)
 	local aliens = Instance.new("Folder")
 	aliens.Name = "Aliens"
 	local placed = {}
+	local seasons = PetPassives.seasons()
 	for uid, pet in data.Pets do
 		local def = Aliens.ById[pet.Id]
 		if pet.Placed and def then
@@ -149,7 +155,7 @@ function AlienService:RefreshBase(player: Player)
 			entry:SetAttribute("AlienId", pet.Id)
 			entry:SetAttribute("Mutation", pet.Mutation)
 			entry:SetAttribute("Huge", pet.Huge == true)
-			entry:SetAttribute("Income", alienIncome(pet) * mult)
+			entry:SetAttribute("Income", alienIncome(pet, seasons) * mult)
 			entry:SetAttribute("Weight", pet.Weight or Weights.petKg(def.Rarity))
 			entry:SetAttribute("WeightMult", Weights.incomeMult(def.Rarity, pet.Weight))
 			entry.Parent = aliens
@@ -207,7 +213,7 @@ function AlienService:RefreshBase(player: Player)
 
 	-- Top placed pets follow the player around (rendered by each client).
 	table.sort(placed, function(a, b)
-		return alienIncome(a) > alienIncome(b)
+		return Aliens.income(a) > Aliens.income(b)
 	end)
 	local followers = {}
 	for i = 1, math.min(FOLLOWER_COUNT, #placed) do
@@ -280,6 +286,14 @@ function AlienService:Start()
 		for player in S.DataService:GetSessions() do
 			AlienService:RefreshBase(player)
 		end
+	end
+	-- Mutated pets come in and out of season with the weather and moon (shared/PetPassives):
+	-- rebuild the income labels (the client keeps pets that didn't change).
+	local state = S.StateService:GetServerState()
+	for _, name in { "Weather", "Moon" } do
+		state:GetAttributeChangedSignal(name):Connect(function()
+			task.defer(refreshAll)
+		end)
 	end
 	local folder = ReplicatedStorage:FindFirstChild("Assets")
 	if not (folder and folder:GetAttribute("EggsReady")) then
