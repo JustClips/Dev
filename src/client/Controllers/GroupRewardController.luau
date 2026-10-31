@@ -1,11 +1,11 @@
 --!strict
--- Free reward window (screen "GroupReward"), opened from the Free pill at the top. Join
--- the group (Roblox's in-game join prompt) and claim 2 Luck Potions + cash, once. A
--- separate strip asks players to like and favorite the game; that part gives nothing
--- (Roblox doesn't allow rewards for likes/favorites, or wording that hints at one).
+-- Free reward window (screen "GroupReward"), opened from the Free pill at the top: the
+-- reward and a Claim button (Dev, 2026-10-31). Claim gives 2 Luck Potions + cash once; when
+-- you're not in the group yet it brings up Roblox's join prompt first and claims after.
+-- Only group membership is rewarded (Roblox doesn't allow rewards for likes/favorites).
 -- Hidden while Config/Rewards Group.Id is 0, and the pill goes away once claimed.
-local AvatarEditorService = game:GetService("AvatarEditorService")
 local GroupService = game:GetService("GroupService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = script.Parent.Parent
@@ -50,12 +50,9 @@ local function render()
 		lastShown = show
 		C.HudController:Relayout()
 	end
-	local claim = Ui.find(gui, "Window.Join.Claim") :: GuiButton
+	local claim = Ui.find(gui, "Window.Claim") :: GuiButton
 	Ui.setText(claim, if info.GroupClaimed then "Claimed" else "Claim")
 	claim.BackgroundColor3 = if info.GroupClaimed then GREY else GREEN
-	;(Ui.find(gui, "Window.Note") :: TextLabel).Text = if info.GroupClaimed
-		then "Thanks for being in the group!"
-		else "Already in the group? Just press Claim."
 end
 
 function GroupRewardController:Open()
@@ -83,28 +80,32 @@ function GroupRewardController:Start()
 	Ui.button(Ui.find(gui, "Dim"), function()
 		Ui.close("GroupReward")
 	end)
-	Ui.button(Ui.find(gui, "Window.Join.Claim"), function()
-		act("ClaimGroup")
-	end)
-	Ui.button(Ui.find(gui, "Window.Join.JoinButton"), function()
-		if Rewards.Group.Id == 0 then
+	-- Claim: in the group already -> claimed. Not yet -> Roblox's join prompt, then claim.
+	local busy = false
+	Ui.button(Ui.find(gui, "Window.Claim"), function()
+		local info = State.data and State.data.Rewards
+		if busy or Rewards.Group.Id == 0 or (info and info.GroupClaimed) then
 			return
 		end
-		-- Roblox's own join prompt; claim right away if they joined.
+		busy = true
 		task.spawn(function()
-			local ok, status = pcall(function()
-				return GroupService:PromptJoinAsync(Rewards.Group.Id)
+			local inGroup = false
+			pcall(function()
+				inGroup = Players.LocalPlayer:IsInGroup(Rewards.Group.Id)
 			end)
-			if ok and (status == Enum.GroupMembershipStatus.Joined or status == Enum.GroupMembershipStatus.AlreadyMember) then
-				act("ClaimGroup")
-			elseif ok and status == Enum.GroupMembershipStatus.JoinRequestPending then
-				C.HudController:Toast("Join request sent! Claim once you're in.", "Good")
+			if not inGroup then
+				local ok, status = pcall(function()
+					return GroupService:PromptJoinAsync(Rewards.Group.Id)
+				end)
+				inGroup = ok and (status == Enum.GroupMembershipStatus.Joined or status == Enum.GroupMembershipStatus.AlreadyMember)
+				if ok and status == Enum.GroupMembershipStatus.JoinRequestPending then
+					C.HudController:Toast("Join request sent! Claim once you're in.", "Good")
+				end
 			end
-		end)
-	end)
-	Ui.button(Ui.find(gui, "Window.Support.Favorite"), function()
-		pcall(function()
-			AvatarEditorService:PromptSetFavorite(game.PlaceId, Enum.AvatarItemType.Asset, true)
+			if inGroup then
+				act("ClaimGroup")
+			end
+			busy = false
 		end)
 	end)
 	State.Changed:Connect(render)

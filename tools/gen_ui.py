@@ -1422,40 +1422,22 @@ def settings():
 
 # ---------------------------------------------------------------- Group reward
 def group_reward():
-    """Free reward window (screen "GroupReward"), opened from the Free pill at the top: join
-    the group (prompted in-game) and claim. Under it, a separate ask to like and favorite
-    the game. Only group membership is rewarded (Roblox doesn't allow rewards for likes or
-    favorites, or wording that hints at one)."""
-    join = plate("Join", U(1, -28, 0, 236), U(0, 14, 0, 78), tint=WHITE, stud=0.2, children=[
-        icon("Icon", "Group", 132, U(0, 18, 0.5, 0), (0, 0.5)),
-        text("Title", "JOIN OUR GROUP", U(1, -180, 0, 40), U(0, 166, 0, 14), ts=32, color=INK, display=True, xa="Left"),
-        text("Text", "Get free stuff right now:", U(1, -180, 0, 26), U(0, 166, 0, 56), ts=20, color=SUB, heavy=True, xa="Left"),
-        frame("Rewards", U(1, -180, 0, 60), U(0, 166, 0, 86), children=[
-            hlist(10, "Left", "Center"),
-            frame("Potions", U(0, 190, 0, 56), bg="#EEF1F7", LayoutOrder=1, children=[
-                border(INK, 2),
-                icon("Icon", "PotionLuck", 46, U(0, 6, 0.5, 0), (0, 0.5)),
-                text("Label", "2 Luck Potions", U(1, -60, 1, 0), U(0, 56, 0, 0), ts=18, color=INK, display=True, xa="Left"),
-            ]),
-            frame("Cash", U(0, 190, 0, 56), bg="#EEF1F7", LayoutOrder=2, children=[
-                border(INK, 2),
-                icon("Icon", "Cash", 46, U(0, 6, 0.5, 0), (0, 0.5)),
-                text("Label", "Free Cash", U(1, -60, 1, 0), U(0, 56, 0, 0), ts=18, color=INK, display=True, xa="Left"),
-            ]),
-        ]),
-        button("JoinButton", U(0, 210, 0, 56), U(0, 166, 1, -14), (0, 1), color="#4C8DFF", label="Join Group", ts=22,
-               ico="Group", ico_px=38),
-        button("Claim", U(0, 200, 0, 56), U(0, 388, 1, -14), (0, 1), color=SUCCESS, label="Claim", ts=24),
+    """Free reward window (screen "GroupReward"), opened from the Free pill at the top: just the
+    reward and Claim (Dev, 2026-10-31: less text). Claim asks Roblox to join the group first
+    when you're not in it. Only group membership is rewarded (Roblox doesn't allow rewards
+    for likes or favorites)."""
+    def card(name, ico, label, order):
+        return plate(name, U(0, 240, 0, 200), tint=WHITE, stud=0.2, LayoutOrder=order, children=[
+            icon("Icon", ico, 112, U(0.5, 0, 0, 18), (0.5, 0)),
+            text("Label", label, U(1, -16, 0, 44), U(0.5, 0, 1, -12), (0.5, 1), ts=26, color=INK, display=True),
+        ])
+    rewards = frame("Rewards", U(1, -28, 0, 200), U(0.5, 0, 0, 104), (0.5, 0), children=[
+        hlist(24, "Center", "Center"),
+        card("Potions", "PotionLuck", "2 Luck Potions", 1),
+        card("Cash", "Cash", "Free Cash", 2),
     ])
-    support = plate("Support", U(1, -28, 0, 96), U(0, 14, 0, 328), tint="#FFF6DD", stud=0.2, children=[
-        icon("Icon", "Star", 62, U(0, 16, 0.5, 0), (0, 0.5)),
-        text("Text", "Like and favorite the game to support us! It helps more players find it.", U(1, -300, 1, -12),
-             U(0, 92, 0.5, 0), (0, 0.5), ts=19, color=INK, heavy=True, xa="Left"),
-        button("Favorite", U(0, 180, 0, 52), U(1, -14, 0.5, 0), (1, 0.5), color=PREMIUM, label="Favorite", ts=21,
-               label_color=INK, ico="Star", ico_px=34),
-    ])
-    note = text("Note", "", U(1, -28, 0, 30), U(0, 14, 1, -14), (0, 1), ts=16, color=SUB, heavy=True, xa="Left")
-    write("GroupReward", screen([dim(), window(WIN_W, WIN_H, "Free Reward", "Gift", [join, support, note], header="#FFB020")],
+    claim = button("Claim", U(0, 320, 0, 72), U(0.5, 0, 0, 340), (0.5, 0), color=SUCCESS, label="Claim", ts=32)
+    write("GroupReward", screen([dim(), window(WIN_W, WIN_H, "Free Reward", "Gift", [rewards, claim], header="#FFB020")],
                                order=10, enabled=False))
 
 
