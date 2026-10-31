@@ -8194,6 +8194,20 @@ Assets.Models = {
 			},
 		},
 	},
+	Coin_Cash = {
+		bounds = {
+			max = Vector3.new(0.849, 0.849, 0.262),
+			min = Vector3.new(-0.849, -0.849, -0.262),
+		},
+		id = 112643542362753,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+		pivot = "centre",
+	},
 	Crystal_Blue = {
 		bounds = {
 			max = Vector3.new(1.7, 1.309, 1.7),
@@ -12657,7 +12671,7 @@ Assets.Images = {
 	Vfx_Sparkle = "rbxassetid://91255733305215",
 	Vfx_Splash = "rbxassetid://94265707379182",
 	Vfx_Spot = "rbxassetid://126369518633662",
-	Vfx_Star = "rbxassetid://112677765949874",
+	Vfx_Star = "rbxassetid://138864840561900",
 	Vfx_Trail = "rbxassetid://91306814207040",
 	Vfx_Wind = "rbxassetid://128498857580699",
 }
