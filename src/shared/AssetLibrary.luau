@@ -379,6 +379,7 @@ local AURAS: { [string]: PixelFx } = {
 	Petals = { texture = "Vfx_Leaf", colors = { Color3.fromRGB(255, 150, 210), Color3.fromRGB(255, 200, 235), Color3.fromRGB(190, 140, 255) }, size = 0.3, rate = 5, speed = 0.4, life = 2.2, accel = Vector3.new(0, -1, 0), glow = 0.3, spin = true },
 	Sparks = { colors = { Color3.fromRGB(255, 80, 220), Color3.fromRGB(90, 240, 255) }, size = 0.1, rate = 8, speed = 1.2, life = 0.5, accel = Vector3.new(0, -6, 0), glow = 1 },
 	Aurora = { colors = { Color3.fromRGB(90, 255, 176), Color3.fromRGB(79, 216, 255), Color3.fromRGB(176, 122, 255) }, size = 0.16, rate = 8, speed = 0.3, life = 2, accel = Vector3.new(0, 0.8, 0), glow = 1 },
+	Spores = { colors = { Color3.fromRGB(170, 255, 120), Color3.fromRGB(110, 210, 90), Color3.fromRGB(255, 160, 220) }, size = 0.13, rate = 6, speed = 0.3, life = 2, accel = Vector3.new(0, 0.7, 0), glow = 0.7 },
 	GoldDust = { colors = { Color3.fromRGB(255, 226, 120), Color3.fromRGB(255, 255, 230) }, size = 0.12, rate = 7, speed = 0.4, life = 1.4, accel = Vector3.new(0, -0.6, 0), glow = 1 },
 	Leaves = { texture = "Vfx_Leaf", colors = { Color3.fromRGB(255, 170, 50), Color3.fromRGB(220, 80, 40), Color3.fromRGB(250, 210, 80) }, size = 0.35, rate = 4, speed = 0.4, life = 2.2, accel = Vector3.new(0, -1.2, 0), glow = 0.3, spin = true },
 }

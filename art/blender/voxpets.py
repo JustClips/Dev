@@ -35,7 +35,7 @@ from lib import Asset  # noqa: E402
 U = 0.13            # cube size in studs (BASE_U times the pet's SCALE while it builds)
 BASE_U = U
 # Bigger pets: same cube grid, bigger cubes.
-SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6, "DustBunny": 1.9}
+SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6, "DustBunny": 1.9, "Koi": 1.2, "Flamingo": 1.1, "RedPanda": 1.1, "MossGolem": 1.6, "Pegasus": 1.6}
 FPS = 30
 IDLE = (0, 90)      # frames
 WALK = (120, 138)
@@ -1174,7 +1174,7 @@ def seal():
     return assemble("Seal", parts)
 
 
-def fishlike(name, top, belly, length, radius, fin=None, dorsal=3, fluke_vertical=False, snout=3, teeth=False):
+def fishlike(name, top, belly, length, radius, fin=None, dorsal=3, fluke_vertical=False, snout=3, teeth=False, paint=None, horn=None):
     """Dolphins and sharks: a tapered body along y, a snout, a dorsal fin, side flippers
     and a tail fluke. Floats."""
     parts = []
@@ -1189,7 +1189,8 @@ def fishlike(name, top, belly, length, radius, fin=None, dorsal=3, fluke_vertica
         for i in range(-radius, radius):
             for k in range(-radius, radius):
                 if (i + 0.5) ** 2 + ((k + 0.5) * 1.15) ** 2 <= rr * rr:
-                    body.cells[(i, j, k + radius + 2)] = belly if k < -rr * 0.25 else top
+                    col = belly if k < -rr * 0.25 else top
+                    body.cells[(i, j, k + radius + 2)] = paint(i, j, k, col) if paint else col
     for d in range(dorsal):                         # dorsal fin, filled down to the back
         for j in range(-1 - d, 2 - d * 2 + dorsal):
             for i in (-1, 0):
@@ -1202,6 +1203,9 @@ def fishlike(name, top, belly, length, radius, fin=None, dorsal=3, fluke_vertica
         for i in (-1, 0):
             for k in (radius + 1, radius + 2):
                 head.cells[(i, j, k)] = belly if k == radius + 1 else top
+    if horn:                                         # narwhal tusk: a long spiral spike
+        for n in range(9):
+            head.cells[(0 if n % 2 else -1, -half - n, radius + 2)] = horn if n % 2 else shade(horn, -0.2)
     if teeth:
         for i in range(-3, 3):
             head.cells[(i, -half + snout - 1, radius + 1)] = "FFFFFF"
@@ -1234,8 +1238,7 @@ def shark():
     return a
 
 
-def sea_serpent():
-    T, TD, G, B, I = "1FA59A", "137068", "F2C14E", "B8F0E0", "7FF6FF"
+def sea_serpent(key="SeaSerpent", T="1FA59A", TD="137068", G="F2C14E", B="B8F0E0", I="7FF6FF", aura="Bubbles", coral=None):
     parts = []
     head = Part("Head", "Body", joint=(0, -6, 8))
     head.rbox(-3, 3, -12, -5, 6, 11, lambda i, j, k: B if k == 6 else T, edges=(True, False, True))
@@ -1243,6 +1246,9 @@ def sea_serpent():
     head.set([(-2, -14, 8), (1, -14, 8)], TD)
     for x in (-3, 2):                                         # horns
         head.set([(x, -8, 11), (x, -7, 12), (x, -6, 13)], G)
+        if coral:                                             # branching coral antlers
+            o = -1 if x < 0 else 1
+            head.set([(x, -6, 14), (x, -5, 15), (x + o, -6, 15), (x + 2 * o, -6, 16), (x, -5, 16), (x, -4, 17), (x + o, -7, 14)], coral)
     eye_cells = [(x, -12, 9) for x in (-3, -2, 1, 2)]
     for c in eye_cells:
         head.cells.pop(c, None)
@@ -1274,9 +1280,9 @@ def sea_serpent():
     tail.box(-1, 1, 18, 22, 3, 5, T)
     tail.box(-3, 3, 21, 23, 2, 7, lambda i, j, k: G if abs(i + 0.5) >= 1.5 or k in (2, 6) else T)    # fin tip
     parts = [body, s1, s2, s3, tail] + parts
-    a = assemble("SeaSerpent", parts)
+    a = assemble(key, parts)
     a.extra["float"] = True
-    a.extra["aura"] = "Bubbles"
+    a.extra["aura"] = aura
     return a
 
 
@@ -1715,8 +1721,8 @@ def butterfly_queen():
     return a
 
 
-def kraken():
-    R, RD, SP, Y, SU = "B8304A", "7A1E36", "E86A80", "FFD23F", "F4A0B0"   # red, dark, spots, eye, suckers
+def kraken(key="Kraken", R="B8304A", RD="7A1E36", SP="E86A80", Y="FFD23F", SU="F4A0B0", aura="Bubbles"):
+    # red, dark, spots, eye, suckers
     parts = []
     body = Part("Body")
     body.rbox(-5, 5, -5, 5, 4, 15, lambda i, j, k: SP if (i * 5 + j * 3 + k * 7) % 13 == 0 and k > 6 else (RD if k == 4 else R))
@@ -1740,8 +1746,9 @@ def kraken():
             col = lambda i, j, k: SU if k == 0 and (i + j) % 2 == 0 else R    # noqa: E731
             (t if s_ < 5 else t2).box(x, x + 2, y, y + 2, z, z + (2 if s_ < 4 else 1) + (1 if s_ < 2 else 0), col)
         parts += [t, t2]
-    a = assemble("Kraken", parts)
-    a.extra["aura"] = "Bubbles"
+    a = assemble(key, parts)
+    if aura:
+        a.extra["aura"] = aura
     return a
 
 
@@ -1890,6 +1897,360 @@ def dust_bunny():
     return assemble("DustBunny", parts, name="Mob_DustBunny", kind="mob")
 
 
+# ------------------------------------------------------- Park extras (3 per rarity)
+
+
+def bird(key, body_col, belly, wing_col, beak, legs_col, head_col=None, crest=None, tail_len=2, size=(3, 4, 5), beak_len=2):
+    """A round voxel bird (robin, crow, puffin, parrot...). Flies with fly()."""
+    hx, by, bz = size                                   # half width, body half length, body height
+    head_col = head_col or body_col
+    parts = []
+    leg = Part("LegL", "Body", joint=(1.5, 0, 2))
+    leg.box(1, 2, -1, 1, 1, 2, legs_col)
+    leg.box(1, 3, -2, 1, 0, 1, legs_col)
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-hx, hx, -by, by + 1, 2, 2 + bz + 1, lambda i, j, k: belly if (j <= -by + 1 and k <= bz) or (k == 2) else body_col)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -by + 2, 2 + bz))
+    head.rbox(-hx + 1, hx - 1, -by - 2, -by + 3, 2 + bz, 2 + bz + 5, head_col, edges=(True, False, True))
+    eyes(head, -by - 2, bz + 5, xs=(-hx + 1, hx - 2), w=1, h=1)
+    head.box(-1, 1, -by - 2 - beak_len, -by - 2, bz + 3, bz + 5, beak)
+    if crest:
+        head.set([(0, -by, 2 + bz + 5), (-1, -by, 2 + bz + 5), (0, -by + 1, 2 + bz + 6), (-1, -by + 2, 2 + bz + 6)], crest)
+    parts.append(head)
+    wing = Part("WingL", "Body", joint=(hx, 0, bz + 1))
+    wing.box(hx, hx + 1, -by + 1, by, 3, bz + 2, lambda i, j, k: shade(wing_col, -0.12) if j >= by - 2 else wing_col)
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, by, bz))
+    tail.box(-2, 2, by + 1, by + 1 + tail_len, bz - 1, bz + 1, lambda i, j, k: shade(wing_col, -0.15) if j == by + tail_len else wing_col)
+    parts.append(tail)
+    a = assemble(key, parts)
+    a.extra["float"] = True
+    return a
+
+
+def ladybug():
+    R, K, W = "E8322E", "1E1A1E", "FFFFFF"
+    parts = []
+    for n, (x0, y0) in enumerate([(2, -3), (-4, -3), (2, 0), (-4, 0), (2, 3), (-4, 3)]):
+        nm = ["LegFL", "LegFR", "LegML", "LegMR", "LegBL", "LegBR"][n]
+        p = Part(nm, "Body", joint=(x0 + 1 if x0 > 0 else x0 + 1, y0, 2))
+        p.box(x0 + (1 if x0 > 0 else 0), x0 + (2 if x0 > 0 else 1), y0, y0 + 1, 0, 2, K)
+        p.box(x0 + (2 if x0 > 0 else -1), x0 + (3 if x0 > 0 else 0), y0, y0 + 1, 0, 1, K)
+        parts.append(p)
+    body = Part("Body")
+    spots = {(-3, -2), (2, -2), (-1, 1), (0, 1), (-4, 3), (3, 3), (-2, 5), (1, 5)}
+    body.rbox(-5, 5, -4, 7, 1, 7, lambda i, j, k: K if (i in (-1, 0) and k >= 5) or ((i, j) in spots and k >= 4) else (K if k == 1 else R))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -4, 3))
+    head.rbox(-3, 3, -7, -3, 1, 5, K, edges=(True, False, True))
+    head.box(-3, -1, -8, -7, 3, 5, W)
+    head.box(1, 3, -8, -7, 3, 5, W)
+    head.set([(-2, -8, 3), (1, -8, 3)], K)
+    parts.append(head)
+    ant = Part("EarL", "Head", joint=(1.5, -6, 5))
+    ant.set([(1, -6, 5), (1, -7, 6), (2, -8, 7)], K)
+    parts += [ant, ant.mirror("EarR")]
+    return assemble("Ladybug", parts)
+
+
+def chipmunk():
+    B, D, W, C = "B8743A", "4A2C18", "F6E4C8", "E8A868"
+    parts = legs(B, D, 2, -4, 2)
+    body = Part("Body")
+    body.rbox(-3, 3, -5, 4, 2, 7, lambda i, j, k: W if k == 2 or (j == -5 and k <= 5) else (D if i in (-3, 2) and k >= 4 else (W if i in (-2, 1) and k >= 5 else (D if i in (-1, 0) and k == 6 else B))))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -5, 6))
+    head.rbox(-4, 4, -10, -4, 5, 11, lambda i, j, k: W if (j == -10 and k <= 7) else (D if (k == 10 and i in (-1, 0)) else B), edges=(True, False, True))
+    head.box(-4, 4, -10, -8, 6, 8, lambda i, j, k: C if abs(i + 0.5) >= 2.5 else None)    # stuffed cheeks
+    eyes(head, -10, 8, xs=(-3, 1))
+    head.set([(-3, -10, 10), (2, -10, 10)], W)                      # eye stripes
+    head.box(-1, 1, -11, -10, 6, 8, W)
+    head.set([(-1, -11, 7), (0, -11, 7)], D)
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(2.5, -6.5, 11))
+    ear.box(2, 4, -7, -6, 11, 12, B)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 4, 4))
+    tail.box(-1, 1, 4, 6, 3, 6, B)
+    tail2 = Part("Tail2", "Tail", joint=(0, 5, 6))
+    tail2.box(-1, 1, 5, 7, 6, 11, lambda i, j, k: D if j == 6 and k % 2 else B)
+    parts += [tail, tail2]
+    return assemble("Chipmunk", parts)
+
+
+def bee():
+    Y, K, W, S = "FFC928", "2A2224", "E8F4FF", "F6F0E0"
+    parts = []
+    body = Part("Body")
+    body.rbox(-3, 3, -3, 7, 3, 9, lambda i, j, k: K if j in (0, 1, 4, 5) else Y)
+    body.set([(-1, 7, 5), (0, 7, 5), (0, 8, 5)], K)                  # stinger
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -3, 6))
+    head.rbox(-3, 3, -7, -2, 3, 9, Y, edges=(True, False, True))
+    eyes(head, -7, 5, xs=(-3, 1), w=2, h=3)
+    head.set([(-1, -7, 4), (0, -7, 4)], "C88A20")
+    parts.append(head)
+    ant = Part("EarL", "Head", joint=(1, -5, 9))
+    ant.set([(1, -5, 9), (1, -6, 10), (2, -7, 11)], K)
+    parts += [ant, ant.mirror("EarR")]
+    wing = Part("WingL", "Body", joint=(2, 1, 9))
+    for i in range(2, 8):
+        for j in range(-1, 5):
+            if (i - 4.5) ** 2 / 9 + (j - 1.5) ** 2 / 8 <= 1:
+                wing.cells[(i, j, 9)] = W if (i + j) % 3 else S
+    parts += [wing, wing.mirror("WingR")]
+    leg = Part("LegL", "Body", joint=(1, 0, 3))
+    leg.set([(1, -1, 2), (1, 1, 2), (1, 3, 2)], K)
+    parts += [leg, leg.mirror("LegR")]
+    a = assemble("Bee", parts)
+    a.extra["float"] = True
+    return a
+
+
+def snail():
+    G, GL, SH, SD, E = "B8C88A", "D8E4B0", "C8803A", "8A4E22", "241A16"
+    parts = []
+    body = Part("Body")
+    body.rbox(-2, 2, -6, 8, 0, 3, lambda i, j, k: GL if k == 0 else G, edges=(True, False, True))
+    parts.append(body)
+    shell = Part("Shell", "Body", joint=(0, 2, 3))
+    def sh(i, j, k):
+        r = math.hypot(j - 2.5, k - 7.5)
+        return SD if abs((r + math.atan2(k - 7.5, j - 2.5) * 0.9) % 2.4 - 1.2) < 0.45 else SH
+    for i in range(-3, 3):
+        for j in range(-2, 8):
+            for k in range(3, 13):
+                if (j - 2.5) ** 2 + (k - 7.5) ** 2 <= 25 and abs(i + 0.5) <= 3 - max(0, abs(j - 2.5) - 3) * 0.5:
+                    shell.cells[(i, j, k)] = sh(i, j, k)
+    parts.append(shell)
+    head = Part("Head", "Body", joint=(0, -6, 2))
+    head.rbox(-2, 2, -9, -5, 1, 5, G, edges=(True, False, True))
+    head.set([(-1, -9, 2), (0, -9, 2)], shade(G, -0.25))
+    parts.append(head)
+    for nm, x in (("EarL", 1), ("EarR", -2)):
+        st = Part(nm, "Head", joint=(x + 0.5, -7, 5))
+        st.set([(x, -7, 5), (x, -7, 6), (x, -8, 7)], G)
+        st.set([(x, -8, 8)], E)
+        parts.append(st)
+    return assemble("Snail", parts)
+
+
+def fawn():
+    B, W, D, N = "C8823A", "FAF0E0", "7A4A22", "2A1C16"
+    parts = legs(B, D, 7, -6, 4)
+    body = Part("Body")
+    body.rbox(-3, 3, -7, 7, 7, 12, lambda i, j, k: W if k == 7 or (k == 11 and (i * 3 + j) % 5 == 0) or (i in (-3, 2) and k == 10 and j % 3 == 0) else B)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -6, 11))
+    head.box(-2, 2, -8, -5, 11, 15, B)                               # neck
+    head.rbox(-3, 3, -12, -6, 14, 19, B, edges=(True, False, False))
+    head.box(-2, 2, -14, -12, 14, 16, W)
+    head.set([(-1, -14, 16), (0, -14, 16), (-1, -14, 15), (0, -14, 15)], N)
+    eyes(head, -12, 17, xs=(-3, 1))
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(3, -8, 18))
+    ear.box(3, 6, -9, -7, 18, 19, lambda i, j, k: "F2B8A8" if j == -9 and i == 4 else B)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 7, 11))
+    tail.box(-1, 1, 7, 8, 10, 12, lambda i, j, k: W if k == 10 else B)
+    parts.append(tail)
+    return assemble("Fawn", parts)
+
+
+def goose():
+    W, G, O, K = "F6F6F2", "D8DCE0", "F28A24", "2A2A2A"
+    parts = []
+    leg = Part("LegL", "Body", joint=(1.5, 0, 3))
+    leg.box(1, 2, -1, 1, 1, 3, O)
+    leg.box(0, 3, -3, 1, 0, 1, O)
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-4, 4, -5, 7, 2, 9, lambda i, j, k: G if k == 2 else W)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -4, 8))
+    head.box(-1, 1, -6, -4, 8, 15, W)                                # long neck
+    head.rbox(-2, 2, -8, -3, 15, 19, W, edges=(True, False, True))
+    head.box(-1, 1, -11, -8, 16, 17, O)
+    head.box(-1, 1, -10, -8, 15, 16, shade(O, -0.15))
+    eyes(head, -8, 17, xs=(-2, 1), w=1, h=1, shine=False)
+    parts.append(head)
+    wing = Part("WingL", "Body", joint=(4, 0, 8))
+    wing.box(4, 5, -3, 6, 4, 8, lambda i, j, k: G if j >= 4 else W)
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 7, 7))
+    tail.box(-2, 2, 7, 9, 7, 9, lambda i, j, k: G if j == 8 else W)
+    parts.append(tail)
+    return assemble("Goose", parts)
+
+
+def badger():
+    G, GD, K, W = "8A8A90", "6A6A70", "1E1E22", "F4F4F0"
+    parts = legs(K, K, 3, -6, 4, spread=1)
+    body = Part("Body")
+    body.rbox(-4, 4, -7, 7, 3, 9, lambda i, j, k: K if k == 3 else (GD if (i + j + k) % 5 == 0 else G))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -7, 7))
+    def face(i, j, k):
+        if i in (-1, 0):
+            return W
+        if i in (-3, -2, 1, 2):
+            return K
+        return W
+    head.rbox(-4, 4, -12, -6, 5, 11, face, edges=(True, False, True))
+    head.box(-2, 2, -14, -12, 5, 8, lambda i, j, k: W if i in (-1, 0) else K)
+    head.set([(-1, -14, 7), (0, -14, 7)], K)
+    head.set([(-3, -12, 9), (2, -12, 9)], SHINE)                     # eyes in the black stripes
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(3.5, -8, 11))
+    ear.box(3, 5, -9, -8, 10, 11, W)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 7, 7))
+    tail.box(-1, 1, 7, 9, 6, 8, G)
+    parts.append(tail)
+    return assemble("Badger", parts)
+
+
+def koi():
+    O, W, R = "FF7A2A", "FAF6F0", "E8402A"
+    def paint(i, j, k, col):
+        if col == W:
+            return W
+        return O if (i // 2 + j // 3 + k // 2) % 3 else (W if (i + j) % 4 == 0 else R)
+    a = fishlike("Koi", O, W, 18, 3, fin=R, dorsal=2, snout=2, paint=paint)
+    return a
+
+
+def flamingo():
+    P, PL, PD, K, Y = "FF8AB8", "FFB8D4", "E8608E", "2A2224", "FFE8A0"
+    parts = []
+    leg = Part("LegL", "Body", joint=(1, 0, 10))
+    leg.box(0, 2, -1, 1, 1, 10, PD)
+    leg.box(0, 2, -3, 1, 0, 1, PD)
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-3, 3, -4, 6, 10, 16, lambda i, j, k: PL if k == 10 else P)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -3, 15))
+    head.box(-1, 1, -5, -3, 15, 18, P)                               # S-shaped neck
+    head.box(-1, 1, -4, -2, 18, 22, P)
+    head.box(-1, 1, -6, -3, 22, 24, P)
+    head.rbox(-2, 2, -8, -3, 24, 28, P, edges=(True, False, True))
+    head.box(-1, 1, -10, -8, 25, 27, lambda i, j, k: Y)
+    head.box(-1, 1, -12, -10, 24, 26, K)                              # bent black beak tip
+    eyes(head, -8, 26, xs=(-2, 1), w=1, h=1)
+    parts.append(head)
+    wing = Part("WingL", "Body", joint=(3, 0, 15))
+    wing.box(3, 4, -3, 6, 11, 15, lambda i, j, k: K if j == 5 else PD)
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 6, 13))
+    tail.box(-2, 2, 6, 8, 12, 14, PD)
+    parts.append(tail)
+    return assemble("Flamingo", parts)
+
+
+def red_panda():
+    R, D, W, K = "D8642A", "5A2A1A", "FAF2E6", "2A1C16"
+    parts = legs(D, K, 3, -6, 3)
+    body = Part("Body")
+    body.rbox(-3, 3, -7, 6, 3, 8, lambda i, j, k: D if k == 3 else R)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -7, 7))
+    def face(i, j, k):
+        if j == -12 and k <= 8:
+            return W
+        if j == -12 and k in (11, 12) and i in (-4, -3, 2, 3):
+            return W                                                 # eyebrow patches
+        if j == -12 and k in (9, 10) and i in (-4, 3):
+            return D                                                 # tear marks
+        return R
+    head.rbox(-5, 5, -12, -6, 6, 13, face, edges=(True, False, True))
+    head.box(-2, 2, -13, -12, 6, 8, W)
+    head.set([(-1, -13, 7), (0, -13, 7)], K)
+    eyes(head, -12, 9, xs=(-3, 1))
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(3.5, -8, 13))
+    ear.box(2, 5, -9, -8, 13, 15, lambda i, j, k: W if (i == 2 or k == 14) else R)
+    parts += [ear, ear.mirror("EarR")]
+    tail = Part("Tail", "Body", joint=(0, 6, 6))
+    tail.rbox(-2, 2, 6, 11, 4, 8, lambda i, j, k: D if j % 3 == 0 else R, edges=(True, False, False))
+    tail2 = Part("Tail2", "Tail", joint=(0, 11, 6))
+    tail2.rbox(-2, 2, 11, 16, 4, 8, lambda i, j, k: D if j % 3 == 0 else R, edges=(True, False, False))
+    parts += [tail, tail2]
+    return assemble("RedPanda", parts)
+
+
+def moss_golem():
+    S, SD, M, MD, F, E = "8A8C84", "6A6C66", "5AA03A", "3E7A2A", "FF8AC8", "9AFF6A"
+    stone = lambda i, j, k: SD if (i * 5 + j * 3 + k * 7) % 9 == 0 else S   # noqa: E731
+    mossy = lambda i, j, k: (M if (i + k) % 3 else MD) if k >= 14 else stone(i, j, k)   # noqa: E731
+    parts = []
+    leg = Part("LegL", "Body", joint=(3, 0, 6))
+    leg.box(1, 5, -2, 2, 0, 6, stone)
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-6, 6, -3, 4, 6, 17, mossy)
+    for (x, y, z) in [(-4, -3, 17), (2, -2, 17), (5, 0, 16), (-6, 1, 15), (0, 2, 17)]:
+        body.cells[(x, y, z)] = F                                    # little flowers in the moss
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, 0, 17))
+    head.rbox(-4, 4, -4, 3, 17, 22, lambda i, j, k: (M if (i + j) % 3 else MD) if k == 21 else stone(i, j, k))
+    eye_cells = [(x, -4, 19) for x in (-3, -2, 1, 2)]
+    for c in eye_cells:
+        head.cells.pop(c, None)
+    head.set([(-1, -4, 21), (0, -4, 22), (-1, -3, 22), (0, -3, 23)], M)   # sprout
+    parts.append(head)
+    glow = Part("Eyes_Glow", "Head", joint=(0, -4, 19), noise=False, glow=E)
+    glow.set(eye_cells, E)
+    parts.append(glow)
+    arm = Part("ArmL", "Body", joint=(7, 0, 16))
+    arm.rbox(6, 10, -2, 2, 3, 17, mossy, edges=(False, False, True))
+    parts += [arm, arm.mirror("ArmR")]
+    a = assemble("MossGolem", parts)
+    a.extra["aura"] = "Spores"
+    return a
+
+
+def pegasus():
+    W, H, G, B, BL = "FAFAFF", "D8D4E8", "FFD54A", "C8DCFF", "8AB8FF"
+    parts = legs(W, G, 7, -7, 5)
+    for p in parts:
+        for c in list(p.cells):
+            if c[2] <= 1:
+                p.cells[c] = G                                       # golden hooves
+    body = Part("Body")
+    body.rbox(-3, 3, -8, 8, 7, 13, W)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -7, 12))
+    head.box(-2, 2, -9, -5, 11, 17, W)
+    head.rbox(-3, 3, -13, -7, 16, 21, W, edges=(True, False, False))
+    head.box(-2, 2, -15, -13, 16, 19, H)
+    head.set([(-2, -15, 17), (1, -15, 17)], shade(H, -0.3))
+    eyes(head, -13, 19, xs=(-3, 1), shine=False)
+    parts.append(head)
+    mane = Part("Mane", "Head", joint=(0, -6, 17))
+    mane.box(-1, 1, -8, -4, 12, 22, lambda i, j, k: None if (j == -8 and k < 20) else (BL if (k + j) % 3 == 0 else B))
+    parts.append(mane)
+    ear = Part("EarL", "Head", joint=(2, -8.5, 21))
+    ear.box(1, 3, -9, -8, 21, 23, W)
+    parts += [ear, ear.mirror("EarR")]
+    wing = Part("WingL", "Body", joint=(3, -3, 12))
+    for d in range(10):                                              # big feathered wing
+        for j in range(-5, 3 - d // 3):
+            wing.cells[(3 + d, j, 12 + d // 3)] = G if j == 2 - d // 3 else (BL if d >= 7 else (B if d >= 4 and (j + d) % 2 == 0 else W))
+    parts += [wing, wing.mirror("WingR")]
+    tail = Part("Tail", "Body", joint=(0, 8, 11))
+    tail.box(-1, 1, 8, 10, 9, 13, B)
+    tail2 = Part("Tail2", "Tail", joint=(0, 9.5, 9))
+    tail2.box(-1, 1, 9, 12, 4, 10, lambda i, j, k: BL if k % 2 else B)
+    parts += [tail, tail2]
+    a = assemble("Pegasus", parts)
+    a.extra["float"] = True
+    a.extra["aura"] = "GoldDust"
+    return a
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
@@ -1901,7 +2262,9 @@ PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon":
         "Pigeon": pigeon, "Rat": rat, "Corgi": corgi, "Bulldog": bulldog, "RoboPup": robo_pup, "Gargoyle": gargoyle,
         "SnowHare": snow_hare, "MountainGoat": mountain_goat, "SnowLeopard": snow_leopard, "Mammoth": mammoth, "FrostEagle": frost_eagle, "Yeti": yeti,
         "ButterflyQueen": butterfly_queen, "Kraken": kraken, "MechaRex": mecha_rex, "AuroraWhale": aurora_whale,
-        "DustBunny": dust_bunny}
+        "DustBunny": dust_bunny,
+        "Ladybug": ladybug, "Chipmunk": chipmunk, "Bee": bee, "Snail": snail, "Fawn": fawn, "Goose": goose,
+        "Badger": badger, "Koi": koi, "Flamingo": flamingo, "RedPanda": red_panda, "MossGolem": moss_golem, "Pegasus": pegasus}
 
 
 # ------------------------------------------------------------------------- animation
@@ -2651,6 +3014,102 @@ def bunny_mob_hop(height, stretch, ears_back):
     return f
 
 
+def bug_walk(w):
+    p = walk(30, 0.01, 0, 0, 0)(w)
+    p["LegML"] = ((0, 0, 0), (-30 * s(w), 0, 0))
+    p["LegMR"] = ((0, 0, 0), (30 * s(w), 0, 0))
+    p["EarL"] = ((0, 0, 0), (10 * s(2 * w), 0, 0))
+    p["EarR"] = ((0, 0, 0), (10 * s(2 * w + 1), 0, 0))
+    return p
+
+
+def bug_idle(w):
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, 0), (-4 * s(2 * w), 0, 10 * s(w))),
+        "EarL": ((0, 0, 0), (12 * s(3 * w), 0, 0)), "EarR": ((0, 0, 0), (12 * s(3 * w + 1.2), 0, 0)),
+    }
+
+
+def bee_idle(w):
+    return {"Head": ((0, 0, 0), (-4 * s(2 * w), 0, 12 * s(w))),
+            "EarL": ((0, 0, 0), (10 * s(4 * w), 0, 0)), "EarR": ((0, 0, 0), (10 * s(4 * w + 1), 0, 0))}
+
+
+def bee_fly(speed, pitch):
+    def f(w):
+        p = bee_idle(w)
+        buzz = s(speed * w)
+        p["Body"] = ((0.04 * s(3 * w), 0, 0.1 * s(2 * w)), (pitch, 0, 4 * s(w)))
+        p["WingL"] = ((0, 0, 0), (0, -25 - 30 * buzz, 0))
+        p["WingR"] = ((0, 0, 0), (0, 25 + 30 * buzz, 0))
+        return p
+    return f
+
+
+def snail_idle(w):
+    return {
+        "Body": ((0, 0, 0), (0, 0, 0)),
+        "Shell": ((0, 0, 0.01 * s(2 * w)), (0, 2 * s(w), 0)),
+        "Head": ((0, 0, 0), (-4 * s(2 * w), 0, 12 * s(w))),
+        "EarL": ((0, 0, 0), (14 * s(2 * w), 0, 8 * s(w))), "EarR": ((0, 0, 0), (14 * s(2 * w + 1), 0, -8 * s(w))),
+    }
+
+
+def snail_walk(w):
+    p = snail_idle(w)
+    p["Body"] = ((0, -0.04 * s(2 * w), 0), (0, 0, 0))
+    p["Head"] = ((0, -0.06 * max(0.0, s(2 * w)), 0), (-3, 0, 4 * s(w)))
+    return p
+
+
+def goose_idle(w):
+    honk = max(0.0, s(w)) ** 8
+    p = duck_idle(w)
+    p.pop("Bill", None)
+    p["Head"] = ((0, 0, 0), (-25 * honk - 4 * s(2 * w), 0, 14 * s(w) * (1 - honk)))
+    p["WingL"] = ((0, 0, 0), (0, -40 * honk, 0))
+    p["WingR"] = ((0, 0, 0), (0, 40 * honk, 0))
+    return p
+
+
+def badger_idle(w):
+    dig = max(0.0, s(w)) ** 2 * s(14 * w)
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (6 * max(0.0, s(w)) ** 2, 0, 0)),
+        "Head": ((0, 0, 0), (12 * max(0.0, s(w)) ** 2, 0, 8 * s(w + 2))),
+        "LegFL": ((0, 0, 0), (-30 * dig, 0, 0)), "LegFR": ((0, 0, 0), (30 * dig, 0, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 10 * s(4 * w))),
+    }
+
+
+def flamingo_idle(w):
+    tuck = min(1.0, 3 * max(0.0, s(w)))                                 # stands on one leg
+    return {
+        "Body": ((0, 0, 0.01 * s(2 * w)), (0, 0, 2 * s(w))),
+        "Head": ((0, 0, 0), (-6 * s(2 * w), 0, 16 * s(w + 1))),
+        "LegL": ((0, 0, 0.05 * tuck), (75 * tuck, 0, 0)),
+        "WingL": ((0, 0, 0), (0, -6 * max(0.0, s(5 * w)) ** 6, 0)), "WingR": ((0, 0, 0), (0, 6 * max(0.0, s(5 * w)) ** 6, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 8 * s(3 * w))),
+    }
+
+
+def flamingo_walk(w):
+    swing = 30 * s(w)
+    return {
+        "Body": ((0, 0, 0.05 * abs(s(w))), (0, 0, 4 * s(w))),
+        "Head": ((0, 0.03 * s(2 * w), 0), (-6 * s(2 * w), 0, -4 * s(w))),
+        "LegL": ((0, 0, 0), (swing, 0, 0)), "LegR": ((0, 0, 0), (-swing, 0, 0)),
+    }
+
+
+def golem_idle(w):
+    p = yeti_idle(w)
+    p.pop("Horns_Glow", None)
+    p["Head"] = ((0, 0, 0), (-8 * max(0.0, s(w)) ** 4, 0, 12 * s(w + 2)))
+    return p
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -2700,6 +3159,18 @@ ANIMS = {
     "MechaRex": {"Idle": rex_idle, "Walk": rex_walk},
     "AuroraWhale": {"Idle": whale(1, 18), "Walk": whale(2, 26)},
     "DustBunny": {"Idle": bunny_mob_idle, "Walk": bunny_mob_hop(1.0, 30, 20), "Run": bunny_mob_hop(2.4, 55, 45)},
+    "Ladybug": {"Idle": bug_idle, "Walk": bug_walk},
+    "Chipmunk": {"Idle": rat_idle, "Walk": walk(40, 0.08, 10, -10, 0)},
+    "Bee": {"Idle": bee_fly(12, -4), "Walk": bee_fly(6, -14)},
+    "Snail": {"Idle": snail_idle, "Walk": snail_walk},
+    "Fawn": {"Idle": unicorn_idle, "Walk": prance},
+    "Goose": {"Idle": goose_idle, "Walk": waddle},
+    "Badger": {"Idle": badger_idle, "Walk": heavy_walk},
+    "Koi": {"Idle": swim(5, 16), "Walk": swim(8, 26, 0.12)},
+    "Flamingo": {"Idle": flamingo_idle, "Walk": flamingo_walk},
+    "RedPanda": {"Idle": lion_idle, "Walk": walk(30, 0.05, 14, 0, 4)},
+    "MossGolem": {"Idle": golem_idle, "Walk": yeti_walk},
+    "Pegasus": fly(40, quad=True, base=unicorn_idle),
 }
 
 
