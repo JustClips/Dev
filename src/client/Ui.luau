@@ -468,7 +468,7 @@ end
 -- so they catch the eye.
 local badgeCounts: { [GuiObject]: string } = setmetatable({}, { __mode = "k" }) :: any
 local wiggleStarted = false
-local BADGE_TILT = 12 -- badges sit a little tilted, like a sticker
+local BADGE_TILT = 0 -- badges rest upright (Dev, 2026-10-31)
 
 local function badgePop(badge: GuiObject)
 	if Ui.reducedMotion() then

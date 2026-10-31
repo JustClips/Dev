@@ -372,7 +372,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -381,24 +380,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -416,51 +415,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -474,19 +428,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }
@@ -786,7 +728,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -795,24 +736,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -830,51 +771,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -888,19 +784,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }
@@ -1200,7 +1084,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -1209,24 +1092,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -1244,51 +1127,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -1302,19 +1140,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }
@@ -1614,7 +1440,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -1623,24 +1448,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -1658,51 +1483,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -1716,19 +1496,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       },
@@ -2085,7 +1853,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -2094,24 +1861,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -2129,51 +1896,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -2187,19 +1909,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }
@@ -2499,7 +2209,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -2508,24 +2217,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -2543,51 +2252,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -2601,19 +2265,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }
@@ -2906,7 +2558,6 @@
       "BorderSizePixel": 0,
       "Visible": false,
       "ZIndex": 6,
-      "Rotation": 12,
       "BackgroundTransparency": 0,
       "BackgroundColor3": "#FF2E4D"
      },
@@ -2915,24 +2566,24 @@
        "name": "Stroke",
        "className": "UIStroke",
        "properties": {
-        "Color": "#FFFFFF",
+        "Color": "#17191E",
         "Thickness": 2.5,
         "ApplyStrokeMode": "Border",
         "LineJoinMode": "Miter"
        }
       },
       {
-       "name": "Edge",
-       "className": "Frame",
+       "name": "Label",
+       "className": "TextLabel",
        "properties": {
         "Size": [
          [
           1,
-          6
+          0
          ],
          [
           1,
-          6
+          2
          ]
         ],
         "Position": [
@@ -2950,51 +2601,6 @@
          0.5
         ],
         "BorderSizePixel": 0,
-        "ZIndex": 6,
-        "BackgroundTransparency": 1
-       },
-       "children": [
-        {
-         "name": "Stroke",
-         "className": "UIStroke",
-         "properties": {
-          "Color": "#17191E",
-          "Thickness": 2,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
-         }
-        }
-       ]
-      },
-      {
-       "name": "Label",
-       "className": "TextLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "Position": [
-         [
-          0,
-          0
-         ],
-         [
-          0,
-          0
-         ]
-        ],
-        "AnchorPoint": [
-         0,
-         0
-        ],
-        "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
         "Text": "!",
         "TextColor3": "#FFFFFF",
@@ -3008,19 +2614,7 @@
          "weight": "Heavy",
          "style": "Normal"
         }
-       },
-       "children": [
-        {
-         "name": "TextStroke",
-         "className": "UIStroke",
-         "properties": {
-          "Color": "#17191E",
-          "Thickness": 2,
-          "ApplyStrokeMode": "Contextual",
-          "LineJoinMode": "Round"
-         }
-        }
-       ]
+       }
       }
      ]
     }
@@ -4133,7 +3727,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -4142,24 +3735,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -4177,51 +3770,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -4235,19 +3783,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }
@@ -6820,11 +6356,11 @@
     "Size": [
      [
       0,
-      260
+      264
      ],
      [
       0,
-      152
+      164
      ]
     ],
     "Position": [
@@ -6896,7 +6432,7 @@
        ],
        [
         0,
-        30
+        34
        ]
       ],
       "Position": [
@@ -6906,7 +6442,7 @@
        ],
        [
         0,
-        0
+        4
        ]
       ],
       "AnchorPoint": [
@@ -6934,15 +6470,15 @@
         "Position": [
          [
           0,
-          10
+          26
          ],
          [
           0.5,
-          2
+          0
          ]
         ],
         "AnchorPoint": [
-         0,
+         0.5,
          0.5
         ],
         "BorderSizePixel": 0,
@@ -6959,32 +6495,32 @@
         "Size": [
          [
           1,
-          -56
+          -60
          ],
          [
-          0,
-          26
+          1,
+          0
          ]
         ],
         "Position": [
          [
           0,
-          48
+          50
          ],
          [
-          0.5,
-          2
+          0,
+          0
          ]
         ],
         "AnchorPoint": [
          0,
-         0.5
+         0
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Text": "0",
-        "TextColor3": "#E9B5FF",
-        "TextSize": 22,
+        "Text": "0 Rebirths",
+        "TextColor3": "#E2B6FF",
+        "TextSize": 19,
         "TextXAlignment": "Left",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -7031,7 +6567,7 @@
        ],
        [
         0,
-        30
+        38
        ]
       ],
       "AnchorPoint": [
@@ -7049,17 +6585,17 @@
         "Size": [
          [
           0,
-          44
+          42
          ],
          [
           0,
-          44
+          42
          ]
         ],
         "Position": [
          [
           0,
-          4
+          26
          ],
          [
           0.5,
@@ -7067,7 +6603,7 @@
          ]
         ],
         "AnchorPoint": [
-         0,
+         0.5,
          0.5
         ],
         "BorderSizePixel": 0,
@@ -7084,21 +6620,21 @@
         "Size": [
          [
           1,
-          -104
+          -100
          ],
          [
           0,
-          30
+          28
          ]
         ],
         "Position": [
          [
           0,
-          52
+          50
          ],
          [
           0,
-          3
+          5
          ]
         ],
         "AnchorPoint": [
@@ -7149,17 +6685,17 @@
         "Size": [
          [
           1,
-          -104
+          -100
          ],
          [
           0,
-          18
+          16
          ]
         ],
         "Position": [
          [
           0,
-          52
+          50
          ],
          [
           0,
@@ -7205,17 +6741,17 @@
         "Size": [
          [
           0,
-          40
+          34
          ],
          [
           0,
-          40
+          34
          ]
         ],
         "Position": [
          [
           1,
-          -6
+          -8
          ],
          [
           0.5,
@@ -7392,7 +6928,7 @@
           "BackgroundTransparency": 1,
           "Text": "+",
           "TextColor3": "#FFFFFF",
-          "TextSize": 30,
+          "TextSize": 28,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -7417,6 +6953,39 @@
          ]
         }
        ]
+      },
+      {
+       "name": "Line",
+       "className": "Frame",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -16
+         ],
+         [
+          0,
+          2
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          8
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 0,
+        "BackgroundColor3": "#3A404D"
+       }
       }
      ]
     },
@@ -7431,7 +7000,7 @@
        ],
        [
         0,
-        30
+        34
        ]
       ],
       "Position": [
@@ -7441,7 +7010,7 @@
        ],
        [
         0,
-        82
+        90
        ]
       ],
       "AnchorPoint": [
@@ -7469,7 +7038,7 @@
         "Position": [
          [
           0,
-          10
+          26
          ],
          [
           0.5,
@@ -7477,7 +7046,7 @@
          ]
         ],
         "AnchorPoint": [
-         0,
+         0.5,
          0.5
         ],
         "BorderSizePixel": 0,
@@ -7494,30 +7063,30 @@
         "Size": [
          [
           1,
-          -90
+          -100
          ],
          [
-          0,
-          24
+          1,
+          0
          ]
         ],
         "Position": [
          [
           0,
-          48
+          50
          ],
          [
-          0.5,
+          0,
           0
          ]
         ],
         "AnchorPoint": [
          0,
-         0.5
+         0
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Text": "Friend Boost: +0%",
+        "Text": "Friend Boost +0%",
         "TextColor3": "#7FD3FF",
         "TextSize": 17,
         "TextXAlignment": "Left",
@@ -7559,17 +7128,17 @@
         "Size": [
          [
           0,
-          32
+          34
          ],
          [
           0,
-          28
+          34
          ]
         ],
         "Position": [
          [
           1,
-          -10
+          -8
          ],
          [
           0.5,
@@ -7581,7 +7150,7 @@
          0.5
         ],
         "BorderSizePixel": 0,
-        "BackgroundColor3": "#3DDC5A",
+        "BackgroundColor3": "#4C8DFF",
         "Text": "",
         "AutoButtonColor": false,
         "ZIndex": 1
@@ -7662,7 +7231,7 @@
             48
            ]
           ],
-          "ImageColor3": "#3DDC5A",
+          "ImageColor3": "#4C8DFF",
           "ImageTransparency": 0.45,
           "ZIndex": 0
          },
@@ -7746,7 +7315,7 @@
           "BackgroundTransparency": 1,
           "Text": "+",
           "TextColor3": "#FFFFFF",
-          "TextSize": 24,
+          "TextSize": 28,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -7771,6 +7340,39 @@
          ]
         }
        ]
+      },
+      {
+       "name": "Line",
+       "className": "Frame",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -16
+         ],
+         [
+          0,
+          2
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          8
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 0,
+        "BackgroundColor3": "#3A404D"
+       }
       }
      ]
     },
@@ -7785,7 +7387,7 @@
        ],
        [
         0,
-        40
+        38
        ]
       ],
       "Position": [
@@ -7795,7 +7397,7 @@
        ],
        [
         0,
-        112
+        124
        ]
       ],
       "AnchorPoint": [
@@ -7813,17 +7415,17 @@
         "Size": [
          [
           0,
-          36
+          32
          ],
          [
           0,
-          36
+          32
          ]
         ],
         "Position": [
          [
           0,
-          6
+          26
          ],
          [
           0.5,
@@ -7831,7 +7433,7 @@
          ]
         ],
         "AnchorPoint": [
-         0,
+         0.5,
          0.5
         ],
         "BorderSizePixel": 0,
@@ -7848,17 +7450,17 @@
         "Size": [
          [
           1,
-          -56
+          -58
          ],
          [
           0,
-          26
+          24
          ]
         ],
         "Position": [
          [
           0,
-          48
+          50
          ],
          [
           0.5,
@@ -7970,7 +7572,7 @@
           "BackgroundTransparency": 1,
           "Text": "0 / 50",
           "TextColor3": "#FFFFFF",
-          "TextSize": 17,
+          "TextSize": 16,
           "TextXAlignment": "Left",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -8007,7 +7609,7 @@
          ],
          [
           0,
-          26
+          24
          ]
         ],
         "Position": [
@@ -8087,6 +7689,39 @@
          ]
         }
        ]
+      },
+      {
+       "name": "Line",
+       "className": "Frame",
+       "properties": {
+        "Size": [
+         [
+          1,
+          -16
+         ],
+         [
+          0,
+          2
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          8
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 0,
+        "BackgroundColor3": "#3A404D"
+       }
       }
      ]
     }
@@ -8937,6 +8572,43 @@
       "HorizontalAlignment": "Center",
       "VerticalAlignment": "Bottom",
       "SortOrder": "LayoutOrder"
+     }
+    },
+    {
+     "name": "PadLB",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        44
+       ],
+       [
+        0,
+        44
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "",
+      "ScaleType": "Fit",
+      "Visible": false,
+      "LayoutOrder": 0,
+      "ZIndex": 4
      }
     },
     {
@@ -11620,6 +11292,43 @@
      ]
     },
     {
+     "name": "PadRB",
+     "className": "ImageLabel",
+     "properties": {
+      "Size": [
+       [
+        0,
+        44
+       ],
+       [
+        0,
+        44
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Image": "",
+      "ScaleType": "Fit",
+      "Visible": false,
+      "LayoutOrder": 19,
+      "ZIndex": 4
+     }
+    },
+    {
      "name": "BagSlot",
      "className": "TextButton",
      "properties": {
@@ -11902,7 +11611,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -11911,24 +11619,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -11946,51 +11654,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -12004,19 +11667,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }

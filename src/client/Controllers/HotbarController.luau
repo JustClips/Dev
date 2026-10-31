@@ -403,21 +403,56 @@ function HotbarController:DropEgg()
 	task.spawn(dropEgg)
 end
 
--- Key hints on the slots: keyboard keys, or the controller buttons.
+-- Key hints on the slots: keyboard keys, or the controller's own button pictures (Dev,
+-- 2026-10-31: on console the slots showed no buttons). LB / RB at the hotbar ends step
+-- through the tool and the filled slots.
 local function keyHints()
 	local pad = Ui.gamepad()
-	local function set(slot: TextButton, keyboard: string, gamepad: string)
-		local label = slot:FindFirstChild("Key") and (slot:FindFirstChild("Key") :: Frame):FindFirstChild("Label") :: TextLabel?
-		if label then
-			label.Text = if pad then gamepad else keyboard
+	local function padImage(code: Enum.KeyCode): string
+		local ok, image = pcall(function()
+			return UserInputService:GetImageForKeyCode(code)
+		end)
+		return if ok and type(image) == "string" then image else ""
+	end
+	local function set(slot: TextButton, keyboard: string, code: Enum.KeyCode?)
+		local key = slot:FindFirstChild("Key") :: Frame?
+		local label = key and key:FindFirstChild("Label") :: TextLabel?
+		if not key or not label then
+			return
+		end
+		local image = if pad and code then padImage(code) else ""
+		label.Text = if pad then (if image == "" and code then string.gsub(code.Name, "^Button", "") else "") else keyboard
+		local icon = key:FindFirstChild("Pad") :: ImageLabel?
+		if not icon and image ~= "" then
+			local i = Instance.new("ImageLabel")
+			i.Name = "Pad"
+			i.BackgroundTransparency = 1
+			i.Size = UDim2.fromOffset(26, 26)
+			i.ScaleType = Enum.ScaleType.Fit
+			i.ZIndex = 6
+			i.Parent = key
+			icon = i
+		end
+		if icon then
+			icon.Image = image
+			icon.Visible = image ~= ""
 		end
 	end
-	set(toolSlot, "1", "")
-	set(carSlot, "2", "↑")
-	set(bagSlot, "B", "Y")
-	set(dropSlot, "G", "↓")
+	set(toolSlot, "1", nil)
+	set(carSlot, "2", Enum.KeyCode.DPadUp)
+	set(bagSlot, "B", Enum.KeyCode.ButtonY)
+	set(dropSlot, "G", Enum.KeyCode.DPadDown)
 	for i, slot in itemSlots do
-		set(slot, tostring(i + 2), "")
+		set(slot, tostring(i + 2), nil)
+	end
+	local bar = toolSlot.Parent :: Instance
+	for name, code in { PadLB = Enum.KeyCode.ButtonL1, PadRB = Enum.KeyCode.ButtonR1 } do
+		local hint = bar:FindFirstChild(name) :: ImageLabel?
+		if hint then
+			local image = if pad then padImage(code) else ""
+			hint.Image = image
+			hint.Visible = image ~= ""
+		end
 	end
 end
 

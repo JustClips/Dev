@@ -259,8 +259,9 @@ local function renderBottom(info)
 	local eventFrame = Ui.find(gui, "Window.Event") :: Frame
 	local event = Rewards.currentOrNextEvent(info.Now + (os.clock() - playtimeAt))
 	eventFrame.Visible = event ~= nil
-	-- With no group reward the event panel takes the whole row.
-	eventFrame.Size = if group.Visible then UDim2.new(0.5, -18, 0, 100) else UDim2.new(1, -24, 0, 100)
+	-- No event: the window ends right under the cards (Dev, 2026-10-31: no empty space).
+	local window = Ui.find(gui, "Window") :: Frame
+	window.Size = UDim2.fromOffset(820, if event then 520 else 406)
 	if event then
 		local t = info.Now + (os.clock() - playtimeAt)
 		;(eventFrame:FindFirstChild("Name") :: TextLabel).Text = event.Name

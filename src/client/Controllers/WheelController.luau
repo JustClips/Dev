@@ -34,6 +34,7 @@ local gui: ScreenGui
 local spinner: Frame
 local spinButton: GuiButton
 local railBadge: Frame?
+local spinsReady = false
 local spinning = false
 local rotation = 0
 
@@ -68,6 +69,7 @@ local function render()
 		return
 	end
 	local count = available(r)
+	spinsReady = count > 0
 	if railBadge then
 		Ui.setBadge(railBadge, if count > 0 then count else nil)
 	end
@@ -485,6 +487,19 @@ function WheelController:Start()
 		Ui.close("Wheel")
 	end)
 	Ui.button(spinButton, spin)
+	-- While you have a spin, the HUD Spin button (and the big SPIN in the window) breathes
+	-- bigger and back (Dev, 2026-10-31).
+	local hudSpin = Ui.find(Ui.screen("Hud"), "SpinButton") :: GuiButton
+	local hudSize = hudSpin.Size
+	local bigSize = spinButton.Size
+	game:GetService("RunService").RenderStepped:Connect(function()
+		local k = if spinsReady and not spinning and not Ui.reducedMotion() then 1 + math.abs(math.sin(os.clock() * 3.2)) * 0.12 else 1
+		hudSpin.Size = UDim2.new(hudSize.X.Scale, math.floor(hudSize.X.Offset * k), hudSize.Y.Scale, math.floor(hudSize.Y.Offset * k))
+		if gui.Enabled then
+			spinButton.Size = UDim2.new(bigSize.X.Scale, bigSize.X.Offset * (1 + (k - 1) * 0.4), bigSize.Y.Scale,
+				bigSize.Y.Offset * (1 + (k - 1) * 0.4))
+		end
+	end)
 	-- Prize chances: swaps the spin packs for the list of prizes and back.
 	local odds = Ui.find(gui, "Window.Side.Odds") :: Frame
 	local packs = Ui.find(gui, "Window.Side.Buy") :: Frame

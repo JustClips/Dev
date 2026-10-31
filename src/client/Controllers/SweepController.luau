@@ -270,27 +270,23 @@ local function onSweepResult(result)
 	if not root then
 		return
 	end
+	-- What you swept pops up as coins showing their worth that fly into the bag bar
+	-- (FlyController; Dev 2026-10-31: no more "+$12" / "TRASH x5" / "LUCKY x5" text).
+	local special = if result.Crit and result.Crit > 0
+		then "Lucky"
+		elseif result.Golden and result.Golden > 0 then "Golden"
+		elseif result.Trash and result.Trash > 0 then "Trash"
+		else nil
 	if result.Value and result.Value > 0 then
-		floatNumber("+" .. Format.cash(result.Value), root.Position + Vector3.new(math.random() * 2 - 1, 3, math.random() * 2 - 1))
+		C.FlyController:Leaves(result.Value, special)
 	end
 	-- A pop per sweep that climbs in pitch with the combo.
 	if result.Tiles and result.Tiles > 0 then
 		local combo = result.Combo or 1
 		Ui.sound("Pop", 0.9 + math.min(combo - 1, 2) * 0.2)
 	end
-	if result.Trash and result.Trash > 0 then
-		local name = TRASH_NAMES[result.TrashKind or ""] or "TRASH"
-		floatNumber(`{name}! x{Economy.TrashMult}`, root.Position + Vector3.new(0, 5.5, 0), Color3.fromRGB(110, 210, 255))
-		Ui.sound("Coin", 1.1)
-	end
-	if result.Golden and result.Golden > 0 then
-		floatNumber("GOLDEN!", root.Position + Vector3.new(0, 5, 0))
-		Ui.sound("Coin")
-	end
-	-- Lucky Sweep from the upgrade tree.
-	if result.Crit and result.Crit > 0 then
-		floatNumber(`LUCKY x{result.CritMult or 5}!`, root.Position + Vector3.new(0, 6.5, 0), Color3.fromRGB(120, 255, 140))
-		Ui.sound("Coin", 1.25)
+	if special then
+		Ui.sound("Coin", if special == "Lucky" then 1.25 else 1.1)
 	end
 	if result.ComboCount then
 		C.HudController:SetCombo(result.ComboCount, result.Combo, result.ComboHold)

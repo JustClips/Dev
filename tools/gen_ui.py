@@ -221,14 +221,12 @@ def badge(z=6, px=30):
     """Count badge: a red square with a white outline and a big white number (Dev wanted the
     square back, with a number you can read). Controllers set it with Ui.setBadge, which
     widens it for 2-3 digits and pops it when the count goes up."""
-    # Dev, 2026-10-31: every badge is a tilted red "!" sticker now (Ui.setBadge), not a number.
-    return frame("Badge", U(0, px, 0, px), U(1, 6, 0, -10), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, Rotation=12,
-                 children=[
-        node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2.5, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
-        frame("Edge", U(1, 6, 1, 6), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=z, children=[
-            node("Stroke", "UIStroke", {"Color": INK, "Thickness": 2, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
-        ]),
-        text("Label", "!", U(1, 0, 1, 0), ts=px - 4, display=True, stroke=2, ZIndex=z + 1),
+    # Dev, 2026-10-31: every badge is a red "!" (Ui.setBadge), upright, crisp: a flat red
+    # square with a dark outline and a plain white "!" (the thin white ring and text
+    # outline looked blurry at phone size).
+    return frame("Badge", U(0, px, 0, px), U(1, 6, 0, -10), (1, 0), bg=BADGE_RED, Visible=False, ZIndex=z, children=[
+        node("Stroke", "UIStroke", {"Color": INK, "Thickness": 2.5, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
+        text("Label", "!", U(1, 0, 1, 2), U(0.5, 0, 0.5, 0), (0.5, 0.5), ts=px - 4, display=True, ZIndex=z + 1),
     ])
 
 
@@ -301,10 +299,13 @@ def zoom(children, k):
     return [walk(c) for c in children if c]
 
 
-def window(w, h, title, ico, children, header=HEADER, popup=False, scale=1.0):
+def window(w, h, title, ico, children, header=HEADER, popup=False, scale=1.0, size=None):
     """Modal window: white stud body, coloured stud header strip, red X top-right. Always
     WIN_W x WIN_H (or POP_W x POP_H for popups); smaller layouts are centred inside."""
     W, H = (POP_W, POP_H) if popup else (WIN_W, WIN_H)
+    if size:
+        # Fitted to its content (Dev, 2026-10-31: Gifts, Codes, Rebirth were too big and empty).
+        W, H = size
     if scale != 1.0:
         children = zoom(children, scale)
         w, h = w * scale, h * scale
@@ -509,40 +510,49 @@ def hud():
     # Wallet: two dark strips with big outlined numbers (readable on a phone at 60% size).
     # Cash: coin, amount, income under it, green + for the cash shop. Bag: leaf bag icon and
     # a thick bar with "310 / 500" inside; it turns red with FULL when the bag is full.
-    # Wallet (Dev, 2026-10-31, from a reference): rebirth count on top, then cash with its +,
-    # then Friend Boost with a + that invites friends, then the bag bar.
-    wallet = plate("Wallet", U(0, 260, 0, 152), U(0, 14, 1, -14), (0, 1), tint=BG, stroke=3, children=[
+    # Wallet (Dev, 2026-10-31, from a reference): rebirth count, cash with its +, Friend Boost
+    # with a + that invites friends, the bag bar. One icon column on the left, one text column,
+    # the same 34 px + buttons on the right, thin lines between rows.
+    def row(name, y, h, children, line=True):
+        kids = list(children)
+        if line:
+            kids.append(frame("Line", U(1, -16, 0, 2), U(0, 8, 0, 0), bg="#3A404D"))
+        return frame(name, U(1, 0, 0, h), U(0, 0, 0, y), children=kids)
+
+    def plus(name, color=SUCCESS):
+        return button(name, U(0, 34, 0, 34), U(1, -8, 0.5, 0), (1, 0.5), color=color, label="+", ts=28, stroke=3)
+
+    wallet = plate("Wallet", U(0, 264, 0, 164), U(0, 14, 1, -14), (0, 1), tint=BG, stroke=3, children=[
         autoscale(compact=0.85),
-        frame("RebirthRow", U(1, 0, 0, 30), children=[
-            icon("Icon", "Rebirth", 30, U(0, 10, 0.5, 2), (0, 0.5)),
-            text("Value", "0", U(1, -56, 0, 26), U(0, 48, 0.5, 2), (0, 0.5), ts=22, color="#E9B5FF", display=True, xa="Left",
+        row("RebirthRow", 4, 34, [
+            icon("Icon", "Rebirth", 30, U(0, 26, 0.5, 0), (0.5, 0.5)),
+            text("Value", "0 Rebirths", U(1, -60, 1, 0), U(0, 50, 0, 0), ts=19, color="#E2B6FF", display=True, xa="Left",
                  stroke=2.5),
-        ]),
-        frame("CashPanel", U(1, 0, 0, 52), U(0, 0, 0, 30), children=[
-            icon("Icon", "Cash", 44, U(0, 4, 0.5, 0), (0, 0.5)),
-            text("Cash", "$0", U(1, -104, 0, 30), U(0, 52, 0, 3), ts=28, color=WHITE, display=True, xa="Left", stroke=2.5,
+        ], line=False),
+        row("CashPanel", 38, 52, [
+            icon("Icon", "Cash", 42, U(0, 26, 0.5, 0), (0.5, 0.5)),
+            text("Cash", "$0", U(1, -100, 0, 28), U(0, 50, 0, 5), ts=28, color=WHITE, display=True, xa="Left", stroke=2.5,
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 12})]),
-            text("Income", "+$0/s", U(1, -104, 0, 18), U(0, 52, 0, 32), ts=16, color=ACCENT, display=True, xa="Left", stroke=2),
-            button("PlusButton", U(0, 40, 0, 40), U(1, -6, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=30, stroke=3),
+            text("Income", "+$0/s", U(1, -100, 0, 16), U(0, 50, 0, 32), ts=16, color=ACCENT, display=True, xa="Left", stroke=2),
+            plus("PlusButton"),
         ]),
-        frame("FriendRow", U(1, 0, 0, 30), U(0, 0, 0, 82), children=[
-            icon("Icon", "Group", 30, U(0, 10, 0.5, 0), (0, 0.5)),
-            text("Value", "Friend Boost: +0%", U(1, -90, 0, 24), U(0, 48, 0.5, 0), (0, 0.5), ts=17, color="#7FD3FF",
-                 display=True, xa="Left", stroke=2,
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
-            button("InviteButton", U(0, 32, 0, 28), U(1, -10, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=24, stroke=3),
+        row("FriendRow", 90, 34, [
+            icon("Icon", "Group", 30, U(0, 26, 0.5, 0), (0.5, 0.5)),
+            text("Value", "Friend Boost +0%", U(1, -100, 1, 0), U(0, 50, 0, 0), ts=17, color="#7FD3FF", display=True, xa="Left",
+                 stroke=2, TextScaled=True,
+                 children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 9})]),
+            plus("InviteButton", "#4C8DFF"),
         ]),
-        frame("BackpackPanel", U(1, 0, 0, 40), U(0, 0, 0, 112), children=[
-            icon("Icon", "Backpack", 36, U(0, 6, 0.5, 0), (0, 0.5), ZIndex=4),
-            frame("Bar", U(1, -56, 0, 26), U(0, 48, 0.5, 0), (0, 0.5), bg="#14171D", children=[
+        row("BackpackPanel", 124, 38, [
+            icon("Icon", "Backpack", 32, U(0, 26, 0.5, 0), (0.5, 0.5), ZIndex=4),
+            frame("Bar", U(1, -58, 0, 24), U(0, 50, 0.5, 0), (0, 0.5), bg="#14171D", children=[
                 border(INK, 2),
                 frame("Fill", U(0.2, 0, 1, 0), bg="#FF9A3C", children=[
                     node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#C8CEDA"]]}, "Rotation": 90}),
                 ]),
-                text("Amount", "0 / 50", U(1, -12, 1, 0), U(0, 6, 0, 0), ts=17, display=True, stroke=2.5, xa="Left", ZIndex=3),
+                text("Amount", "0 / 50", U(1, -12, 1, 0), U(0, 6, 0, 0), ts=16, display=True, stroke=2.5, xa="Left", ZIndex=3),
             ]),
-            # Sits on the right end of the bar, inside the panel.
-            frame("Full", U(0, 50, 0, 26), U(1, -10, 0.5, 0), (1, 0.5), Visible=False, ZIndex=4, children=[
+            frame("Full", U(0, 50, 0, 24), U(1, -10, 0.5, 0), (1, 0.5), Visible=False, ZIndex=4, children=[
                 text("Label", "FULL", U(1, 0, 1, 0), ts=16, display=True, stroke=2.5, ZIndex=5),
             ]),
         ]),
@@ -566,9 +576,14 @@ def hud():
     items = [item_slot(f"Item{i}", str(i + 2), 10 + i) for i in range(1, 7)]
     hotbar = frame("Hotbar", U(0, 900, 0, 88), U(0.5, 0, 1, -12), (0.5, 1), children=[
         autoscale(0.84), hlist(8, "Center", "Bottom"),
+        # Controller hints (HotbarController): LB / RB step through the slots.
+        node("PadLB", "ImageLabel", base(U(0, 44, 0, 44), BackgroundTransparency=1, Image="", ScaleType="Fit", Visible=False,
+                                         LayoutOrder=0, ZIndex=4)),
         hot_slot("ToolSlot", "1", "Tool", "Toothbrush", 1),
         hot_slot("CarSlot", "2", "Vehicle", "No car", 2),
     ] + items + [
+        node("PadRB", "ImageLabel", base(U(0, 44, 0, 44), BackgroundTransparency=1, Image="", ScaleType="Fit", Visible=False,
+                                         LayoutOrder=19, ZIndex=4)),
         bag,
         drop,
     ])
@@ -1096,17 +1111,20 @@ def rewards():
     ]
     write("Daily", screen([dim(), window(WIN_W, WIN_H, "Daily Rewards", "Daily", body, header="#3FB4FF")], order=10, enabled=False))
 
-    # Playtime gifts: their own window (green Gifts button on the rail).
-    gifts = frame("Gifts", U(1, -24, 0, 340), U(0, 12, 0, 124), children=[
-        node("Layout", "UIGridLayout", {"CellSize": U(0, 210, 0, 160), "CellPadding": U(0, 16, 0, 16), "SortOrder": "LayoutOrder",
+    # Playtime gifts: their own window (green Gifts button on the rail), fitted to its six
+    # cards (Dev, 2026-10-31: it was too big).
+    gw, gh = 592, 446
+    gifts = frame("Gifts", U(0, 3 * 178 + 2 * 12, 0, 2 * 148 + 12), U(0.5, 0, 0, 118), (0.5, 0), children=[
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 178, 0, 148), "CellPadding": U(0, 12, 0, 12), "SortOrder": "LayoutOrder",
                                         "HorizontalAlignment": "Center"}),
-    ] + [reward_card(f"Gift{i}", "5:00", i, 210, 160, 92) for i in range(1, 7)])
+    ] + [reward_card(f"Gift{i}", "5:00", i, 178, 148, 84) for i in range(1, 7)])
     gift_body = [
-        text("Info", "Free gifts the longer you play! They reset when you rejoin.", U(1, -24, 0, 30), U(0.5, 0, 0, 82), (0.5, 0),
-             ts=20, color=SUB, heavy=True),
+        text("Info", "Free gifts the longer you play! They reset when you rejoin.", U(1, -24, 0, 26), U(0.5, 0, 0, 78), (0.5, 0),
+             ts=18, color=SUB, heavy=True),
         gifts,
     ]
-    write("Playtime", screen([dim(), window(WIN_W, WIN_H, "Playtime Gifts", "Gift", gift_body, header=SUCCESS)], order=10, enabled=False))
+    write("Playtime", screen([dim(), window(gw, gh, "Playtime Gifts", "Gift", gift_body, header=SUCCESS, size=(gw, gh))],
+                             order=10, enabled=False))
 
     # Stay offer: pops when the player opens the Roblox menu (about to leave).
     stay = plate("Window", U(0, 440, 0, 230), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, children=[
@@ -1131,16 +1149,47 @@ def rewards():
 
 
 def rebirth():
+    """Rebirth window (Dev, 2026-10-31, from a reference): "Rebirth 4" -> "Rebirth 5" cards with
+    what each gives, a Requirements panel with a bar, then Rebirth OR Skip (Robux)."""
+    W, H = 660, 432
+
+    def card(name, x, color):
+        return button(name, U(0, 250, 0, 108), U(0, x, 0, 78), color=color, stroke=3, Active=False, children=[
+            text("Title", "Rebirth 0", U(1, -12, 0, 36), U(0.5, 0, 0, 8), (0.5, 0), ts=30, display=True, stroke=3, ZIndex=4),
+            text("Mult", "x1 Cash", U(1, -12, 0, 26), U(0.5, 0, 0, 46), (0.5, 0), ts=22, display=True, stroke=2.5, ZIndex=4),
+            text("Extra", "", U(1, -12, 0, 22), U(0.5, 0, 0, 74), (0.5, 0), ts=17, display=True, stroke=2, ZIndex=4,
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 8})]),
+        ])
+
+    req = plate("Req", U(1, -32, 0, 106), U(0, 16, 0, 198), tint="#3A2A5C", stroke=3, children=[
+        text("Title", "Requirements:", U(1, -20, 0, 28), U(0.5, 0, 0, 6), (0.5, 0), ts=24, display=True, stroke=2.5),
+        text("Text", "Have $0 (you have $0)", U(1, -20, 0, 26), U(0.5, 0, 0, 34), (0.5, 0), ts=20, display=True, stroke=2,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 9})]),
+        frame("Bar", U(1, -36, 0, 26), U(0.5, 0, 0, 68), (0.5, 0), bg="#14171D", children=[
+            border(INK, 3),
+            frame("Fill", U(0.5, 0, 1, 0), bg="#FFB020", children=[
+                node("Shade", "UIGradient", {"Color": {"keypoints": [[0, "#FFE066"], [1, "#FF8A1E"]]}, "Rotation": 90}),
+            ]),
+            text("Pct", "50%", U(1, 0, 1, 0), ts=18, display=True, stroke=2.5, ZIndex=4),
+        ]),
+    ])
     body = [
-        icon("Big", "Rebirth", 110, U(0, 22, 0, 80)),
-        text("Mult", "Cash x1 → x1.5", U(1, -160, 0, 44), U(0, 140, 0, 86), ts=30, color=INK, display=True, xa="Left"),
-        text("Info", "Resets cash, tools, cars and the upgrade tree.\nKeeps pets, index and zones. Opens more of the tree!", U(1, -160, 0, 50),
-             U(0, 140, 0, 132), ts=17, color=SUB, xa="Left", ya="Top"),
-        text("Cost", "Cost: $0", U(1, -40, 0, 30), U(0.5, 0, 0, 202), (0.5, 0), ts=22, color=INK, heavy=True),
-        button("RebirthButton", U(0, 300, 0, 62), U(0.5, 0, 0, 244), (0.5, 0), color=SUCCESS, label="Rebirth!", ts=32),
-        button("SkipButton", U(0, 300, 0, 50), U(0.5, 0, 0, 318), (0.5, 0), color=PREMIUM, label="Skip", ts=24, label_color=INK),
+        card("Now", 16, "#8FD13F"),
+        icon("Arrow", "ArrowDown", 70, U(0.5, 0, 0, 132), (0.5, 0.5), Rotation=-90),
+        card("Next", W - 266, "#FFC83C"),
+        req,
+        text("Info", "Resets cash, tools, cars and the upgrade tree. Keeps pets, index and zones.", U(1, -32, 0, 22),
+             U(0.5, 0, 0, 310), (0.5, 0), ts=16, color=SUB, heavy=True),
+        button("RebirthButton", U(0, 250, 0, 72), U(0, 16, 1, -14), (0, 1), color=SUCCESS, label="Rebirth", ts=36),
+        text("Or", "OR", U(0, 100, 0, 50), U(0.5, 0, 1, -25), (0.5, 0.5), ts=34, color=INK, display=True),
+        button("SkipButton", U(0, 250, 0, 72), U(1, -16, 1, -14), (1, 1), color=REBIRTH, label="Skip", ts=36, children=[
+            text("Price", "R$ 19", U(0, 90, 0, 30), U(1, 12, 0, -14), (1, 0), ts=24, color="#B6FF5C", display=True, stroke=3,
+                 Rotation=8, ZIndex=6),
+            text("Sub", "[30% saved needed]", U(1, -10, 0, 20), U(0.5, 0, 1, 12), (0.5, 1), ts=16, color=PREMIUM, display=True,
+                 stroke=2.5, ZIndex=6),
+        ]),
     ]
-    write("Rebirth", screen([dim(), window(520, 392, "Rebirth", "Rebirth", body, header=REBIRTH, scale=1.25)], order=10, enabled=False))
+    write("Rebirth", screen([dim(), window(W, H, "Rebirth", "Rebirth", body, header=REBIRTH, size=(W, H))], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- NPC dialog
@@ -1513,22 +1562,23 @@ def merchant():
 # ---------------------------------------------------------------- Codes
 def codes():
     """Codes window (screen "Codes", CodesController), opened from the Codes button in
-    Settings: one big box to type a code from our social posts, a big Redeem button and the
-    result under it. Big touch targets first (most players are on phones)."""
-    box = plate("Entry", U(1, -28, 0, 250), U(0, 14, 0, 78), tint=WHITE, stud=0.2, children=[
-        text("Title", "ENTER A CODE", U(1, -40, 0, 40), U(0.5, 0, 0, 14), (0.5, 0), ts=34, color=INK, display=True),
-        text("Text", "Find codes in our social posts and the group!", U(1, -40, 0, 26), U(0.5, 0, 0, 56), (0.5, 0), ts=20,
+    Settings: a box to type a code from our social posts, a big Redeem button and the result
+    under it. Fitted to its content (Dev, 2026-10-31: it was huge for no reason)."""
+    W, H = 480, 352
+    box = plate("Entry", U(1, -28, 0, 168), U(0, 14, 0, 76), tint=WHITE, stud=0.2, children=[
+        text("Title", "ENTER A CODE", U(1, -30, 0, 30), U(0.5, 0, 0, 10), (0.5, 0), ts=28, color=INK, display=True),
+        text("Text", "Find codes in our social posts and the group!", U(1, -30, 0, 22), U(0.5, 0, 0, 40), (0.5, 0), ts=16,
              color=SUB, heavy=True),
-        node("Input", "TextBox", base(U(1, -60, 0, 80), U(0.5, 0, 0, 96), (0.5, 0), BackgroundColor3="#EEF1F7", Text="",
-                                      PlaceholderText="Type code here", PlaceholderColor3="#9AA3B8", TextColor3=INK, TextSize=36,
+        node("Input", "TextBox", base(U(1, -40, 0, 58), U(0.5, 0, 0, 68), (0.5, 0), BackgroundColor3="#EEF1F7", Text="",
+                                      PlaceholderText="Type code here", PlaceholderColor3="#9AA3B8", TextColor3=INK, TextSize=30,
                                       FontFace=DISPLAY, ClearTextOnFocus=False, TextXAlignment="Center", ZIndex=3,
-                                      TextScaled=False), [padding(14, 14, 0), border(INK, 4)]),
-        text("Status", "", U(1, -40, 0, 30), U(0.5, 0, 1, -12), (0.5, 1), ts=21, color=SUB, display=True),
+                                      TextScaled=False), [padding(12, 12, 0), border(INK, 4)]),
+        text("Status", "", U(1, -30, 0, 26), U(0.5, 0, 1, -8), (0.5, 1), ts=18, color=SUB, display=True),
     ])
-    redeem = button("Redeem", U(0, 340, 0, 76), U(0.5, 0, 0, 344), (0.5, 0), color=SUCCESS, label="Redeem", ts=32)
-    note = text("Note", "Each code works once. Some codes run out, so use them fast!", U(1, -28, 0, 30), U(0, 14, 1, -14), (0, 1),
-                ts=17, color=SUB, heavy=True)
-    write("Codes", screen([dim(), window(WIN_W, WIN_H, "Codes", "Star", [box, redeem, note], header="#4C8DFF")],
+    redeem = button("Redeem", U(0, 280, 0, 62), U(0.5, 0, 0, 254), (0.5, 0), color=SUCCESS, label="Redeem", ts=30)
+    note = text("Note", "Each code works once. Some codes run out, so use them fast!", U(1, -28, 0, 22), U(0, 14, 1, -8), (0, 1),
+                ts=16, color=SUB, heavy=True)
+    write("Codes", screen([dim(), window(W, H, "Codes", "Star", [box, redeem, note], header="#4C8DFF", size=(W, H))],
                          order=10, enabled=False))
 
 

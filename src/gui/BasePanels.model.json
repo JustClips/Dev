@@ -345,7 +345,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -354,24 +353,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -389,51 +388,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -447,19 +401,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }
@@ -759,7 +701,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -768,24 +709,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -803,51 +744,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -861,19 +757,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }
@@ -1173,7 +1057,6 @@
         "BorderSizePixel": 0,
         "Visible": false,
         "ZIndex": 6,
-        "Rotation": 12,
         "BackgroundTransparency": 0,
         "BackgroundColor3": "#FF2E4D"
        },
@@ -1182,24 +1065,24 @@
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#FFFFFF",
+          "Color": "#17191E",
           "Thickness": 2.5,
           "ApplyStrokeMode": "Border",
           "LineJoinMode": "Miter"
          }
         },
         {
-         "name": "Edge",
-         "className": "Frame",
+         "name": "Label",
+         "className": "TextLabel",
          "properties": {
           "Size": [
            [
             1,
-            6
+            0
            ],
            [
             1,
-            6
+            2
            ]
           ],
           "Position": [
@@ -1217,51 +1100,6 @@
            0.5
           ],
           "BorderSizePixel": 0,
-          "ZIndex": 6,
-          "BackgroundTransparency": 1
-         },
-         "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Miter"
-           }
-          }
-         ]
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0,
-            0
-           ],
-           [
-            0,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0,
-           0
-          ],
-          "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
           "Text": "!",
           "TextColor3": "#FFFFFF",
@@ -1275,19 +1113,7 @@
            "weight": "Heavy",
            "style": "Normal"
           }
-         },
-         "children": [
-          {
-           "name": "TextStroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2,
-            "ApplyStrokeMode": "Contextual",
-            "LineJoinMode": "Round"
-           }
-          }
-         ]
+         }
         }
        ]
       }

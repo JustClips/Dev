@@ -25,7 +25,6 @@ local OfferController = {}
 local C: any
 local offerGui: ScreenGui
 local welcomeGui: ScreenGui
-local gainedGui: ScreenGui
 local current: { Key: string, Product: string }? = nil
 local showToken = 0
 local specials: { [string]: any } = {}
@@ -207,89 +206,12 @@ local function showOffer(offer)
 	end)
 end
 
--- Cash pops: a big green "+$4.2K" that bounces in, floats up and fades, with a small line
--- saying where it came from. Several at once fan out a little so they don't cover each other.
-local SOURCE_TEXT = {
-	OfflineIncome = "Offline cash",
-	DoubleOffline = "Offline cash x2",
-	DustBunny = "Dust bunny!",
-	TutorialReward = "Tutorial reward",
-	SellDust = "Sold",
-	SellAnywhere = "Sold",
-	SellPet = "Sold pet",
-}
-local livePops = 0
-
-local function sourceText(source: string?): string
-	if not source then
-		return ""
-	end
-	local product = Products.ProductByKey[source]
-	if product then
-		return product.Name
-	end
-	return SOURCE_TEXT[source] or ""
-end
-
-function OfferController:ShowGained(amount: any, source: string?)
-	local template = Ui.find(gainedGui, "Template") :: Frame
-	local pop = template:Clone()
-	pop.Name = "Pop"
-	local slot = livePops
-	livePops += 1
-	local x = if slot == 0 then 0 else (if slot % 2 == 1 then 1 else -1) * (40 + 30 * math.floor((slot - 1) / 2))
-	local y = 0.36 + math.min(slot, 4) * 0.04
-	pop.Position = UDim2.new(0.5, x, y, 0)
-	pop.Rotation = math.random(-6, 6)
-	local amountLabel = pop:FindFirstChild("Amount") :: TextLabel
-	local sourceLabel = pop:FindFirstChild("Source") :: TextLabel
-	amountLabel.Text = "+" .. Format.cash(amount)
-	sourceLabel.Text = sourceText(source)
-	local scale = pop:FindFirstChild("Pop") :: UIScale
-	local auto = pop:FindFirstChild("AutoScale") :: UIScale
-	auto.Scale = Ui.scale()
-	scale.Scale = 0.2
-	pop.Visible = true
-	pop.Parent = gainedGui
+-- Cash you got (offline cash, rewards, products): coins pop up around the screen showing
+-- their share and fly into the wallet, where a "+$X" counts up (FlyController; Dev
+-- 2026-10-31).
+function OfferController:ShowGained(amount: any, _source: string?)
 	Ui.sound("Sell")
-	TweenService:Create(scale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1.25 }):Play()
-	task.delay(0.22, function()
-		TweenService:Create(scale, TweenInfo.new(0.18, Enum.EasingStyle.Quad), { Scale = 1 }):Play()
-	end)
-	-- Rises a little, then flies into the wallet's coin while coins burst out of it (Dev,
-	-- 2026-10-31: what you get should fly to where it goes).
-	TweenService:Create(pop, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		Position = pop.Position - UDim2.fromOffset(0, 40),
-		Rotation = 0,
-	}):Play()
-	task.delay(0.75, function()
-		if not pop.Parent then
-			return
-		end
-		local fly = C.FlyController
-		local from = pop.AbsolutePosition + pop.AbsoluteSize / 2
-		fly:Coins(fly.ToLayer(from), 8)
-		local goal = fly.CashAbsolute() - gainedGui.AbsolutePosition
-		local info = TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-		pop.AnchorPoint = Vector2.new(0.5, 0.5)
-		pop.Position = UDim2.fromOffset(from.X - gainedGui.AbsolutePosition.X, from.Y - gainedGui.AbsolutePosition.Y)
-		TweenService:Create(pop, info, { Position = UDim2.fromOffset(goal.X, goal.Y) }):Play()
-		TweenService:Create(scale, info, { Scale = 0.25 }):Play()
-		task.delay(0.3, function()
-			local fade = TweenInfo.new(0.15)
-			TweenService:Create(amountLabel, fade, { TextTransparency = 1 }):Play()
-			TweenService:Create(sourceLabel, fade, { TextTransparency = 1 }):Play()
-			for _, stroke in pop:GetDescendants() do
-				if stroke:IsA("UIStroke") then
-					TweenService:Create(stroke, fade, { Transparency = 1 }):Play()
-				end
-			end
-		end)
-	end)
-	task.delay(1.25, function()
-		pop:Destroy()
-		livePops -= 1
-	end)
+	C.FlyController:Cash(amount, 8)
 end
 
 local doublePending: number? = nil
@@ -344,7 +266,6 @@ function OfferController:Init(controllers)
 	C = controllers
 	offerGui = Ui.screen("Offer")
 	welcomeGui = Ui.screen("WelcomeBack")
-	gainedGui = Ui.screen("Gained")
 end
 
 function OfferController:Start()

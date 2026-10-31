@@ -377,11 +377,11 @@ local function step()
 				streak = if now - lastPickup < 0.6 then math.min(streak + 1, 12) else 0
 				lastPickup = now
 				Ui.sound("Coin", 1 + streak * 0.05)
-				bump(coin.value, root)
 				pop(part.Position)
-				-- A coin also flies into the wallet's coin (FlyController).
+				-- The coin flies on into the wallet, and the "+$X" counts up over the wallet
+				-- (FlyController; Dev 2026-10-31 moved it there from over your head).
 				if C and C.FlyController then
-					C.FlyController:CoinsFromWorld(part.Position)
+					C.FlyController:CoinsFromWorld(part.Position, 1, coin.value)
 				end
 				remove(coin)
 			end

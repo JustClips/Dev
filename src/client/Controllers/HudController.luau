@@ -76,6 +76,21 @@ local function flyTarget(text: string, kind: string): string?
 	return nil
 end
 
+-- "+$9.83M" in a message -> 9.83e6 (as a BigNum), or nil.
+local CASH_SUFFIXES = { K = 3, M = 6, B = 9, T = 12, Qa = 15, Qi = 18, Sx = 21, Sp = 24, Oc = 27, No = 30, Dc = 33 }
+local function parseCash(text: string): any?
+	local digits, suffix = string.match(text, "%+%$([%d%.]+)(%a*)")
+	local value = digits and tonumber(digits)
+	if not value then
+		return nil
+	end
+	local exponent = if suffix == "" then 0 else CASH_SUFFIXES[suffix :: string]
+	if not exponent then
+		return nil
+	end
+	return BigNum.new(value, exponent)
+end
+
 local flying = 0
 local function flyToast(text: string, k: string, target: string)
 	local template = el.ToastTemplate :: Frame
@@ -89,11 +104,9 @@ local function flyToast(text: string, k: string, target: string)
 	iconLabel.Visible = true
 	iconLabel.Image = AssetLibrary.image(iconName)
 	local s = Ui.scale()
-	local slot = flying
 	flying += 1
-	-- Pops up under the World Cleaned bar (a little lower for each one already flying).
-	local toastsAt = (el.Toasts :: GuiObject).AbsolutePosition - hud.AbsolutePosition
-	local start = Vector2.new(hud.AbsoluteSize.X / 2 + math.random(-30, 30) * s, toastsAt.Y + (24 + (slot % 4) * 40) * s)
+	-- Pops up at a random spot on the screen, then flies (Dev, 2026-10-31).
+	local start = C.FlyController.RandomPoint()
 	toast.AnchorPoint = Vector2.new(0.5, 0.5)
 	toast.Position = UDim2.fromOffset(start.X, start.Y)
 	toast.ZIndex = 55
@@ -104,7 +117,7 @@ local function flyToast(text: string, k: string, target: string)
 	pop.Parent = toast
 	toast.Parent = hud
 	TweenService:Create(pop, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = s * 1.1 }):Play()
-	task.delay(1.3, function()
+	task.delay(1.0, function()
 		if not toast.Parent then
 			flying -= 1
 			return
@@ -114,7 +127,11 @@ local function flyToast(text: string, k: string, target: string)
 		local goalAbs = if target == "Cash" then fly.CashAbsolute() else fly.BagAbsolute()
 		local goal = goalAbs - hud.AbsolutePosition
 		if target == "Cash" then
-			fly:Coins(fly.ToLayer(from), 6)
+			-- "+$10M" in the message: coins worth that fly in and count up over the wallet.
+			local amount = parseCash(text)
+			if amount then
+				fly:Cash(amount, 6)
+			end
 		else
 			fly:ToBag(AssetLibrary.image(iconName), fly.ToLayer(iconLabel.AbsolutePosition + iconLabel.AbsoluteSize / 2))
 		end
@@ -362,9 +379,9 @@ local function render(data)
 
 	-- Rebirth count, Friend Boost and the % to the next rebirth on the Rebirth tile (Dev,
 	-- 2026-10-31).
-	el.RebirthCount.Text = Format.number(data.Rebirths)
+	el.RebirthCount.Text = `{Format.number(data.Rebirths)} Rebirth{if data.Rebirths == 1 then "" else "s"}`
 	local friends = math.min(data.FriendsHere or 0, Economy.FriendLuckMaxFriends)
-	el.FriendValue.Text = `Friend Boost: +{math.floor(friends * Economy.FriendLuckPerFriend * 100 + 0.5)}%`
+	el.FriendValue.Text = `Friend Boost +{math.floor(friends * Economy.FriendLuckPerFriend * 100 + 0.5)}%`
 	local progress = el.RebirthProgress :: TextLabel
 	local cost = data.RebirthCost
 	if cost and BigNum.gte(cost, 1) then

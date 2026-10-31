@@ -52,11 +52,11 @@
     "Size": [
      [
       0,
-      820
+      480
      ],
      [
       0,
-      520
+      352
      ]
     ],
     "Position": [
@@ -500,7 +500,7 @@
        ],
        [
         0,
-        250
+        168
        ]
       ],
       "Position": [
@@ -510,7 +510,7 @@
        ],
        [
         0,
-        78
+        76
        ]
       ],
       "AnchorPoint": [
@@ -558,11 +558,11 @@
         "Size": [
          [
           1,
-          -40
+          -30
          ],
          [
           0,
-          40
+          30
          ]
         ],
         "Position": [
@@ -572,7 +572,7 @@
          ],
          [
           0,
-          14
+          10
          ]
         ],
         "AnchorPoint": [
@@ -583,7 +583,7 @@
         "BackgroundTransparency": 1,
         "Text": "ENTER A CODE",
         "TextColor3": "#17191E",
-        "TextSize": 34,
+        "TextSize": 28,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -602,11 +602,11 @@
         "Size": [
          [
           1,
-          -40
+          -30
          ],
          [
           0,
-          26
+          22
          ]
         ],
         "Position": [
@@ -616,7 +616,7 @@
          ],
          [
           0,
-          56
+          40
          ]
         ],
         "AnchorPoint": [
@@ -627,7 +627,7 @@
         "BackgroundTransparency": 1,
         "Text": "Find codes in our social posts and the group!",
         "TextColor3": "#5B6070",
-        "TextSize": 20,
+        "TextSize": 16,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -646,11 +646,11 @@
         "Size": [
          [
           1,
-          -60
+          -40
          ],
          [
           0,
-          80
+          58
          ]
         ],
         "Position": [
@@ -660,7 +660,7 @@
          ],
          [
           0,
-          96
+          68
          ]
         ],
         "AnchorPoint": [
@@ -673,7 +673,7 @@
         "PlaceholderText": "Type code here",
         "PlaceholderColor3": "#9AA3B8",
         "TextColor3": "#17191E",
-        "TextSize": 36,
+        "TextSize": 30,
         "FontFace": {
          "family": "rbxasset://fonts/families/Montserrat.json",
          "weight": "Heavy",
@@ -691,11 +691,11 @@
          "properties": {
           "PaddingLeft": [
            0,
-           14
+           12
           ],
           "PaddingRight": [
            0,
-           14
+           12
           ],
           "PaddingTop": [
            0,
@@ -726,11 +726,11 @@
         "Size": [
          [
           1,
-          -40
+          -30
          ],
          [
           0,
-          30
+          26
          ]
         ],
         "Position": [
@@ -740,7 +740,7 @@
          ],
          [
           1,
-          -12
+          -8
          ]
         ],
         "AnchorPoint": [
@@ -751,7 +751,7 @@
         "BackgroundTransparency": 1,
         "Text": "",
         "TextColor3": "#5B6070",
-        "TextSize": 21,
+        "TextSize": 18,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -772,11 +772,11 @@
       "Size": [
        [
         0,
-        340
+        280
        ],
        [
         0,
-        76
+        62
        ]
       ],
       "Position": [
@@ -786,7 +786,7 @@
        ],
        [
         0,
-        344
+        254
        ]
       ],
       "AnchorPoint": [
@@ -959,7 +959,7 @@
         "BackgroundTransparency": 1,
         "Text": "Redeem",
         "TextColor3": "#FFFFFF",
-        "TextSize": 32,
+        "TextSize": 30,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -996,7 +996,7 @@
        ],
        [
         0,
-        30
+        22
        ]
       ],
       "Position": [
@@ -1006,7 +1006,7 @@
        ],
        [
         1,
-        -14
+        -8
        ]
       ],
       "AnchorPoint": [
@@ -1017,7 +1017,7 @@
       "BackgroundTransparency": 1,
       "Text": "Each code works once. Some codes run out, so use them fast!",
       "TextColor3": "#5B6070",
-      "TextSize": 17,
+      "TextSize": 16,
       "TextXAlignment": "Center",
       "TextYAlignment": "Center",
       "TextWrapped": true,
