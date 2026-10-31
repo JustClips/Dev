@@ -417,7 +417,7 @@ local function leafDump(index: number, cf: CFrame)
 	for _, x in { -3.8, 3.8 } do
 		block(model, "SignPost", Vector3.new(0.6, 9.6, 0.6), cf * CFrame.new(x, 4.8, 4.3), WOOD_DARK, M.Wood)
 	end
-	sign(model, "DumpSign", cf * CFrame.new(0, 8.6, 4.3), 9, 2.4, DUMP_YELLOW, "DUMP LEAVES", "Stand on the circle")
+	sign(model, "DumpSign", cf * CFrame.new(0, 8.6, 4.3), 9, 2.4, DUMP_YELLOW, "DUMP TRASH", "Stand on the circle")
 	-- Standing spot: a ring with a lighter floor, flush with the ground (cars drive over it).
 	local spot = World.dumpSpot(index)
 	local r = World.DumpRadius

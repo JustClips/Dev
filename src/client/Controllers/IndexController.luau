@@ -1,8 +1,9 @@
 --!strict
--- Pet index (Steal an Egg style). One zone at a time (arrows on the zone panel): cards in
--- their rarity colour with the pet in 3D, dark silhouettes and "???" for pets you haven't
--- hatched. Tap a found pet to see it big on the right. Bars show the zone's progress and
--- the whole collection.
+-- Pet index (Dev, 2026-10-31, from a reference). One rarity at a time (tabs down the right,
+-- plus Exclusive for the daily-streak pets): cards in the rarity's colour with the pet in 3D,
+-- "1 in N" (its chance within an egg of its zone and rarity) and the zone; dark silhouettes
+-- and "???" for pets you haven't hatched. Under the grid, "complete the set" with its reward
+-- (claimed here once every pet of the rarity is found) and how many you've found.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = script.Parent.Parent
@@ -13,26 +14,26 @@ local Ui = require(Client.Ui)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
-local PetPassives = require(Shared.PetPassives)
 local Eggs = require(Shared.Config.Eggs)
-local Format = require(Shared.Format)
+local Items = require(Shared.Config.Items)
+local Net = require(Shared.Net)
+local Rewards = require(Shared.Config.Rewards)
 local Zones = require(Shared.Config.Zones)
 
 local SILHOUETTE = Color3.fromRGB(27, 31, 58)
-local LOCKED_CARD = Color3.fromRGB(74, 81, 112)
+local GREEN = Color3.fromRGB(61, 220, 90)
+local GREY = Color3.fromRGB(181, 186, 198)
+local TABS = { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Cosmic", "Daily" }
 
 local IndexController = {}
 
+local C: any
 local gui: ScreenGui
 local grid: ScrollingFrame
 local template: TextButton
-local zoneName: TextLabel
-local zonePanel: Frame
-local progress: Frame
-local total: Frame
-local detail: Frame
-local zoneIndex = 1
-local selectedId: string? = nil
+local setPanel: Frame
+local foundBar: Frame
+local tab = "Common"
 local lastSignature = ""
 
 local function silhouette(model: Model)
@@ -59,59 +60,46 @@ local function tint(frame: GuiObject, color: Color3)
 	end
 end
 
-local function setBar(bar: Frame, have: number, of: number, label: string)
-	local fill = bar:FindFirstChild("Fill") :: Frame
-	fill.Size = UDim2.fromScale(if of > 0 then have / of else 0, 1)
-	Ui.setText(bar, label)
+-- Pets on a tab: one rarity (exclusives aside), or the daily exclusives. Zone order, then
+-- income.
+local ZONE_ORDER: { [string]: number } = {}
+for i, zone in Zones.List do
+	ZONE_ORDER[zone.Id] = i
 end
 
-local function zonePets(zoneId: string)
+local function tabPets(name: string)
 	local list = {}
 	for _, def in Aliens.List do
-		if (def.Zone or "Landing") == zoneId then
+		local pick = if name == "Daily" then def.Exclusive == "Daily" else def.Rarity == name and not def.Exclusive
+		if pick then
 			table.insert(list, def)
 		end
 	end
 	table.sort(list, function(a, b)
-		local ra, rb = Eggs.order(a.Rarity), Eggs.order(b.Rarity)
-		if ra == rb then
+		local za, zb = ZONE_ORDER[a.Zone or "Landing"] or 99, ZONE_ORDER[b.Zone or "Landing"] or 99
+		if za == zb then
 			return a.Income < b.Income
 		end
-		return ra < rb
+		return za < zb
 	end)
 	return list
 end
 
-local function renderDetail(data)
-	local viewport = detail:FindFirstChild("Viewport") :: ViewportFrame
-	local nameLabel = detail:FindFirstChild("Name") :: TextLabel
-	local rarityLabel = detail:FindFirstChild("Rarity") :: TextLabel
-	local incomeLabel = detail:FindFirstChild("Income") :: TextLabel
-	local hint = detail:FindFirstChild("Hint") :: TextLabel
-	local def = selectedId and Aliens.ById[selectedId]
-	local known = def ~= nil and data.Index[def.Id] == true
-	viewport.Visible = def ~= nil
-	if not def then
-		nameLabel.Text = ""
-		rarityLabel.Text = ""
-		incomeLabel.Text = ""
-		hint.Text = "Tap a pet to see it here."
-		return
+local function rewardText(reward: Rewards.Reward): (string, string)
+	if reward.Kind == "Item" then
+		local item = Items.ById[reward.Item or ""]
+		local amount = reward.Amount or 1
+		local name = if item then item.Name else "Item"
+		return if item then item.Icon else "Icon_Gift", if amount > 1 then `{amount}x {name}` else name
+	elseif reward.Kind == "Egg" then
+		return "Icon_Egg", `{reward.Rarity} Egg`
 	end
-	local model = ModelView.show(viewport, AssetLibrary.alien(def.Id), "Alien_" .. def.Id, 1.1)
-	if not known then
-		silhouette(model)
-	end
-	local rarity = Eggs.ByName[def.Rarity]
-	nameLabel.Text = if known then def.Name else "???"
-	rarityLabel.Text = def.Rarity
-	rarityLabel.TextColor3 = rarity.Color
-	incomeLabel.Text = if known then `{Format.cash(def.Income)}/s` else ""
-	local zone = Zones.ById[def.Zone or "Landing"]
-	local passive = PetPassives.describe(def.Id)
-	hint.Text = if known
-		then (if passive then `{passive} (works while placed, mutations make it stronger)` else "Hatched! Golden and Rainbow ones earn even more.")
-		else `Hatch a {def.Rarity} egg from {zone and zone.Name or "the Backyard"} to find it.`
+	return "Icon_Gift", "A prize"
+end
+
+local function setButton(button: GuiButton, label: string, color: Color3)
+	Ui.setText(button, label)
+	tint(button, color)
 end
 
 local function render(force: boolean?)
@@ -119,61 +107,95 @@ local function render(force: boolean?)
 	if not data then
 		return
 	end
-	local zone = Zones.List[zoneIndex]
 	local found = 0
 	for _ in data.Index do
 		found += 1
 	end
-	local signature = table.concat({ zone.Id, found, selectedId or "", if AssetLibrary.isReady() then "3d" else "" }, "|")
+	local info = data.Rewards
+	local claimed = info and info.IndexSets and info.IndexSets[tab] == true
+	local signature = table.concat({ tab, found, tostring(claimed), if AssetLibrary.isReady() then "3d" else "" }, "|")
 	if signature == lastSignature and not force then
 		return
 	end
 	lastSignature = signature
 
-	zoneName.Text = zone.Name
-	tint(zonePanel, zone.DustColor:Lerp(Color3.new(0, 0, 0), 0.25))
 	for _, child in grid:GetChildren() do
 		if child:IsA("GuiButton") and child ~= template then
 			child:Destroy()
 		end
 	end
-	local pets = zonePets(zone.Id)
+	local pets = tabPets(tab)
 	local have = 0
 	for i, def in pets do
 		local known = data.Index[def.Id] == true
 		if known then
 			have += 1
 		end
+		local rarity = Eggs.ByName[def.Rarity]
+		local color = if rarity then rarity.Color else GREY
 		local card = template:Clone()
 		card.Name = def.Id
 		card.LayoutOrder = i
 		card.Visible = true
-		tint(card, if known then Eggs.ByName[def.Rarity].Color else LOCKED_CARD)
-		local stroke = card:FindFirstChild("Stroke") :: UIStroke?
-		if stroke then
-			stroke.Color = if def.Id == selectedId then Color3.new(1, 1, 1) else SILHOUETTE
-			stroke.Thickness = if def.Id == selectedId then 5 else 3
-		end
+		-- Unfound: the rarity colour, darkened.
+		tint(card, if known then color else color:Lerp(Color3.new(0, 0, 0), 0.55))
 		;(card:FindFirstChild("Name") :: TextLabel).Text = if known then def.Name else "???"
+		local chance = card:FindFirstChild("Chance") :: TextLabel
+		local zoneLabel = card:FindFirstChild("Zone") :: TextLabel
+		if def.Exclusive then
+			chance.Text = "Day 7"
+			zoneLabel.Text = "Daily streak"
+		else
+			chance.Text = `1 in {#Aliens.pool(def.Zone, def.Rarity)}`
+			local zone = Zones.ById[def.Zone or "Landing"]
+			zoneLabel.Text = if zone then zone.Name else ""
+		end
 		local model = ModelView.show(card:FindFirstChild("Viewport") :: ViewportFrame, AssetLibrary.alien(def.Id), "Alien_" .. def.Id)
 		if not known then
 			silhouette(model)
 		end
-		Ui.button(card, function()
-			selectedId = def.Id
-			render(true)
-		end)
 		card.Parent = grid
 	end
-	setBar(progress, have, #pets, `{have}/{#pets}`)
-	setBar(total, found, #Aliens.List, `Unlocked: {found}/{#Aliens.List}`)
-	renderDetail(data)
-end
 
-local function step(delta: number)
-	zoneIndex = (zoneIndex - 1 + delta) % #Zones.List + 1
-	selectedId = nil
-	render(true)
+	-- The set strip: reward, and a button that says how many you've found until you can
+	-- claim it.
+	local reward = Rewards.IndexSets[tab]
+	local title = setPanel:FindFirstChild("Title") :: TextLabel
+	local rewardLabel = setPanel:FindFirstChild("Reward") :: TextLabel
+	local icon = setPanel:FindFirstChild("Icon") :: ImageLabel
+	local claim = setPanel:FindFirstChild("Claim") :: TextButton
+	if reward then
+		local image, text = rewardText(reward)
+		title.Text = `COMPLETE THE {string.upper(tab)} SET`
+		rewardLabel.Text = text
+		icon.Image = AssetLibrary.image(image)
+		if claimed then
+			setButton(claim, "CLAIMED", GREY)
+		elseif have >= #pets and #pets > 0 then
+			setButton(claim, "CLAIM!", GREEN)
+		else
+			setButton(claim, `{have}/{#pets} FOUND`, GREY)
+		end
+	else
+		title.Text = "EXCLUSIVE PETS"
+		rewardLabel.Text = "One every week from the day 7 daily reward"
+		icon.Image = AssetLibrary.image("Icon_Daily")
+		setButton(claim, `{have}/{#pets} FOUND`, GREY)
+	end
+	local fill = foundBar:FindFirstChild("Fill") :: Frame
+	fill.Size = UDim2.fromScale(if #pets > 0 then have / #pets else 0, 1)
+	Ui.setText(foundBar, `{have}/{#pets} Found`)
+	;(Ui.find(gui, "Window.Total") :: TextLabel).Text = `Unlocked: {found}/{#Aliens.List}`
+
+	-- The open tab is outlined white.
+	for _, name in TABS do
+		local button = Ui.find(gui, `Window.Tabs.{name}`) :: GuiButton
+		local stroke = button:FindFirstChild("Stroke") :: UIStroke?
+		if stroke then
+			stroke.Color = if name == tab then Color3.new(1, 1, 1) else SILHOUETTE
+			stroke.Thickness = if name == tab then 5 else 4
+		end
+	end
 end
 
 function IndexController:Toggle()
@@ -181,15 +203,13 @@ function IndexController:Toggle()
 	render(true)
 end
 
-function IndexController:Init()
+function IndexController:Init(controllers)
+	C = controllers
 	gui = Ui.screen("Index")
 	grid = Ui.find(gui, "Window.Body.Grid")
 	template = Ui.find(gui, "Window.Body.Grid.Template")
-	zonePanel = Ui.find(gui, "Window.Body.Zone")
-	zoneName = Ui.find(gui, "Window.Body.Zone.Name")
-	progress = Ui.find(gui, "Window.Body.Progress")
-	detail = Ui.find(gui, "Window.Body.Detail")
-	total = Ui.find(gui, "Window.Total")
+	setPanel = Ui.find(gui, "Window.Set")
+	foundBar = Ui.find(gui, "Window.Found")
 end
 
 function IndexController:Start()
@@ -199,11 +219,21 @@ function IndexController:Start()
 	Ui.button(Ui.find(gui, "Dim"), function()
 		Ui.close("Index")
 	end)
-	Ui.button(Ui.find(gui, "Window.Body.Zone.Prev"), function()
-		step(-1)
-	end)
-	Ui.button(Ui.find(gui, "Window.Body.Zone.Next"), function()
-		step(1)
+	for _, name in TABS do
+		Ui.button(Ui.find(gui, `Window.Tabs.{name}`), function()
+			tab = name
+			grid.CanvasPosition = Vector2.zero
+			render(true)
+		end)
+	end
+	Ui.button(Ui.find(gui, "Window.Set.Claim"), function()
+		local ok, message = Net.func("Rewards"):InvokeServer("ClaimIndexSet", tab)
+		if message and message ~= "" then
+			C.HudController:Toast(message, if ok then "Good" else "Bad")
+		end
+		if ok then
+			Ui.sound("Sell")
+		end
 	end)
 	State.Changed:Connect(function()
 		if gui.Enabled then

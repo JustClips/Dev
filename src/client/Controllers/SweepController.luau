@@ -293,7 +293,7 @@ local function onSweepResult(result)
 	end
 	if result.Full and os.clock() > fullWarnAt then
 		fullWarnAt = os.clock() + 6
-		C.HudController:Toast("Bag full! Dump your leaves at the market", "Bad")
+		C.HudController:Toast("Bag full! Dump your trash at the market", "Bad")
 	end
 end
 

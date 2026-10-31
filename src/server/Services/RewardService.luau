@@ -357,6 +357,37 @@ local function claimGroup(player: Player): (boolean, string?)
 	return true, `Thanks for joining! You got {table.concat(got, " + ")}`
 end
 
+-------------------------------------------------------------------------- index sets
+
+-- Every pet of a rarity found (daily exclusives aside): its set reward, once.
+local function claimIndexSet(player: Player, rarity: any): (boolean, string?)
+	local data = S.DataService:GetData(player)
+	local reward = type(rarity) == "string" and Rewards.IndexSets[rarity]
+	if not data or not reward then
+		return false, nil
+	end
+	data.Flags.IndexSets = data.Flags.IndexSets or {}
+	if data.Flags.IndexSets[rarity] then
+		return false, "You already got this set's reward"
+	end
+	local have, need = 0, 0
+	for _, def in Aliens.List do
+		if def.Rarity == rarity and not def.Exclusive then
+			need += 1
+			if data.Index[def.Id] then
+				have += 1
+			end
+		end
+	end
+	if need == 0 or have < need then
+		return false, `Find all {rarity} pets first ({have}/{need})`
+	end
+	data.Flags.IndexSets[rarity] = true
+	local got = grant(player, reward, "IndexSet" .. rarity)
+	S.StateService:Mark(player)
+	return true, `{rarity} set complete! You got {got}`
+end
+
 -------------------------------------------------------------------------- events
 
 local function giveEventReward(player: Player, event: Rewards.EventDef)
@@ -419,6 +450,7 @@ function RewardService:Snapshot(player: Player): { [string]: any }?
 		EventId = if event then event.Id else nil,
 		EventSignedUp = if event then data.Flags.EventSignups[event.Id] ~= nil else false,
 		Spins = data.Spins or 0,
+		IndexSets = data.Flags.IndexSets or {},
 		FreeSpin = (freeSpin(data)),
 		FreeSpinAt = select(2, freeSpin(data)),
 		Now = now(),
@@ -432,6 +464,7 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string?, any) } = {
 	ClaimGroup = claimGroup,
 	SignUp = signUp,
 	Spin = spin,
+	ClaimIndexSet = claimIndexSet,
 }
 
 function RewardService:Do(player: Player, action: string, arg: any): (boolean, string?, any)

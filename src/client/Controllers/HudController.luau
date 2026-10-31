@@ -115,7 +115,8 @@ local function flyToast(text: string, k: string, target: string)
 	pop.Name = "Pop"
 	pop.Scale = if Ui.reducedMotion() then s else s * 0.4
 	pop.Parent = toast
-	toast.Parent = hud
+	local flyLayer = C.FlyController.Layer()
+	toast.Parent = flyLayer
 	TweenService:Create(pop, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = s * 1.1 }):Play()
 	task.delay(1.0, function()
 		if not toast.Parent then
@@ -125,7 +126,7 @@ local function flyToast(text: string, k: string, target: string)
 		local fly = C.FlyController
 		local from = toast.AbsolutePosition + toast.AbsoluteSize / 2
 		local goalAbs = if target == "Cash" then fly.CashAbsolute() else fly.BagAbsolute()
-		local goal = goalAbs - hud.AbsolutePosition
+		local goal = goalAbs - flyLayer.AbsolutePosition
 		if target == "Cash" then
 			-- "+$10M" in the message: coins worth that fly in and count up over the wallet.
 			local amount = parseCash(text)

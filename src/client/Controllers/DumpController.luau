@@ -38,6 +38,7 @@ type DumpVisual = {
 	pileBase: CFrame?,
 	pileLevel: number,
 	heap: { { offset: CFrame, part: BasePart? } },
+	look: LeafMeshes.Look?,
 	coins: ParticleEmitter?,
 	mouth: Attachment?,
 	busyUntil: number,
@@ -203,7 +204,8 @@ local function updateHeap(v: DumpVisual)
 	for k, slot in v.heap do
 		if k <= want then
 			if not slot.part then
-				look = look or LeafMeshes.lookFor(nil)
+				-- What the dumping player swept (snow, seaweed, paper...), not always leaves.
+				look = look or v.look or LeafMeshes.lookFor(nil)
 				local part = LeafMeshes.random(look :: LeafMeshes.Look, 1.3 + (k % 3) * 0.2)
 				if part then
 					part.Parent = folder
@@ -235,11 +237,22 @@ local function stepDumps(now: number, dt: number)
 			continue
 		end
 		v.busyUntil = now + 0.4
+		local look = C.BackpackController:LookOf(player)
+		if look and v.look ~= look then
+			-- A different kind of trash: the heap is rebuilt in its colours.
+			v.look = look
+			for _, slot in v.heap do
+				if slot.part then
+					LeafMeshes.give(slot.part)
+					slot.part = nil
+				end
+			end
+		end
 		-- Only your own leaves pour (other players' dumps just run their rollers): less to
 		-- animate with a full server.
 		if player == Players.LocalPlayer and now >= (nextPour[player] or 0) then
 			nextPour[player] = now + POUR_EVERY
-			launch(from, mouthOf(v), FLIGHT, 5 + math.random() * 2, C.BackpackController:LookOf(player))
+			launch(from, mouthOf(v), FLIGHT, 5 + math.random() * 2, look)
 		end
 	end
 	-- Rollers spin and the pile rises while busy, then settle.

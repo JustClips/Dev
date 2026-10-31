@@ -87,6 +87,10 @@ local function shown(object: GuiObject): boolean
 	return object.AbsoluteSize.X > 1
 end
 
+function FlyController.Layer(): Frame
+	return layer
+end
+
 -- Screen (absolute) point -> this layer's px, for pops drawn in other ScreenGuis.
 function FlyController.ToLayer(absolute: Vector2): Vector2
 	return absolute - layer.AbsolutePosition
@@ -347,7 +351,10 @@ function FlyController:CoinsFromWorld(pos: Vector3, count: number?, value: any?)
 	lastWorld = now
 	local carried = pendingWorld
 	pendingWorld = BigNum.zero()
-	local from = worldToLayer(pos) or randomPoint()
+	-- Pops up at a random spot like every other reward (Dev, 2026-10-31: selling should
+	-- look the same), close to where it was picked up when that's on screen.
+	local near = worldToLayer(pos)
+	local from = if near then near:Lerp(randomPoint(), 0.6) else randomPoint()
 	local s = Ui.scale()
 	local n = math.clamp(count or 1, 1, 10)
 	local share = BigNum.div(carried, n)
@@ -355,11 +362,10 @@ function FlyController:CoinsFromWorld(pos: Vector3, count: number?, value: any?)
 	for i = 1, n do
 		launch({
 			image = AssetLibrary.image("Icon_Cash"),
-			from = from + Vector2.new(math.random(-30, 30), math.random(-30, 30)) * s,
+			from = from + Vector2.new(math.random(-40, 40), math.random(-40, 40)) * s,
 			target = cashTarget,
-			size = COIN_PX * s * 0.85,
+			size = COIN_PX * s * 0.9,
 			delay = (i - 1) * 0.04,
-			hold = 0.05,
 			text = if hasValue then "+" .. Format.cash(share) else nil,
 			onLand = function()
 				punch(cashIcon)
@@ -548,12 +554,22 @@ function FlyController:Init()
 	bagSlot = Ui.find(hud, "Hotbar.BagSlot")
 	bagPanel = Ui.find(hud, "Wallet.BackpackPanel")
 	bagIcon = Ui.find(hud, "Wallet.BackpackPanel.Icon")
+	-- Its own ScreenGui above every window, so prizes won in a window (the wheel, daily
+	-- rewards) fly over it. Same insets as the HUD, so positions line up.
+	local screen = Instance.new("ScreenGui")
+	screen.Name = "Fly"
+	screen.ResetOnSpawn = false
+	screen.IgnoreGuiInset = hud.IgnoreGuiInset
+	screen.ScreenInsets = hud.ScreenInsets
+	screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	screen.DisplayOrder = 40
+	screen.Parent = hud.Parent
 	local f = Instance.new("Frame")
 	f.Name = "FlyLayer"
 	f.BackgroundTransparency = 1
 	f.Size = UDim2.fromScale(1, 1)
 	f.ZIndex = 60
-	f.Parent = hud
+	f.Parent = screen
 	layer = f
 	-- "+$X" just over the wallet (Dev: "above the cash"), and one right of the bag bar.
 	cashCounter = makeCounter("CashGain", function(label)

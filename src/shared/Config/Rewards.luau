@@ -153,4 +153,16 @@ end
 Rewards.DailyCooldown = 24 * 3600
 Rewards.DailyStreakWindow = 48 * 3600
 
+-- Index sets (Dev, 2026-10-31): find every pet of a rarity (daily exclusives don't count)
+-- and claim this reward once from the Index window.
+Rewards.IndexSets = {
+	Common = { Kind = "Item", Item = "CashPotion", Amount = 2 },
+	Uncommon = { Kind = "Item", Item = "LuckPotion", Amount = 2 },
+	Rare = { Kind = "Item", Item = "HatchPotion", Amount = 3 },
+	Epic = { Kind = "Item", Item = "SuperLuckPotion", Amount = 2 },
+	Legendary = { Kind = "Item", Item = "HugeCharm", Amount = 1 },
+	Mythic = { Kind = "Item", Item = "MegaCashPotion", Amount = 2 },
+	Cosmic = { Kind = "Egg", Rarity = "Mythic" },
+} :: { [string]: Reward }
+
 return Rewards

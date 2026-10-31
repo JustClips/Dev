@@ -805,40 +805,47 @@ def bar(name, size, pos, anchor, fill, label, ts=26):
     ])
 
 
+INDEX_TABS = [("Common", "#BEBEBE"), ("Uncommon", "#4FD36B"), ("Rare", "#3E9BFF"), ("Epic", "#B05CFF"),
+              ("Legendary", "#FFB020"), ("Mythic", "#FF3B5C"), ("Cosmic", "#FF78E6"), ("Daily", "#5B6070")]
+
+
 def index():
-    """Pet index (Steal an Egg style): a zone panel on the left, rarity-coloured cards,
-    the picked pet on the right, zone progress and total progress bars."""
+    """Pet index (Dev, 2026-10-31, from a reference): one rarity at a time (tabs down the
+    right), cards with "1 in N" (the chance within its egg) and the zone, "???" silhouettes
+    for pets you haven't hatched, a "complete the set" reward strip and a found bar."""
     card = button("Template", U(0, 0, 0, 0), color="#BEBEBE", stroke=3, Visible=False, children=[
-        node("Viewport", "ViewportFrame", base(U(1, -8, 1, -30), U(0.5, 0, 1, -4), (0.5, 1), BackgroundTransparency=1,
+        node("Viewport", "ViewportFrame", base(U(1, -10, 1, -50), U(0.5, 0, 0, 24), (0.5, 0), BackgroundTransparency=1,
                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-        text("Name", "???", U(1, -6, 0, 26), U(0.5, 0, 0, 2), (0.5, 0), ts=18, display=True, stroke=2.5, ZIndex=4,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 19, "MinTextSize": 9})]),
+        text("Chance", "1 in 5", U(0.6, 0, 0, 20), U(0, 6, 0, 4), ts=16, display=True, stroke=2, xa="Left", ZIndex=4),
+        text("Zone", "", U(0.5, 0, 0, 18), U(1, -6, 0, 5), (1, 0), ts=13, color="#E0E4F0", display=True, stroke=2, xa="Right",
+             ZIndex=4, TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 14, "MinTextSize": 7})]),
+        text("Name", "???", U(1, -8, 0, 24), U(0.5, 0, 1, -4), (0.5, 1), ts=19, display=True, stroke=2.5, ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 9})]),
     ])
-    body = plate("Body", U(1, -24, 1, -156), U(0, 12, 0, 76), tint=BG, stud=0.6, children=[
-        plate("Zone", U(0, 150, 1, -84), U(0, 10, 0, 10), tint="#3B4FA8", stud=0.2, children=[
-            text("Name", "Backyard", U(1, -10, 0, 70), U(0.5, 0, 0, 8), (0.5, 0), ts=26, display=True, stroke=3),
-            icon("Icon", "Zones", 90, U(0.5, 0, 0.5, 0), (0.5, 0.5)),
-            button("Prev", U(0, 54, 0, 46), U(0, 10, 1, -10), (0, 1), color=HEADER, label="<", ts=26),
-            button("Next", U(0, 54, 0, 46), U(1, -10, 1, -10), (1, 1), color=HEADER, label=">", ts=26),
-        ]),
-        scroller("Grid", U(1, -410, 1, -84), U(0, 170, 0, 10), [
-            node("Layout", "UIGridLayout", {"CellSize": U(0, 118, 0, 132), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
+    grid_w = 600
+    body = plate("Body", U(0, grid_w, 0, 304), U(0, 12, 0, 76), tint=BG, stud=0.6, children=[
+        scroller("Grid", U(1, -12, 1, -12), U(0, 6, 0, 6), [
+            node("Layout", "UIGridLayout", {"CellSize": U(0, 136, 0, 150), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
                                             "HorizontalAlignment": "Left"}),
-            padding(3), card,
-        ]),
-        bar("Progress", U(1, -410, 0, 52), U(0, 170, 1, -12), (0, 1), SUCCESS, "0/7"),
-        plate("Detail", U(0, 220, 1, -20), U(1, -10, 0, 10), (1, 0), "#4A5170", stud=0.5, children=[
-            node("Viewport", "ViewportFrame", base(U(1, -16, 0, 150), U(0.5, 0, 0, 8), (0.5, 0), BackgroundTransparency=1,
-                                                   Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-            text("Name", "", U(1, -12, 0, 32), U(0.5, 0, 0, 160), (0.5, 0), ts=26, display=True, stroke=3,
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 26, "MinTextSize": 12})]),
-            text("Rarity", "", U(1, -12, 0, 26), U(0.5, 0, 0, 192), (0.5, 0), ts=22, display=True, stroke=3),
-            text("Income", "", U(1, -12, 0, 28), U(0.5, 0, 0, 220), (0.5, 0), ts=24, color="#7CFF8C", display=True, stroke=3),
-            text("Hint", "", U(1, -16, 0, 56), U(0.5, 0, 1, -8), (0.5, 1), ts=14, color="#E0E4F0", heavy=True, ya="Bottom"),
+            padding(4), card,
         ]),
     ])
-    total = bar("Total", U(1, -24, 0, 56), U(0, 12, 1, -12), (0, 1), "#4CC3FF", "Unlocked: 0/47", ts=30)
-    write("Index", screen([dim(), window(WIN_W, WIN_H, "Pet Index", "Index", [body, total], header="#4CC3FF")], order=10, enabled=False))
+    sets = plate("Set", U(0, grid_w, 0, 66), U(0, 12, 0, 388), tint="#3A404D", stroke=3, children=[
+        icon("Icon", "PotionCash", 54, U(0, 8, 0.5, 0), (0, 0.5)),
+        text("Title", "COMPLETE THE COMMON SET", U(1, -270, 0, 28), U(0, 70, 0, 6), ts=20, display=True, stroke=2.5, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 9})]),
+        text("Reward", "2x Cash Potion", U(1, -270, 0, 24), U(0, 70, 0, 34), ts=18, color=PREMIUM, display=True, stroke=2,
+             xa="Left", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 9})]),
+        button("Claim", U(0, 186, 0, 50), U(1, -8, 0.5, 0), (1, 0.5), color=MUTED, label="0/0 FOUND", ts=20),
+    ])
+    found = bar("Found", U(0, grid_w, 0, 50), U(0, 12, 1, -12), (0, 1), "#4CC3FF", "0/0 Found", ts=26)
+    tabs = frame("Tabs", U(0, 184, 0, 410), U(1, -12, 0, 76), (1, 0), children=[
+        vlist(5),
+    ] + [button(name, U(1, 0, 0, 46), color=color, label=name if name != "Daily" else "Exclusive", ts=22, LayoutOrder=i)
+         for i, (name, color) in enumerate(INDEX_TABS)])
+    total = text("Total", "Unlocked: 0/0", U(0, 184, 0, 20), U(1, -12, 1, -10), (1, 1), ts=16, color=SUB, display=True)
+    write("Index", screen([dim(), window(WIN_W, WIN_H, "Pet Index", "Index", [body, sets, found, tabs, total], header="#4CC3FF")],
+                         order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Inventory

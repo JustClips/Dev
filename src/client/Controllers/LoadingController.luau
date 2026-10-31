@@ -26,7 +26,7 @@ local PROPS_MAX = 4
 local SKIP_AFTER = 2
 local TIPS = {
 	"Tip: bigger tools sweep wider and hold more leaves.",
-	"Tip: dump your leaves into the green bins by the market to get cash.",
+	"Tip: dump your trash into the green bins by the market to get cash.",
 	"Tip: carry eggs to the pet park on your base.",
 	"Tip: pets on your base earn cash even while you sweep.",
 	"Tip: buy a car in Gear and drive it from hotbar slot 2.",
