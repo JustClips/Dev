@@ -710,69 +710,162 @@ function HudController:Init(controllers)
 	el.Toasts = Ui.find(hud, "Toasts")
 	el.Hint = Ui.find(hud, "Hint")
 	el.Combo = Ui.find(hud, "Combo")
-	el.ComboFill = Ui.find(hud, "Combo.Bar.Fill")
-	el.ComboScale = Ui.find(hud, "Combo.AutoScale")
-	el.ComboLabel = Ui.find(hud, "Combo.Label")
+	el.ComboFill = Ui.find(hud, "Combo.Body.Bar.Fill")
+	el.ComboPop = Ui.find(hud, "Combo.Body.Pop")
+	el.ComboLabel = Ui.find(hud, "Combo.Body.Label")
+	el.ComboMult = Ui.find(hud, "Combo.Body.Mult")
+	el.Burst = Ui.find(hud, "ComboBurst")
+	el.BurstPop = Ui.find(hud, "ComboBurst.Body.Pop")
+	el.BurstRays = Ui.find(hud, "ComboBurst.Body.Rays")
+	el.BurstWord = Ui.find(hud, "ComboBurst.Body.Word")
+	el.BurstSub = Ui.find(hud, "ComboBurst.Body.Sub")
 	el.ZoneRows = {}
 	for _, zoneId in ZONE_ORDER do
 		el.ZoneRows[zoneId] = Ui.find(hud, "ZonePicker.List.Zone_" .. zoneId)
 	end
 end
 
--- Sweep combo (x1 -> x3 cash): a big tilted "x2.4" next to your character. It pops and
--- chimes higher each time it climbs, goes white -> gold -> orange -> pink, and the bar
--- under it runs down until the combo drops.
-local COMBO_HOLD = 1.8
-local COMBO_COLORS = {
-	{ at = 1, color = Color3.fromRGB(255, 255, 255) },
-	{ at = 1.5, color = Color3.fromRGB(255, 214, 72) },
-	{ at = 2.2, color = Color3.fromRGB(255, 154, 60) },
-	{ at = 2.8, color = Color3.fromRGB(255, 90, 200) },
+-- Sweep combo (Dev, 2026-10-31): a big blue "x553 COMBO" next to your character that
+-- counts every pile you clear, with no cap. It pops on every sweep, chimes higher as it
+-- climbs, and the bar under it runs down until the combo drops (ComboHold from the server).
+-- Milestones burst a word with rays on the other side ("GREAT! x500 COMBO").
+local MILESTONES = {
+	{ at = 50, word = "NICE!" },
+	{ at = 100, word = "GOOD!" },
+	{ at = 250, word = "GREAT!" },
+	{ at = 500, word = "AMAZING!" },
+	{ at = 1000, word = "INSANE!" },
+	{ at = 2500, word = "UNSTOPPABLE!" },
+	{ at = 5000, word = "LEGENDARY!" },
 }
+local MILESTONE_EVERY = 5000 -- past the list: GODLIKE! every 5000
+
+-- "553", "12345", then "1.2M" once it gets silly.
+local function comboText(n: number): string
+	return if n < 100_000 then tostring(math.floor(n)) else Format.number(n)
+end
 local comboToken = 0
-local comboShown = 1
+local comboShown = 0
+local comboHold = 1.8
 local comboEnds = 0
 local lastComboSound = 0
-function HudController:SetCombo(combo: number)
+local burstToken = 0
+
+-- The milestone between `from` (exclusive) and `to` (inclusive), if any.
+local function milestone(from: number, to: number): (number?, string?)
+	local hit, word = nil, nil
+	for _, m in MILESTONES do
+		if from < m.at and to >= m.at then
+			hit, word = m.at, m.word
+		end
+	end
+	local last = MILESTONES[#MILESTONES].at
+	if to > last then
+		local step = math.floor(to / MILESTONE_EVERY) * MILESTONE_EVERY
+		if step > last and from < step then
+			hit, word = step, "GODLIKE!"
+		end
+	end
+	return hit, word
+end
+
+local function drawRays(rays: Frame)
+	if #rays:GetChildren() > 0 then
+		return
+	end
+	for i = 0, 7 do
+		local ray = Instance.new("Frame")
+		ray.Name = "Ray"
+		ray.AnchorPoint = Vector2.new(0.5, 0.5)
+		ray.Size = UDim2.fromOffset(18, 420)
+		ray.Rotation = i * 22.5
+		ray.BorderSizePixel = 0
+		ray.BackgroundColor3 = Color3.fromRGB(42, 111, 232)
+		ray.BackgroundTransparency = 0.55
+		ray.ZIndex = 1
+		local gradient = Instance.new("UIGradient")
+		gradient.Rotation = 90
+		gradient.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.5, 0),
+			NumberSequenceKeypoint.new(1, 1),
+		})
+		gradient.Parent = ray
+		ray.Parent = rays
+	end
+end
+
+local function showBurst(at: number, word: string)
+	burstToken += 1
+	local token = burstToken
+	local frame = el.Burst :: Frame
+	local rays = el.BurstRays :: Frame
+	;(el.BurstWord :: TextLabel).Text = word
+	;(el.BurstSub :: TextLabel).Text = `x{comboText(at)} COMBO`
+	drawRays(rays)
+	frame.Visible = true
+	Ui.sound("Combo", 1.5)
+	if not Ui.reducedMotion() then
+		local pop = el.BurstPop :: UIScale
+		pop.Scale = 0.3
+		TweenService:Create(pop, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+		rays.Rotation = 0
+		TweenService:Create(rays, TweenInfo.new(1.8, Enum.EasingStyle.Linear), { Rotation = 40 }):Play()
+	end
+	task.delay(1.6, function()
+		if burstToken ~= token then
+			return
+		end
+		if Ui.reducedMotion() then
+			frame.Visible = false
+			return
+		end
+		local pop = el.BurstPop :: UIScale
+		TweenService:Create(pop, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 0 }):Play()
+		task.delay(0.2, function()
+			if burstToken == token then
+				frame.Visible = false
+			end
+		end)
+	end)
+end
+
+function HudController:SetCombo(count: number, mult: number?, hold: number?)
 	comboToken += 1
 	local token = comboToken
 	local frame = el.Combo :: Frame
 	local label = el.ComboLabel :: TextLabel
-	if combo <= 1.05 then
+	if count < 1 then
 		frame.Visible = false
-		comboShown = 1
+		comboShown = 0
 		return
 	end
-	local color = COMBO_COLORS[1].color
-	for _, step in COMBO_COLORS do
-		if combo >= step.at then
-			color = step.color
-		end
-	end
-	label.Text = string.format("x%.1f", combo)
-	label.TextColor3 = color
-	el.ComboFill.BackgroundColor3 = color
-	comboEnds = os.clock() + COMBO_HOLD
-	if not frame.Visible then
-		frame.Visible = true
-	end
-	-- Pop + rising chime each time it goes up a notch.
-	if combo >= comboShown + 0.1 then
-		comboShown = combo
+	comboHold = hold or comboHold
+	label.Text = "x" .. comboText(count)
+	;(el.ComboMult :: TextLabel).Text = string.format("Cash x%.1f", mult or 1)
+	comboEnds = os.clock() + comboHold
+	frame.Visible = true
+	local at, word = milestone(comboShown, count)
+	if count > comboShown then
 		if not Ui.reducedMotion() then
-			local scale = el.ComboScale :: UIScale
-			scale.Scale = Ui.scale() * 1.35
-			TweenService:Create(scale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = Ui.scale() }):Play()
+			local pop = el.ComboPop :: UIScale
+			pop.Scale = 1.25
+			TweenService:Create(pop, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 		end
 		if os.clock() - lastComboSound > 0.18 then
 			lastComboSound = os.clock()
-			Ui.sound("Combo", 0.8 + (combo - 1) * 0.35)
+			-- Climbs for the first few hundred, then stays high.
+			Ui.sound("Combo", 0.8 + math.min(count / 300, 1) * 0.7)
 		end
 	end
-	task.delay(COMBO_HOLD, function()
+	comboShown = count
+	if at and word then
+		showBurst(at, word)
+	end
+	task.delay(comboHold + 0.1, function()
 		if comboToken == token then
 			frame.Visible = false
-			comboShown = 1
+			comboShown = 0
 		end
 	end)
 end
@@ -794,7 +887,7 @@ function HudController:Start()
 		shine.Position = UDim2.new(-0.3 + t * 1.8, 0, 0, 0)
 		local combo = el.Combo :: Frame
 		if combo.Visible then
-			el.ComboFill.Size = UDim2.fromScale(math.clamp((comboEnds - os.clock()) / COMBO_HOLD, 0, 1), 1)
+			el.ComboFill.Size = UDim2.fromScale(math.clamp((comboEnds - os.clock()) / comboHold, 0, 1), 1)
 		end
 	end)
 

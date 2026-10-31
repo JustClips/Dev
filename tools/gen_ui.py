@@ -577,15 +577,37 @@ def hud():
     ])
     pointer = node("Pointer", "ImageLabel", base(U(0, 56, 0, 56), anchor=(0.5, 1), BackgroundTransparency=1, Image=img("ArrowDown"),
                                                  Visible=False, ZIndex=20))
-    # Sweep combo: a big tilted "x2.4" next to your character that pops every time it goes up,
-    # changes colour as it climbs, and a thin bar for the time left before it drops.
-    combo = frame("Combo", U(0, 200, 0, 96), U(0.5, 120, 0.5, -40), (0, 0.5), Visible=False, Rotation=-6, children=[
-        autoscale(),
-        text("Title", "COMBO", U(1, 0, 0, 22), ts=18, color=WHITE, display=True, stroke=2.5, xa="Left"),
-        text("Label", "x1.0", U(1, 0, 0, 56), U(0, 0, 0, 18), ts=52, color=PREMIUM, display=True, stroke=4, xa="Left"),
-        frame("Bar", U(0, 120, 0, 8), U(0, 2, 0, 80), bg="#0B0E1E", children=[
-            border(INK, 2),
-            frame("Fill", U(1, 0, 1, 0), bg=PREMIUM),
+    # Sweep combo (Dev, 2026-10-31, from a reference shot): a big blue "x553" with COMBO under
+    # it next to your character, popping on every sweep, a thin bar for the time left and the
+    # cash multiplier. Milestones (x100, x250, x500...) burst a "GREAT!" with rays on the
+    # other side (ComboBurst). The pop runs on Body.Pop so it doesn't fight AutoScale.
+    def blue():
+        return node("Shade", "UIGradient", {"Color": {"keypoints": [[0, "#BDEBFF"], [0.5, "#5BB8FF"], [1, "#2A6FE8"]]}, "Rotation": 90})
+    combo = frame("Combo", U(0, 280, 0, 120), U(0.5, 100, 0.5, -50), (0, 0.5), Visible=False, Rotation=-5, children=[
+        autoscale(0.8),
+        frame("Body", U(1, 0, 1, 0), children=[
+            node("Pop", "UIScale", {"Scale": 1}),
+            text("Label", "x0", U(1, 0, 0, 70), U(0, 0, 0, 0), ts=68, color=WHITE, display=True, stroke=5, xa="Left",
+                 TextWrapped=False, children=[blue()]),
+            text("Title", "COMBO", U(0, 140, 0, 28), U(0, 10, 0, 64), ts=28, color=WHITE, display=True, stroke=3.5, xa="Left",
+                 TextWrapped=False),
+            frame("Bar", U(0, 130, 0, 8), U(0, 10, 0, 100), bg="#0B0E1E", children=[
+                border(INK, 2),
+                frame("Fill", U(1, 0, 1, 0), bg="#5BB8FF"),
+            ]),
+            text("Mult", "Cash x1.0", U(0, 120, 0, 22), U(0, 150, 0, 93), ts=18, color=PREMIUM, display=True, stroke=2.5,
+                 xa="Left", TextWrapped=False),
+        ]),
+    ])
+    burst = frame("ComboBurst", U(0, 320, 0, 160), U(0.5, -90, 0.5, -70), (1, 0.5), Visible=False, Rotation=-8, children=[
+        autoscale(0.75),
+        frame("Body", U(1, 0, 1, 0), children=[
+            node("Pop", "UIScale", {"Scale": 1}),
+            frame("Rays", U(0, 0, 0, 0), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=1),
+            text("Word", "GREAT!", U(1, 40, 0, 88), U(0.5, 0, 0, 8), (0.5, 0), ts=84, color=WHITE, display=True, stroke=6,
+                 TextWrapped=False, ZIndex=3, children=[blue()]),
+            text("Sub", "x500 COMBO", U(1, 0, 0, 36), U(0.5, 0, 0, 98), (0.5, 0), ts=34, color="#E9FFD9", display=True,
+                 stroke=4, TextWrapped=False, ZIndex=3),
         ]),
     ])
     # Lucky Wheel button, top right where the ADMIN button sits (under it for admins). Fixed
@@ -628,7 +650,7 @@ def hud():
                  xa="Right"),
         ] + [goal_row(i) for i in (1, 2, 3)]),
     ])
-    write("Hud", screen([rail, spin, pills, moon, goals, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, picker,
+    write("Hud", screen([rail, spin, pills, moon, goals, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, burst, picker,
                          spot, pointer, hold], order=1))
 
 
