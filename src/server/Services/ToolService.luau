@@ -11,6 +11,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
+local Economy = require(Shared.Config.Economy)
 local ToolGrips = require(Shared.Config.ToolGrips)
 local Tools = require(Shared.Config.Tools)
 local Items = require(Shared.Config.Items)
@@ -74,6 +75,9 @@ function ToolService:GetCapacity(player: Player): number
 		capacity = math.max(capacity, car.Capacity)
 	end
 	local mult = Upgrades.multiplier(data and data.Upgrades, "Backpack")
+	if data and data.Gamepasses.BigBag then
+		mult *= Economy.BigBagPassMult
+	end
 	if S.BoostService:IsBoostActive(player, "BigBag") then
 		mult *= Items.BigBagMult
 	end

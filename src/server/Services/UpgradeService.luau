@@ -8,6 +8,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
+local Economy = require(Shared.Config.Economy)
 local Tools = require(Shared.Config.Tools)
 local Upgrades = require(Shared.Config.Upgrades)
 
@@ -20,7 +21,8 @@ local function applyWalkSpeed(player: Player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if data and humanoid then
-		humanoid.WalkSpeed = Upgrades.walkSpeed(data.Upgrades) + S.BoostService:GetSpeedBonus(player)
+		local pass = if data.Gamepasses.FastWalk then Economy.FastWalkMult else 1
+		humanoid.WalkSpeed = Upgrades.walkSpeed(data.Upgrades) * pass + S.BoostService:GetSpeedBonus(player)
 	end
 end
 

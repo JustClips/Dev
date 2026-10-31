@@ -13,8 +13,11 @@ local Gamepasses: { GamepassDef } = {
 	{ Key = "AutoSweep", Id = 2058257553, Price = 149, Name = "Auto Sweep", Description = "Sweeps around you automatically while you move." },
 	{ Key = "ExtraSlots", Id = 2060650790, Price = 199, Name = "+3 Pet Slots", Description = "Three more pets on your base." },
 	{ Key = "Carry3", Id = 2057249582, Price = 129, Name = "Carry 3 Eggs", Description = "Carry up to 3 eggs per trip." },
-	{ Key = "VIP", Id = 2060219551, Price = 249, Name = "VIP", Description = "+20% cash, VIP tag, 4 h offline income." },
+	{ Key = "VIP", Id = 2060219551, Price = 249, Name = "VIP", Description = "+20% cash, +10% egg luck, VIP chat tag, a free gift every day and 4 h offline income." },
 	{ Key = "FasterHatch", Id = 2057507586, Price = 229, Name = "Faster Hatch", Description = "All hatch timers halved." },
+	{ Key = "FastWalk", Id = 2061565724, Price = 49, Name = "Fast Walk", Description = "Walk 30% faster, forever." },
+	{ Key = "BigBag", Id = 2058855087, Price = 79, Name = "Big Bag", Description = "Your bag holds 2x as many leaves, forever." },
+	{ Key = "Lucky", Id = 2061889578, Price = 149, Name = "Lucky", Description = "+50% egg luck forever: rarer pets, more mutations and Huge pets." },
 	{ Key = "SellAnywhere", Id = 2058462006, Price = 199, Name = "Sell Anywhere", Description = "Sell your whole bag from anywhere with one tap, plus Auto Sell when it fills up." },
 }
 
@@ -45,8 +48,23 @@ local Products: { ProductDef } = {
 	{ Key = "SkipHatchLegendary", Id = 3723358824, Price = 35, Name = "Skip Hatch (Legendary)", Kind = "SkipHatch", Category = "Eggs", Giftable = true, Rarity = "Legendary" },
 	{ Key = "SkipHatchMythic", Id = 3723358840, Price = 59, Name = "Skip Hatch (Mythic)", Kind = "SkipHatch", Category = "Eggs", Giftable = true, Rarity = "Mythic" },
 	{ Key = "SkipHatchCosmic", Id = 3723358849, Price = 89, Name = "Skip Hatch (Cosmic)", Kind = "SkipHatch", Category = "Eggs", Giftable = true, Rarity = "Cosmic" },
+	-- Egg ladder: each rarity in packs of 1, 3 and 10 (the shop shows one card per rarity and
+	-- asks how many). Bought eggs always hatch their own rarity, from your best zone.
+	{ Key = "EpicEgg1", Id = 3725049748, Price = 25, Name = "Epic Egg", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Epic", Count = 1 },
+	{ Key = "EpicEgg3", Id = 3725049761, Price = 65, Name = "3 Epic Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Epic", Count = 3 },
+	{ Key = "EpicEgg10", Id = 3725049768, Price = 199, Name = "10 Epic Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Epic", Count = 10 },
+	{ Key = "LegendaryEgg1", Id = 3725049777, Price = 45, Name = "Legendary Egg", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Legendary", Count = 1 },
+	{ Key = "LegendaryEgg3", Id = 3725049800, Price = 119, Name = "3 Legendary Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Legendary", Count = 3 },
+	{ Key = "LegendaryEgg10", Id = 3725049816, Price = 349, Name = "10 Legendary Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Legendary", Count = 10 },
+	{ Key = "MythicEgg1", Id = 3725049824, Price = 69, Name = "Mythic Egg", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Mythic", Count = 1 },
+	{ Key = "MythicEgg3", Id = 3725049840, Price = 179, Name = "3 Mythic Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Mythic", Count = 3 },
+	{ Key = "MythicEgg10", Id = 3725049854, Price = 549, Name = "10 Mythic Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Mythic", Count = 10 },
 	{ Key = "CosmicEgg1", Id = 3723358859, Price = 99, Name = "Cosmic Egg", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Cosmic", Count = 1 },
 	{ Key = "CosmicEgg3", Id = 3723358868, Price = 249, Name = "3 Cosmic Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Cosmic", Count = 3 },
+	{ Key = "CosmicEgg10", Id = 3725049875, Price = 799, Name = "10 Cosmic Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Cosmic", Count = 10 },
+
+	-- Limited bundle (Economy.LimitedPack): once per player, gone after its end date.
+	{ Key = "HalloweenPack", Id = 3725049892, Price = 149, Name = "Spooky Halloween Pack", Kind = "LimitedPack", Category = "Special", Giftable = false },
 
 	-- "Next tool now": priced per target tier.
 	{ Key = "ToolSkip2", Id = 3723358874, Price = 3, Name = "Unlock Broom", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 2 },
@@ -115,6 +133,9 @@ local Products: { ProductDef } = {
 	{ Key = "GiftCarry3", Id = 3723394082, Price = 129, Name = "Gift: Carry 3 Eggs", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "Carry3" },
 	{ Key = "GiftVIP", Id = 3723394088, Price = 249, Name = "Gift: VIP", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "VIP" },
 	{ Key = "GiftFasterHatch", Id = 3723394096, Price = 229, Name = "Gift: Faster Hatch", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "FasterHatch" },
+	{ Key = "GiftFastWalk", Id = 3725049902, Price = 49, Name = "Gift: Fast Walk", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "FastWalk" },
+	{ Key = "GiftBigBag", Id = 3725049913, Price = 79, Name = "Gift: Big Bag", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "BigBag" },
+	{ Key = "GiftLucky", Id = 3725049926, Price = 149, Name = "Gift: Lucky", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "Lucky" },
 	{ Key = "GiftSellAnywhere", Id = 3723696966, Price = 199, Name = "Gift: Sell Anywhere", Kind = "GiftPass", Category = "Gifts", Giftable = true, Pass = "SellAnywhere" },
 }
 
@@ -170,6 +191,30 @@ function Config.serverLuckNext(level: number): ProductDef?
 		end
 	end
 	return top
+end
+
+-- When the limited pack stops being on sale for this player, or nil (bought or over).
+function Config.limitedPackEnds(data: any, now: number): number?
+	local def = Config.ProductByKey.HalloweenPack
+	local pack = Economy.LimitedPack
+	if not def or def.Id == 0 or data.Flags.LimitedPackBought == pack.Id or now >= pack.EndsAt then
+		return nil
+	end
+	return pack.EndsAt
+end
+
+-- The egg packs for one rarity, smallest first (the shop's "how many?" picker).
+function Config.eggPacks(rarity: string): { ProductDef }
+	local out = {}
+	for _, def in Products do
+		if def.Kind == "EggPack" and def.Rarity == rarity and def.Id ~= 0 then
+			table.insert(out, def)
+		end
+	end
+	table.sort(out, function(a, b)
+		return (a.Count or 1) < (b.Count or 1)
+	end)
+	return out
 end
 
 -- When the Starter Pack stops being on sale for this player (unix seconds), or nil if it

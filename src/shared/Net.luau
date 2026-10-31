@@ -21,6 +21,7 @@ local EVENTS: { [string]: number } = {
 	WelcomeBack = 0, -- server -> owner: offline income payload
 	CashGained = 0, -- server -> owner: { Amount, Source } for the "you got" popup
 	ShowOffer = 0, -- server -> owner: contextual offer
+	OpenShop = 0, -- server -> owner: open the Shop at a section (3rd "not enough cash")
 	OfferResponse = 4, -- client: offer clicked / dismissed
 	EggDrop = 0, -- server -> all: (position, rarity, fallSeconds) an Egg Rain egg falls here
 	WeatherStrike = 0, -- server -> all: (position, "Lightning" | "Star", hitEgg) a strike lands here

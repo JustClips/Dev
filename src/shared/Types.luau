@@ -173,6 +173,7 @@ export type ProductKind =
 	| "WheelSpins"
 	| "MerchantRestock"
 	| "ItemPack"
+	| "LimitedPack"
 
 export type ProductDef = {
 	Key: string,

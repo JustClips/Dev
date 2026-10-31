@@ -26,11 +26,12 @@ UNIVERSE = "10773346969"
 API = "https://apis.roblox.com"
 
 PASS_ICONS = {"Cash2x": "Cash", "AutoSweep": "Auto", "ExtraSlots": "Alien", "Carry3": "Egg",
-              "VIP": "Star", "FasterHatch": "Timer", "SellAnywhere": "Sell"}
+              "VIP": "Star", "FasterHatch": "Timer", "SellAnywhere": "Sell",
+              "FastWalk": "Speed", "BigBag": "Backpack", "Lucky": "LuckyClover"}
 KIND_ICONS = {"StarterPack": "Gift", "ServerLuck": "Luck", "MeteorShower": "Meteor", "SkipHatch": "Timer",
               "EggPack": "Egg", "ToolSkip": "Tool", "VehicleUnlock": "Vehicle", "VehicleRental": "Vehicle",
               "CashPack": "Cash", "SkipRebirth": "Rebirth", "DoubleOffline": "Cash", "GiftPass": "Gift", "WheelSpins": "Spin",
-              "MerchantRestock": "Merchant", "ItemPack": "PotionLuck"}
+              "MerchantRestock": "Merchant", "ItemPack": "PotionLuck", "LimitedPack": "Gift"}
 KIND_TEXT = {
     "StarterPack": "A bundle to kick off your sweeping run.",
     "ServerLuck": "Boosts egg luck for everyone in the server.",
@@ -47,6 +48,7 @@ KIND_TEXT = {
     "WheelSpins": "Spins for the Lucky Wheel: cash, potions and eggs, up to a Legendary Egg.",
     "MerchantRestock": "Unpacks a fresh set of Traveling Merchant wares just for you.",
     "ItemPack": "Goes straight to your bag. Use it from the Items tab whenever you like.",
+    "LimitedPack": "A limited-time bundle of eggs, potions and wheel spins. Once per player.",
 }
 
 LINE = re.compile(r'\{ Key = "(?P<key>\w+)", Id = (?P<id>\d+), Price = (?P<price>\d+), Name = "(?P<name>[^"]*)"(?P<rest>[^\n]*)')

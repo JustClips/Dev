@@ -25,7 +25,13 @@ local function notify(player: Player, text: string, kind: string?)
 end
 
 local CASH_PACKS = { "Cash1", "Cash2", "Cash3", "Cash4", "Cash5" }
-local OFFER_COOLDOWN = 4
+-- Dev Academy tip ("build many purchase pathways"): the 3rd "not enough cash" in a session
+-- opens the Shop at Cash, then every SHORTFALL_EVERY more, at most SHORTFALL_MAX_OPENS
+-- times a session and never twice within SHOP_OPEN_COOLDOWN seconds.
+local SHORTFALL_OPENS_AT = 3
+local SHORTFALL_EVERY = 5
+local SHORTFALL_MAX_OPENS = 3
+local SHOP_OPEN_COOLDOWN = 180
 
 -- The next thing the player is saving up for: next tool, else the next car they can buy,
 -- else a slice of the rebirth cost.
@@ -74,34 +80,61 @@ end
 
 -- The player tried to buy something they can't afford: open the purchase prompt for the
 -- smallest cash pack that covers the gap (or the biggest one if none does).
-function ShopService:OfferCashFor(player: Player, shortfall: any)
+function ShopService:OfferCashFor(player: Player, _shortfall: any)
 	local session = S.DataService:GetSession(player)
-	if not session or (session.Runtime.CashOfferAt or 0) + OFFER_COOLDOWN > os.clock() then
+	if not session then
 		return
 	end
-	local need = BigNum.toNumber(shortfall)
-	local pick, biggest = nil, nil
-	for _, key in CASH_PACKS do
-		local def = Products.ProductByKey[key]
-		if def and def.Id ~= 0 then
-			biggest = def
-			if not pick and cashPackAmount(player, def) >= need then
-				pick = def
-			end
+	local runtime = session.Runtime
+	local now = os.clock()
+	local count = (runtime.Shortfalls or 0) + 1
+	runtime.Shortfalls = count
+	local due = count == SHORTFALL_OPENS_AT or (count > SHORTFALL_OPENS_AT and (count - SHORTFALL_OPENS_AT) % SHORTFALL_EVERY == 0)
+	if not due or (runtime.ShopOpens or 0) >= SHORTFALL_MAX_OPENS or now - (runtime.ShopOpenedAt or -math.huge) < SHOP_OPEN_COOLDOWN then
+		return
+	end
+	runtime.ShopOpens = (runtime.ShopOpens or 0) + 1
+	runtime.ShopOpenedAt = now
+	S.AnalyticsService:Custom(player, "CashShortfallOffer", 0, { Product = "OpenShop" })
+	Net.fire("OpenShop", player, "Cash")
+end
+
+-- The zone bought eggs come from: the best one you've opened (same pets free players find).
+local function bestZone(player: Player): string
+	local data = S.DataService:GetData(player)
+	local zone = "Landing"
+	for _, z in Zones.List do
+		if data and data.ZonesUnlocked[z.Id] then
+			zone = z.Id
 		end
 	end
-	pick = pick or biggest
-	if not pick then
+	return zone
+end
+
+-- VIP daily gift: once every Economy.VIPGift.Hours, given on join and while playing.
+local function vipGift(player: Player)
+	local data = S.DataService:GetData(player)
+	local gift = Economy.VIPGift
+	if not data or not data.Gamepasses.VIP or os.time() - (data.Flags.VIPGiftAt or 0) < gift.Hours * 3600 then
 		return
 	end
-	session.Runtime.CashOfferAt = os.clock()
-	pendingGifts[player] = nil
-	S.AnalyticsService:Custom(player, "CashShortfallOffer", 0, { Product = pick.Key })
-	MarketplaceService:PromptProductPurchase(player, pick.Id)
+	data.Flags.VIPGiftAt = os.time()
+	for item, count in gift.Items do
+		S.InventoryService:AddItem(player, item, count)
+	end
+	if gift.Spins > 0 then
+		S.RewardService:AddSpins(player, gift.Spins)
+	end
+	S.StateService:Mark(player)
+	notify(player, "VIP daily gift: 2 Luck Potions, a Cash Potion and a free wheel spin!")
 end
 
 local function applyPassEffects(player: Player)
+	local data = S.DataService:GetData(player)
+	player:SetAttribute("VIP", data and data.Gamepasses.VIP == true or nil)
 	S.AlienService:RefreshBase(player)
+	S.UpgradeService:ApplyWalkSpeed(player)
+	vipGift(player)
 	S.StateService:Mark(player)
 end
 
@@ -134,14 +167,7 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 		S.HatchService:Skip(recipient, product.Rarity, target)
 	end,
 	EggPack = function(product, _buyer, recipient)
-		-- Hatches from the best zone you've opened (same pets free players can find there).
-		local data = S.DataService:GetData(recipient)
-		local zone = "Landing"
-		for _, z in Zones.List do
-			if data and data.ZonesUnlocked[z.Id] then
-				zone = z.Id
-			end
-		end
+		local zone = bestZone(recipient)
 		for _ = 1, product.Count or 1 do
 			S.InventoryService:AddEgg(recipient, product.Rarity, zone, true, true)
 		end
@@ -199,6 +225,22 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 	WheelSpins = function(product, _buyer, recipient)
 		local got = S.RewardService:AddSpins(recipient, product.Count or 1)
 		notify(recipient, `+{product.Count or 1} wheel spin{if (product.Count or 1) == 1 then "" else "s"}! You have {got} now.`)
+	end,
+	LimitedPack = function(_product, _buyer, recipient)
+		local data = S.DataService:GetData(recipient)
+		local pack = Economy.LimitedPack
+		data.Flags.LimitedPackBought = pack.Id
+		local zone = bestZone(recipient)
+		for rarity, count in pack.Eggs do
+			for _ = 1, count do
+				S.InventoryService:AddEgg(recipient, rarity, zone, true, true)
+			end
+		end
+		for item, count in pack.Items do
+			S.InventoryService:AddItem(recipient, item, count)
+		end
+		S.RewardService:AddSpins(recipient, pack.Spins)
+		notify(recipient, `{pack.Name}: eggs and potions are in your bag, plus {pack.Spins} wheel spins!`)
 	end,
 	ItemPack = function(product, _buyer, recipient)
 		if not product.Item then
@@ -355,6 +397,8 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		return false, "Already bought"
 	elseif product.Kind == "StarterPack" and not Products.starterPackEnds(targetData, os.time()) then
 		return false, "The Starter Pack has left the shop"
+	elseif product.Kind == "LimitedPack" and not Products.limitedPackEnds(targetData, os.time()) then
+		return false, if targetData.Flags.LimitedPackBought == Economy.LimitedPack.Id then "Already bought" else "This pack has left the shop"
 	elseif product.Kind == "ToolSkip" and targetData.ToolTier + 1 ~= product.Tier then
 		return false, "Not the next tool"
 	elseif (product.Kind == "VehicleRental" or product.Kind == "VehicleUnlock") and S.ToolService:OwnsVehicle(recipient, product.Vehicle) then
@@ -434,6 +478,16 @@ function ShopService:Start()
 		local product = Products.ProductById[productId]
 		if player and product and not purchased then
 			S.AnalyticsService:Custom(player, "PurchaseCancelled", product.Price, { Product = product.Key })
+		end
+	end)
+
+	-- VIP daily gift for VIPs who stay on past the next one.
+	task.spawn(function()
+		while true do
+			task.wait(600)
+			for player in S.DataService:GetSessions() do
+				vipGift(player)
+			end
 		end
 	end)
 

@@ -2,6 +2,7 @@
 -- Rare hatch lines in the chat window (HatchFeedService, remote "ChatHatch"), Sol's RNG
 -- style: a system message in the pet's rarity colour. "[GLOBAL]" lines come from other
 -- servers.
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
 
@@ -47,6 +48,17 @@ function ChatController:Init() end
 
 function ChatController:Start()
 	Net.event("ChatHatch").OnClientEvent:Connect(show)
+	-- VIP pass owners get a gold [VIP] tag in chat (the server sets the VIP attribute).
+	TextChatService.OnIncomingMessage = function(message: TextChatMessage)
+		local source = message.TextSource
+		local speaker = source and Players:GetPlayerByUserId(source.UserId)
+		if speaker and speaker:GetAttribute("VIP") then
+			local props = Instance.new("TextChatMessageProperties")
+			props.PrefixText = `<font color="#FFC83C"><b>[VIP]</b></font> {message.PrefixText}`
+			return props
+		end
+		return nil
+	end
 end
 
 return ChatController

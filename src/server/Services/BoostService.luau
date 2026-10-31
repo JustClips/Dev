@@ -138,7 +138,10 @@ function BoostService:GetPersonalLuck(player: Player): number
 		then Items.SuperLuckMult
 		elseif BoostService:IsBoostActive(player, "Luck2x") then Items.LuckMult
 		else 1
-	return potion * BoostService:GetFriendLuck(player)
+	local data = S.DataService:GetData(player)
+	local passes = if data then data.Gamepasses else {}
+	local pass = (if passes.Lucky then Economy.LuckyPassMult else 1) * (if passes.VIP then 1 + Economy.VIPLuckBonus else 1)
+	return potion * pass * BoostService:GetFriendLuck(player)
 end
 
 local function areFriends(a: Player, b: Player): boolean
