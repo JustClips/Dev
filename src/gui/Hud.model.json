@@ -48,7 +48,7 @@
       "Scale": 1
      },
      "attributes": {
-      "CompactScale": 0.88
+      "CompactScale": 0.74
      }
     },
     {
@@ -6395,11 +6395,11 @@
     "Size": [
      [
       0,
-      262
+      248
      ],
      [
       0,
-      118
+      94
      ]
     ],
     "Position": [
@@ -6417,28 +6417,47 @@
      1
     ],
     "BorderSizePixel": 0,
-    "BackgroundTransparency": 1
+    "BackgroundTransparency": 0,
+    "BackgroundColor3": "#272B34"
    },
    "children": [
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": "#17191E",
+      "Thickness": 3,
+      "ApplyStrokeMode": "Border",
+      "LineJoinMode": "Round"
+     }
+    },
+    {
+     "name": "Shade",
+     "className": "UIGradient",
+     "properties": {
+      "Color": {
+       "keypoints": [
+        [
+         0,
+         "#FFFFFF"
+        ],
+        [
+         1,
+         "#DCE0E7"
+        ]
+       ]
+      },
+      "Rotation": 90
+     }
+    },
     {
      "name": "AutoScale",
      "className": "UIScale",
      "properties": {
       "Scale": 1
-     }
-    },
-    {
-     "name": "Layout",
-     "className": "UIListLayout",
-     "properties": {
-      "Padding": [
-       0,
-       8
-      ],
-      "FillDirection": "Vertical",
-      "HorizontalAlignment": "Left",
-      "VerticalAlignment": "Bottom",
-      "SortOrder": "LayoutOrder"
+     },
+     "attributes": {
+      "CompactScale": 0.85
      }
     },
     {
@@ -6447,12 +6466,12 @@
      "properties": {
       "Size": [
        [
-        0,
-        262
+        1,
+        0
        ],
        [
         0,
-        62
+        52
        ]
       ],
       "Position": [
@@ -6470,40 +6489,9 @@
        0
       ],
       "BorderSizePixel": 0,
-      "LayoutOrder": 1,
-      "BackgroundTransparency": 0,
-      "BackgroundColor3": "#272B34"
+      "BackgroundTransparency": 1
      },
      "children": [
-      {
-       "name": "Stroke",
-       "className": "UIStroke",
-       "properties": {
-        "Color": "#17191E",
-        "Thickness": 3,
-        "ApplyStrokeMode": "Border",
-        "LineJoinMode": "Round"
-       }
-      },
-      {
-       "name": "Shade",
-       "className": "UIGradient",
-       "properties": {
-        "Color": {
-         "keypoints": [
-          [
-           0,
-           "#FFFFFF"
-          ],
-          [
-           1,
-           "#DCE0E7"
-          ]
-         ]
-        },
-        "Rotation": 90
-       }
-      },
       {
        "name": "Icon",
        "className": "ImageLabel",
@@ -6511,11 +6499,11 @@
         "Size": [
          [
           0,
-          50
+          44
          ],
          [
           0,
-          50
+          44
          ]
         ],
         "Position": [
@@ -6546,17 +6534,17 @@
         "Size": [
          [
           1,
-          -112
+          -104
          ],
          [
           0,
-          34
+          30
          ]
         ],
         "Position": [
          [
           0,
-          58
+          52
          ],
          [
           0,
@@ -6571,7 +6559,7 @@
         "BackgroundTransparency": 1,
         "Text": "$0",
         "TextColor3": "#FFFFFF",
-        "TextSize": 30,
+        "TextSize": 28,
         "TextXAlignment": "Left",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -6598,7 +6586,7 @@
          "name": "Fit",
          "className": "UITextSizeConstraint",
          "properties": {
-          "MaxTextSize": 30,
+          "MaxTextSize": 28,
           "MinTextSize": 7
          }
         }
@@ -6611,21 +6599,21 @@
         "Size": [
          [
           1,
-          -112
+          -104
          ],
          [
           0,
-          20
+          18
          ]
         ],
         "Position": [
          [
           0,
-          58
+          52
          ],
          [
           0,
-          37
+          32
          ]
         ],
         "AnchorPoint": [
@@ -6636,7 +6624,7 @@
         "BackgroundTransparency": 1,
         "Text": "+$0/s",
         "TextColor3": "#8BE04E",
-        "TextSize": 18,
+        "TextSize": 16,
         "TextXAlignment": "Left",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -6667,17 +6655,17 @@
         "Size": [
          [
           0,
-          44
+          40
          ],
          [
           0,
-          44
+          40
          ]
         ],
         "Position": [
          [
           1,
-          -8
+          -6
          ],
          [
           0.5,
@@ -6854,7 +6842,7 @@
           "BackgroundTransparency": 1,
           "Text": "+",
           "TextColor3": "#FFFFFF",
-          "TextSize": 34,
+          "TextSize": 30,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -6888,12 +6876,12 @@
      "properties": {
       "Size": [
        [
-        0,
-        262
+        1,
+        0
        ],
        [
         0,
-        48
+        40
        ]
       ],
       "Position": [
@@ -6903,7 +6891,7 @@
        ],
        [
         0,
-        0
+        52
        ]
       ],
       "AnchorPoint": [
@@ -6911,40 +6899,9 @@
        0
       ],
       "BorderSizePixel": 0,
-      "LayoutOrder": 2,
-      "BackgroundTransparency": 0,
-      "BackgroundColor3": "#272B34"
+      "BackgroundTransparency": 1
      },
      "children": [
-      {
-       "name": "Stroke",
-       "className": "UIStroke",
-       "properties": {
-        "Color": "#17191E",
-        "Thickness": 3,
-        "ApplyStrokeMode": "Border",
-        "LineJoinMode": "Round"
-       }
-      },
-      {
-       "name": "Shade",
-       "className": "UIGradient",
-       "properties": {
-        "Color": {
-         "keypoints": [
-          [
-           0,
-           "#FFFFFF"
-          ],
-          [
-           1,
-           "#DCE0E7"
-          ]
-         ]
-        },
-        "Rotation": 90
-       }
-      },
       {
        "name": "Icon",
        "className": "ImageLabel",
@@ -6952,11 +6909,11 @@
         "Size": [
          [
           0,
-          42
+          36
          ],
          [
           0,
-          42
+          36
          ]
         ],
         "Position": [
@@ -6987,17 +6944,17 @@
         "Size": [
          [
           1,
-          -64
+          -56
          ],
          [
           0,
-          30
+          26
          ]
         ],
         "Position": [
          [
           0,
-          54
+          48
          ],
          [
           0.5,
@@ -7109,7 +7066,7 @@
           "BackgroundTransparency": 1,
           "Text": "0 / 50",
           "TextColor3": "#FFFFFF",
-          "TextSize": 19,
+          "TextSize": 17,
           "TextXAlignment": "Left",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -7142,11 +7099,11 @@
         "Size": [
          [
           0,
-          54
+          50
          ],
          [
           0,
-          30
+          26
          ]
         ],
         "Position": [
@@ -7201,7 +7158,7 @@
           "BackgroundTransparency": 1,
           "Text": "FULL",
           "TextColor3": "#FFFFFF",
-          "TextSize": 18,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,

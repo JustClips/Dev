@@ -396,9 +396,10 @@ def auto_toggle(name, label, ico, order):
 
 
 def hud():
-    # Phones: tiles 12% smaller (Dev, 2026-10-30: a little oversized), same spot.
+    # Phones: tiles 26% smaller (Dev, 2026-10-31: the left side was too full to see where
+    # you walk), same spot.
     rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
-        autoscale(compact=0.88),
+        autoscale(compact=0.74),
         node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 26), "SortOrder": "LayoutOrder"}),
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 2),
@@ -497,27 +498,29 @@ def hud():
     # Wallet: two dark strips with big outlined numbers (readable on a phone at 60% size).
     # Cash: coin, amount, income under it, green + for the cash shop. Bag: leaf bag icon and
     # a thick bar with "310 / 500" inside; it turns red with FULL when the bag is full.
-    wallet = frame("Wallet", U(0, 262, 0, 118), U(0, 14, 1, -14), (0, 1), children=[
-        autoscale(), vlist(8, "Left", "Bottom"),
-        plate("CashPanel", U(0, 262, 0, 62), tint=BG, stroke=3, LayoutOrder=1, children=[
-            icon("Icon", "Cash", 50, U(0, 4, 0.5, 0), (0, 0.5)),
-            text("Cash", "$0", U(1, -112, 0, 34), U(0, 58, 0, 3), ts=30, color=WHITE, display=True, xa="Left", stroke=2.5,
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 30, "MinTextSize": 14})]),
-            text("Income", "+$0/s", U(1, -112, 0, 20), U(0, 58, 0, 37), ts=18, color=ACCENT, display=True, xa="Left", stroke=2),
-            button("PlusButton", U(0, 44, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=34, stroke=3),
+    wallet = plate("Wallet", U(0, 248, 0, 94), U(0, 14, 1, -14), (0, 1), tint=BG, stroke=3, children=[
+        # One panel (Dev, 2026-10-31: the two strips took too much of the left side on
+        # phones): cash on top, the bag bar under it. Smaller still on phones.
+        autoscale(compact=0.85),
+        frame("CashPanel", U(1, 0, 0, 52), children=[
+            icon("Icon", "Cash", 44, U(0, 4, 0.5, 0), (0, 0.5)),
+            text("Cash", "$0", U(1, -104, 0, 30), U(0, 52, 0, 3), ts=28, color=WHITE, display=True, xa="Left", stroke=2.5,
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 12})]),
+            text("Income", "+$0/s", U(1, -104, 0, 18), U(0, 52, 0, 32), ts=16, color=ACCENT, display=True, xa="Left", stroke=2),
+            button("PlusButton", U(0, 40, 0, 40), U(1, -6, 0.5, 0), (1, 0.5), color=SUCCESS, label="+", ts=30, stroke=3),
         ]),
-        plate("BackpackPanel", U(0, 262, 0, 48), tint=BG, stroke=3, LayoutOrder=2, children=[
-            icon("Icon", "Backpack", 42, U(0, 6, 0.5, 0), (0, 0.5), ZIndex=4),
-            frame("Bar", U(1, -64, 0, 30), U(0, 54, 0.5, 0), (0, 0.5), bg="#14171D", children=[
+        frame("BackpackPanel", U(1, 0, 0, 40), U(0, 0, 0, 52), children=[
+            icon("Icon", "Backpack", 36, U(0, 6, 0.5, 0), (0, 0.5), ZIndex=4),
+            frame("Bar", U(1, -56, 0, 26), U(0, 48, 0.5, 0), (0, 0.5), bg="#14171D", children=[
                 border(INK, 2),
                 frame("Fill", U(0.2, 0, 1, 0), bg="#FF9A3C", children=[
                     node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#C8CEDA"]]}, "Rotation": 90}),
                 ]),
-                text("Amount", "0 / 50", U(1, -12, 1, 0), U(0, 6, 0, 0), ts=19, display=True, stroke=2.5, xa="Left", ZIndex=3),
+                text("Amount", "0 / 50", U(1, -12, 1, 0), U(0, 6, 0, 0), ts=17, display=True, stroke=2.5, xa="Left", ZIndex=3),
             ]),
             # Sits on the right end of the bar, inside the panel.
-            frame("Full", U(0, 54, 0, 30), U(1, -10, 0.5, 0), (1, 0.5), Visible=False, ZIndex=4, children=[
-                text("Label", "FULL", U(1, 0, 1, 0), ts=18, display=True, stroke=2.5, ZIndex=5),
+            frame("Full", U(0, 50, 0, 26), U(1, -10, 0.5, 0), (1, 0.5), Visible=False, ZIndex=4, children=[
+                text("Label", "FULL", U(1, 0, 1, 0), ts=16, display=True, stroke=2.5, ZIndex=5),
             ]),
         ]),
     ])
