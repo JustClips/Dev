@@ -30,6 +30,9 @@ local HOVER = 2.4 -- studs above the ground (the glow orb is ~4 studs wide)
 local REPORT_EVERY = 0.15
 local POUCH_COLOR = Color3.fromRGB(255, 205, 40)
 local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
+-- Cartoon 4-point star (tools/gen_vfx.py), or the stock sparkle when it is missing.
+local STAR = if AssetLibrary.image("Vfx_Star") ~= "" then AssetLibrary.image("Vfx_Star") else SPARKLE
+local POUCH_HOVER = 1.7 -- the pouch model's centre above the ground (it is ~2.3 studs tall)
 
 type Drop = {
 	id: number,
@@ -44,6 +47,8 @@ type Drop = {
 	inStart: number,
 	inFrom: Vector3,
 	report: boolean,
+	pouch: boolean, -- the modelled Coin_Pouch spins instead of showing an icon
+	baseSize: Vector3?,
 }
 
 local folder: Folder
@@ -77,44 +82,126 @@ local function part(props: { [string]: any }): BasePart
 	return p
 end
 
--- The drop: an invisible root with the icon on a billboard, a glow ring and maybe a beam.
-local function build(item: string?): (Model, BasePart)
+-- Coin pouches are the modelled Coin_Pouch mesh (art/blender/coins.py: a lumpy burlap
+-- money sack, gold rope, a gold "$" and coins poking out the top, dark cartoon outline).
+-- The mesh itself is the root the movement code moves: no welds (welded pieces set up
+-- outside Workspace stay behind at the map origin, so only the glow would follow).
+local function pouchMesh(): BasePart?
+	local model = AssetLibrary.get("Coin_Pouch")
+	local body = model and model:FindFirstChild("Body")
+	if not (model and body and body:IsA("BasePart")) then
+		if model then
+			model:Destroy()
+		end
+		return nil
+	end
+	body.Parent = nil
+	model:Destroy()
+	body.Name = "Root"
+	body.Anchored = true
+	body.CanCollide = false
+	body.CanQuery = false
+	body.CanTouch = false
+	body.CastShadow = true
+	body.Material = Enum.Material.SmoothPlastic
+	return body
+end
+
+-- Cartoon VFX around the pouch: a soft gold glow, twinkle stars popping on its surface and
+-- gold sparkles drifting up.
+local function pouchVfx(root: BasePart)
+	local halo = Instance.new("BillboardGui")
+	halo.Name = "Halo"
+	halo.Size = UDim2.fromScale(4.6, 4.6)
+	halo.LightInfluence = 0
+	halo.MaxDistance = 220
+	halo.Parent = root
+	local glow = Instance.new("ImageLabel")
+	glow.BackgroundTransparency = 1
+	glow.Size = UDim2.fromScale(1, 1)
+	glow.Image = AssetLibrary.image("Vfx_Glow")
+	glow.ImageColor3 = POUCH_COLOR
+	glow.ImageTransparency = 0.45
+	glow.Parent = halo
+	local twinkle = Instance.new("ParticleEmitter")
+	twinkle.Name = "Twinkle"
+	twinkle.Texture = STAR
+	twinkle.Color = ColorSequence.new(Color3.fromRGB(255, 255, 235), Color3.fromRGB(255, 230, 120))
+	twinkle.LightEmission = 0.7
+	twinkle.LightInfluence = 0
+	twinkle.Rate = 5
+	twinkle.Lifetime = NumberRange.new(0.45, 0.75)
+	twinkle.Speed = NumberRange.new(0.2, 0.8)
+	twinkle.SpreadAngle = Vector2.new(180, 180)
+	twinkle.Shape = Enum.ParticleEmitterShape.Sphere
+	twinkle.ShapeStyle = Enum.ParticleEmitterShapeStyle.Surface
+	twinkle.Rotation = NumberRange.new(-20, 20)
+	twinkle.RotSpeed = NumberRange.new(-90, 90)
+	twinkle.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(0.3, 1.1),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	twinkle.Parent = root
+	local rise = Instance.new("ParticleEmitter")
+	rise.Name = "Rise"
+	rise.Texture = SPARKLE
+	rise.Color = ColorSequence.new(Color3.fromRGB(255, 245, 190), POUCH_COLOR)
+	rise.LightEmission = 0.8
+	rise.LightInfluence = 0
+	rise.Rate = 6
+	rise.Lifetime = NumberRange.new(0.8, 1.3)
+	rise.Speed = NumberRange.new(1.5, 3)
+	rise.SpreadAngle = Vector2.new(25, 25)
+	rise.EmissionDirection = Enum.NormalId.Top
+	rise.Size = NumberSequence.new(0.3, 0)
+	rise.Parent = root
+end
+
+-- The drop: the pouch model, or an invisible root with the item's icon on a billboard,
+-- plus a glow ring and maybe a beam.
+local function build(item: string?): (Model, BasePart, boolean)
 	local model = Instance.new("Model")
 	model.Name = "Drop"
 	local color = colorOf(item)
 	local rarity = rarityOf(item)
-	local root = part({ Name = "Root", Size = Vector3.new(0.4, 0.4, 0.4), Transparency = 1 })
+	local mesh = if item == nil then pouchMesh() else nil
+	local root = mesh or part({ Name = "Root", Size = Vector3.new(0.4, 0.4, 0.4), Transparency = 1 })
 	root.Parent = model
 	model.PrimaryPart = root
-	local big = rarity == "Epic" or rarity == "Legendary"
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "Icon"
-	gui.Size = UDim2.fromScale(if big then 5 else 4.2, if big then 5 else 4.2)
-	gui.LightInfluence = 0
-	gui.MaxDistance = 220
-	gui.Adornee = root
-	gui.Parent = root
-	-- Glowing orb behind the icon, Pet Sim style (Dev 2026-10-31: drops were hard to see).
-	local glow = Instance.new("ImageLabel")
-	glow.Name = "Glow"
-	glow.Size = UDim2.fromScale(1, 1)
-	glow.BackgroundTransparency = 1
-	glow.Image = AssetLibrary.image("Vfx_Glow")
-	glow.ImageColor3 = color
-	glow.ZIndex = 1
-	glow.Parent = gui
-	local image = Instance.new("ImageLabel")
-	image.Name = "Item"
-	image.AnchorPoint = Vector2.new(0.5, 0.5)
-	image.Position = UDim2.fromScale(0.5, 0.5)
-	image.Size = UDim2.fromScale(0.62, 0.62)
-	image.BackgroundTransparency = 1
-	image.ZIndex = 2
-	image.Image = AssetLibrary.image(if item and Items.ById[item] then Items.ById[item].Icon else "Icon_Cash")
-	image.Parent = gui
-	local pop = Instance.new("UIScale")
-	pop.Name = "Pop"
-	pop.Parent = image
+	if mesh then
+		pouchVfx(mesh)
+	else
+		local big = rarity == "Epic" or rarity == "Legendary"
+		local gui = Instance.new("BillboardGui")
+		gui.Name = "Icon"
+		gui.Size = UDim2.fromScale(if big then 5 else 4.2, if big then 5 else 4.2)
+		gui.LightInfluence = 0
+		gui.MaxDistance = 220
+		gui.Adornee = root
+		gui.Parent = root
+		-- Glowing orb behind the icon, Pet Sim style (Dev 2026-10-31: drops were hard to see).
+		local glow = Instance.new("ImageLabel")
+		glow.Name = "Glow"
+		glow.Size = UDim2.fromScale(1, 1)
+		glow.BackgroundTransparency = 1
+		glow.Image = AssetLibrary.image("Vfx_Glow")
+		glow.ImageColor3 = color
+		glow.ZIndex = 1
+		glow.Parent = gui
+		local image = Instance.new("ImageLabel")
+		image.Name = "Item"
+		image.AnchorPoint = Vector2.new(0.5, 0.5)
+		image.Position = UDim2.fromScale(0.5, 0.5)
+		image.Size = UDim2.fromScale(0.62, 0.62)
+		image.BackgroundTransparency = 1
+		image.ZIndex = 2
+		image.Image = AssetLibrary.image(if item and Items.ById[item] then Items.ById[item].Icon else "Icon_Cash")
+		image.Parent = gui
+		local pop = Instance.new("UIScale")
+		pop.Name = "Pop"
+		pop.Parent = image
+	end
 	-- Glow ring on the ground (a flat neon disc).
 	local ring = part({
 		Name = "Ring",
@@ -125,6 +212,7 @@ local function build(item: string?): (Model, BasePart)
 		Transparency = 0.25,
 	})
 	ring.Parent = model
+	local big = rarity == "Epic" or rarity == "Legendary"
 	local sparkle = Instance.new("ParticleEmitter")
 	sparkle.Texture = SPARKLE
 	sparkle.Color = ColorSequence.new(Color3.new(1, 1, 1), color)
@@ -148,12 +236,19 @@ local function build(item: string?): (Model, BasePart)
 		beam.Parent = model
 	end
 	model.Parent = folder
-	return model, root
+	return model, root, mesh ~= nil
 end
 
 local function place(d: Drop, at: Vector3, now: number)
 	local bob = math.sin(now * 3 + d.id) * 0.25
-	d.root.CFrame = CFrame.new(at + Vector3.new(0, HOVER + bob, 0))
+	if d.pouch then
+		-- slow spin with a little cartoon wobble
+		d.root.CFrame = CFrame.new(at + Vector3.new(0, POUCH_HOVER + bob, 0))
+			* CFrame.Angles(0, now * 1.8 + d.id, 0)
+			* CFrame.Angles(math.sin(now * 2.4 + d.id) * 0.12, 0, 0)
+	else
+		d.root.CFrame = CFrame.new(at + Vector3.new(0, HOVER + bob, 0))
+	end
 	local ring = d.model:FindFirstChild("Ring") :: BasePart?
 	if ring then
 		ring.CFrame = CFrame.new(at + Vector3.new(0, 0.15, 0)) * CFrame.Angles(0, now * 1.5, math.rad(90))
@@ -186,7 +281,23 @@ local function startIn(d: Drop, report: boolean, now: number)
 	end
 end
 
+-- Squash and stretch on a MeshPart by its Size (it scales the mesh).
+local function squash(d: Drop)
+	local base = d.baseSize
+	if not base or Ui.reducedMotion() then
+		return
+	end
+	d.root.Size = base * Vector3.new(1.3, 0.7, 1.3)
+	TweenService:Create(d.root, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = base })
+		:Play()
+end
+
+local pouchPop: (at: Vector3) -> ()
+
 local function landed(d: Drop)
+	if d.pouch then
+		squash(d)
+	end
 	local rarity = rarityOf(d.item)
 	if rarity ~= "Common" then
 		Ui.sound(if rarity == "Epic" or rarity == "Legendary" then "RareReveal" else "Sparkle")
@@ -197,6 +308,9 @@ end
 
 local function pickedUp(d: Drop)
 	if d.cash then
+		if d.pouch then
+			pouchPop(d.root.Position)
+		end
 		Ui.sound("Coin", 1.1)
 		C.HudController:Toast(`Coin pouch! +{Format.cash(d.cash)}`, "Sell")
 	else
@@ -214,7 +328,7 @@ local function onDropped(list: any)
 			continue
 		end
 		local item = if type(info.Item) == "string" then info.Item else nil
-		local model, root = build(item)
+		local model, root, pouch = build(item)
 		local to = info.Pos :: Vector3
 		local d: Drop = {
 			id = info.Id,
@@ -229,13 +343,26 @@ local function onDropped(list: any)
 			inStart = 0,
 			inFrom = to,
 			report = true,
+			pouch = pouch,
+			baseSize = if pouch then root.Size else nil,
 		}
 		drops[d.id] = d
-		local pop = (root:FindFirstChild("Icon") :: BillboardGui):FindFirstChild("Item") :: ImageLabel?
+		if pouch and not Ui.reducedMotion() then
+			-- pops out of the pile from tiny to full size
+			local full = root.Size
+			root.Size = full * 0.2
+			TweenService
+				:Create(root, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = full })
+				:Play()
+		end
+		local icon = root:FindFirstChild("Icon")
+		local pop = icon and icon:FindFirstChild("Item")
 		local scale = pop and pop:FindFirstChild("Pop") :: UIScale?
 		if scale and not Ui.reducedMotion() then
 			scale.Scale = 0.2
-			TweenService:Create(scale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+			TweenService
+				:Create(scale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+				:Play()
 		end
 	end
 end
@@ -277,7 +404,11 @@ local function step()
 		else
 			local t = math.clamp((now - d.inStart) / FLY_IN, 0, 1)
 			local target = if root then root.Position else d.inFrom
-			d.root.CFrame = CFrame.new(d.inFrom:Lerp(target, t * t))
+			local spin = if d.pouch then CFrame.Angles(0, now * 9, 0) else CFrame.identity
+			d.root.CFrame = CFrame.new(d.inFrom:Lerp(target, t * t)) * spin
+			if d.pouch and d.baseSize then
+				d.root.Size = d.baseSize * (1 - 0.55 * t)
+			end
 			if t >= 1 then
 				if d.report then
 					table.insert(toReport, id)
@@ -322,7 +453,12 @@ local function showMarker(at: Vector3)
 		Transparency = 0.45,
 	})
 	beam.Parent = model
-	local anchor = part({ Name = "Anchor", Size = Vector3.new(0.4, 0.4, 0.4), Transparency = 1, CFrame = CFrame.new(at + Vector3.new(0, 3, 0)) })
+	local anchor = part({
+		Name = "Anchor",
+		Size = Vector3.new(0.4, 0.4, 0.4),
+		Transparency = 1,
+		CFrame = CFrame.new(at + Vector3.new(0, 3, 0)),
+	})
 	anchor.Parent = model
 	local gui = Instance.new("BillboardGui")
 	gui.Size = UDim2.fromOffset(84, 84)
@@ -376,6 +512,80 @@ local function burst(at: Vector3, color: Color3, count: number, speed: number)
 	p.Parent = folder
 	e:Emit(count)
 	task.delay(1.5, function()
+		p:Destroy()
+	end)
+end
+
+-- Coin pouch pickup: gold stars and coins burst out of you with a quick gold flash.
+pouchPop = function(at: Vector3)
+	local p = part({ Size = Vector3.new(0.2, 0.2, 0.2), Transparency = 1, CFrame = CFrame.new(at) })
+	local stars = Instance.new("ParticleEmitter")
+	stars.Texture = STAR
+	stars.Color = ColorSequence.new(Color3.fromRGB(255, 255, 230), POUCH_COLOR)
+	stars.LightEmission = 1
+	stars.LightInfluence = 0
+	stars.Rate = 0
+	stars.Lifetime = NumberRange.new(0.4, 0.7)
+	stars.Speed = NumberRange.new(9, 16)
+	stars.SpreadAngle = Vector2.new(180, 180)
+	stars.Drag = 4
+	stars.Rotation = NumberRange.new(0, 360)
+	stars.RotSpeed = NumberRange.new(-180, 180)
+	stars.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.4), NumberSequenceKeypoint.new(1, 0) })
+	stars.Parent = p
+	p.Parent = folder
+	stars:Emit(14)
+	-- a few real coins spray up and fall
+	for i = 1, 6 do
+		local model = AssetLibrary.get("Coin_Cash")
+		local coin = model and model:FindFirstChild("Body")
+		if not (coin and coin:IsA("BasePart")) then
+			if model then
+				model:Destroy()
+			end
+			break
+		end
+		coin.Parent = nil
+		model:Destroy()
+		coin.Anchored = true
+		coin.CanCollide = false
+		coin.CanQuery = false
+		coin.CanTouch = false
+		coin.CastShadow = false
+		coin.Size *= 0.7
+		local a = (i / 6) * math.pi * 2 + math.random() * 0.6
+		local out = Vector3.new(math.cos(a), 0, math.sin(a)) * (2 + math.random() * 1.5)
+		local start = os.clock()
+		coin.CFrame = CFrame.new(at)
+		coin.Parent = folder
+		local conn
+		conn = RunService.RenderStepped:Connect(function()
+			local t = (os.clock() - start) / 0.55
+			if t >= 1 then
+				conn:Disconnect()
+				coin:Destroy()
+				return
+			end
+			local pos = at + out * t + Vector3.new(0, 5 * t - 7 * t * t, 0)
+			coin.CFrame = CFrame.new(pos) * CFrame.Angles(0, t * 12 + a, 0)
+			coin.Transparency = math.max(0, (t - 0.7) / 0.3)
+		end)
+	end
+	local flash = part({
+		Shape = Enum.PartType.Ball,
+		Size = Vector3.one * 0.8,
+		CFrame = CFrame.new(at),
+		Color = Color3.fromRGB(255, 240, 150),
+		Material = Enum.Material.Neon,
+		Transparency = 0.1,
+	})
+	flash.Parent = folder
+	TweenService:Create(flash, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = Vector3.one * 3.4,
+		Transparency = 1,
+	}):Play()
+	task.delay(1, function()
+		flash:Destroy()
 		p:Destroy()
 	end)
 end

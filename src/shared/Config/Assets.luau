@@ -8521,6 +8521,20 @@ Assets.Models = {
 		},
 		pivot = "centre",
 	},
+	Coin_Pouch = {
+		bounds = {
+			max = Vector3.new(0.983, 1.299, 0.985),
+			min = Vector3.new(-1.046, -1.06, -1.132),
+		},
+		id = 72581989155584,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+		pivot = "centre",
+	},
 	Crystal_Blue = {
 		bounds = {
 			max = Vector3.new(1.7, 1.309, 1.7),

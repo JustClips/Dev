@@ -17148,6 +17148,33 @@
   "pivot": "centre",
   "tris": 2628
  },
+ "Coin_Pouch": {
+  "bounds": {
+   "max": [
+    0.983,
+    1.299,
+    0.985
+   ],
+   "min": [
+    -1.046,
+    -1.06,
+    -1.132
+   ]
+  },
+  "kind": "prop",
+  "name": "Coin_Pouch",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "pivot": "centre",
+  "tris": 10156
+ },
  "Crystal_Blue": {
   "bounds": {
    "max": [

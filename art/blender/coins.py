@@ -240,3 +240,233 @@ def coin_cash():
 
 
 ALL = {"Coin_Cash": coin_cash}
+
+
+# ------------------------------------------------------------------ coin pouch
+# Coin_Pouch: the cash drop that pops out of leaf piles (DropController), Dev 2026-10-31:
+# "where is the model for coin pouch". A chunky cartoon money sack about 2.3 studs tall:
+# - a lumpy lathed burlap body that bulges at the bottom and cinches in at the neck,
+# - a frilly flared top with a dark inside and three gold coins (the Coin_Cash shape)
+#   poking out of it,
+# - a gold rope tied round the neck with a knot and two tassel ends at the front,
+# - a big gold "$" bent onto the front of the sack,
+# - the same dark inverted-hull outline as the coin.
+# Toon colour bands like the coin. Front is Blender -Y. Pivot at the sack's middle (the
+# game bobs and spins it in the air). One part "Body".
+
+SACK = ["E9B977", "D49A55", "B87C3C", "8F5A26"]       # lit .. shadow
+SACK_IN = ["5A3514", "4A2A0F", "3D220C", "2E1908"]
+ROPE = ["FFE07A", "F2BE36", "D99A16", "AD740B"]
+POUCH_LIGHT = Vector((0.45, -0.75, 0.5)).normalized()
+PSEG = 36
+
+# (radius, height) of the outside, bottom to the lip of the opening
+SACK_OUT = [
+    (0.0, 0.0), (0.38, 0.02), (0.68, 0.10), (0.86, 0.26), (0.95, 0.47), (0.95, 0.70),
+    (0.87, 0.93), (0.70, 1.13), (0.50, 1.28), (0.36, 1.38), (0.33, 1.46), (0.38, 1.56),
+    (0.52, 1.70), (0.66, 1.84), (0.70, 1.90),
+]
+# lip, then down into the opening to a dark floor the coins sit on
+SACK_IN_PROF = [(0.70, 1.90), (0.62, 1.88), (0.46, 1.74), (0.34, 1.62), (0.0, 1.60)]
+
+
+def pband(n):
+    d = n.dot(POUCH_LIGHT)
+    return 0 if d > 0.7 else 1 if d > 0.3 else 2 if d > -0.2 else 3
+
+
+def ppaint(a, o, pal):
+    me = o.data
+    layer = me.uv_layers[0] if len(me.uv_layers) else me.uv_layers.new(name="UVMap")
+    for poly in me.polygons:
+        u, v = a.swatch(pal[pband(poly.normal)] if isinstance(pal, list) else pal)
+        for li in poly.loop_indices:
+            layer.data[li].uv = (u, v)
+        poly.use_smooth = False
+
+
+def lump(t, z):
+    """Lumpy cloth: soft bumps on the body, frilly waves on the flared top."""
+    if z > 1.55:
+        k = (z - 1.55) / 0.35
+        return 1 + 0.13 * k * math.sin(7 * t)
+    return 1 + 0.035 * math.sin(3 * t + 0.6) + 0.02 * math.sin(5 * t + z * 3)
+
+
+def lathe(prof, name, wobble=True):
+    verts, rings = [], []
+    for r, z in prof:
+        idx = []
+        if r == 0.0:
+            idx = [len(verts)] * PSEG
+            verts.append(Vector((0, 0, z)))
+        else:
+            for s in range(PSEG):
+                t = s * math.tau / PSEG
+                rr = r * (lump(t, z) if wobble else 1)
+                idx.append(len(verts))
+                verts.append(Vector((math.cos(t) * rr, math.sin(t) * rr, z)))
+        rings.append(idx)
+    faces = []
+    for i in range(len(prof) - 1):
+        lo, hi = rings[i], rings[i + 1]
+        for s in range(PSEG):
+            j = (s + 1) % PSEG
+            q = []
+            for v in (lo[s], lo[j], hi[j], hi[s]):
+                if v not in q:
+                    q.append(v)
+            faces.append(q)
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([tuple(v) for v in verts], [], faces)
+    me.update()
+    o = bpy.data.objects.new(name, me)
+    bpy.context.collection.objects.link(o)
+    return o
+
+
+def sack_radius(z):
+    for (r0, z0), (r1, z1) in zip(SACK_OUT, SACK_OUT[1:]):
+        if z0 <= z <= z1:
+            return r0 + (r1 - r0) * (z - z0) / max(z1 - z0, 1e-6)
+    return SACK_OUT[-1][0]
+
+
+def face_out(o, centre):
+    """Turn every face away from a centre point."""
+    me = o.data
+    for poly in me.polygons:
+        c = poly.center
+        if poly.normal.dot(c - centre) < 0:
+            poly.flip()
+    me.update()
+
+
+def sack_dollar():
+    """A thick gold $ bent onto the front of the sack."""
+    curve = bpy.data.curves.new("pdollar", "FONT")
+    curve.body = "$"
+    curve.font = bpy.data.fonts.load(FONT, check_existing=True)
+    curve.align_x = "CENTER"
+    curve.align_y = "CENTER"
+    curve.size = 1.0
+    curve.extrude = 0.05
+    curve.resolution_u = 2
+    o = bpy.data.objects.new("pdollar", curve)
+    bpy.context.collection.objects.link(o)
+    bpy.context.view_layer.objects.active = o
+    bpy.ops.object.select_all(action="DESELECT")
+    o.select_set(True)
+    bpy.ops.object.convert(target="MESH")
+    o = bpy.context.view_layer.objects.active
+    me = o.data
+    xs = [v.co.x for v in me.vertices]
+    ys = [v.co.y for v in me.vertices]
+    mx, my = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+    k = 0.9 / (max(ys) - min(ys))            # 0.9 studs tall
+    zc = 0.66                                # centre height on the sack
+    for v in me.vertices:
+        x, y, z = (v.co.x - mx) * k, (v.co.y - my) * k, v.co.z
+        h = zc + y
+        R = sack_radius(h) * 1.04 + (z + 0.05) * 1.0 + 0.02    # stands well out of the lumpy cloth
+        ang = -math.pi / 2 + x / sack_radius(h)                 # around the front (-Y)
+        v.co = Vector((math.cos(ang) * R, math.sin(ang) * R, h))
+    me.update()
+    outward(o)
+    face_out(o, Vector((0, 0, zc)))
+    return o
+
+
+def rope():
+    """Gold rope round the neck, a knot at the front and two tassel ends."""
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.40, minor_radius=0.075,
+                                     major_segments=28, minor_segments=8, location=(0, 0, 1.44))
+    ring = bpy.context.view_layer.objects.active
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=0.14, location=(0, -0.47, 1.44))
+    knot = bpy.context.view_layer.objects.active
+    knot.scale = (1.25, 0.9, 1.0)
+    pieces = [ring, knot]
+    for side in (-1, 1):
+        # a short tail hanging down from the knot, ending in a tassel
+        x0, x1 = side * 0.06, side * 0.20
+        top, bot = Vector((x0, -0.52, 1.38)), Vector((x1, -0.66, 1.08))
+        d = bot - top
+        bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=0.05, depth=d.length,
+                                            location=(top + bot) / 2)
+        tail = bpy.context.view_layer.objects.active
+        tail.rotation_mode = "QUATERNION"
+        tail.rotation_quaternion = Vector((0, 0, 1)).rotation_difference(d.normalized())
+        bpy.ops.mesh.primitive_cone_add(vertices=8, radius1=0.11, radius2=0.04, depth=0.2,
+                                        location=bot + Vector((0, 0, -0.06)))
+        tassel = bpy.context.view_layer.objects.active
+        pieces += [tail, tassel]
+    for p in pieces:
+        bpy.context.view_layer.objects.active = p
+        bpy.ops.object.select_all(action="DESELECT")
+        p.select_set(True)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    return pieces
+
+
+def top_coins():
+    """Three Coin_Cash-shaped coins poking out of the opening, tilted every which way."""
+    out = []
+    spots = [((-0.16, 0.06, 1.86), (20, 0, 25)), ((0.20, 0.10, 1.80), (-15, 0, -35)),
+             ((0.02, -0.14, 1.93), (8, 0, -5))]
+    for loc, rot in spots:
+        b, kinds = body()
+        b.scale = (0.42, 0.42, 0.42)
+        b.rotation_euler = [math.radians(a) for a in rot]
+        b.location = loc
+        bpy.context.view_layer.objects.active = b
+        bpy.ops.object.select_all(action="DESELECT")
+        b.select_set(True)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        out.append((b, kinds))
+    return out
+
+
+def coin_pouch():
+    a = Asset("Coin_Pouch", "prop")
+    use(a)
+    a.cull = True
+    outer = lathe(SACK_OUT, "sack")
+    face_out(outer, Vector((0, 0, 0.8)))
+    ppaint(a, outer, SACK)
+    inner = lathe(SACK_IN_PROF, "sack_in")
+    for poly in inner.data.polygons:            # the inside faces up, into the opening
+        if poly.normal.z < 0:
+            poly.flip()
+    inner.data.update()
+    ppaint(a, inner, SACK_IN)
+    mark = sack_dollar()
+    ppaint(a, mark, ROPE)
+    ropes = rope()
+    for r in ropes:
+        ppaint(a, r, ROPE)
+    coins3 = top_coins()
+    for b, kinds in coins3:
+        paint(a, b, kinds)
+    shell = hull([outer], 0.06)
+    a.paint(shell, OUTLINE)
+    rope_shell = hull(ropes, 0.035)
+    a.paint(rope_shell, OUTLINE)
+    mark_shell = hull([mark], 0.03)
+    a.paint(mark_shell, OUTLINE)
+    coin_shells = [hull([b], 0.03) for b, _ in coins3]
+    for s in coin_shells:
+        a.paint(s, OUTLINE)
+    pieces = [outer, inner, mark] + ropes + [b for b, _ in coins3] + [shell, rope_shell, mark_shell] + coin_shells
+    # pivot at the sack's middle
+    for p in pieces:
+        p.location.z -= 1.0
+        bpy.context.view_layer.objects.active = p
+        bpy.ops.object.select_all(action="DESELECT")
+        p.select_set(True)
+        bpy.ops.object.transform_apply(location=True)
+    a.part("Body", pieces)
+    a.extra["pivot"] = "centre"
+    return a
+
+
+ALL["Coin_Pouch"] = coin_pouch
