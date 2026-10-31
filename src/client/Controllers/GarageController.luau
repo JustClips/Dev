@@ -133,7 +133,7 @@ local function toolRows(data)
 				toast(false, `Get the {Tools.get(tool.Tier - 1).Name} first`)
 			end)
 		end
-		setRobux(row, if isNext then liveProduct("ToolSkip" .. tool.Tier) else nil, "Get now")
+		setRobux(row, if isNext and tool.Tier > Tools.FreeTier then liveProduct("ToolSkip" .. tool.Tier) else nil, "Get now")
 		row.Parent = list
 	end
 end

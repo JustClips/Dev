@@ -13,14 +13,15 @@
 --   Minutes (minutes played)
 -- Kinds that check what you have right now:
 --   Pet (own a pet of at least Rarity), Tool (own tool tier Goal), Zones (zones unlocked),
---   Placed (pets on your base), Index (pets discovered), Rebirths
+--   Placed (pets on your base), Index (pets discovered), Rebirths,
+--   Power (Sweep Power level Goal), FreeSpin (used your one free wheel spin)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Format = require(Shared.Format)
 local Tools = require(Shared.Config.Tools)
 
 export type Reward = { Kind: string, Seconds: number?, Floor: number?, Item: string?, Amount: number?, Rarity: string?, Bonus: Reward? }
-export type Quest = { Kind: string, Goal: number?, Rarity: string?, Reward: Reward? }
+export type Quest = { Kind: string, Goal: number?, Rarity: string?, Reward: Reward?, Free: boolean? }
 
 local Quests = {}
 
@@ -57,8 +58,17 @@ local SPIN = function(amount: number?): Reward
 end
 
 -- The Quest Master's jobs, in order. They start once the tutorial is done (the tutorial
--- already covers the first sweep, egg, sell, broom, upgrade and spin).
+-- covers the first sweep, egg, hatch and sell).
+-- The first 3 (Dev, 2026-10-31, shorter tutorial) used to be tutorial steps: the free
+-- Broom, the free Sweep Power level and the free spin. They check what you have, so
+-- players who already did them can claim them right away.
+Quests.StarterJobs = 3
+-- Bump when jobs are inserted before existing ones: QuestService moves saved job numbers.
+Quests.JobsVersion = 2
 Quests.Jobs = {
+	{ Kind = "Tool", Goal = Tools.FreeTier, Free = true, Reward = CASH(60, 0.25) },
+	{ Kind = "Power", Goal = 1, Free = true, Reward = CASH(90, 0.3) },
+	{ Kind = "FreeSpin", Goal = 1, Free = true, Reward = ITEM("LuckPotion") },
 	{ Kind = "Leaves", Goal = 200, Reward = CASH(120, 0.3) },
 	{ Kind = "Sells", Goal = 3, Reward = ITEM("LuckPotion") },
 	{ Kind = "Bunnies", Goal = 2, Reward = CASH(180, 0.3) },
@@ -130,7 +140,14 @@ local function article(word: string): string
 	return if string.match(word, "^[AEIOU]") then "an" else "a"
 end
 
+local textOf: (Quest) -> string
+
 function Quests.text(q: Quest): string
+	local text = textOf(q)
+	return if q.Free then text .. " FREE!" else text
+end
+
+textOf = function(q: Quest): string
 	local n = q.Goal or 0
 	local num = Format.number(n)
 	local k = q.Kind
@@ -172,13 +189,17 @@ function Quests.text(q: Quest): string
 		return `Discover {num} pets`
 	elseif k == "Rebirths" then
 		return if n == 1 then "Rebirth" else `Rebirth {num} times`
+	elseif k == "Power" then
+		return if n == 1 then "Buy Sweep Power" else `Get Sweep Power level {num}`
+	elseif k == "FreeSpin" then
+		return "Spin the Lucky Wheel"
 	end
 	return "?"
 end
 
 -- What a quest needs in total (Pet and Tool: 1, you have it or not).
 function Quests.target(q: Quest): number
-	if q.Kind == "Pet" or q.Kind == "Tool" then
+	if q.Kind == "Pet" or q.Kind == "Tool" or q.Kind == "FreeSpin" then
 		return 1
 	end
 	return math.max(1, q.Goal or 1)
@@ -188,7 +209,7 @@ end
 function Quests.progressText(q: Quest, progress: number): string
 	if q.Kind == "Cash" then
 		return `{Format.cash(progress)}/{Format.cash(q.Goal or 0)}`
-	elseif q.Kind == "Tool" or q.Kind == "Pet" then
+	elseif q.Kind == "Tool" or q.Kind == "Pet" or q.Kind == "FreeSpin" then
 		return `{math.min(progress, 1)}/1`
 	end
 	return `{Format.number(progress)}/{Format.number(Quests.target(q))}`

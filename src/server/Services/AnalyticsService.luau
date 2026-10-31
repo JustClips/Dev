@@ -33,10 +33,9 @@ local ONBOARDING: { { key: string, name: string } } = {
 	{ key = "Open", name = "Egg ready to open" },
 	{ key = "PlacePet", name = "Hatched egg" },
 	{ key = "Sell", name = "Pet placed (auto)" },
-	{ key = "Shop", name = "First sell" },
-	{ key = "Upgrade", name = "Got free Broom" },
-	{ key = "Wheel", name = "Got free Sweep Power" },
-	{ key = "Quest", name = "Spun wheel" },
+	-- Since 2026-10-31 (shorter tutorial) steps 12-13 mean this; before, 12-16 were
+	-- First sell / Got free Broom / Got free Sweep Power / Spun wheel / Done.
+	{ key = "Quest", name = "First sell" },
 	{ key = "Done", name = "Accepted first quest / tutorial done" },
 }
 local ONBOARDING_INDEX: { [string]: number } = {}

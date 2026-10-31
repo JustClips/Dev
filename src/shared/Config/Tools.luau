@@ -69,12 +69,12 @@ function Tools.get(tier: number): ToolDef
 	return List[math.clamp(tier, 1, #List)]
 end
 
--- Tutorial: until it's done, its first tool (Broom) and first Sweep Power level are FREE
--- (Dev, 2026-10-31: players learn the Gear window and the upgrade tree without paying).
-function Tools.tutorialPrice(price: number, _cash: number, tutorialDone: boolean): number
-	if tutorialDone then
-		return price
-	end
+-- The first tool (Broom) and the first Sweep Power level are always FREE. They used to be
+-- tutorial steps; since 2026-10-31 (shorter tutorial) they are the Quest Master's first
+-- jobs, so they stay free after the tutorial too. Callers only use this for Broom (tier 2)
+-- and Sweep Power level 0. Arguments kept so the call sites stay the same.
+Tools.FreeTier = 2
+function Tools.tutorialPrice(_price: number, _cash: number, _tutorialDone: boolean): number
 	return 0
 end
 

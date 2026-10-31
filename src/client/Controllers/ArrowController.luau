@@ -143,7 +143,9 @@ local function update()
 		current = nil
 		return
 	end
-	C.HudController:Highlight(if data.TutorialStep == "Shop" then "Tools" else nil)
+	-- Quest Master job 1 (free Broom, was the tutorial's Shop step): outline Gear.
+	local job = data.Quests and data.Quests.Job
+	C.HudController:Highlight(if job and job.Kind == "Tool" and job.Number == 1 and not job.Done then "Tools" else nil)
 	local target = targetFor(data)
 	if not target or (target - root.Position).Magnitude < REACHED then
 		board.Enabled = false

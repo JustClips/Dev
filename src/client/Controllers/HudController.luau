@@ -334,9 +334,9 @@ end
 -- During the tutorial the screen is almost empty (Dev, 2026-10-31: "hide everything, only
 -- show stuff needed by the tutorial and only when it's needed"). The cash/bag panel and
 -- the hotbar stay; every other button shows up at the step that uses it, alone:
--- SELL at the Sell step, Gear at the Shop step, Upgrades at the Upgrade step, SPIN at the
--- Wheel step. Everything comes back once the tutorial is done (or after a rebirth).
-local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10, Wheel = 11, Quest = 12 }
+-- SELL at the Sell step. Everything comes back once the tutorial is done (or after a
+-- rebirth); Gear, Upgrades and SPIN are then taught by the Quest Master's first jobs.
+local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Quest = 9 }
 local function revealRail(data)
 	local key = data.TutorialStep
 	local step = STEP_ORDER[key] or 99
@@ -348,25 +348,25 @@ local function revealRail(data)
 			changed = true
 		end
 	end
-	-- Left rail: only Upgrades at its step, all of it after.
-	set(el.Rail, done or key == "Upgrade")
+	-- Left rail: hidden until the tutorial is done.
+	set(el.Rail, done)
 	for _, name in { "ShopButton", "IndexButton", "RebirthButton", "RewardsButton", "GiftsButton" } do
 		set(el.Rail:FindFirstChild(name) :: GuiObject?, done)
 	end
-	set(el.Rail:FindFirstChild("UpgradesButton") :: GuiObject?, done or key == "Upgrade")
+	set(el.Rail:FindFirstChild("UpgradesButton") :: GuiObject?, done)
 	-- Top pills: only SELL at its step (GroupRewardController keeps the Free pill hidden
 	-- during the tutorial).
 	set(el.Pills, done or key == "Sell")
 	set(el.Pills:FindFirstChild("BaseButton") :: GuiObject?, done)
 	set(el.Pills:FindFirstChild("ZonesButton") :: GuiObject?, done)
-	set(el.SpinButton, done or key == "Wheel")
+	set(el.SpinButton, done)
 	set(el.MoonPanel, done)
 	set(el.Right, done)
 	set((el.BoostTemplate :: Instance).Parent :: GuiObject, done)
-	-- Right column (Eggs / Pets / Gear / Quests): only Gear at its step.
+	-- Right column (Eggs / Pets / Gear / Quests): after the tutorial.
 	local buttons = Ui.screen("BasePanels"):FindFirstChild("Buttons") :: GuiObject?
 	if buttons then
-		set(buttons, done or key == "Shop")
+		set(buttons, done)
 		set(buttons:FindFirstChild("EggsButton") :: GuiObject?, done)
 		set(buttons:FindFirstChild("PetsButton") :: GuiObject?, done)
 		set(buttons:FindFirstChild("QuestsButton") :: GuiObject?, done)

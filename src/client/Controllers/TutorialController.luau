@@ -28,6 +28,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
+local Quests = require(Shared.Config.Quests)
 local World = require(Shared.Config.World)
 
 local NEAR_PARK = 75 -- studs from the park centre to put the egg in your hands
@@ -78,26 +79,9 @@ local STEPS: { Step } = {
 		pad = "Your pet makes money! Walk to the market to sell your leaves!",
 		icon = "Icon_Sell",
 	},
-	{
-		key = "Shop",
-		text = "Open Gear and grab a FREE Broom!",
-		pad = "Press d-pad right, open Gear and grab a FREE Broom!",
-		icon = "Icon_Tools",
-	},
-	{
-		key = "Upgrade",
-		text = "Open Upgrades and click Sweep Power. FREE!",
-		touch = "Open Upgrades and double-tap Sweep Power. FREE!",
-		pad = "Press d-pad left, open Upgrades, press A on Sweep Power. FREE!",
-		icon = "Icon_Upgrade",
-	},
-	{
-		key = "Wheel",
-		text = "Click SPIN for a FREE prize!",
-		touch = "Tap SPIN for a FREE prize!",
-		pad = "Press d-pad left, pick SPIN and press A for a FREE prize!",
-		icon = "Icon_Spin",
-	},
+	-- The free Broom, Sweep Power and spin are the Quest Master's first jobs now (Dev,
+	-- 2026-10-31: shorter tutorial). After the tutorial this controller still points at
+	-- their buttons (jobPointer).
 	-- Last (Dev, 2026-10-31): hand off into quests. The arrow path leads to your Quest Master.
 	{
 		key = "Quest",
@@ -105,11 +89,10 @@ local STEPS: { Step } = {
 		icon = "Icon_Quest",
 	},
 }
--- The number on the card ("STEP 3/8"): planting is part of bringing it home, opening is
+-- The number on the card ("STEP 3/6"): planting is part of bringing it home, opening is
 -- part of hatching.
-local SHOWN_NUMBER: { [string]: number } =
-	{ Sweep = 1, Egg = 2, Base = 3, Place = 3, Hatching = 4, Open = 4, Sell = 5, Shop = 6, Upgrade = 7, Wheel = 8, Quest = 9 }
-local SHOWN_TOTAL = 9
+local SHOWN_NUMBER: { [string]: number } = { Sweep = 1, Egg = 2, Base = 3, Place = 3, Hatching = 4, Open = 4, Sell = 5, Quest = 6 }
+local SHOWN_TOTAL = 6
 -- A different cheer each time a step is done.
 local CHEERS = { "Nice!", "Awesome!", "Great job!", "WOW!", "You rock!", "Super!", "Amazing!", "Pro move!" }
 local cheerIndex = 0
@@ -385,6 +368,28 @@ local function standingStill(): boolean
 	return now - stillSince >= STILL_SECONDS
 end
 
+-- After the tutorial: the Quest Master's first jobs (free Broom, free Sweep Power, free
+-- spin) used to be tutorial steps, so the pointer still shows their button until done.
+-- No dimming: the player is free to do other things.
+local function jobPointer(data): GuiObject?
+	local job = data.Quests and data.Quests.Job
+	if not job or job.Done or (job.Number or 99) > Quests.StarterJobs then
+		return nil
+	end
+	if job.Kind == "Tool" and not Ui.isOpen(Ui.screen("Garage")) then
+		return Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton")
+	elseif job.Kind == "Power" and not C.UpgradeController:IsOpen() then
+		return Ui.find(hud, "Rail.UpgradesButton")
+	elseif job.Kind == "FreeSpin" then
+		if not Ui.isOpen(Ui.screen("Wheel")) then
+			return Ui.find(hud, "SpinButton")
+		elseif not C.WheelController:IsSpinning() then
+			return Ui.find(Ui.screen("Wheel"), "Window.Side.SpinButton")
+		end
+	end
+	return nil
+end
+
 local function update()
 	local data = State.data
 	if not data then
@@ -464,14 +469,6 @@ local function update()
 		elseif key == "Sell" and data.Backpack > 0 and not Ui.gamepad() then
 			-- Spotlight on SELL: the rest of the screen dims (Dev, 2026-10-31).
 			pointAt(Ui.find(hud, "Pills.SellButton"))
-		elseif key == "Shop" and not Ui.isOpen(Ui.screen("Garage")) then
-			pointAt(Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton"))
-		elseif key == "Upgrade" and not C.UpgradeController:IsOpen() then
-			pointAt(Ui.find(hud, "Rail.UpgradesButton"))
-		elseif key == "Wheel" and not Ui.isOpen(Ui.screen("Wheel")) then
-			pointAt(Ui.find(hud, "SpinButton"))
-		elseif key == "Wheel" and not C.WheelController:IsSpinning() then
-			pointAt(Ui.find(Ui.screen("Wheel"), "Window.Side.SpinButton"))
 		else
 			pointAt(nil)
 		end
@@ -486,7 +483,7 @@ local function update()
 	end
 
 	-- Tutorial finished.
-	pointAt(nil)
+	pointAt(jobPointer(data), false)
 	holdHint.Visible = false
 	card.Position = UDim2.new(0.5, 0, 1, -cardLift(false))
 	glow.Enabled = false

@@ -697,7 +697,8 @@ function UpgradeController:Start()
 			hovered = nil
 		end
 	end)
-	-- Tutorial "Upgrade" step: a line under the title and the Sweep Power hex pulses.
+	-- Quest Master's free Sweep Power job (was the tutorial's Upgrade step): a line under
+	-- the title and the Sweep Power hex pulses.
 	local tutorialHint = Ui.find(gui, "Top.Hint") :: TextLabel
 	local wasTeaching = false
 	RunService.RenderStepped:Connect(function()
@@ -708,7 +709,8 @@ function UpgradeController:Start()
 			placeTip()
 		end
 		local data = State.data
-		local teaching = data ~= nil and State.tutorialStep(data) == "Upgrade" and current == "Main"
+		local job = data and data.Quests and data.Quests.Job
+		local teaching = job ~= nil and job.Kind == "Power" and not job.Done and (data.Upgrades.Power or 0) < 1 and current == "Main"
 		tutorialHint.Visible = teaching
 		local root = nodes[Upgrades.Root]
 		if teaching and root then

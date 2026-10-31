@@ -119,6 +119,10 @@ local function progressOf(q: Quests.Quest, data, now_: { [string]: number }, bas
 		value = count(data.Index)
 	elseif k == "Rebirths" then
 		value = data.Rebirths or 0
+	elseif k == "Power" then
+		value = data.Upgrades.Power or 0
+	elseif k == "FreeSpin" then
+		value = if type(data.Flags.FreeSpinAt) == "number" then 1 else 0
 	end
 	return math.clamp(value, 0, Quests.target(q))
 end
@@ -133,6 +137,11 @@ local function jobState(player: Player, data, now_: { [string]: number }): (Ques
 	if type(flags.QuestJob) ~= "number" or type(flags.QuestBase) ~= "table" then
 		flags.QuestJob = 1
 		flags.QuestBase = table.clone(now_)
+		flags.QuestJobsV = Quests.JobsVersion
+	elseif flags.QuestJobsV ~= Quests.JobsVersion then
+		-- Saves from before the starter jobs were put in front: keep them on the same job.
+		flags.QuestJob += Quests.StarterJobs
+		flags.QuestJobsV = Quests.JobsVersion
 	end
 	local q = Quests.job(flags.QuestJob)
 	return q, progressOf(q, data, now_, flags.QuestBase)
@@ -496,6 +505,7 @@ function QuestService:Snapshot(player: Player): any
 		local target = Quests.target(job)
 		out.Job = {
 			Number = data.Flags.QuestJob,
+			Kind = job.Kind,
 			Text = Quests.text(job),
 			Progress = Quests.progressText(job, jp),
 			Fraction = jp / target,

@@ -203,7 +203,8 @@ end
 local function toolItems(data): { Item }
 	local items: { Item } = {}
 	local tier = data.ToolTier + 1
-	if tier > Tools.MaxTier then
+	-- The Broom is free (Tools.FreeTier): no Robux skip for it.
+	if tier > Tools.MaxTier or tier <= Tools.FreeTier then
 		return items
 	end
 	local def = Tools.get(tier)

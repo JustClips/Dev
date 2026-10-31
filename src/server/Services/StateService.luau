@@ -70,25 +70,13 @@ local function tutorialStep(player: Player, session: any): string
 		return "Sweep"
 	end
 	-- No "place your pet" step: the first hatched pet goes on your base by itself
-	-- (HatchService, 3 s after the hatch). The Broom and the first Sweep Power level are
-	-- bought in the Gear window / upgrade tree, FREE until the tutorial is done
-	-- (Tools.tutorialPrice).
+	-- (HatchService, 3 s after the hatch).
 	if data.Stats.Sells == 0 then
 		return "Sell"
 	end
-	if data.ToolTier < 2 then
-		return "Shop"
-	end
-	if (data.Upgrades.Power or 0) < 1 then
-		return "Upgrade"
-	end
-	-- Last: the free spin from the SPIN button (first spin is always a Rare Egg) (Dev: so
-	-- players learn it's there). Counts as done once the wheel has stopped, so the
-	-- "Tutorial done" window doesn't cover the spin (RewardService re-marks after it).
-	local spunAt = data.Flags.FreeSpinAt
-	if type(spunAt) ~= "number" or os.time() - spunAt < Rewards.Wheel.SpinSeconds + 0.5 then
-		return "Wheel"
-	end
+	-- Shorter tutorial (Dev, 2026-10-31): it teaches only the core loop. The free Broom,
+	-- free Sweep Power and free spin are now the Quest Master's first 3 jobs
+	-- (Config/Quests StarterJobs); players still do them themselves.
 	-- Very last (Dev, 2026-10-31): "Go accept a quest". The arrow path leads to your Quest
 	-- Master; talking to him and accepting (QuestService "Accept") sets QuestMet.
 	if data.Flags.QuestMet ~= true then

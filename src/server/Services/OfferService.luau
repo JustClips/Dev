@@ -79,7 +79,7 @@ function OfferService:OnBackpackFull(player: Player)
 	end
 	local nextTier = session.Data.ToolTier + 1
 	local skipKey = "ToolSkip" .. nextTier
-	if nextTier <= Tools.MaxTier and isLive(skipKey) then
+	if nextTier <= Tools.MaxTier and nextTier > Tools.FreeTier and isLive(skipKey) then
 		show(player, "BackpackFull", skipKey, "Backpack full again?", `Get the {Tools.get(nextTier).Name} now: {Tools.get(nextTier).Capacity} capacity!`)
 	elseif not session.Data.Gamepasses.SellAnywhere and isLive("SellAnywhere") and state.fullCount % (Economy.Offers.BackpackFullCount * 2) == 0 then
 		show(player, "BackpackFull", "SellAnywhere", "Sell from anywhere", "One tap sells your whole bag, and Auto Sell empties it when it's full.")
@@ -119,7 +119,7 @@ local function checkStuck()
 	for player, session in S.DataService:GetSessions() do
 		local data = session.Data
 		local nextTier = data.ToolTier + 1
-		if nextTier > Tools.MaxTier then
+		if nextTier > Tools.MaxTier or nextTier <= Tools.FreeTier then
 			continue
 		end
 		local state = offerState(session)
