@@ -82,6 +82,9 @@
      "className": "UIScale",
      "properties": {
       "Scale": 1
+     },
+     "attributes": {
+      "PcScale": 0.8
      }
     },
     {
@@ -690,7 +693,7 @@
        "properties": {
         "Padding": [
          0,
-         6
+         4
         ],
         "FillDirection": "Vertical",
         "HorizontalAlignment": "Center",
@@ -709,7 +712,7 @@
          ],
          [
           0,
-          84
+          66
          ]
         ],
         "Position": [
@@ -741,11 +744,11 @@
           "Size": [
            [
             0,
-            62
+            46
            ],
            [
             0,
-            62
+            46
            ]
           ],
           "Position": [
@@ -780,7 +783,7 @@
            ],
            [
             0,
-            24
+            20
            ]
           ],
           "Position": [
@@ -801,7 +804,7 @@
           "BackgroundTransparency": 1,
           "Text": "Money",
           "TextColor3": "#FFFFFF",
-          "TextSize": 21,
+          "TextSize": 19,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -828,7 +831,7 @@
            "name": "Fit",
            "className": "UITextSizeConstraint",
            "properties": {
-            "MaxTextSize": 21,
+            "MaxTextSize": 19,
             "MinTextSize": 7
            }
           }

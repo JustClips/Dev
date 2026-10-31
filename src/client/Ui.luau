@@ -610,7 +610,9 @@ local function rescale()
 	for _, gui in playerGui:GetChildren() do
 		for _, d in gui:GetDescendants() do
 			if d:IsA("UIScale") and d.Name == "AutoScale" then
-				local extra = if compact then (d:GetAttribute("CompactScale") :: number?) or 1 else 1
+				local extra = if compact
+					then (d:GetAttribute("CompactScale") :: number?) or 1
+					else (d:GetAttribute("PcScale") :: number?) or 1
 				d.Scale = (if isModal(d) then w else s) * extra
 			end
 		end

@@ -87,9 +87,15 @@ def shine(dark="#C9D0DE"):
     return node("Shine", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [0.55, WHITE], [1, dark]]}, "Rotation": 90})
 
 
-def autoscale(compact=None):
-    """compact: extra factor on phones (Ui.rescale reads the CompactScale attribute)."""
-    return node("AutoScale", "UIScale", {"Scale": 1}, attrs={"CompactScale": compact} if compact else None)
+def autoscale(compact=None, pc=None):
+    """compact: extra factor on phones, pc: extra factor everywhere else (Ui.rescale reads
+    the CompactScale / PcScale attributes)."""
+    attrs = {}
+    if compact:
+        attrs["CompactScale"] = compact
+    if pc:
+        attrs["PcScale"] = pc
+    return node("AutoScale", "UIScale", {"Scale": 1}, attrs=attrs or None)
 
 
 def padding(l, r=None, t=None, b=None):
@@ -859,13 +865,14 @@ def shop():
     ])
 
     # Section buttons right of the panel: icon + name, tap to jump there.
-    nav_button = node("NavButton", "TextButton", base(U(1, 0, 0, 84), BackgroundTransparency=1, Text="", AutoButtonColor=False,
+    nav_button = node("NavButton", "TextButton", base(U(1, 0, 0, 66), BackgroundTransparency=1, Text="", AutoButtonColor=False,
                                                       Visible=False, ZIndex=3), [
-        icon("Icon", "Cash", 62, U(0.5, 0, 0, 0), (0.5, 0), ZIndex=3),
-        text("Label", "Money", U(1, 10, 0, 24), U(0.5, 0, 1, 0), (0.5, 1), ts=21, display=True, stroke=3, ZIndex=4,
-             TextScaled=True, children=[fit(21)]),
+        icon("Icon", "Cash", 46, U(0.5, 0, 0, 0), (0.5, 0), ZIndex=3),
+        text("Label", "Money", U(1, 10, 0, 20), U(0.5, 0, 1, 0), (0.5, 1), ts=19, display=True, stroke=3, ZIndex=4,
+             TextScaled=True, children=[fit(19)]),
     ])
-    nav = frame("Nav", U(0, SHOP_NAV_W, 1, -80), U(0, W + 4, 0, 76), children=[vlist(6), nav_button])
+    # 6 x 66 + 5 x 4 = 416: all six fit beside the 440 px list.
+    nav = frame("Nav", U(0, SHOP_NAV_W, 1, -80), U(0, W + 4, 0, 76), children=[vlist(4), nav_button])
 
     gift_row = button("Template", U(1, -10, 0, 46), color=HEADER, label="Player", ts=18, stroke=3, Visible=False)
     gift = frame("GiftPicker", U(0, 380, 0, 330), U(0, W / 2, 0.5, 20), (0.5, 0.5), bg=SHOP_BODY, Visible=False, ZIndex=10, children=[
@@ -911,7 +918,8 @@ def shop():
     ])
     # One "Window" (the modal scale follows it) holding the panel and the section buttons.
     win = frame("Window", U(0, WIN_W, 0, WIN_H), U(0.5, 0, 0.5, 0), (0.5, 0.5), children=[
-        autoscale(), panel, nav, heading, grid, card, banner, chip, egg_banner, pet, big, cell, offer, luck, gift, qty,
+        # Smaller than the other windows on PC (Dev: "hella huge for pc"); phones keep the fit.
+        autoscale(pc=0.8), panel, nav, heading, grid, card, banner, chip, egg_banner, pet, big, cell, offer, luck, gift, qty,
     ])
     write("Shop", screen([dim(), win], order=10, enabled=False))
 
