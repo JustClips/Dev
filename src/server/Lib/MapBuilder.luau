@@ -15,6 +15,7 @@ local BaseSkins = require(Shared.Config.BaseSkins)
 local Eggs = require(Shared.Config.Eggs)
 local Items = require(Shared.Config.Items)
 local Rewards = require(Shared.Config.Rewards)
+local SkyLooks = require(Shared.Config.SkyLooks)
 local World = require(Shared.Config.World)
 local ZoneDecor = require(Shared.Config.ZoneDecor)
 local Zones = require(Shared.Config.Zones)
@@ -156,59 +157,29 @@ local function effect(className: string, name: string): Instance
 	return inst
 end
 
--- Sunny afternoon under a blue sky with clouds (Sweep the World).
+-- The default clear-day look (Config/SkyLooks). Clients fade to their zone's look on top.
 function MapBuilder.setupLighting()
+	local look = SkyLooks.ById[SkyLooks.Default]
 	Lighting.ClockTime = 14.5
 	Lighting.GeographicLatitude = 35
-	Lighting.Brightness = 2.6
-	Lighting.Ambient = Color3.fromRGB(110, 110, 120)
-	Lighting.OutdoorAmbient = Color3.fromRGB(150, 150, 160)
-	Lighting.ColorShift_Top = Color3.fromRGB(255, 247, 232)
 	Lighting.ColorShift_Bottom = Color3.fromRGB(0, 0, 0)
-	Lighting.EnvironmentDiffuseScale = 0.6
-	Lighting.EnvironmentSpecularScale = 0.4
 	Lighting.GlobalShadows = true
 	Lighting.ShadowSoftness = 0.3
-	Lighting.ExposureCompensation = 0
-
-	local atmosphere = effect("Atmosphere", "WorldAtmosphere") :: Atmosphere
-	atmosphere.Density = 0.28
-	atmosphere.Offset = 0.1
-	atmosphere.Color = Color3.fromRGB(199, 226, 255)
-	atmosphere.Decay = Color3.fromRGB(110, 150, 196)
-	atmosphere.Glare = 0.15
-	atmosphere.Haze = 1
-
-	local bloom = effect("BloomEffect", "WorldBloom") :: BloomEffect
-	bloom.Intensity = 0.3
-	bloom.Size = 24
-	bloom.Threshold = 2
-
-	local grade = effect("ColorCorrectionEffect", "WorldGrade") :: ColorCorrectionEffect
-	grade.Saturation = 0.18
-	grade.Contrast = 0.06
-	grade.Brightness = 0.02
-	grade.TintColor = Color3.fromRGB(255, 252, 245)
-
-	local rays = Lighting:FindFirstChildOfClass("SunRaysEffect")
-	if rays then
-		rays.Intensity = 0.06
+	local function set(target: Instance, props: { [string]: any })
+		local anyTarget = target :: any
+		for prop, value in props do
+			anyTarget[prop] = value
+		end
 	end
-
-	-- Roblox's own daytime sky (blue with soft clouds), no stars.
-	local sky = effect("Sky", "WorldSky") :: Sky
-	for _, face in { "Bk", "Dn", "Ft", "Lf", "Rt", "Up" } do
-		(sky :: any)["Skybox" .. face] = `rbxasset://textures/sky/sky512_{string.lower(face)}.tex`
-	end
-	sky.StarCount = 0
-	sky.CelestialBodiesShown = true
-	sky.SunAngularSize = 14
-	sky.MoonAngularSize = 8
+	set(Lighting, look.Lighting)
+	set(effect("Atmosphere", "WorldAtmosphere"), look.Atmosphere)
+	set(effect("BloomEffect", "WorldBloom"), look.Bloom)
+	set(effect("ColorCorrectionEffect", "WorldGrade"), look.Grade)
+	set(effect("SunRaysEffect", "WorldSunRays"), look.SunRays)
+	set(effect("Sky", "WorldSky"), SkyLooks.skyProps(look, AssetLibrary.image))
 
 	local clouds = Workspace.Terrain:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
-	clouds.Cover = 0.55
-	clouds.Density = 0.6
-	clouds.Color = Color3.fromRGB(255, 255, 255)
+	set(clouds, look.Clouds)
 	clouds.Parent = Workspace.Terrain
 end
 

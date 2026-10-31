@@ -23,7 +23,9 @@ local Ui = require(Client.Ui)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local Eggs = require(Shared.Config.Eggs)
+local Grid = require(Shared.Grid)
 local Net = require(Shared.Net)
+local SkyLooks = require(Shared.Config.SkyLooks)
 local Sounds = require(Shared.Config.Sounds)
 local Weather = require(Shared.Config.Weather)
 local Zones = require(Shared.Config.Zones)
@@ -174,17 +176,21 @@ local PRESETS: { [string]: Preset } = {
 
 local PROPS: { [string]: { string } } = {
 	Lighting = { "Brightness", "Ambient", "OutdoorAmbient", "ColorShift_Top", "ExposureCompensation", "EnvironmentSpecularScale", "EnvironmentDiffuseScale" },
-	Atmosphere = { "Density", "Color", "Decay", "Haze", "Glare" },
+	Atmosphere = { "Density", "Offset", "Color", "Decay", "Haze", "Glare" },
 	Grade = { "Saturation", "TintColor", "Brightness", "Contrast" },
 	Clouds = { "Cover", "Density", "Color" },
 	Bloom = { "Intensity", "Threshold", "Size" },
 	SunRays = { "Intensity", "Spread" },
-	Sky = { "MoonTextureId", "MoonAngularSize", "StarCount", "CelestialBodiesShown" },
+	Sky = { "MoonTextureId", "MoonAngularSize", "SunAngularSize", "StarCount", "CelestialBodiesShown", "SkyboxBk", "SkyboxDn", "SkyboxFt", "SkyboxLf", "SkyboxRt", "SkyboxUp" },
 }
 
 local targets: { [string]: any } = {}
 local baseline: { [string]: { [string]: any } } = {}
 local currentPreset: Preset? = nil
+-- The clear-day look of the zone the player is in (Config/SkyLooks). It replaces the
+-- map's own values as the "normal" sky that every preset fades back to.
+local currentLook: SkyLooks.Look = SkyLooks.forZone(nil)
+local lookSky: { [string]: any } = SkyLooks.skyProps(currentLook, img)
 
 local function find(group: string): Instance?
 	if group == "Lighting" then
@@ -223,7 +229,22 @@ local function capture()
 	end
 end
 
--- The value a sky property should have now (preset, else the map's own).
+-- Writes the zone's look over the captured values (only for objects that exist).
+local function overlayLook()
+	for group, props in PROPS do
+		local base = baseline[group]
+		local look = if group == "Sky" then lookSky else (currentLook :: any)[group]
+		if base and look then
+			for _, prop in props do
+				if look[prop] ~= nil then
+					base[prop] = look[prop]
+				end
+			end
+		end
+	end
+end
+
+-- The value a sky property should have now (preset, else the zone's look / the map's own).
 local function skyValue(group: string, prop: string): any
 	local wanted = currentPreset and currentPreset[group]
 	if wanted and wanted[prop] ~= nil then
@@ -234,6 +255,7 @@ end
 
 local function applySky(preset: Preset?)
 	capture()
+	overlayLook()
 	currentPreset = preset
 	for group, props in PROPS do
 		local target = targets[group]
@@ -1899,6 +1921,33 @@ local function refreshSky()
 	end
 end
 
+-- Fades to the zone's clear-day look once the player has been in that zone for a second
+-- (so running along a path between zones doesn't flicker). Any weather on top stays.
+local pendingLook: SkyLooks.Look? = nil
+local pendingSince = 0
+local function refreshLook()
+	local char = player.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local zone = Grid.zoneAt(if root then root.Position else focus())
+	local look = SkyLooks.forZone(zone and zone.Id)
+	if look == currentLook then
+		pendingLook = nil
+		return
+	end
+	if look ~= pendingLook then
+		pendingLook = look
+		pendingSince = os.clock()
+		return
+	end
+	if os.clock() - pendingSince < 1 then
+		return
+	end
+	pendingLook = nil
+	currentLook = look
+	lookSky = SkyLooks.skyProps(look, img)
+	applySky(currentPreset)
+end
+
 local function refresh(announce: boolean)
 	local event = State.server("EventState")
 	setSlot("event", if event == "Shower" or event == "Countdown" then "EggRain" else "", announce)
@@ -2089,6 +2138,7 @@ function WeatherController:Start()
 		if groundCheck <= 0 then
 			groundCheck = 0.2
 			lastGround = groundAt(at)
+			refreshLook() -- walked into another zone
 			refreshSky() -- night starts / ends
 		end
 		local floor = Vector3.new(at.X, lastGround.Y, at.Z)

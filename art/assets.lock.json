@@ -9074,9 +9074,129 @@
    "id": 89968559820433,
    "sha": "e95d187fb4f021572de1894ceb84f435f4618ed6e6297da4b3fa7c7b4d209743"
   },
+  "Sky_Clear_Bk": {
+   "id": 93460705118190,
+   "sha": "445042e27dcee883d36c03680b70604866d20bc8600169979c30b4edf2e22366"
+  },
+  "Sky_Clear_Dn": {
+   "id": 84925261619457,
+   "sha": "de87a698e859c1caa75723e62f48053ae8051127e9c5b452298d41e5a3c02c8d"
+  },
+  "Sky_Clear_Ft": {
+   "id": 105197666268576,
+   "sha": "5e67bf26d4a7024216718b00b87b79b51b45df1f3706621dace32696fd958566"
+  },
+  "Sky_Clear_Lf": {
+   "id": 121865987672534,
+   "sha": "f35f85c553d773615ac49f8836c91acd82dde3149ade081bd0a691b360356cf0"
+  },
+  "Sky_Clear_Rt": {
+   "id": 124826909942699,
+   "sha": "5b3a70606febcd0612916250f34c28fb4cfd00b3fcb1b2feb73a6cbf1c4cfeb9"
+  },
+  "Sky_Clear_Up": {
+   "id": 125848089088615,
+   "sha": "52bd1508a199d6333dd8baca9954cf5cb9e858c981901ebb018c284489c91a09"
+  },
+  "Sky_CozyAutumn_Bk": {
+   "id": 72910406880431,
+   "sha": "b3156a3d928f67b6a0945eb485af92d0d185e49d76db6c94df87474c2c938c34"
+  },
+  "Sky_CozyAutumn_Dn": {
+   "id": 105793987702565,
+   "sha": "ade1db2961d02376435235aa9bda4f0cc1486b3426109275e7d699a5433064c1"
+  },
+  "Sky_CozyAutumn_Ft": {
+   "id": 77120653686032,
+   "sha": "862a23ca909a4e46792c3849f963c8f4d78ce146d98a7d9fbd0920c3975da634"
+  },
+  "Sky_CozyAutumn_Lf": {
+   "id": 113035803202548,
+   "sha": "231f518f497e4a5db0e3bd6884964a76f0c57ff73577b6a8466f191e8e1a0694"
+  },
+  "Sky_CozyAutumn_Rt": {
+   "id": 127358415399234,
+   "sha": "6b15f50dcbe64bea1155f6cbb3d607c6d9c05ae02ce9236672049176f896b57b"
+  },
+  "Sky_CozyAutumn_Up": {
+   "id": 127140807607410,
+   "sha": "981c70f109a9f11e38401ad0bd9e0ebc0eab37e3cd12e8de22765c9485da9700"
+  },
+  "Sky_Frosty_Bk": {
+   "id": 134424857246272,
+   "sha": "13bf1ca9e7c668c5d39277ff922d5dd2dbbd4efb4f47b14fc4a966b7471b5e56"
+  },
+  "Sky_Frosty_Dn": {
+   "id": 139467962399566,
+   "sha": "a92e4b1dbc73aab4a7a2bf7b94bd8ef9282cab0b8dc2e686ff0680cc0b25c898"
+  },
+  "Sky_Frosty_Ft": {
+   "id": 116154583244205,
+   "sha": "6a8ffb6111a501cb206a7b9d1ff05be042fe9644a22ba42b4a6373574de83e41"
+  },
+  "Sky_Frosty_Lf": {
+   "id": 80885503644036,
+   "sha": "29cc56bf0983213659b0c9bc045d870a3d51c53fd8efaa7319229f2a0f27697f"
+  },
+  "Sky_Frosty_Rt": {
+   "id": 79305003675377,
+   "sha": "460373b2b3ec7377ac59e46e49816c6675a919f90094d9ab6cf2e5c8a9302fb9"
+  },
+  "Sky_Frosty_Up": {
+   "id": 119914213442735,
+   "sha": "16fd9c8e5ac4d265b2a5ea39666c82c02f8da5851226f2c7c33baa72cc880f58"
+  },
+  "Sky_GoldenHour_Bk": {
+   "id": 104423099906038,
+   "sha": "3e83fa0755fbfe8feeecee6035205a7f540301aee5a397df83a640fe66de6eb8"
+  },
+  "Sky_GoldenHour_Dn": {
+   "id": 132400899483179,
+   "sha": "00a1e724b669fee972a7221f4b8ac567f7f6ad70daba320b4c991c9e9fe9955c"
+  },
+  "Sky_GoldenHour_Ft": {
+   "id": 112086767618270,
+   "sha": "4900be3e70ebe39dc44852d06fd44aa5cefee9ef9d9e310335457cd8ad945d3f"
+  },
+  "Sky_GoldenHour_Lf": {
+   "id": 132004661502522,
+   "sha": "5e4b818db28b1415ed0a9988fbb46203822138c9984f7818874f11f6dee9a3bf"
+  },
+  "Sky_GoldenHour_Rt": {
+   "id": 136884632931485,
+   "sha": "0af37da5749c4493373be57c2aacb5e75b31d56b9113c39d39630dd455aa82f8"
+  },
+  "Sky_GoldenHour_Up": {
+   "id": 102590967156156,
+   "sha": "df142d6c232ddfa9830fc066d8d2c86b8d609a2cdc9c3768bcdb3c67f21f8bee"
+  },
   "Sky_Stars": {
    "id": 110670005454524,
    "sha": "d0d3871dfd0cf7127de920348a23df65b219e89856c2e881c34a4f5129372637"
+  },
+  "Sky_Tropical_Bk": {
+   "id": 77566473741445,
+   "sha": "21e8cb2d12520cc985d5044975b444cb16f10b4156d45c683d672b6bb3ed8e03"
+  },
+  "Sky_Tropical_Dn": {
+   "id": 76510334018297,
+   "sha": "a4d7a2eb16b758499c7db7f82e07ac173c5c83d95aec8e33a7c515f6745c3b4c"
+  },
+  "Sky_Tropical_Ft": {
+   "id": 89676862229762,
+   "sha": "ee9892f00d1f6a5336af8e9287e7c025c6c56823f2e59ccec1b5c87b0e87b9b1"
+  },
+  "Sky_Tropical_Lf": {
+   "id": 97359228863609,
+   "sha": "56dd4a43ef5317fcf63f02ba29879453fc9a12e16d140ee8670a966c53d0d1a1"
+  },
+  "Sky_Tropical_Rt": {
+   "id": 140530836261263,
+   "sha": "a6f97479f49c5fb2cd9f23e509bcb610dee828482d5efc9432d24d4910d43724"
+  },
+  "Sky_Tropical_Up": {
+   "id": 119698340600658,
+   "sha": "f74cd98dbeb200c1221a7db469138c8e01aa983876d032240c560a48fccc75b2"
   },
   "Sparkle": {
    "id": 73148002819900,
