@@ -89,8 +89,8 @@ cam_data = bpy.data.cameras.new("cam")
 cam_data.lens = 35
 cam = bpy.data.objects.new("cam", cam_data)
 scene.collection.objects.link(cam)
-target = Vector((0.2, 1.8, -1.6))  # Roblox front is -Z -> Blender +Y
-cam.location = target + Vector((-7.5, 9.0, 3.2))
+target = Vector((-0.4, -1.8, -1.6))  # Roblox front (-Z) is Blender -Y
+cam.location = target + Vector((-8.0, -8.5, 3.0))
 cam.rotation_euler = (target - cam.location).to_track_quat("-Z", "Y").to_euler()
 scene.camera = cam
 
