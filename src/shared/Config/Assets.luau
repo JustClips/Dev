@@ -11772,7 +11772,7 @@ Assets.Models = {
 					tint = "smoke",
 				} },
 		},
-		id = 134854835808435,
+		id = 89019300431493,
 		kind = "prop",
 		parts = {
 			Body = {

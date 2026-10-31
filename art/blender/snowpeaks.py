@@ -51,15 +51,19 @@ def snow_lodge(name="Snow_Lodge"):
             logs.append(post(WOOD_DARK if k % 2 else WOOD, (x, -D / 2 - 0.4, z + 0.37), (x, D / 2 + 0.4, z + 0.37), r=0.42, seg=8))
     core = rbox(WOOD_LIGHT, (0, 0, 3.8), (W - 0.4, D - 0.4, 5.6), r=0.1)
     top = 1.0 + 8 * 0.75
-    gable = lathe(WOOD_LIGHT, [(0.0, top), (D / 2 + 0.3, top), (0.0, top + 3.6)], n=2, t0=0, t1=math.pi, smooth=False)
-    gable.data.transform(Matrix.Rotation(math.radians(90), 4, "Z"))
-    gable.data.transform(Matrix.Diagonal((W / (D + 0.6) * 1.0, 1, 1, 1)))
+    # gable triangles at both ends, under the ridge (the ridge runs along X)
+    gables = []
+    for x in (-W / 2, W / 2):
+        g = rbox(WOOD_LIGHT, (x, 0, top + 1.8), (0.7, D + 0.4, 3.6), r=0.05)
+        lib.deform(g, lambda v: Vector((v.x, v.y * max(0.02, 1 - (v.z - top) / 3.6), v.z)))
+        gables.append(g)
     roof = []
     for side in (-1, 1):
-        slab = rbox("8A3A2A", (0, side * (D / 4 + 0.6), top + 1.75), (W + 2.4, D / 2 + 2.2, 0.45), r=0.15, rot_x=side * 34)
+        slab = rbox("8A3A2A", (0, side * (D / 4 + 0.6), top + 1.75), (W + 2.4, D / 2 + 2.2, 0.45), r=0.15, rot_x=-side * 34)
         roof.append(slab)
-        snow = rbox(SNOW, (0, side * (D / 4 + 0.55), top + 2.15), (W + 2.6, D / 2 + 2.2, 0.55), r=0.25, rot_x=side * 34)
+        snow = rbox(SNOW, (0, side * (D / 4 + 0.55), top + 2.15), (W + 2.6, D / 2 + 2.2, 0.55), r=0.25, rot_x=-side * 34)
         roof.append(snow)
+    roof.append(cyl(SNOW, loc=(0, 0, top + 4.05), r=0.55, h=W + 2.6, rot=(0, 90, 0), verts=10))
     drift = [snow_blob((x, side * (D / 2 + 1.7), top - 0.5), (0.9, 0.7, 0.5)) for x in (-6, -3, 0, 3, 6) for side in (-1, 1)]
     icicles = [lathe(ICE, [(0.0, 0.0), (0.12, 0.0), (0.0, -0.7 - 0.3 * (i % 2))], n=6, smooth=False) for i in range(12)]
     for i, ic in enumerate(icicles):
@@ -77,7 +81,7 @@ def snow_lodge(name="Snow_Lodge"):
     wood = [post(WOOD, (-6.4 + j * 0.64 + k * 0.32, -D / 2 - 1.6, 1.3 + k * 0.56), (-6.4 + j * 0.64 + k * 0.32, -D / 2 - 0.4, 1.3 + k * 0.56), r=0.3, seg=8)
             for k in range(3) for j in range(3 - k)]
     skis = [rbox(c, (5.0 + k * 0.5, -D / 2 - 0.8, 2.0), (0.25, 0.1, 3.6), r=0.05, rot_x=10) for k, c in enumerate((RED, BLUE))]
-    a.part("Body", outlined([base, chim, door, porch] + roof, 0.06) + logs + [core, gable, chimcap, wreath, bow, sign] + drift + icicles + porch_posts + porch_roof + wood + skis, collide=True)
+    a.part("Body", outlined([base, chim, door, porch] + roof, 0.06) + logs + gables + [core, chimcap, wreath, bow, sign] + drift + icicles + porch_posts + porch_roof + wood + skis, collide=True)
     a.part("Windows_Glow", [rbox("FFD27A", (x, -D / 2 - 0.5, 3.5), (2.2, 0.12, 1.8), r=0.2) for x in (-4.4, 4.4)] +
            [rbox("FFD27A", (-W / 2 - 0.5, y, 3.5), (0.12, 2.2, 1.8), r=0.2) for y in (-2, 2)], glow="FFD27A")
     puff(a, (4, 2.5, top + 5.4), rate=0.8, size=1.3, tint="smoke")
