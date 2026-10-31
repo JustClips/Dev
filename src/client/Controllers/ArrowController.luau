@@ -2,8 +2,7 @@
 -- Guide path (tutorial and helpful nudges): a trail of flat arrows on the ground from your
 -- feet toward the target, sliding forward, and a big bouncing arrow over it, with the
 -- distance. Steps come from the server
--- (State.data.TutorialStep): dust -> egg -> home -> plant the egg in your pet park -> open
--- it -> rocket. After the tutorial it still points home when you carry an egg, at a
+-- (State.data.TutorialStep): dust -> egg -> home -> your growing egg -> leaf dump. After the tutorial it still points home when you carry an egg, at a
 -- ready egg in your park, and at the Rocket when your backpack is full.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -95,16 +94,8 @@ local function targetFor(data): Vector3?
 		return data.TutorialTarget
 	elseif step == "Base" and pad then
 		return pad.Position
-	elseif step == "Place" and hasBase then
-		-- Holding the egg: the placement ring is the guide now.
-		if C.PlacementController:IsHolding() then
-			return nil
-		end
-		return parkCentre(data.BaseIndex)
-	elseif step == "Hatching" then
+	elseif step == "Hatch" then
 		return eggSpot(data, false)
-	elseif step == "Open" then
-		return eggSpot(data, true)
 	elseif step == "Sell" then
 		return if data.Backpack > 0 then dumpSpot else nil
 	end
@@ -130,7 +121,8 @@ local function update()
 		current = nil
 		return
 	end
-	C.HudController:Highlight(if data.TutorialStep == "Shop" then "Tools" else nil)
+	-- After the tutorial the Gear button wiggles until you take the free Broom.
+	C.HudController:Highlight(if data.TutorialStep == "Done" and data.ToolTier < 2 then "Tools" else nil)
 	local target = targetFor(data)
 	if not target or (target - root.Position).Magnitude < REACHED then
 		board.Enabled = false

@@ -147,6 +147,15 @@ function HatchService:PlaceEgg(player: Player, uid: string, position: Vector3?):
 	})
 	S.AnalyticsService:Custom(player, "EggPlaced", 1, { Rarity = egg.Rarity })
 	changed(player)
+	-- Tutorial: the first egg opens by itself when it's ready (StateService), so wake the
+	-- state up then.
+	if data.Stats.Hatches == 0 and not data.Flags.TutorialDone then
+		task.delay(seconds + 0.3, function()
+			if player.Parent then
+				S.StateService:Mark(player)
+			end
+		end)
+	end
 	if Eggs.order(egg.Rarity) >= Eggs.order("Rare") and seconds > 0 then
 		S.OfferService:OnRareHatchStarted(player, egg.Rarity, uid)
 	end

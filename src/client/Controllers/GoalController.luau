@@ -1,8 +1,8 @@
 --!strict
 -- The three goals (server: GoalService, config: Config/Goals), shown once the tutorial is
 -- done as a slim strip under the World Cleaned bar: "GOALS 1/3  Clean 150 leaves 40/150".
--- Tap it to drop down all three (it folds back up by itself). A goal that ticks off opens
--- the list for a moment with a chime; all three give a free wheel spin and a new round.
+-- Tap it to drop down all three (it folds back up by itself). A goal that ticks off chimes
+-- and pops the strip (it never opens by itself); all three give a free wheel spin.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = script.Parent.Parent
@@ -90,7 +90,6 @@ function GoalController:Start()
 		else
 			C.HudController:Toast(`Goal done: {info.Text}!`, "Good")
 		end
-		setOpen(true, 3)
 		Ui.popFrame(strip)
 	end)
 	State.Changed:Connect(render)

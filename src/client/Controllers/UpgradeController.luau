@@ -687,7 +687,8 @@ function UpgradeController:Start()
 			hovered = nil
 		end
 	end)
-	-- Tutorial "Upgrade" step: a line under the title and the Sweep Power hex pulses.
+	-- Until your first Sweep Power level (it's FREE): a line under the title and the
+	-- Sweep Power hex pulses.
 	local tutorialHint = Ui.find(gui, "Top.Hint") :: TextLabel
 	local wasTeaching = false
 	RunService.RenderStepped:Connect(function()
@@ -698,7 +699,7 @@ function UpgradeController:Start()
 			placeTip()
 		end
 		local data = State.data
-		local teaching = data ~= nil and State.tutorialStep(data) == "Upgrade" and current == "Main"
+		local teaching = data ~= nil and (data.Upgrades.Power or 0) < 1 and current == "Main"
 		tutorialHint.Visible = teaching
 		local root = nodes[Upgrades.Root]
 		if teaching and root then
@@ -706,7 +707,7 @@ function UpgradeController:Start()
 			local pad = Ui.gamepad()
 			tutorialHint.Text = if selected == Upgrades.Root
 				then (if pad then "Press A again to buy!" elseif touch then "Tap it again to buy!" else "Click it again to buy!")
-				else (if pad then "Press A twice on Sweep Power to buy it!" elseif touch then "Double-tap Sweep Power to buy it!" else "Double-click Sweep Power to buy it!")
+				else (if pad then "Press A twice on Sweep Power. It's FREE!" elseif touch then "Double-tap Sweep Power. It's FREE!" else "Double-click Sweep Power. It's FREE!")
 			local k = 1 + math.abs(math.sin(os.clock() * 4)) * 0.08
 			root.Size = UDim2.fromOffset(nodeSize.X.Offset * k, nodeSize.Y.Offset * k)
 			;(root:FindFirstChild("Glow") :: Frame).Visible = true
