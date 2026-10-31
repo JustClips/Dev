@@ -82,18 +82,10 @@ function Tools.vehicle(id: string): VehicleDef?
 	return Tools.VehicleById[id]
 end
 
--- Owning a car lets you drive every cheaper car too, like the tool ladder (Dev, 2026-10-31).
+-- Only cars you bought (or unlocked) count: buying one does NOT unlock the cheaper ones
+-- (Dev, 2026-10-31).
 function Tools.hasVehicle(vehicles: { [string]: boolean }, id: string): boolean
-	local def = Tools.VehicleById[id]
-	if not def then
-		return false
-	end
-	for _, v in Vehicles do
-		if v.Order >= def.Order and vehicles[v.Id] == true then
-			return true
-		end
-	end
-	return false
+	return vehicles[id] == true
 end
 
 return Tools

@@ -141,7 +141,6 @@ end
 local function carRows(data)
 	for i, car in Tools.Vehicles do
 		local row = newRow(i, car.Id)
-		-- Owning a car unlocks every cheaper one (Tools.hasVehicle).
 		local owned = Tools.hasVehicle(data.Vehicles, car.Id)
 		local rented = not owned and data.RentedVehicle == car.Id
 		local locked = not owned and not rented and data.Rebirths < car.RequiredRebirths

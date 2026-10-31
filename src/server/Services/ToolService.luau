@@ -546,7 +546,7 @@ local function buyVehicle(player: Player, id: string): (boolean, string)
 	data.Vehicles[def.Id] = true
 	data.EquippedVehicle = nil -- a new car goes straight to slot 2
 	S.StateService:Mark(player)
-	return true, `Got the {def.Name}! Spawn it here or from your car slot.`
+	return true, `Got the {def.Name}! It is equipped: spawn it here or from slot 2.`
 end
 
 -- Robux "unlock": owned until rebirth, same as buying it with cash.
