@@ -13344,6 +13344,7 @@ Assets.Images = {
 	Icon_Weather_Thunderstorm = "rbxassetid://128033834924846",
 	Icon_Weather_Windy = "rbxassetid://121278465483092",
 	Icon_Zones = "rbxassetid://122184194125026",
+	LoadingLeaf = "rbxassetid://135411021365470",
 	Logo = "rbxassetid://92781049153174",
 	Music = "rbxassetid://140114126139572",
 	PetSkin_AlleyCat_Bloodlit = "rbxassetid://96511459816810",

@@ -291,10 +291,13 @@ local function processReceipt(info): Enum.ProductPurchaseDecision
 	S.StateService:Mark(recipient)
 	S.AnalyticsService:Custom(buyer, "RobuxPurchase", product.Price, { Product = product.Key, Gift = tostring(recipient ~= buyer) })
 	S.AnalyticsService:Purchased(buyer, product.Key, product.Price, product.Kind == "WheelSpins")
+	-- The purchase celebration (PurchaseController): instant "you got it" feedback.
 	if recipient ~= buyer then
-		notify(recipient, `{buyer.DisplayName} gifted you {product.Name}!`)
-		notify(buyer, `Gift sent to {recipient.DisplayName}!`)
+		Net.fire("Purchased", recipient, product.Key, { From = buyer.DisplayName })
+		Net.fire("Purchased", buyer, product.Key, { To = recipient.DisplayName })
 		S.DataService:SaveNow(recipient)
+	else
+		Net.fire("Purchased", buyer, product.Key, {})
 	end
 	if S.DataService:SaveNow(buyer) then
 		return Enum.ProductPurchaseDecision.PurchaseGranted
@@ -457,7 +460,7 @@ function ShopService:Start()
 		if purchased and pass and data then
 			data.Gamepasses[pass.Key] = true
 			applyPassEffects(player)
-			notify(player, `{pass.Name} is yours!`)
+			Net.fire("Purchased", player, pass.Key, {})
 			S.AnalyticsService:Custom(player, "GamepassPurchase", pass.Price, { Pass = pass.Key })
 			S.AnalyticsService:Purchased(player, pass.Key, pass.Price)
 		elseif not purchased and pass then

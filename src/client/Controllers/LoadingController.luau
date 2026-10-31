@@ -6,10 +6,14 @@
 -- Dev (2026-10-30): it took too long. Models and props get MODELS_MAX / PROPS_MAX at most
 -- (they keep streaming in behind the game), UI images preload in the background after the
 -- screen is gone, and a Skip button shows after SKIP_AFTER seconds.
+-- Look (remade 2026-10-31, Dev: "make it better"): sky gradient with scrolling studs, autumn
+-- leaves drifting down, the logo bobbing, a light sweep over the bar and a broom riding the
+-- end of the fill. Root is a TextButton so clicks never reach the HUD behind it.
 local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -25,13 +29,21 @@ local MODELS_MAX = 6
 local PROPS_MAX = 4
 local SKIP_AFTER = 2
 local TIPS = {
-	"Tip: bigger tools sweep wider and hold more leaves.",
-	"Tip: dump your trash into the green bins by the market to get cash.",
-	"Tip: carry eggs to the pet park on your base.",
-	"Tip: pets on your base earn cash even while you sweep.",
-	"Tip: buy a car in Gear and drive it from hotbar slot 2.",
-	"Tip: open Upgrades for Running Shoes, Egg Luck and more.",
-	"Tip: rebirth to earn a permanent cash multiplier.",
+	"Bigger tools sweep wider and hold more leaves.",
+	"Dump your trash into the green bins by the market to get cash.",
+	"Carry eggs to the pet park on your base.",
+	"Pets on your base earn cash even while you sweep.",
+	"Buy a car in Gear and drive it from hotbar slot 2.",
+	"Open Upgrades for Running Shoes, Egg Luck and more.",
+	"Rebirth to earn a permanent cash multiplier.",
+}
+
+local LEAF_COLORS = {
+	Color3.fromRGB(255, 140, 40),
+	Color3.fromRGB(235, 80, 50),
+	Color3.fromRGB(255, 200, 60),
+	Color3.fromRGB(190, 110, 40),
+	Color3.fromRGB(140, 200, 70),
 }
 
 local LoadingController = {}
@@ -50,12 +62,18 @@ end
 
 local function setProgress(fraction: number, status: string)
 	local fill = find("Root.Center.Bar.Track.Fill") :: Frame?
+	local rider = find("Root.Center.Bar.Rider") :: ImageLabel?
 	local percent = find("Root.Center.Bar.Percent") :: TextLabel?
 	local label = find("Root.Center.Status") :: TextLabel?
 	fraction = math.clamp(fraction, 0.02, 1)
 	if fill then
 		TweenService:Create(fill, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
 			Size = UDim2.fromScale(fraction, 1),
+		}):Play()
+	end
+	if rider then
+		TweenService:Create(rider, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+			Position = UDim2.new(fraction, 0, 0.5, -8),
 		}):Play()
 	end
 	if percent then
@@ -111,15 +129,25 @@ local function preloadImages(deadline: number, from: number, to: number)
 end
 
 local function fadeOut()
-	local root = find("Root") :: Frame?
+	local root = find("Root") :: GuiObject?
 	if not gui or not root then
 		return
 	end
 	local info = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	-- Clicks go through again as soon as it starts to fade.
+	if root:IsA("GuiButton") then
+		root.Active = false
+	end
+	local scale = find("Root.Center.AutoScale") :: UIScale?
+	if scale then
+		TweenService:Create(scale, info, { Scale = scale.Scale * 1.15 }):Play()
+	end
 	TweenService:Create(root, info, { BackgroundTransparency = 1 }):Play()
 	for _, d in root:GetDescendants() do
 		if d:IsA("TextLabel") then
 			TweenService:Create(d, info, { TextTransparency = 1 }):Play()
+		elseif d:IsA("GuiButton") then
+			TweenService:Create(d, info, { BackgroundTransparency = 1 }):Play()
 		elseif d:IsA("ImageLabel") then
 			TweenService:Create(d, info, { ImageTransparency = 1 }):Play()
 		elseif d:IsA("Frame") then
@@ -221,13 +249,96 @@ local function offerSkip()
 end
 
 local function cycleTips()
-	local tip = find("Root.Center.Tip") :: TextLabel?
+	local tip = find("Root.Center.TipCard.Tip") :: TextLabel?
 	local i = math.random(#TIPS)
 	while not done and tip and tip.Parent do
 		tip.Text = TIPS[i]
 		i = i % #TIPS + 1
 		task.wait(3.5)
 	end
+end
+
+-- Leaves drifting down across the screen, swaying and spinning.
+local function spawnLeaves()
+	local layer = find("Root.Leaves") :: Frame?
+	if not layer then
+		return
+	end
+	local leaves = {}
+	for _ = 1, 18 do
+		local size = math.random(34, 70)
+		local leaf = Instance.new("ImageLabel")
+		leaf.BackgroundTransparency = 1
+		leaf.AnchorPoint = Vector2.new(0.5, 0.5)
+		leaf.Size = UDim2.fromOffset(size, size)
+		leaf.Image = Assets.Images.LoadingLeaf or ""
+		leaf.ImageColor3 = LEAF_COLORS[math.random(#LEAF_COLORS)]
+		leaf.ImageTransparency = 0.1
+		leaf.ZIndex = 2
+		leaf.Parent = layer
+		table.insert(leaves, {
+			image = leaf,
+			x = math.random(),
+			y = math.random() * 1.2 - 0.2,
+			fall = 0.035 + math.random() * 0.05,
+			sway = math.random() * 6,
+			spin = math.random(-60, 60),
+			rot = math.random(0, 360),
+		})
+	end
+	return leaves
+end
+
+local function animate()
+	local leaves = spawnLeaves() or {}
+	local studs = find("Root.Studs") :: ImageLabel?
+	local logo = find("Root.Center.Logo") :: ImageLabel?
+	local shine = find("Root.Center.Bar.Track.Fill.Sweep.Shine") :: UIGradient?
+	local rider = find("Root.Center.Bar.Rider") :: ImageLabel?
+	local still = Ui.reducedMotion()
+	if logo then
+		-- Pop in.
+		local size = logo.Size
+		logo.Size = UDim2.fromOffset(size.X.Offset * 0.6, size.Y.Offset * 0.6)
+		TweenService:Create(logo, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = size }):Play()
+	end
+	local start = os.clock()
+	local connection
+	connection = RunService.RenderStepped:Connect(function(dt)
+		if not gui or not gui.Parent then
+			connection:Disconnect()
+			return
+		end
+		local t = os.clock() - start
+		if shine then
+			shine.Offset = Vector2.new(((t * 0.7) % 2) - 1, 0)
+		end
+		if still then
+			return
+		end
+		if studs then
+			local o = (t * 24) % 96
+			studs.Position = UDim2.fromOffset(-o, -o)
+		end
+		if logo then
+			logo.Position = UDim2.new(0.5, 0, 0, math.sin(t * 2) * 8)
+			logo.Rotation = math.sin(t * 1.3) * 1.5
+		end
+		if rider then
+			rider.Rotation = -20 + math.sin(t * 10) * 15
+		end
+		for _, leaf in leaves do
+			leaf.y += leaf.fall * dt * 2
+			if leaf.y > 1.1 then
+				leaf.y = -0.1
+				leaf.x = math.random()
+			end
+			leaf.rot += leaf.spin * dt
+			local sway = math.sin(t * 1.5 + leaf.sway) * 0.03
+			leaf.image.Position = UDim2.fromScale(leaf.x + sway, leaf.y)
+			leaf.image.Rotation = leaf.rot + math.sin(t * 2 + leaf.sway) * 25
+		end
+	end)
 end
 
 function LoadingController:IsDone(): boolean
@@ -241,6 +352,12 @@ function LoadingController:Init()
 		return
 	end
 	local screen = template:Clone() :: ScreenGui
+	-- LiveSync keeps removed children: drop an old Frame "Root" from before the remake.
+	for _, child in screen:GetChildren() do
+		if child.Name == "Root" and not child:IsA("TextButton") then
+			child:Destroy()
+		end
+	end
 	screen.Name = "LoadingScreen"
 	screen.ResetOnSpawn = false
 	screen.Enabled = true
@@ -260,6 +377,7 @@ function LoadingController:Start()
 		return
 	end
 	task.spawn(cycleTips)
+	task.spawn(animate)
 	task.spawn(offerSkip)
 	local ok, err = pcall(run)
 	if not ok then

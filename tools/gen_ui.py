@@ -885,7 +885,7 @@ def shop():
         text("Label", "Money", U(1, 10, 0, 18), U(0.5, 0, 1, 0), (0.5, 1), ts=18, display=True, stroke=3, ZIndex=4,
              TextScaled=True, children=[fit(18)]),
     ])
-    # 7 x 60 + 6 x 2 = 432: all seven fit beside the 440 px list.
+    # 6 x 60 + 5 x 2 = 370: all six fit beside the 440 px list.
     nav = frame("Nav", U(0, SHOP_NAV_W, 1, -80), U(0, W + 4, 0, 76), children=[vlist(2), nav_button])
 
     gift_row = button("Template", U(1, -10, 0, 46), color=HEADER, label="Player", ts=18, stroke=3, Visible=False)
@@ -2013,26 +2013,54 @@ def upgrades():
 
 # ---------------------------------------------------------------- Loading
 def loading():
-    root = frame("Root", U(1, 0, 1, 0), bg=BG, children=[
-        node("Studs", "ImageLabel", base(U(1, 0, 1, 0), BackgroundTransparency=1, Image=img("Stud"), ScaleType="Tile",
-                                        TileSize=U(0, 96, 0, 96), ImageColor3="#2A3260", ImageTransparency=0.55, ZIndex=0)),
-        frame("Center", U(0, 560, 0, 470), U(0.5, 0, 0.5, 0), (0.5, 0.5), children=[
+    """Loading screen, remade 2026-10-31 (Dev: "make it better", and clicks went through to
+    the HUD behind it). Root is a full-screen TextButton so nothing behind it can be
+    clicked. Sky-to-grass gradient with slowly scrolling studs, autumn leaves drifting down
+    (LoadingController spawns them in Leaves), the logo bobbing, a chunky stud progress
+    bar with a light sweep and a broom riding the end of the fill, the status line, a TIP
+    card and a Skip button."""
+    root = node("Root", "TextButton", base(U(1, 0, 1, 0), BackgroundColor3=WHITE, Text="", AutoButtonColor=False, Active=True,
+                                            ZIndex=1), [
+        node("Sky", "UIGradient", {"Color": {"keypoints": [[0, "#5FB8FF"], [0.6, "#A8E3FF"], [1, "#B8F07A"]]}, "Rotation": 90}),
+        node("Studs", "ImageLabel", base(U(1, 192, 1, 192), BackgroundTransparency=1, Image=img("Stud"), ScaleType="Tile",
+                                        TileSize=U(0, 96, 0, 96), ImageColor3=WHITE, ImageTransparency=0.82, ZIndex=1)),
+        frame("Leaves", U(1, 0, 1, 0), ZIndex=2, ClipsDescendants=True),
+        frame("Center", U(0, 600, 0, 500), U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=3, children=[
             autoscale(),
-            node("Logo", "ImageLabel", base(U(0, 520, 0, 300), U(0.5, 0, 0, 0), (0.5, 0), BackgroundTransparency=1,
-                                            Image=img("Logo"), ScaleType="Fit", ZIndex=2)),
-            plate("Bar", U(0, 480, 0, 46), U(0.5, 0, 0, 322), (0.5, 0), tint=SURFACE, stud=0.2, children=[
-                frame("Track", U(1, -16, 1, -16), U(0.5, 0, 0.5, 0), (0.5, 0.5), bg="#2A3260", children=[
-                    frame("Fill", U(0.02, 0, 1, 0), bg=ACCENT),
+            node("Glow", "ImageLabel", base(U(0, 640, 0, 420), U(0.5, 0, 0, 150), (0.5, 0.5), BackgroundTransparency=1,
+                                            Image=img("Glow"), ImageColor3=WHITE, ImageTransparency=0.35, ZIndex=3)),
+            node("Logo", "ImageLabel", base(U(0, 540, 0, 300), U(0.5, 0, 0, 0), (0.5, 0), BackgroundTransparency=1,
+                                            Image=img("Logo"), ScaleType="Fit", ZIndex=4)),
+            frame("Bar", U(0, 500, 0, 52), U(0.5, 0, 0, 326), (0.5, 0), bg="#1E2A16", ZIndex=4, children=[
+                border(INK, 4),
+                frame("Track", U(1, -12, 1, -12), U(0.5, 0, 0.5, 0), (0.5, 0.5), bg="#2E3D22", ZIndex=4, ClipsDescendants=True,
+                      children=[
+                    frame("Fill", U(0.02, 0, 1, 0), bg="#4CD137", ZIndex=5, children=[
+                        studs("#4CD137", 0, 40),
+                        frame("Sweep", U(1, 0, 1, 0), bg=WHITE, BackgroundTransparency=0, ZIndex=6, children=[
+                            node("Shine", "UIGradient", {"Transparency": {"keypoints": [[0, 1], [0.4, 1], [0.5, 0.45], [0.6, 1], [1, 1]]},
+                                                         "Offset": [-1, 0]}),
+                        ]),
+                    ]),
                 ]),
-                text("Percent", "0%", U(1, 0, 1, 0), ts=20, display=True, stroke=2.5, ZIndex=4),
+                icon("Rider", "Tool_Broom", 64, U(0.02, 0, 0.5, -8), (0.5, 0.5), ZIndex=8),
+                text("Percent", "0%", U(1, 0, 1, 0), ts=24, display=True, stroke=3, ZIndex=9),
             ]),
-            text("Status", "Loading...", U(1, 0, 0, 28), U(0.5, 0, 0, 380), (0.5, 0), ts=20, heavy=True, stroke=2.5),
-            text("Tip", "", U(1, 0, 0, 44), U(0.5, 0, 0, 418), (0.5, 0), ts=16, color="#C8D0E8", heavy=True),
+            text("Status", "Loading...", U(1, 0, 0, 30), U(0.5, 0, 0, 390), (0.5, 0), ts=24, display=True, stroke=3, ZIndex=4),
+            frame("TipCard", U(0, 520, 0, 50), U(0.5, 0, 0, 434), (0.5, 0), bg="#000000", BackgroundTransparency=0.55, ZIndex=4,
+                  children=[
+                frame("Chip", U(0, 56, 0, 30), U(0, 10, 0.5, 0), (0, 0.5), bg="#FFC83C", ZIndex=5, children=[
+                    border(INK, 2.5),
+                    text("Label", "TIP", U(1, 0, 1, 0), ts=18, color=INK, display=True, ZIndex=6),
+                ]),
+                text("Tip", "", U(1, -84, 1, -6), U(0, 76, 0.5, 0), (0, 0.5), ts=17, display=True, stroke=2, xa="Left", ZIndex=5,
+                     TextScaled=True, children=[fit(17)]),
+            ]),
         ]),
         # Skip (LoadingController shows it after a moment): drops you in right away.
-        frame("SkipHolder", U(0, 200, 0, 70), U(1, -24, 1, -24), (1, 1), children=[
+        frame("SkipHolder", U(0, 200, 0, 70), U(1, -24, 1, -24), (1, 1), ZIndex=5, children=[
             autoscale(),
-            button("Skip", U(1, 0, 1, 0), color=SUCCESS, label="Skip", ts=28, Visible=False, ZIndex=5),
+            button("Skip", U(1, 0, 1, 0), color=SUCCESS, label="Skip", ts=28, Visible=False, ZIndex=6),
         ]),
     ])
     tree = screen([root], order=100, enabled=False, inset=True)

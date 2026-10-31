@@ -792,6 +792,9 @@ end
 local function buildNav()
 	local template = Ui.find(nav, "NavButton") :: GuiButton
 	for i, section in SECTIONS do
+		if section.Key == "Codes" then
+			continue -- Dev: no jump button for codes (the box sits at the end)
+		end
 		local button = template:Clone()
 		button.Name = section.Key
 		button.LayoutOrder = i

@@ -739,17 +739,27 @@
         "Visible": false,
         "ZIndex": 6,
         "BackgroundTransparency": 0,
-        "BackgroundColor3": "#FF2E4D"
+        "BackgroundColor3": "#D61634"
        },
        "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0.5,
+           0
+          ]
+         }
+        },
         {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#17191E",
-          "Thickness": 2.5,
+          "Color": "#FFFFFF",
+          "Thickness": 2,
           "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "LineJoinMode": "Round"
          }
         },
         {
@@ -763,7 +773,7 @@
            ],
            [
             1,
-            2
+            0
            ]
           ],
           "Position": [
@@ -782,12 +792,12 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "!",
+          "Text": "1",
           "TextColor3": "#FFFFFF",
-          "TextSize": 20,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
-          "TextWrapped": true,
+          "TextWrapped": false,
           "ZIndex": 7,
           "FontFace": {
            "family": "rbxasset://fonts/families/Montserrat.json",
@@ -1050,17 +1060,27 @@
         "Visible": false,
         "ZIndex": 6,
         "BackgroundTransparency": 0,
-        "BackgroundColor3": "#FF2E4D"
+        "BackgroundColor3": "#D61634"
        },
        "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0.5,
+           0
+          ]
+         }
+        },
         {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#17191E",
-          "Thickness": 2.5,
+          "Color": "#FFFFFF",
+          "Thickness": 2,
           "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "LineJoinMode": "Round"
          }
         },
         {
@@ -1074,7 +1094,7 @@
            ],
            [
             1,
-            2
+            0
            ]
           ],
           "Position": [
@@ -1093,12 +1113,12 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "!",
+          "Text": "1",
           "TextColor3": "#FFFFFF",
-          "TextSize": 20,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
-          "TextWrapped": true,
+          "TextWrapped": false,
           "ZIndex": 7,
           "FontFace": {
            "family": "rbxasset://fonts/families/Montserrat.json",
@@ -1361,17 +1381,27 @@
         "Visible": false,
         "ZIndex": 6,
         "BackgroundTransparency": 0,
-        "BackgroundColor3": "#FF2E4D"
+        "BackgroundColor3": "#D61634"
        },
        "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": [
+           0.5,
+           0
+          ]
+         }
+        },
         {
          "name": "Stroke",
          "className": "UIStroke",
          "properties": {
-          "Color": "#17191E",
-          "Thickness": 2.5,
+          "Color": "#FFFFFF",
+          "Thickness": 2,
           "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
+          "LineJoinMode": "Round"
          }
         },
         {
@@ -1385,7 +1415,7 @@
            ],
            [
             1,
-            2
+            0
            ]
           ],
           "Position": [
@@ -1404,12 +1434,12 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "!",
+          "Text": "1",
           "TextColor3": "#FFFFFF",
-          "TextSize": 20,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
-          "TextWrapped": true,
+          "TextWrapped": false,
           "ZIndex": 7,
           "FontFace": {
            "family": "rbxasset://fonts/families/Montserrat.json",
