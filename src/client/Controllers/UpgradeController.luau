@@ -368,7 +368,9 @@ local function setTip(id: string?)
 				`Rebirth {def.RequiredRebirths} time{if def.RequiredRebirths == 1 then "" else "s"} to open this`
 		elseif state == "Max" then
 			info.TextColor3 = GOLD_TEXT
-			info.Text = `Bought!  {Upgrades.describe(def, level)} {Upgrades.Stats[def.Stat].Name}`
+			-- The whole tree's bonus for this stat, not just this hex (Dev, 2026-10-31).
+			local total = Upgrades.describeStat(def.Stat, Upgrades.treeStat(data.Upgrades, def.Stat))
+			info.Text = `Bought!  Total {total} {Upgrades.Stats[def.Stat].Name}`
 		elseif wait then
 			info.TextColor3 = RED
 			info.Text =
@@ -377,7 +379,11 @@ local function setTip(id: string?)
 			local stat = Upgrades.Stats[def.Stat]
 			local after = Upgrades.describe(def, level + 1)
 			if def.MaxLevel == 1 then
-				info.Text = `{after} {stat.Name}  ·  {Format.cash(price(def, data))}`
+				-- Total for the stat now > after buying this hex (Dev: show totals, not +30 +30).
+				local now = Upgrades.treeStat(data.Upgrades, def.Stat)
+				local nextTotal = now + Upgrades.bonus(def, level + 1) - Upgrades.bonus(def, level)
+				info.Text =
+					`{stat.Name}: {Upgrades.describeStat(def.Stat, now)} > {Upgrades.describeStat(def.Stat, nextTotal)}`
 			else
 				info.Text = `Lv {levelText(def, level)}  ·  {Upgrades.describe(def, level)} > {after} {stat.Name}`
 			end
