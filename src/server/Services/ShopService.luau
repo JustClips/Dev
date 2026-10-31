@@ -34,7 +34,7 @@ local function nextGoalPrice(data): number
 		return Tools.get(data.ToolTier + 1).Price
 	end
 	for _, car in Tools.Vehicles do
-		if not data.Vehicles[car.Id] and data.Rebirths >= car.RequiredRebirths then
+		if not Tools.hasVehicle(data.Vehicles, car.Id) and data.Rebirths >= car.RequiredRebirths then
 			return car.Price
 		end
 	end

@@ -141,23 +141,32 @@ end
 local function carRows(data)
 	for i, car in Tools.Vehicles do
 		local row = newRow(i, car.Id)
-		local owned = data.Vehicles[car.Id] == true
-		local rented = data.RentedVehicle == car.Id
+		-- Owning a car unlocks every cheaper one (Tools.hasVehicle).
+		local owned = Tools.hasVehicle(data.Vehicles, car.Id)
+		local rented = not owned and data.RentedVehicle == car.Id
 		local locked = not owned and not rented and data.Rebirths < car.RequiredRebirths
 		;(row:FindFirstChild("Name") :: TextLabel).Text = car.Name
 		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.carIcon(car.Id)
 		-- Your best hand tool powers the car's brush too (Tools.carBoost).
 		setStats(row, car.Radius, math.floor(car.Power * Tools.carBoost(data.ToolTier)), car.Capacity)
 		if owned or rented then
-			setStatus(row, if owned then "OWNED" else "RENTED", if owned then GREEN else ORANGE)
-			setMain(row, "Spawn", BLUE, function()
-				local ok, message = Net.func("SpawnVehicle"):InvokeServer(car.Id)
-				if ok then
-					Ui.close("Garage")
-				else
-					toast(false, message)
-				end
-			end)
+			-- Equip picks the car slot 2 spawns; the equipped one spawns right here.
+			local equipped = data.BestVehicle == car.Id
+			setStatus(row, if equipped then "EQUIPPED" elseif owned then "OWNED" else "RENTED", if equipped then BLUE elseif owned then GREEN else ORANGE)
+			if equipped then
+				setMain(row, "Spawn", GREEN, function()
+					local ok, message = Net.func("SpawnVehicle"):InvokeServer(car.Id)
+					if ok then
+						Ui.close("Garage")
+					else
+						toast(false, message)
+					end
+				end)
+			else
+				setMain(row, "Equip", BLUE, function()
+					toast(Net.func("EquipVehicle"):InvokeServer(car.Id))
+				end)
+			end
 		elseif locked then
 			setStatus(row, `REBIRTH {car.RequiredRebirths}`, GREY)
 			setMain(row, Format.cash(car.Price), GREY, function()
@@ -191,11 +200,19 @@ local function render(keepScroll: boolean?)
 	end
 	tabTools.BackgroundTransparency = if tab == "Tools" then 0 else 0.45
 	tabCars.BackgroundTransparency = if tab == "Cars" then 0 else 0.45
+	-- How much your best tool powers your cars (Tools.carBoost), shown on both tabs.
+	local boost = math.floor((Tools.carBoost(data.ToolTier) - 1) * 100 + 0.5)
+	local fromName = Tools.get(Tools.CarBoost.FromTier + 1).Name
+	local perTier = math.floor(Tools.CarBoost.PerTier * 100 + 0.5)
 	if tab == "Tools" then
-		hint.Text = "Better tools sweep wider, faster and hold more leaves."
+		hint.Text = if boost > 0
+			then `Your tool sets your bag on foot. It also boosts every car's Power +{boost}% (+{perTier}% per tool).`
+			else `Your tool sets your bag on foot. From the {fromName} up, each tool boosts cars +{perTier}%.`
 		toolRows(data)
 	else
-		hint.Text = "Cars sweep a huge area and hold more. Spawn one here or from slot 2."
+		hint.Text = if boost > 0
+			then `Your {Tools.get(data.ToolTier).Name} boosts car Power +{boost}% (shown). Equip a car, then spawn it here or from slot 2.`
+			else `Equip a car, then spawn it here or from slot 2. From the {fromName} up, tools boost cars +{perTier}%.`
 		carRows(data)
 	end
 	if keepScroll then
@@ -271,7 +288,7 @@ function GarageController:Start()
 	end)
 	local lastSignature = ""
 	State.Changed:Connect(function(data)
-		local parts = { tostring(data.RentedVehicle), tostring(data.ToolTier), tostring(data.EffectiveTier) }
+		local parts = { tostring(data.RentedVehicle), tostring(data.BestVehicle), tostring(data.ToolTier), tostring(data.EffectiveTier) }
 		for _, tool in Tools.List do
 			table.insert(parts, tostring(BigNum.gte(data.Cash, tool.Price)))
 		end

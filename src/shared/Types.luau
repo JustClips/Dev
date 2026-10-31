@@ -246,6 +246,7 @@ export type ProfileData = {
 	BackpackValue: number,
 	ToolTier: number,
 	EquippedTool: number?, -- picked in the Tools menu (nil = the best you own)
+	EquippedVehicle: string?, -- picked in the Cars tab (nil = the best you can drive)
 	OwnedTools: { [number]: boolean },
 	Vehicles: { [string]: boolean },
 	Upgrades: { [string]: number },
@@ -283,7 +284,7 @@ export type PlayerSnapshot = {
 	EffectiveTier: number,
 	Vehicles: { [string]: boolean },
 	RentedVehicle: string?,
-	BestVehicle: string?,
+	BestVehicle: string?, -- the car slot 2 spawns (your equipped car)
 	InVehicle: boolean,
 	Upgrades: { [string]: number },
 	WalkSpeed: number,

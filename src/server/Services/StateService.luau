@@ -109,7 +109,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 	end
 	local data = session.Data
 	local runtime = session.Runtime
-	local bestCar = S.ToolService:GetBestVehicle(player)
+	local bestCar = S.ToolService:GetEquippedVehicle(player)
 	-- Inventory tables only go out when they changed since the last snapshot (or when the
 	-- client asks for everything with GetState).
 	local invVersion = S.InventoryService:GetVersion(player)

@@ -38,7 +38,7 @@ function ToolService:OwnsVehicle(player: Player, id: string): boolean
 	if not session then
 		return false
 	end
-	return session.Data.Vehicles[id] == true or session.Runtime.RentedVehicle == id
+	return Tools.hasVehicle(session.Data.Vehicles, id) or session.Runtime.RentedVehicle == id
 end
 
 -- Best car you can drive (owned or rented), or nil.
@@ -52,10 +52,24 @@ function ToolService:GetBestVehicle(player: Player)
 	return best
 end
 
+-- The car slot 2 spawns: the one picked in the Cars tab, else your best.
+function ToolService:GetEquippedVehicle(player: Player)
+	local data = S.DataService:GetData(player)
+	local picked = data and data.EquippedVehicle
+	if type(picked) == "string" and ToolService:OwnsVehicle(player, picked) then
+		return Tools.vehicle(picked)
+	end
+	return ToolService:GetBestVehicle(player)
+end
+
+-- Bag size: your equipped hand tool on foot, the car you're driving while in it
+-- (Dev, 2026-10-31: switching tools has to change the bag). Leaves over the limit
+-- after you get out stay in the bag; you just can't pick up more until you sell.
 function ToolService:GetCapacity(player: Player): number
 	local data = S.DataService:GetData(player)
 	local capacity = Tools.get(ToolService:GetEffectiveTier(player)).Capacity
-	local car = ToolService:GetBestVehicle(player)
+	local session = S.DataService:GetSession(player)
+	local car = session and ToolService:IsInVehicle(player) and Tools.vehicle(session.Runtime.VehicleId or "")
 	if car then
 		capacity = math.max(capacity, car.Capacity)
 	end
@@ -446,7 +460,7 @@ local function spawnVehicle(player: Player, id: string?): (boolean, string?)
 	if not session or not humanoid or not root or humanoid.Health <= 0 then
 		return false, "Not ready"
 	end
-	local def = if id then Tools.vehicle(id) else ToolService:GetBestVehicle(player)
+	local def = if id then Tools.vehicle(id) else ToolService:GetEquippedVehicle(player)
 	if not def then
 		return false, "Buy a car in Gear first!"
 	end
@@ -520,8 +534,8 @@ local function buyVehicle(player: Player, id: string): (boolean, string)
 	if not data or not def then
 		return false, "Unknown car"
 	end
-	if data.Vehicles[def.Id] then
-		return false, "You already own it"
+	if Tools.hasVehicle(data.Vehicles, def.Id) then
+		return false, "You already have it"
 	end
 	if data.Rebirths < def.RequiredRebirths then
 		return false, `Rebirth {def.RequiredRebirths} needed for the {def.Name}`
@@ -530,6 +544,7 @@ local function buyVehicle(player: Player, id: string): (boolean, string)
 		return false, `Need {Format.cash(def.Price)}`
 	end
 	data.Vehicles[def.Id] = true
+	data.EquippedVehicle = nil -- a new car goes straight to slot 2
 	S.StateService:Mark(player)
 	return true, `Got the {def.Name}! Spawn it here or from your car slot.`
 end
@@ -538,10 +553,11 @@ end
 function ToolService:GrantVehicle(player: Player, id: string): boolean
 	local data = S.DataService:GetData(player)
 	local def = Tools.vehicle(id)
-	if not data or not def or data.Vehicles[id] then
+	if not data or not def or Tools.hasVehicle(data.Vehicles, id) then
 		return false
 	end
 	data.Vehicles[id] = true
+	data.EquippedVehicle = nil
 	S.StateService:Mark(player)
 	return true
 end
@@ -585,6 +601,7 @@ function ToolService:ResetForRebirth(player: Player)
 	end
 	session.Runtime.RentedVehicle = nil
 	session.Data.Vehicles = {}
+	session.Data.EquippedVehicle = nil
 	destroyVehicle(player)
 	ToolService:SetTier(player, 1)
 end
@@ -646,6 +663,24 @@ function ToolService:Init(services)
 			return true, nil
 		end
 		return spawnVehicle(player, nil)
+	end)
+	-- Cars tab: pick which car slot 2 spawns. Swaps the car you're driving right away.
+	Net.onInvoke("EquipVehicle", function(player, id)
+		local session = S.DataService:GetSession(player)
+		local def = if type(id) == "string" then Tools.vehicle(id) else nil
+		if not session or not def then
+			return false, "Unknown car"
+		end
+		if not ToolService:OwnsVehicle(player, def.Id) then
+			return false, `You don't own the {def.Name}`
+		end
+		local best = ToolService:GetBestVehicle(player)
+		session.Data.EquippedVehicle = if best and best.Id == def.Id then nil else def.Id
+		if ToolService:IsInVehicle(player) and session.Runtime.VehicleId ~= def.Id then
+			spawnVehicle(player, def.Id)
+		end
+		S.StateService:Mark(player)
+		return true, `{def.Name} equipped`
 	end)
 	Net.onInvoke("SpawnVehicle", function(player, id)
 		if type(id) ~= "string" then

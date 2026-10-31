@@ -58,6 +58,7 @@ local FUNCTIONS: { [string]: number } = {
 	PromptPurchase = 4, -- (productKey, giftToUserId?) -> ok, message
 	ToggleVehicle = 3,
 	SpawnVehicle = 3, -- (vehicleId) -> ok, message: spawn at your feet
+	EquipVehicle = 4, -- (vehicleId) -> ok, message: pick the car slot 2 spawns
 	BuyVehicle = 4, -- (vehicleId) -> ok, message
 	BuyUpgrade = 6, -- (upgradeId) -> ok, message
 	EquipTool = 4,
