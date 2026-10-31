@@ -444,6 +444,50 @@ local function fieldEdges()
 	glow(model, "Edge", Vector3.new(f.Max.X - f.Min.X, 0.16, 0.35), CFrame.new(0, y, f.Max.Y), WOOD_DARK)
 end
 
+-- Market stall frame (Pet Trader and Quest Master): four posts, a beam along each side
+-- from the front post to the back post, and an 8-stripe awning resting on the beams. The
+-- awning tilts down toward the customer (-Z) and ends at the posts, so nothing pokes out
+-- the back, and every post reaches the beam above it (Dev, 2026-10-31). cf = where the
+-- NPC stands, facing -Z.
+local STALL_TILT = math.rad(-8)
+local STALL_FRONT, STALL_BACK = -3.4, 1.8 -- post rows (z)
+local STALL_MID = (STALL_FRONT + STALL_BACK) / 2
+local STALL_DEPTH = STALL_BACK - STALL_FRONT + 0.5 -- to the posts' outer faces
+local AWNING_Y = 8.3 -- awning centre (y) at STALL_MID
+
+-- Height of the awning's top face (relative to cf) at depth z.
+local function awningTop(z: number): number
+	return AWNING_Y + 0.125 - (z - STALL_MID) * math.sin(STALL_TILT)
+end
+
+local function stallFrame(model: Instance, cf: CFrame, stripeA: Color3, stripeB: Color3)
+	local tilt = CFrame.Angles(STALL_TILT, 0, 0)
+	local beamY = AWNING_Y - 0.125 - 0.2 -- beam centre, right under the awning
+	for _, x in { -3.6, 3.6 } do
+		block(model, "Beam", Vector3.new(0.5, 0.4, STALL_DEPTH), cf * CFrame.new(x, beamY, STALL_MID) * tilt, WOOD_DARK, M.Wood)
+		for _, z in { STALL_FRONT, STALL_BACK } do
+			-- Up to the middle of the beam above (it's higher at the back).
+			local top = beamY - (z - STALL_MID) * math.sin(STALL_TILT)
+			block(model, "Post", Vector3.new(0.5, top, 0.5), cf * CFrame.new(x, top / 2, z), WOOD_DARK, M.Wood)
+		end
+	end
+	for k = 0, 7 do
+		block(model, "Awning", Vector3.new(1, 0.25, STALL_DEPTH), cf * CFrame.new(-3.5 + k, AWNING_Y, STALL_MID) * tilt,
+			if k % 2 == 0 then stripeA else stripeB, nil, { CanCollide = false })
+	end
+end
+
+-- Two legs behind a stall's sign, standing on the awning (not hanging under it).
+local function stallSignLegs(model: Instance, cf: CFrame)
+	local z = 0.12 -- touching the back of the sign board
+	local bottom = awningTop(z) - 0.05
+	local top = 10.6
+	for _, x in { -2.8, 2.8 } do
+		block(model, "SignLeg", Vector3.new(0.45, top - bottom, 0.45), cf * CFrame.new(x, (top + bottom) / 2, z), WOOD_DARK, M.Wood,
+			{ CanCollide = false })
+	end
+end
+
 -- The Pet Trader's market stall (the NPC itself is TraderService's): a counter in front,
 -- four posts with a green and white striped awning, and a sign on top. cf = where the NPC
 -- stands, facing the customer (-Z).
@@ -452,24 +496,12 @@ local function traderStall(parent: Instance, cf: CFrame)
 	local green = Color3.fromRGB(74, 164, 82)
 	block(model, "Counter", Vector3.new(7, 3, 1.8), cf * CFrame.new(0, 1.5, -2.4), WOOD, M.WoodPlanks)
 	block(model, "CounterTop", Vector3.new(7.6, 0.3, 2.3), cf * CFrame.new(0, 3.15, -2.4), green)
-	for _, x in { -3.6, 3.6 } do
-		for _, z in { -3.4, 1.8 } do
-			block(model, "Post", Vector3.new(0.5, 8, 0.5), cf * CFrame.new(x, 4, z), WOOD_DARK, M.Wood)
-		end
-	end
-	-- Striped awning, tilted down toward the customer.
-	for k = 0, 7 do
-		local x = -3.95 + k * 1.13 + 0.565
-		block(model, "Awning", Vector3.new(1.13, 0.25, 6.2), cf * CFrame.new(x, 8.3, -0.8) * CFrame.Angles(math.rad(-8), 0, 0),
-			if k % 2 == 0 then green else WHITE, nil, { CanCollide = false })
-	end
+	stallFrame(model, cf, green, WHITE)
 	-- The sign sits on the awning with two wooden legs behind it, so from the base side (its
 	-- blank back) it reads as part of the stall, not a board floating in the air (Dev,
 	-- 2026-10-31).
 	sign(model, "TraderSign", cf * CFrame.new(0, 9.75, -0.4), 8, 2.2, Color3.fromRGB(255, 200, 60), "PET TRADER", "Sell your pets")
-	for _, x in { -2.8, 2.8 } do
-		block(model, "SignLeg", Vector3.new(0.45, 3.2, 0.45), cf * CFrame.new(x, 9.3, 0.15), WOOD_DARK, M.Wood, { CanCollide = false })
-	end
+	stallSignLegs(model, cf)
 end
 
 -- The Quest Master's stall on the left of every base (the NPC is QuestService's): the
@@ -482,24 +514,13 @@ local function questStall(parent: Instance, cf: CFrame)
 	local paper = Color3.fromRGB(250, 240, 210)
 	block(model, "Counter", Vector3.new(7, 3, 1.8), cf * CFrame.new(0, 1.5, -2.4), WOOD, M.WoodPlanks)
 	block(model, "CounterTop", Vector3.new(7.6, 0.3, 2.3), cf * CFrame.new(0, 3.15, -2.4), blue)
-	for _, x in { -3.6, 3.6 } do
-		for _, z in { -3.4, 1.8 } do
-			block(model, "Post", Vector3.new(0.5, 8, 0.5), cf * CFrame.new(x, 4, z), WOOD_DARK, M.Wood)
-		end
-	end
-	for k = 0, 7 do
-		local x = -3.95 + k * 1.13 + 0.565
-		block(model, "Awning", Vector3.new(1.13, 0.25, 6.2), cf * CFrame.new(x, 8.3, -0.8) * CFrame.Angles(math.rad(-8), 0, 0),
-			if k % 2 == 0 then blue else yellow, nil, { CanCollide = false })
-	end
+	stallFrame(model, cf, blue, yellow)
 	-- Like the trader's: the sign rests on the awning with two legs, not floating.
 	sign(model, "QuestSign", cf * CFrame.new(0, 9.75, -0.4), 8, 2.2, Color3.fromRGB(110, 190, 255), "QUESTS", "Jobs and rewards")
-	for _, x in { -2.8, 2.8 } do
-		block(model, "SignLeg", Vector3.new(0.45, 3.2, 0.45), cf * CFrame.new(x, 9.3, 0.15), WOOD_DARK, M.Wood, { CanCollide = false })
-	end
+	stallSignLegs(model, cf)
 	-- Notice board behind him, pinned with job notes.
 	local boardCf = cf * CFrame.new(0, 4.6, 1.9)
-	block(model, "Board", Vector3.new(6.4, 3.6, 0.3), boardCf, Color3.fromRGB(176, 120, 72), M.Wood, { CanCollide = false })
+	block(model, "Board", Vector3.new(6.7, 3.6, 0.3), boardCf, Color3.fromRGB(176, 120, 72), M.Wood, { CanCollide = false })
 	for i, at in { Vector2.new(-2.2, 0.8), Vector2.new(-0.6, 0.6), Vector2.new(1.2, 0.9), Vector2.new(-1.5, -0.8), Vector2.new(0.6, -0.7), Vector2.new(2.3, -0.6) } do
 		local tilt = CFrame.Angles(0, 0, math.rad(((i * 37) % 17) - 8))
 		block(model, "Note", Vector3.new(1.2, 1.4, 0.06), boardCf * CFrame.new(at.X, at.Y, -0.18) * tilt, paper, M.SmoothPlastic, { CanCollide = false })
