@@ -180,6 +180,9 @@ function MapBuilder.setupLighting()
 
 	local clouds = Workspace.Terrain:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
 	set(clouds, look.Clouds)
+	-- Roblox's own clouds stay off: the sky has drifting cartoon cloud meshes instead
+	-- (WeatherController). The object stays so the weather presets have its colour.
+	clouds.Enabled = false
 	clouds.Parent = Workspace.Terrain
 end
 

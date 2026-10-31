@@ -304,24 +304,56 @@ local function applySky(preset: Preset?)
 end
 
 -- Drifting cartoon clouds -----------------------------------------------------------------
--- Cloud1..Cloud5 (art/blender/clouds.py), scattered high over the whole map and a margin
--- around it. Positions come from server time, so every player sees the same sky. They
--- wrap around the area and fade out near its edges.
+-- Cloud1..Cloud5 (art/blender/clouds.py). A wrapping field of clouds centred on the camera:
+-- each cloud drifts with the wind, and fades by distance (solid nearby, gone by
+-- CLOUD_FADE_TO), so clouds always slide in and out of view smoothly and only ever wrap
+-- around while invisible. Positions come from a smoothed server clock, so everyone sees
+-- the same clouds, moved every frame (smoother than tweens, which also step per frame).
+-- Rain and storms (cloudStorm 0..1) roll in more, darker, lower clouds that rain, and
+-- thunderstorm lightning comes out of the cloud above the strike.
 
-local CLOUD_COUNT = 46
-local CLOUD_MARGIN = Vector2.new(700, 500)
-local CLOUD_ALTITUDE = NumberRange.new(230, 400)
-local CLOUD_FADE = 220
-type SkyCloud = { part: MeshPart, start: Vector2, speed: number, y: number, yaw: number }
+local CLOUD_COUNT = 90
+local CLOUD_CLEAR_COUNT = 55 -- clouds shown on a clear day; storms bring in the rest
+local CLOUD_TILE = 1500 -- the field wraps every this many studs around the camera
+local CLOUD_FADE_FROM, CLOUD_FADE_TO = 420, 680
+local CLOUD_ALTITUDE = NumberRange.new(150, 270)
+local CLOUD_STORM_DROP = 45 -- storm clouds hang this much lower
+type SkyCloud = {
+	part: MeshPart,
+	rainEmitter: ParticleEmitter,
+	start: Vector2,
+	speed: number,
+	y: number,
+	yaw: number,
+	index: number,
+	pos: Vector3, -- where it is now (world)
+	flash: number,
+}
 local cloudList: { SkyCloud } = {}
-local cloudMin = MAP_MIN - CLOUD_MARGIN
-local cloudSize = (MAP_MAX + CLOUD_MARGIN) - cloudMin
+local cloudStorm, cloudStormTarget = 0, 0
+local clockOffset: number? = nil
+
+-- Server time without the small jumps GetServerTimeNow makes when it re-syncs.
+local function smoothServerTime(dt: number): number
+	local server = Workspace:GetServerTimeNow()
+	local offset = server - os.clock()
+	if not clockOffset or math.abs(offset - clockOffset) > 2 then
+		clockOffset = offset
+	else
+		clockOffset += (offset - clockOffset) * math.min(1, dt * 0.2)
+	end
+	return os.clock() + (clockOffset :: number)
+end
 
 local function buildSkyClouds(): boolean
 	for i = 1, 5 do
 		if not AssetLibrary.has("Cloud" .. i) then
 			return false
 		end
+	end
+	local terrainClouds = Workspace.Terrain:FindFirstChildOfClass("Clouds")
+	if terrainClouds then
+		terrainClouds.Enabled = false -- Roblox's own clouds never show (Dev, 2026-10-31)
 	end
 	local cloudFolder = Instance.new("Folder")
 	cloudFolder.Name = "SkyClouds"
@@ -335,8 +367,7 @@ local function buildSkyClouds(): boolean
 		end
 		part.Parent = nil
 		model:Destroy()
-		local scale = seeded:NextNumber(9, 22)
-		part.Size *= scale
+		part.Size *= seeded:NextNumber(6, 15)
 		part.Anchored = true
 		part.CanCollide = false
 		part.CanQuery = false
@@ -344,40 +375,132 @@ local function buildSkyClouds(): boolean
 		part.CastShadow = false
 		part.Material = Enum.Material.SmoothPlastic
 		part.TextureID = ""
+		part.Transparency = 1
 		part.Name = "SkyCloud" .. i
+		-- Rain falling out of the cloud's underside (only while it rains).
+		local rainEmitter = Instance.new("ParticleEmitter")
+		rainEmitter.Texture = img("Vfx_Rain")
+		rainEmitter.Orientation = Enum.ParticleOrientation.FacingCameraWorldUp
+		rainEmitter.EmissionDirection = Enum.NormalId.Bottom
+		rainEmitter.Shape = Enum.ParticleEmitterShape.Box
+		rainEmitter.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+		rainEmitter.SpreadAngle = Vector2.zero
+		rainEmitter.Speed = NumberRange.new(150, 170)
+		rainEmitter.Lifetime = NumberRange.new(1.4, 1.8)
+		rainEmitter.Size = NumberSequence.new(7)
+		rainEmitter.Acceleration = WIND * 10
+		rainEmitter.Color = ColorSequence.new(rgb(190, 200, 225))
+		rainEmitter.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.15, 0.55),
+			NumberSequenceKeypoint.new(0.85, 0.6),
+			NumberSequenceKeypoint.new(1, 1),
+		})
+		rainEmitter.LightEmission = 0.2
+		rainEmitter.LightInfluence = 0.5
+		rainEmitter.Rate = 0
+		rainEmitter.Parent = part
 		part.Parent = cloudFolder
 		table.insert(skyClouds, part)
 		table.insert(cloudList, {
 			part = part,
-			start = Vector2.new(seeded:NextNumber(0, cloudSize.X), seeded:NextNumber(0, cloudSize.Y)),
-			speed = seeded:NextNumber(3, 7),
+			rainEmitter = rainEmitter,
+			start = Vector2.new(seeded:NextNumber(0, CLOUD_TILE), seeded:NextNumber(0, CLOUD_TILE)),
+			speed = seeded:NextNumber(9, 15),
 			y = seeded:NextNumber(CLOUD_ALTITUDE.Min, CLOUD_ALTITUDE.Max),
 			yaw = seeded:NextNumber(-0.5, 0.5),
+			index = i,
+			pos = Vector3.zero,
+			flash = 0,
 		})
 	end
 	tintSkyClouds(true)
 	return true
 end
 
+local function smoothstep(a: number, b: number, x: number): number
+	local t = math.clamp((x - a) / (b - a), 0, 1)
+	return t * t * (3 - 2 * t)
+end
+
 local cloudParts: { BasePart } = {}
 local cloudFrames: { CFrame } = {}
-local function updateSkyClouds()
-	local now = Workspace:GetServerTimeNow()
-	local wind = Vector2.new(WIND.X, WIND.Z)
+local function updateSkyClouds(dt: number)
+	if #cloudList == 0 then
+		return
+	end
+	cloudStorm += (cloudStormTarget - cloudStorm) * math.min(1, dt / 4)
+	local now = smoothServerTime(dt)
+	local cam = Workspace.CurrentCamera
+	if not cam then
+		return
+	end
+	local eye = cam.CFrame.Position
+	local half = CLOUD_TILE / 2
 	table.clear(cloudParts)
 	table.clear(cloudFrames)
 	for _, c in cloudList do
-		local p = c.start + wind * (c.speed * now)
-		local x, z = p.X % cloudSize.X, p.Y % cloudSize.Y
-		local edge = math.min(x, cloudSize.X - x, z, cloudSize.Y - z)
-		local fade = math.clamp(1 - edge / CLOUD_FADE, 0, 1)
-		if c.part.Transparency ~= fade then
-			c.part.Transparency = fade
+		-- Clouds past the clear-day count fade in as a storm rolls in.
+		local extra = if c.index > CLOUD_CLEAR_COUNT
+			then smoothstep(0, 1, cloudStorm * 1.6 - (c.index - CLOUD_CLEAR_COUNT) / (CLOUD_COUNT - CLOUD_CLEAR_COUNT) * 0.6)
+			else 1
+		local travel = c.start.X + WIND.X * c.speed * now
+		local side = c.start.Y + WIND.Z * c.speed * now
+		local x = (travel - eye.X + half) % CLOUD_TILE - half + eye.X
+		local z = (side - eye.Z + half) % CLOUD_TILE - half + eye.Z
+		local y = c.y - CLOUD_STORM_DROP * cloudStorm
+		c.pos = Vector3.new(x, y, z)
+		local dist = Vector2.new(x - eye.X, z - eye.Z).Magnitude
+		local seen = (1 - smoothstep(CLOUD_FADE_FROM, CLOUD_FADE_TO, dist)) * extra
+		local transparency = 1 - seen
+		if math.abs(c.part.Transparency - transparency) > 0.004 then
+			c.part.Transparency = transparency
+		end
+		local rate = if seen > 0.3 then math.floor(cloudStorm * 30 * seen) else 0
+		if c.rainEmitter.Rate ~= rate then
+			c.rainEmitter.Rate = rate
 		end
 		table.insert(cloudParts, c.part)
-		table.insert(cloudFrames, CFrame.new(cloudMin.X + x, c.y, cloudMin.Y + z) * CFrame.Angles(0, c.yaw, 0))
+		table.insert(cloudFrames, CFrame.new(x, y, z) * CFrame.Angles(0, c.yaw, 0))
 	end
 	Workspace:BulkMoveTo(cloudParts, cloudFrames, Enum.BulkMoveMode.FireCFrameChanged)
+end
+
+-- The visible cloud closest (sideways) to a point, for lightning to come out of.
+local function cloudAbove(position: Vector3): SkyCloud?
+	local best, bestDist = nil, math.huge
+	for _, c in cloudList do
+		if c.part.Transparency < 0.5 then
+			local d = Vector2.new(c.pos.X - position.X, c.pos.Z - position.Z).Magnitude
+			if d < bestDist then
+				best, bestDist = c, d
+			end
+		end
+	end
+	return best
+end
+
+-- Lights a cloud up from inside for a lightning strike.
+local function flashCloud(c: SkyCloud)
+	local light = Instance.new("PointLight")
+	light.Color = rgb(190, 215, 255)
+	light.Range = 60
+	light.Brightness = 10
+	light.Parent = c.part
+	local base = c.part.Color
+	c.part.Color = rgb(235, 242, 255)
+	c.part.Material = Enum.Material.Neon
+	task.delay(0.08, function()
+		c.part.Material = Enum.Material.SmoothPlastic
+		task.wait(0.06)
+		c.part.Material = Enum.Material.Neon
+		task.wait(0.1)
+		c.part.Material = Enum.Material.SmoothPlastic
+		TweenService:Create(c.part, TweenInfo.new(0.5), { Color = base }):Play()
+		TweenService:Create(light, TweenInfo.new(0.5), { Brightness = 0 }):Play()
+		task.wait(0.6)
+		light:Destroy()
+	end)
 end
 
 -- Helpers ------------------------------------------------------------------------------------
@@ -697,7 +820,14 @@ end
 
 local function lightningAt(position: Vector3, hitEgg: boolean, near: boolean)
 	local floor = if hitEgg then position else groundAt(position)
+	-- Out of the cloud above the strike (its underside), else from high up.
 	local top = floor + Vector3.new(rng:NextNumber(-40, 40), 300, rng:NextNumber(-40, 40))
+	local cloud = cloudAbove(floor)
+	if cloud and Vector2.new(cloud.pos.X - floor.X, cloud.pos.Z - floor.Z).Magnitude < 260 then
+		local size = cloud.part.Size
+		top = cloud.pos + Vector3.new(rng:NextNumber(-0.25, 0.25) * size.X, -size.Y * 0.25, rng:NextNumber(-0.25, 0.25) * size.Z)
+		flashCloud(cloud)
+	end
 	lightningBolt(top, floor)
 	local dist = (floor - cameraPosition()).Magnitude
 	flash(if near then math.clamp(1.2 - dist / 600, 0.35, 1) else 0.3)
@@ -1051,8 +1181,56 @@ end
 -- layer around the camera plus a close layer that rushes past, splash crowns and ripples
 -- where drops land (meshes + a flipbook splash), and rain sheets in the distance all around
 -- so it rains over the whole map.
+local MIST = "rbxasset://textures/particles/smoke_main.dds"
+
 local function rain(scene: Scene, storm: boolean)
 	local slant = WIND * (if storm then 14 else 5)
+	-- More, darker, lower clouds roll in and rain falls out of them.
+	cloudStormTarget = if storm then 1 else 0.7
+	table.insert(scene.cleanup, function()
+		cloudStormTarget = 0
+	end)
+	-- Mist: a grey layer drifting at cloud height, and low fog over the ground.
+	local high = follower(scene, "CloudMist", Vector3.new(700, 60, 700))
+	emitter(high, {
+		Texture = MIST,
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 60), NumberSequenceKeypoint.new(1, 95) }),
+		Speed = NumberRange.new(1, 3),
+		Lifetime = NumberRange.new(9, 13),
+		Rate = if storm then 26 else 18,
+		Rotation = NumberRange.new(0, 360),
+		RotSpeed = NumberRange.new(-4, 4),
+		Acceleration = WIND * 3,
+		Color = ColorSequence.new(if storm then rgb(120, 126, 140) else rgb(170, 176, 190)),
+		Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.3, if storm then 0.55 else 0.65),
+			NumberSequenceKeypoint.new(0.7, if storm then 0.55 else 0.65),
+			NumberSequenceKeypoint.new(1, 1),
+		}),
+		LightEmission = 0,
+		LightInfluence = 1,
+	})
+	local low = follower(scene, "GroundMist", Vector3.new(320, 8, 320))
+	emitter(low, {
+		Texture = MIST,
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 26), NumberSequenceKeypoint.new(1, 40) }),
+		Speed = NumberRange.new(0.5, 2),
+		Lifetime = NumberRange.new(6, 9),
+		Rate = if storm then 30 else 22,
+		Rotation = NumberRange.new(0, 360),
+		RotSpeed = NumberRange.new(-6, 6),
+		Acceleration = WIND * 2,
+		Color = ColorSequence.new(if storm then rgb(150, 156, 170) else rgb(195, 202, 214)),
+		Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.3, 0.8),
+			NumberSequenceKeypoint.new(0.7, 0.8),
+			NumberSequenceKeypoint.new(1, 1),
+		}),
+		LightEmission = 0,
+		LightInfluence = 1,
+	})
 	local streak = {
 		Texture = img("Vfx_Rain"),
 		Orientation = Enum.ParticleOrientation.FacingCameraWorldUp,
@@ -1130,6 +1308,8 @@ local function rain(scene: Scene, storm: boolean)
 		near.CFrame = CFrame.new(Vector3.new(eye.X, floor.Y + 55, eye.Z) - slant * 0.2)
 		ground.CFrame = CFrame.new(floor + Vector3.new(0, 0.15, 0))
 		ring.CFrame = CFrame.new(Vector3.new(at.X, floor.Y, at.Z))
+		high.CFrame = CFrame.new(Vector3.new(eye.X, floor.Y + CLOUD_ALTITUDE.Min - CLOUD_STORM_DROP + 10, eye.Z))
+		low.CFrame = CFrame.new(Vector3.new(eye.X, floor.Y + 7, eye.Z))
 	end)
 end
 
@@ -1771,9 +1951,15 @@ local BUILDERS: { [string]: (Scene) -> () } = {
 		addUpdate(scene, function(_, at, floor)
 			if os.clock() > nextFlash then
 				-- Far-off lightning for the mood (the real strikes come from the server).
+				-- Strikes under a cloud a good way off, so the bolt comes out of it.
 				nextFlash = os.clock() + rng:NextNumber(3, 7)
-				local away = Vector3.new(rng:NextNumber(-1, 1), 0, rng:NextNumber(-1, 1)).Unit * rng:NextNumber(260, 480)
-				lightningAt(Vector3.new(at.X, floor.Y, at.Z) + away, false, false)
+				local away = Vector3.new(rng:NextNumber(-1, 1), 0, rng:NextNumber(-1, 1)).Unit * rng:NextNumber(220, 420)
+				local spot = Vector3.new(at.X, floor.Y, at.Z) + away
+				local cloud = cloudAbove(spot)
+				if cloud then
+					spot = Vector3.new(cloud.pos.X, floor.Y, cloud.pos.Z)
+				end
+				lightningAt(spot, false, false)
 			end
 		end)
 	end,
@@ -2239,7 +2425,7 @@ function WeatherController:Start()
 			end
 			refreshSky() -- night starts / ends
 		end
-		updateSkyClouds()
+		updateSkyClouds(dt)
 		local floor = Vector3.new(at.X, lastGround.Y, at.Z)
 		for _, slot in slots do
 			local scene = slot.scene
