@@ -35,7 +35,7 @@ from lib import Asset  # noqa: E402
 U = 0.13            # cube size in studs (BASE_U times the pet's SCALE while it builds)
 BASE_U = U
 # Bigger pets: same cube grid, bigger cubes.
-SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6, "DustBunny": 1.9, "Koi": 1.2, "Flamingo": 1.1, "RedPanda": 1.1, "MossGolem": 1.6, "Pegasus": 1.6, "Pelican": 1.2, "SeaTurtle": 1.2, "Walrus": 1.3, "MantaRay": 1.3, "Orca": 1.4, "Narwhal": 1.4, "CoralDragon": 1.6, "GoldenSeahorse": 1.5, "PoliceDog": 1.1, "CyberWolf": 1.2, "JetpackMonkey": 1.2, "NeonDragon": 1.5, "GoldenLion": 1.3, "MuskOx": 1.2, "PolarBear": 1.3, "FrostBat": 1.2, "WoollyRhino": 1.4, "CrystalStag": 1.4, "IceDragon": 1.6, "GlacierTitan": 1.8}
+SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6, "DustBunny": 1.9, "Koi": 1.2, "Flamingo": 1.1, "RedPanda": 1.1, "MossGolem": 1.6, "Pegasus": 1.6, "Pelican": 1.2, "SeaTurtle": 1.2, "Walrus": 1.3, "MantaRay": 1.3, "Orca": 1.4, "Narwhal": 1.4, "CoralDragon": 1.6, "GoldenSeahorse": 1.5, "PoliceDog": 1.1, "CyberWolf": 1.2, "JetpackMonkey": 1.2, "NeonDragon": 1.5, "GoldenLion": 1.3, "MuskOx": 1.2, "PolarBear": 1.3, "FrostBat": 1.2, "WoollyRhino": 1.4, "CrystalStag": 1.4, "IceDragon": 1.6, "GlacierTitan": 1.8, "Capybara": 1.3, "Axolotl": 1.2, "Sloth": 1.4, "Chameleon": 1.2}
 FPS = 30
 IDLE = (0, 90)      # frames
 WALK = (120, 138)
@@ -2726,6 +2726,158 @@ def glacier_titan():
     return moss_golem("GlacierTitan", S="A8D0E8", SD="7AA8D0", M="FAFCFF", MD="D8E8F4", F="8AF0FF", E="5AF0FF", aura="Snowfall")
 
 
+# ---------------------------------------------------------------- daily-streak exclusives
+# One per finished 7-day login streak (Capybara, Axolotl, Sloth, Chameleon). Never in eggs.
+
+
+def capybara():
+    T, TD, M, N, Y, O = "B5824A", "8E6236", "7A5232", "3A2A1E", "FFD84A", "F28A1E"
+    # tan fur, darker fur, muzzle, nose, petals, flower centre
+    fur = lambda i, j, k: TD if (i * 5 + j * 3 + k * 7) % 11 == 0 else T    # noqa: E731
+    parts = legs(T, TD, 3, -6, 4, spread=1)
+    body = Part("Body")
+    body.rbox(-5, 5, -6, 8, 3, 11, fur)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -6, 9))
+    head.rbox(-4, 4, -11, -6, 7, 14, fur, edges=(True, False, False))
+    head.box(-4, 4, -15, -11, 7, 12, lambda i, j, k: M if j == -15 or k == 7 else T)     # long blunt snout
+    head.set([(-2, -15, 10), (1, -15, 10)], N)                                         # nostrils
+    head.set([(-1, -15, 8), (0, -15, 8)], N)                                           # mouth
+    eyes(head, -12, 12, xs=(-4, 2), w=2, h=1, shine=False)                             # sleepy calm eyes
+    parts.append(head)
+    ear = Part("EarL", "Head", joint=(3, -6, 14))
+    ear.box(2, 4, -7, -5, 14, 15, TD)
+    parts += [ear, ear.mirror("EarR")]
+    flower = Part("Flower", "Head", joint=(0, -8, 14))              # a sunflower on its head
+    for (i, j) in [(-2, -9), (-2, -8), (1, -9), (1, -8), (-1, -10), (0, -10), (-1, -7), (0, -7)]:
+        flower.cells[(i, j, 14)] = Y
+    for (i, j) in [(-2, -10), (1, -10), (-2, -7), (1, -7)]:
+        flower.cells[(i, j, 14)] = shade(Y, -0.12)
+    parts.append(flower)
+    centre = Part("FlowerCentre_Glow", "Flower", joint=(0, -8, 14), noise=False, glow=O)
+    centre.set([(-1, -9, 14), (0, -9, 14), (-1, -8, 14), (0, -8, 14)], O)
+    parts.append(centre)
+    a = assemble("Capybara", parts)
+    a.extra["aura"] = "Petals"
+    return a
+
+
+def axolotl():
+    P, PB, PD, M = "FFA6C8", "FFD6E6", "E87AA8", "B84A7A"
+    GILLS = ("FF4A5A", "FF9A2A", "FFE04A"), ("5AD86A", "4AA8FF", "A86AFF")
+    parts = legs(P, PD, 2, -4, 3, spread=1)
+    body = Part("Body")
+    body.rbox(-3, 3, -5, 7, 2, 7, lambda i, j, k: PB if k == 2 else (PD if (i + j) % 7 == 0 and k == 6 else P))
+    body.box(-1, 1, -3, 6, 7, 8, PD)                                 # back ridge
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -5, 4))
+    head.rbox(-5, 5, -10, -5, 2, 8, lambda i, j, k: PB if k == 2 else P)
+    eyes(head, -10, 5, xs=(-4, 2), w=2, h=2)
+    head.set([(-2, -10, 3), (1, -10, 3), (-1, -10, 2), (0, -10, 2)], M)             # smile
+    head.set([(-4, -10, 4), (3, -10, 4)], "FF7AA8")                                  # blush
+    parts.append(head)
+    for side, cols in (("L", GILLS[0]), ("R", GILLS[1])):            # three rainbow gill stalks a side
+        g = Part(f"Gill{side}", "Head", joint=((5 if side == "L" else -5), -7, 6))
+        for n, (y, col) in enumerate(zip((-9, -7, -5), cols)):
+            for d in range(4):
+                x = 5 + d if side == "L" else -6 - d
+                g.cells[(x, y, 4 + n + d)] = col if d < 3 else shade(col, 0.35)
+        parts.append(g)
+    tail = Part("Tail", "Body", joint=(0, 7, 4))
+    tail.box(-1, 1, 7, 11, 3, 6, P)
+    tail.box(-1, 1, 7, 11, 6, 8, lambda i, j, k: PB if k == 7 and j % 2 else PD)     # fin on top
+    tail2 = Part("Tail2", "Tail", joint=(0, 11, 4))
+    tail2.box(-1, 1, 11, 15, 3, 5, P)
+    tail2.box(-1, 1, 11, 15, 5, 8, lambda i, j, k: None if k - 5 > 14 - j else (PB if (j + k) % 2 else PD))
+    parts += [tail, tail2]
+    a = assemble("Axolotl", parts)
+    a.extra["aura"] = "Bubbles"
+    return a
+
+
+def sloth():
+    B, BD, F, D, C, H, HW = "8A6A4A", "6E5236", "E8D4B0", "4A3424", "F0E6D0", "4A6AD8", "FFFFFF"
+    # fur, dark fur, face, eye patch, claws, nightcap blue, nightcap white
+    fur = lambda i, j, k: BD if (i * 3 + j * 5 + k * 7) % 10 == 0 else B    # noqa: E731
+    parts = []
+    leg = Part("LegL", "Body", joint=(2.5, 0, 4))
+    leg.box(1, 4, -2, 2, 0, 4, lambda i, j, k: C if k == 0 and j == -2 else fur(i, j, k))
+    parts += [leg, leg.mirror("LegR")]
+    body = Part("Body")
+    body.rbox(-5, 5, -3, 4, 4, 15, lambda i, j, k: shade(F, -0.08) if j == -3 and abs(i + 0.5) < 3 and 6 <= k <= 12 else fur(i, j, k))
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, 0, 15))
+
+    def face(i, j, k):
+        if j == -5:
+            if k in (18, 19) and i in (-4, -3, -2, 1, 2, 3):
+                return D                                             # dark eye stripes
+            if 16 <= k <= 21 and abs(i + 0.5) <= 3.5:
+                return F
+        return fur(i, j, k)
+    head.rbox(-5, 5, -5, 4, 15, 23, face)
+    head.set([(-3, -5, 18), (-2, -5, 18), (1, -5, 18), (2, -5, 18)], EYE)            # sleepy closed eyes
+    head.set([(-1, -6, 17), (0, -6, 17)], D)                                         # nose
+    head.set([(-2, -5, 16), (-1, -5, 16), (0, -5, 16), (1, -5, 16)], shade(F, -0.25))   # smile
+    parts.append(head)
+    cap = Part("Cap", "Head", joint=(0, -1, 23))                     # striped nightcap
+    cap.box(-5, 5, -5, 4, 23, 24, HW)
+    stripe = lambda k: HW if k % 3 == 0 else H                       # noqa: E731
+    cap.box(-4, 4, -4, 3, 24, 26, lambda i, j, k: stripe(k))
+    cap.box(-3, 3, -3, 2, 26, 28, lambda i, j, k: stripe(k))
+    parts.append(cap)
+    tip = Part("CapTip", "Cap", joint=(0, -1, 28))                   # floppy tip with a pom-pom
+    tip.box(-2, 2, -2, 1, 28, 30, lambda i, j, k: stripe(k))
+    tip.box(1, 4, -2, 1, 29, 30, H)
+    tip.box(3, 5, -2, 1, 27, 29, lambda i, j, k: HW if k == 27 else H)
+    tip.box(4, 7, -2, 1, 24, 27, HW)
+    parts.append(tip)
+    arm = Part("ArmL", "Body", joint=(6, 0, 14))                     # long arms with cream claws
+    arm.rbox(5, 8, -2, 2, 5, 15, fur, edges=(False, False, True))
+    arm.set([(5, -2, 4), (6, -2, 4), (7, -2, 4), (5, -2, 3), (7, -2, 3)], C)
+    parts += [arm, arm.mirror("ArmR")]
+    a = assemble("Sloth", parts)
+    a.extra["aura"] = "Leaves"
+    return a
+
+
+def chameleon():
+    G, GD, GL, K = "F2C23A", "C8901E", "FFE88A", "FFF6C0"
+    # gold, dark gold, light gold, sparkle
+    scale = lambda i, j, k: GD if (i * 5 + j * 3 + k * 7) % 9 == 0 else G   # noqa: E731
+    parts = legs(G, GD, 4, -4, 3, spread=1)
+    body = Part("Body")
+    body.rbox(-3, 3, -5, 6, 4, 11, lambda i, j, k: GL if k == 4 else scale(i, j, k))
+    body.box(-1, 1, -4, 5, 11, 12, lambda i, j, k: GD if j % 2 else None)           # spiky ridge
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -5, 8))
+    head.rbox(-3, 3, -10, -5, 5, 11, lambda i, j, k: GL if k == 5 else scale(i, j, k), edges=(True, False, False))
+    head.box(-2, 2, -8, -5, 11, 13, lambda i, j, k: GD if k == 12 else G)          # helmet casque
+    head.set([(-2, -10, 6), (-1, -10, 6), (0, -10, 6), (1, -10, 6)], GD)            # long smile
+    parts.append(head)
+    eye = Part("EyeL", "Head", joint=(3, -8, 9))                     # bulging turret eyes
+    eye.box(3, 4, -9, -6, 8, 11, lambda i, j, k: GL if (j, k) != (-8, 9) else None)
+    eye.set([(4, -8, 9)], GL)
+    eye.set([(4, -9, 9)], EYE)
+    eyeR = eye.mirror("EyeR")
+    parts += [eye, eyeR]
+    tail = Part("Tail", "Body", joint=(0, 6, 7))
+    tail.box(-1, 1, 6, 9, 6, 8, scale)
+    tail2 = Part("Tail2", "Tail", joint=(0, 9, 6))                   # curled tail
+    for (j, k) in [(9, 7), (10, 7), (11, 6), (11, 5), (11, 4), (10, 3), (9, 3), (8, 4), (8, 5), (9, 5)]:
+        for i in (-1, 0):
+            tail2.cells[(i, j, k)] = scale(i, j, k)
+    parts += [tail, tail2]
+    sparkle = Part("Sparkle_Glow", "Body", joint=(0, 0, 11), noise=False, glow=K)
+    sparkle.set([(-1, -2, 11), (0, 0, 11), (-1, 2, 11), (0, 4, 11)], K)
+    for c in sparkle.cells:
+        body.cells.pop(c, None)
+    parts.append(sparkle)
+    a = assemble("Chameleon", parts)
+    a.extra["aura"] = "GoldDust"
+    return a
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
@@ -2745,7 +2897,8 @@ PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon":
         "AlleyCat": alley_cat, "Hamster": hamster, "Crow": crow, "Pug": pug, "Dalmatian": dalmatian, "Parrot": parrot,
         "PoliceDog": police_dog, "NeonCat": neon_cat, "CyberWolf": cyber_wolf, "JetpackMonkey": jetpack_monkey, "NeonDragon": neon_dragon, "GoldenLion": golden_lion,
         "ArcticFox": arctic_fox, "Lemming": lemming, "Puffin": puffin, "Husky": husky, "Reindeer": reindeer, "MuskOx": musk_ox,
-        "PolarBear": polar_bear, "FrostBat": frost_bat, "WoollyRhino": woolly_rhino, "CrystalStag": crystal_stag, "IceDragon": ice_dragon, "GlacierTitan": glacier_titan}
+        "PolarBear": polar_bear, "FrostBat": frost_bat, "WoollyRhino": woolly_rhino, "CrystalStag": crystal_stag, "IceDragon": ice_dragon, "GlacierTitan": glacier_titan,
+        "Capybara": capybara, "Axolotl": axolotl, "Sloth": sloth, "Chameleon": chameleon}
 
 
 # ------------------------------------------------------------------------- animation
@@ -3677,6 +3830,91 @@ def hamster_idle(w):
     }
 
 
+
+def capy_idle(w):
+    chew = s(8 * w) * (s(w) > 0)                            # chews, then looks around
+    return {
+        "Body": ((0, 0, 0.01 * (1 - c(2 * w))), (0, 0, 0)),
+        "Head": ((0, 0, 0.006 * chew), (-2 * chew, 0, 12 * s(w) * (s(w) <= 0))),
+        "EarL": ((0, 0, 0), (0, -14 * max(0.0, s(5 * w)) ** 8, 0)),
+        "EarR": ((0, 0, 0), (0, 14 * max(0.0, s(5 * w + 2)) ** 8, 0)),
+        "Flower": ((0, 0, 0), (0, 0, 20 * s(w))),
+    }
+
+
+def capy_walk(w):
+    p = walk(26, 0.03, 0, 0, 6)(w)
+    p["Flower"] = ((0, 0, 0), (6 * s(2 * w), 6 * s(w), 0))
+    return p
+
+
+def axo_idle(w):
+    wave = s(3 * w)
+    return {
+        "Body": ((0, 0, 0.01 * s(2 * w)), (0, 0, 3 * s(w))),
+        "Head": ((0, 0, 0), (-3 * s(2 * w), 0, 10 * s(w + 1))),
+        "GillL": ((0, 0, 0), (8 * wave, -10 * wave, 0)),
+        "GillR": ((0, 0, 0), (8 * wave, 10 * wave, 0)),
+        "Tail": ((0, 0, 0), (0, 0, 14 * s(w))),
+        "Tail2": ((0, 0, 0), (0, 0, 22 * s(w - 1))),
+    }
+
+
+def axo_walk(w):
+    p = walk(34, 0.02, 0, 0, 0)(w)
+    p["Body"] = ((0, 0, 0.02 * abs(s(w))), (0, 0, 8 * s(w)))     # wiggles side to side
+    p["Head"] = ((0, 0, 0), (0, 0, -8 * s(w)))
+    p["Tail"] = ((0, 0, 0), (0, 0, 22 * s(w - 0.6)))
+    p["Tail2"] = ((0, 0, 0), (0, 0, 30 * s(w - 1.4)))
+    p["GillL"] = ((0, 0, 0), (12 * s(2 * w), -8, 0))
+    p["GillR"] = ((0, 0, 0), (12 * s(2 * w), 8, 0))
+    return p
+
+
+def sloth_idle(w):
+    nod = max(0.0, s(w)) ** 3                               # dozes off, then wakes up
+    return {
+        "Body": ((0, 0, 0.015 * s(2 * w)), (2 * s(2 * w), 0, 0)),
+        "Head": ((0, 0, 0), (14 * nod, 0, 6 * s(w + 2) * (1 - nod))),
+        "Cap": ((0, 0, 0), (4 * nod, 0, 0)),
+        "CapTip": ((0, 0, 0), (0, -10 * s(2 * w), 0)),
+        "ArmL": ((0, 0, 0), (0, -4 - 3 * s(2 * w), 0)),
+        "ArmR": ((0, 0, 0), (-40 * max(0.0, s(w + 3.2)) ** 6, 4 + 3 * s(2 * w), 0)),   # sleepy wave
+    }
+
+
+def sloth_walk(w):
+    swing = 18 * s(w)
+    return {
+        "Body": ((0, 0, 0.04 * abs(s(w))), (3, 0, 5 * s(w))),
+        "Head": ((0, 0, 0), (4, -5 * s(w), -4 * s(w))),
+        "Cap": ((0, 0, 0), (0, 0, 0)),
+        "CapTip": ((0, 0, 0), (0, -14 * s(w - 0.8), 0)),
+        "LegL": ((0, 0, 0), (swing, 0, 0)), "LegR": ((0, 0, 0), (-swing, 0, 0)),
+        "ArmL": ((0, 0, 0), (-swing * 1.3, -6, 0)), "ArmR": ((0, 0, 0), (swing * 1.3, 6, 0)),
+    }
+
+
+def chameleon_idle(w):
+    return {
+        "Body": ((0, 0, 0.01 * s(2 * w)), (0, 2 * s(w), 0)),
+        "Head": ((0, 0, 0), (-3 * s(2 * w), 0, 8 * s(w))),
+        "EyeL": ((0, 0, 0), (12 * s(3 * w), 0, 25 * s(2 * w))),     # each eye looks its own way
+        "EyeR": ((0, 0, 0), (12 * s(2 * w + 1), 0, 25 * s(3 * w + 2))),
+        "Tail": ((0, 0, 0), (4 * s(w), 0, 0)),
+        "Tail2": ((0, 0, 0), (-10 * s(w), 0, 0)),
+    }
+
+
+def chameleon_walk(w):
+    p = walk(30, 0.02, 8, 0, 0)(w)
+    p["Body"] = ((0, 0, 0.02 * abs(s(w))), (0, 4 * s(w), 6 * s(w)))
+    p["EyeL"] = ((0, 0, 0), (0, 0, 20 * s(w)))
+    p["EyeR"] = ((0, 0, 0), (0, 0, -20 * s(w + 1)))
+    p["Tail2"] = ((0, 0, 0), (-8 * s(2 * w), 0, 0))
+    return p
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -3725,6 +3963,10 @@ ANIMS = {
     "Kraken": {"Idle": kraken_anim(1, 14, 0.02), "Walk": kraken_anim(2, 24, 0.05)},
     "MechaRex": {"Idle": rex_idle, "Walk": rex_walk},
     "AuroraWhale": {"Idle": whale(1, 18), "Walk": whale(2, 26)},
+    "Capybara": {"Idle": capy_idle, "Walk": capy_walk},
+    "Axolotl": {"Idle": axo_idle, "Walk": axo_walk},
+    "Sloth": {"Idle": sloth_idle, "Walk": sloth_walk},
+    "Chameleon": {"Idle": chameleon_idle, "Walk": chameleon_walk},
     "DustBunny": {"Idle": bunny_mob_idle, "Walk": bunny_mob_hop(1.0, 30, 20), "Run": bunny_mob_hop(2.4, 55, 45)},
     "Ladybug": {"Idle": bug_idle, "Walk": bug_walk},
     "Chipmunk": {"Idle": rat_idle, "Walk": walk(40, 0.08, 10, -10, 0)},
