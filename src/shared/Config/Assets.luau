@@ -9416,12 +9416,25 @@ Assets.Models = {
 			},
 		},
 	},
-	Park_DuckPond = {
+	ParkFx_Leaf = {
 		bounds = {
-			max = Vector3.new(12.61, 2.18, 8.691),
-			min = Vector3.new(-12.61, -0.5, -8.691),
+			max = Vector3.new(0.238, 0.09, 0.569),
+			min = Vector3.new(-0.238, -0.024, -0.4),
 		},
-		id = 91044418536225,
+		id = 117891447275064,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	Park_Bench = {
+		bounds = {
+			max = Vector3.new(1.734, 2.364, 0.63),
+			min = Vector3.new(-1.734, -0.063, -0.8),
+		},
+		id = 104299688959574,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -9429,16 +9442,98 @@ Assets.Models = {
 			},
 		},
 	},
-	Park_FlowerBed = {
+	Park_Bush = {
 		bounds = {
-			max = Vector3.new(3.4, 2.4, 3.4),
-			min = Vector3.new(-3.4, 0.0, -3.4),
+			max = Vector3.new(1.526, 2.217, 1.511),
+			min = Vector3.new(-1.504, -0.084, -1.485),
 		},
-		id = 76278609988360,
+		id = 130812176541713,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+		},
+	},
+	Park_DuckPond = {
+		anim = {
+			Reeds1 = {
+				amp = 5,
+				axis = "z",
+				kind = "sway",
+				speed = 0.45,
+			},
+			Reeds2 = {
+				amp = 5,
+				axis = "z",
+				kind = "sway",
+				speed = 0.52,
+			},
+			Reeds3 = {
+				amp = 5,
+				axis = "z",
+				kind = "sway",
+				speed = 0.59,
+			},
+		},
+		bounds = {
+			max = Vector3.new(11.893, 3.177, 8.614),
+			min = Vector3.new(-12.436, -0.421, -9.414),
+		},
+		fx = {
+			center = Vector3.new(1.2, 0.3, 0.0),
+			fish = { Vector3.new(4.0, 0.3, 1.5), Vector3.new(-2.0, 0.3, 2.5), Vector3.new(1.0, 0.3, -3.0) },
+			rx = 5.6,
+			rz = 4.0,
+		},
+		id = 139996489914457,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Bridge = {
+				collide = true,
+			},
+			Reeds1 = {
+				collide = false,
+				joint = Vector3.new(9.6, 0.0, 3.6),
+			},
+			Reeds2 = {
+				collide = false,
+				joint = Vector3.new(8.6, 0.0, -4.6),
+			},
+			Reeds3 = {
+				collide = false,
+				joint = Vector3.new(-9.4, 0.0, 2.6),
+			},
+			Water = {
+				collide = false,
+			},
+		},
+	},
+	Park_FlowerBed = {
+		anim = {
+			Flowers = {
+				amp = 3,
+				axis = "z",
+				kind = "sway",
+				speed = 0.5,
+			},
+		},
+		bounds = {
+			max = Vector3.new(3.711, 2.275, 3.711),
+			min = Vector3.new(-3.711, -0.03, -3.711),
+		},
+		id = 129460189429942,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Flowers = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.6, 0.0),
 			},
 		},
 	},
@@ -9460,7 +9555,7 @@ Assets.Models = {
 			pool = Vector3.new(0.0, 1.05, 0.0),
 			poolR = 6.55,
 		},
-		id = 106247533045213,
+		id = 103222443797418,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -9481,24 +9576,43 @@ Assets.Models = {
 		},
 	},
 	Park_Gazebo = {
-		bounds = {
-			max = Vector3.new(7.2, 9.05, 7.2),
-			min = Vector3.new(-7.2, 0.0, -7.7),
+		anim = {
+			Vane = {
+				amp = 40,
+				axis = "y",
+				kind = "sway",
+				speed = 0.06,
+			},
 		},
-		id = 76370855197849,
+		bounds = {
+			max = Vector3.new(7.51, 11.87, 7.51),
+			min = Vector3.new(-7.51, -0.05, -7.51),
+		},
+		id = 101773323527985,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
 			},
+			Lights_Glow = {
+				collide = false,
+				glow = "FFE58A",
+			},
+			Roof = {
+				collide = true,
+			},
+			Vane = {
+				collide = false,
+				joint = Vector3.new(0.0, 10.0, 0.0),
+			},
 		},
 	},
 	Park_Lamp = {
 		bounds = {
-			max = Vector3.new(0.7, 8.0, 0.7),
-			min = Vector3.new(-0.7, 0.0, -0.7),
+			max = Vector3.new(0.785, 8.15, 0.68),
+			min = Vector3.new(-0.785, -0.04, -0.68),
 		},
-		id = 86729560756741,
+		id = 119018020258738,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -9511,11 +9625,103 @@ Assets.Models = {
 		},
 	},
 	Park_Picnic = {
-		bounds = {
-			max = Vector3.new(3.5, 2.728, 3.0),
-			min = Vector3.new(-3.5, -0.078, -3.0),
+		anim = {
+			Umbrella = {
+				amp = 1.5,
+				axis = "x",
+				kind = "sway",
+				speed = 0.35,
+			},
 		},
-		id = 71027360980028,
+		bounds = {
+			max = Vector3.new(3.5, 4.65, 3.0),
+			min = Vector3.new(-3.5, -0.076, -3.0),
+		},
+		id = 79747952876223,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Umbrella = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.6, 0.0),
+			},
+		},
+	},
+	Park_Playground = {
+		anim = {
+			Pinwheel = {
+				amp = 0,
+				axis = "z",
+				kind = "spin",
+				speed = 0.6,
+			},
+			Rider = {
+				amp = 9,
+				axis = "x",
+				kind = "sway",
+				speed = 0.7,
+			},
+			Swing1 = {
+				amp = 22,
+				axis = "x",
+				kind = "swing",
+				speed = 0.42,
+			},
+			Swing2 = {
+				amp = 28,
+				axis = "x",
+				kind = "swing",
+				speed = 0.47,
+			},
+		},
+		bounds = {
+			max = Vector3.new(11.132, 10.454, 7.59),
+			min = Vector3.new(-11.132, -0.169, -8.371),
+		},
+		id = 74647346318135,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Pinwheel = {
+				collide = false,
+				joint = Vector3.new(5.5, 9.8, -0.1),
+			},
+			Rider = {
+				collide = false,
+				joint = Vector3.new(-4.6, 0.3, -5.0),
+			},
+			Sandbox = {
+				collide = true,
+			},
+			Slide = {
+				collide = true,
+			},
+			SpringBase = {
+				collide = false,
+			},
+			Swing1 = {
+				collide = false,
+				joint = Vector3.new(-3.0, 5.1, 0.0),
+			},
+			Swing2 = {
+				collide = false,
+				joint = Vector3.new(-7.0, 5.1, 0.0),
+			},
+			Swings = {
+				collide = true,
+			},
+		},
+	},
+	Park_Rock1 = {
+		bounds = {
+			max = Vector3.new(1.637, 1.623, 1.245),
+			min = Vector3.new(-2.028, -0.517, -1.359),
+		},
+		id = 117649356558761,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -9523,16 +9729,106 @@ Assets.Models = {
 			},
 		},
 	},
-	Park_Playground = {
+	Park_Rock2 = {
 		bounds = {
-			max = Vector3.new(11.0, 8.7, 7.5),
-			min = Vector3.new(-11.0, -0.042, -7.543),
+			max = Vector3.new(1.187, 1.32, 1.029),
+			min = Vector3.new(-1.478, -0.435, -0.995),
 		},
-		id = 115963252228606,
+		id = 108550187347076,
 		kind = "prop",
 		parts = {
 			Body = {
 				collide = true,
+			},
+		},
+	},
+	Park_TreeAutumn = {
+		anim = {
+			Canopy = {
+				amp = 1.4,
+				axis = "z",
+				kind = "sway",
+				speed = 0.3375,
+			},
+		},
+		bounds = {
+			max = Vector3.new(3.11, 8.075, 3.01),
+			min = Vector3.new(-3.16, -0.093, -2.86),
+		},
+		fx = {
+			canopy = Vector3.new(0.0, 5.4, 0.0),
+			leaves = "autumn",
+			radius = 2.6,
+		},
+		id = 107411192408427,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Canopy = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.36, 0.0),
+			},
+		},
+	},
+	Park_TreeRound = {
+		anim = {
+			Canopy = {
+				amp = 1.4,
+				axis = "z",
+				kind = "sway",
+				speed = 0.335,
+			},
+		},
+		bounds = {
+			max = Vector3.new(3.11, 8.275, 3.01),
+			min = Vector3.new(-3.16, -0.093, -2.86),
+		},
+		fx = {
+			canopy = Vector3.new(0.0, 5.6, 0.0),
+			leaves = "round",
+			radius = 2.6,
+		},
+		id = 132464086394949,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Canopy = {
+				collide = false,
+				joint = Vector3.new(0.0, 1.44, 0.0),
+			},
+		},
+	},
+	Park_TreeTall = {
+		anim = {
+			Canopy = {
+				amp = 1.4,
+				axis = "z",
+				kind = "sway",
+				speed = 0.3325,
+			},
+		},
+		bounds = {
+			max = Vector3.new(2.498, 9.05, 2.7),
+			min = Vector3.new(-2.913, -0.093, -2.7),
+		},
+		fx = {
+			canopy = Vector3.new(0.0, 4.2, 0.0),
+			leaves = "tall",
+			radius = 2.0,
+		},
+		id = 137736595575737,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Canopy = {
+				collide = false,
+				joint = Vector3.new(0.0, 0.88, 0.0),
 			},
 		},
 	},
@@ -9546,6 +9842,45 @@ Assets.Models = {
 		parts = {
 			Body = {
 				collide = true,
+			},
+		},
+	},
+	PondFx_Duck = {
+		bounds = {
+			max = Vector3.new(0.595, 1.345, 1.011),
+			min = Vector3.new(-0.595, -0.105, -1.05),
+		},
+		id = 102391315930193,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	PondFx_Duckling = {
+		bounds = {
+			max = Vector3.new(0.327, 0.74, 0.556),
+			min = Vector3.new(-0.327, -0.058, -0.578),
+		},
+		id = 90398749226979,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
+			},
+		},
+	},
+	PondFx_Fish = {
+		bounds = {
+			max = Vector3.new(0.245, 0.315, 0.783),
+			min = Vector3.new(-0.245, -0.305, -0.525),
+		},
+		id = 135990314036255,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = false,
 			},
 		},
 	},

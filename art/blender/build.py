@@ -19,6 +19,7 @@ import rocks  # noqa: E402
 import coins  # noqa: E402
 import landmarks  # noqa: E402
 import fountain  # noqa: E402
+import parkdecor  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "out")
 
@@ -42,6 +43,8 @@ def builders():
         yield k, fn
     for k, fn in fountain.ALL.items():
         yield k, fn
+    for k, fn in parkdecor.ALL.items():
+        yield k, fn
 
 
 def main(filters):
@@ -54,6 +57,8 @@ def main(filters):
         if filters and not any(f.lower() in name.lower() for f in filters):
             continue
         a = fn()
+        if not a.extra.get("anim", True):
+            a.extra.pop("anim")
         path, m = a.export(OUT)
         meta[name] = m
         print(f"built {name}: {m['tris']} tris, {len(m['parts'])} parts")

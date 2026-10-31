@@ -1,7 +1,6 @@
 """Zone landmarks: the big themed pieces that make each zone feel like a place.
 
-  Park         Park_Playground, Park_Gazebo, Park_Picnic, Park_Lamp,
-               Park_FlowerBed, Park_DuckPond  (the fountain is in fountain.py)
+  Park         (moved: the fountain is in fountain.py, the rest in parkdecor.py)
   Beach        Beach_Lifeguard, Beach_HutA/B/C, Beach_IceCream, Beach_Volleyball,
                Beach_Sandcastle, Beach_Surfboards, Beach_Lighthouse, Beach_Boat
   City         City_ShopA/B/C/D, City_BusStop, City_HotDog, City_Newsstand,
@@ -858,12 +857,6 @@ def snow_frozenpond(name):
 
 
 ALL = {
-    "Park_Playground": lambda: park_playground("Park_Playground"),
-    "Park_Gazebo": lambda: park_gazebo("Park_Gazebo"),
-    "Park_Picnic": lambda: park_picnic("Park_Picnic"),
-    "Park_Lamp": lambda: park_lamp("Park_Lamp"),
-    "Park_FlowerBed": lambda: park_flowerbed("Park_FlowerBed"),
-    "Park_DuckPond": lambda: park_duckpond("Park_DuckPond"),
     "Beach_Lifeguard": lambda: beach_lifeguard("Beach_Lifeguard"),
     "Beach_HutA": lambda: beach_hut("Beach_HutA", PINK, "D8456A"),
     "Beach_HutB": lambda: beach_hut("Beach_HutB", "6AB8FF", "2F6FC0"),

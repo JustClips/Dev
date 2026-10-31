@@ -18900,18 +18900,142 @@
   },
   "tris": 720
  },
- "Park_DuckPond": {
+ "ParkFx_Leaf": {
   "bounds": {
    "max": [
-    12.61,
-    2.18,
-    8.691
+    0.238,
+    0.09,
+    0.569
    ],
    "min": [
-    -12.61,
-    -0.5,
-    -8.691
+    -0.238,
+    -0.024,
+    -0.4
    ]
+  },
+  "kind": "prop",
+  "name": "ParkFx_Leaf",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 44
+ },
+ "Park_Bench": {
+  "bounds": {
+   "max": [
+    1.734,
+    2.364,
+    0.63
+   ],
+   "min": [
+    -1.734,
+    -0.063,
+    -0.8
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_Bench",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1560
+ },
+ "Park_Bush": {
+  "bounds": {
+   "max": [
+    1.526,
+    2.217,
+    1.511
+   ],
+   "min": [
+    -1.504,
+    -0.084,
+    -1.485
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_Bush",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 3400
+ },
+ "Park_DuckPond": {
+  "anim": {
+   "Reeds1": {
+    "amp": 5,
+    "axis": "z",
+    "kind": "sway",
+    "speed": 0.45
+   },
+   "Reeds2": {
+    "amp": 5,
+    "axis": "z",
+    "kind": "sway",
+    "speed": 0.52
+   },
+   "Reeds3": {
+    "amp": 5,
+    "axis": "z",
+    "kind": "sway",
+    "speed": 0.5900000000000001
+   }
+  },
+  "bounds": {
+   "max": [
+    11.893,
+    3.177,
+    8.614
+   ],
+   "min": [
+    -12.436,
+    -0.421,
+    -9.414
+   ]
+  },
+  "fx": {
+   "center": [
+    1.2,
+    0.3,
+    0.0
+   ],
+   "fish": [
+    [
+     4.0,
+     0.3,
+     1.5
+    ],
+    [
+     -2.0,
+     0.3,
+     2.5
+    ],
+    [
+     1.0,
+     0.3,
+     -3.0
+    ]
+   ],
+   "rx": 5.6,
+   "rz": 4.0
   },
   "kind": "prop",
   "name": "Park_DuckPond",
@@ -18922,21 +19046,76 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Bridge": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Reeds1": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     9.6,
+     0.0,
+     3.6
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Reeds2": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     8.6,
+     0.0,
+     -4.6
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Reeds3": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -9.4,
+     0.0,
+     2.6
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Water": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 3370
+  "tris": 13634
  },
  "Park_FlowerBed": {
+  "anim": {
+   "Flowers": {
+    "amp": 3,
+    "axis": "z",
+    "kind": "sway",
+    "speed": 0.5
+   }
+  },
   "bounds": {
    "max": [
-    3.4,
-    2.4,
-    3.4
+    3.711,
+    2.275,
+    3.711
    ],
    "min": [
-    -3.4,
-    0.0,
-    -3.4
+    -3.711,
+    -0.03,
+    -3.711
    ]
   },
   "kind": "prop",
@@ -18948,9 +19127,20 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Flowers": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.6,
+     0
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 2652
+  "tris": 11080
  },
  "Park_Fountain": {
   "bounds": {
@@ -19069,16 +19259,24 @@
   "tris": 38292
  },
  "Park_Gazebo": {
+  "anim": {
+   "Vane": {
+    "amp": 40,
+    "axis": "y",
+    "kind": "sway",
+    "speed": 0.06
+   }
+  },
   "bounds": {
    "max": [
-    7.2,
-    9.05,
-    7.2
+    7.51,
+    11.87,
+    7.51
    ],
    "min": [
-    -7.2,
-    0.0,
-    -7.7
+    -7.51,
+    -0.05,
+    -7.51
    ]
   },
   "kind": "prop",
@@ -19090,21 +19288,46 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Lights_Glow": {
+    "collide": false,
+    "glow": "FFE58A",
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Roof": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Vane": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     10.0,
+     0
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 584
+  "tris": 5590
  },
  "Park_Lamp": {
   "bounds": {
    "max": [
-    0.7,
-    8.0,
-    0.7
+    0.785,
+    8.15,
+    0.68
    ],
    "min": [
-    -0.7,
-    0.0,
-    -0.7
+    -0.785,
+    -0.04,
+    -0.68
    ]
   },
   "kind": "prop",
@@ -19125,18 +19348,26 @@
     "parent": null
    }
   },
-  "tris": 126
+  "tris": 1020
  },
  "Park_Picnic": {
+  "anim": {
+   "Umbrella": {
+    "amp": 1.5,
+    "axis": "x",
+    "kind": "sway",
+    "speed": 0.35
+   }
+  },
   "bounds": {
    "max": [
     3.5,
-    2.728,
+    4.65,
     3.0
    ],
    "min": [
     -3.5,
-    -0.078,
+    -0.076,
     -3.0
    ]
   },
@@ -19149,21 +19380,58 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Umbrella": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.6,
+     0
+    ],
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 324
+  "tris": 1688
  },
  "Park_Playground": {
+  "anim": {
+   "Pinwheel": {
+    "amp": 0,
+    "axis": "z",
+    "kind": "spin",
+    "speed": 0.6
+   },
+   "Rider": {
+    "amp": 9,
+    "axis": "x",
+    "kind": "sway",
+    "speed": 0.7
+   },
+   "Swing1": {
+    "amp": 22,
+    "axis": "x",
+    "kind": "swing",
+    "speed": 0.42
+   },
+   "Swing2": {
+    "amp": 28,
+    "axis": "x",
+    "kind": "swing",
+    "speed": 0.47
+   }
+  },
   "bounds": {
    "max": [
-    11.0,
-    8.7,
-    7.5
+    11.132,
+    10.454,
+    7.59
    ],
    "min": [
-    -11.0,
-    -0.042,
-    -7.543
+    -11.132,
+    -0.169,
+    -8.371
    ]
   },
   "kind": "prop",
@@ -19175,9 +19443,295 @@
     "joint": null,
     "material": null,
     "parent": null
+   },
+   "Pinwheel": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     5.5,
+     9.8,
+     -0.1
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Rider": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -4.6,
+     0.3,
+     -5.0
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Sandbox": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Slide": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "SpringBase": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Swing1": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -3.0,
+     5.1,
+     0
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Swing2": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     -7.0,
+     5.1,
+     0
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Swings": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
    }
   },
-  "tris": 676
+  "tris": 6844
+ },
+ "Park_Rock1": {
+  "bounds": {
+   "max": [
+    1.637,
+    1.623,
+    1.245
+   ],
+   "min": [
+    -2.028,
+    -0.517,
+    -1.359
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_Rock1",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 360
+ },
+ "Park_Rock2": {
+  "bounds": {
+   "max": [
+    1.187,
+    1.32,
+    1.029
+   ],
+   "min": [
+    -1.478,
+    -0.435,
+    -0.995
+   ]
+  },
+  "kind": "prop",
+  "name": "Park_Rock2",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 360
+ },
+ "Park_TreeAutumn": {
+  "anim": {
+   "Canopy": {
+    "amp": 1.4,
+    "axis": "z",
+    "kind": "sway",
+    "speed": 0.3375
+   }
+  },
+  "bounds": {
+   "max": [
+    3.11,
+    8.075,
+    3.01
+   ],
+   "min": [
+    -3.16,
+    -0.093,
+    -2.86
+   ]
+  },
+  "fx": {
+   "canopy": [
+    0,
+    5.4,
+    0
+   ],
+   "leaves": "autumn",
+   "radius": 2.6
+  },
+  "kind": "prop",
+  "name": "Park_TreeAutumn",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Canopy": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.36,
+     0
+    ],
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 3124
+ },
+ "Park_TreeRound": {
+  "anim": {
+   "Canopy": {
+    "amp": 1.4,
+    "axis": "z",
+    "kind": "sway",
+    "speed": 0.33499999999999996
+   }
+  },
+  "bounds": {
+   "max": [
+    3.11,
+    8.275,
+    3.01
+   ],
+   "min": [
+    -3.16,
+    -0.093,
+    -2.86
+   ]
+  },
+  "fx": {
+   "canopy": [
+    0,
+    5.6,
+    0
+   ],
+   "leaves": "round",
+   "radius": 2.6
+  },
+  "kind": "prop",
+  "name": "Park_TreeRound",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Canopy": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     1.44,
+     0
+    ],
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 3448
+ },
+ "Park_TreeTall": {
+  "anim": {
+   "Canopy": {
+    "amp": 1.4,
+    "axis": "z",
+    "kind": "sway",
+    "speed": 0.3325
+   }
+  },
+  "bounds": {
+   "max": [
+    2.498,
+    9.05,
+    2.7
+   ],
+   "min": [
+    -2.913,
+    -0.093,
+    -2.7
+   ]
+  },
+  "fx": {
+   "canopy": [
+    0,
+    4.2,
+    0
+   ],
+   "leaves": "tall",
+   "radius": 2.0
+  },
+  "kind": "prop",
+  "name": "Park_TreeTall",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Canopy": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     0.88,
+     0
+    ],
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1476
  },
  "Pond": {
   "bounds": {
@@ -19204,6 +19758,84 @@
    }
   },
   "tris": 700
+ },
+ "PondFx_Duck": {
+  "bounds": {
+   "max": [
+    0.595,
+    1.345,
+    1.011
+   ],
+   "min": [
+    -0.595,
+    -0.105,
+    -1.05
+   ]
+  },
+  "kind": "prop",
+  "name": "PondFx_Duck",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1996
+ },
+ "PondFx_Duckling": {
+  "bounds": {
+   "max": [
+    0.327,
+    0.74,
+    0.556
+   ],
+   "min": [
+    -0.327,
+    -0.058,
+    -0.578
+   ]
+  },
+  "kind": "prop",
+  "name": "PondFx_Duckling",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1896
+ },
+ "PondFx_Fish": {
+  "bounds": {
+   "max": [
+    0.245,
+    0.315,
+    0.783
+   ],
+   "min": [
+    -0.245,
+    -0.305,
+    -0.525
+   ]
+  },
+  "kind": "prop",
+  "name": "PondFx_Fish",
+  "parts": {
+   "Body": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 1108
  },
  "Rock_Crater1": {
   "bounds": {

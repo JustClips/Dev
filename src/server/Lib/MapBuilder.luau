@@ -1137,7 +1137,7 @@ function MapBuilder.buildProps()
 	for _, c in World.Corridors do
 		place("ZoneGate", CFrame.new(0, math.max(c.FromY, c.ToY), c.GateZ) * yaw(180))
 	end
-	scatter(rng, Zones.ById.Crater, { "Rock_Crater1", "Rock_Crater2", "Crystal_Blue" }, 30)
+	scatter(rng, Zones.ById.Crater, { "Park_Rock1", "Park_Rock2", "Park_Bush" }, 30)
 	-- Beach (id DarkSide): sandy rocks, palms, umbrellas. City (id Mars): bins, dumpsters,
 	-- hydrants, benches. (Prop names are kept from the Moon version.)
 	scatter(rng, Zones.ById.DarkSide, { "Rock_Mars1", "Rock_Mars2", "Crystal_Red", "Mushroom_Mars" }, 30)
@@ -1157,6 +1157,12 @@ function MapBuilder.buildProps()
 			local model = place(decor.Asset, CFrame.new(at.X, zone.GroundY, at.Y) * yaw(decor.Yaw), decor.Scale, folder)
 			if model and decor.Asset == "Park_Fountain" then
 				model:AddTag("Fountain") -- FountainController (client) adds the moving water
+			elseif model then
+				-- ParkFxController (client) plays swinging/swaying parts, ducks, falling leaves
+				local meta = AssetLibrary.meta(decor.Asset) :: any
+				if meta and (meta.anim or meta.fx) then
+					model:AddTag("ParkFx")
+				end
 			end
 		end
 	end
