@@ -36,7 +36,7 @@ type Mover = {
 	color: Color3,
 	material: Enum.Material,
 }
-type Entry = { model: Model, folder: Folder, run: (number, number) -> (), visible: boolean }
+type Entry = { model: Model, folder: Folder, run: (number, number) -> (), visible: boolean, ref: BasePart? }
 
 local entries: { [Model]: Entry } = {}
 local root: Folder
@@ -196,17 +196,14 @@ local function build(model: Model): Entry?
 			if f then
 				f.part.Material = Enum.Material.SmoothPlastic
 				f.part.Color = PUFF_TINT[spec.tint] or PUFF_TINT.white
-				table.insert(
-					puffs,
-					{
-						fx = f,
-						at = at,
-						size = (spec.size or 1) * s,
-						life = n / rate,
-						offset = (k - 1) / rate,
-						drift = drift,
-					}
-				)
+				table.insert(puffs, {
+					fx = f,
+					at = at,
+					size = (spec.size or 1) * s,
+					life = n / rate,
+					offset = (k - 1) / rate,
+					drift = drift,
+				})
 			end
 		end
 	end
@@ -421,7 +418,9 @@ local function build(model: Model): Entry?
 		box:Destroy()
 		return nil
 	end
-	return { model = model, folder = box, run = run, visible = true }
+	-- a base skin hides the classic base props (Transparency 1): hide their extras too
+	local ref = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+	return { model = model, folder = box, run = run, visible = true, ref = ref }
 end
 
 local function add(model: Instance)
@@ -468,6 +467,9 @@ function ParkFxController:Start()
 					continue
 				end
 				local near = (model:GetPivot().Position - eye).Magnitude < RANGE
+				if near and e.ref and e.ref.Transparency >= 1 then
+					near = false
+				end
 				if near ~= e.visible then
 					e.visible = near
 					e.folder.Parent = if near then root else nil

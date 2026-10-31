@@ -19776,13 +19776,13 @@
   },
   "bounds": {
    "max": [
-    11.884,
+    11.879,
     3.177,
     8.614
    ],
    "min": [
-    -12.366,
-    -0.377,
+    -12.352,
+    -0.395,
     -9.414
    ]
   },
@@ -25394,5 +25394,367 @@
    ]
   },
   "tris": 2944
+ },
+ "Base_Arch": {
+  "anim": {
+   "Bunting": {
+    "amp": 6,
+    "axis": "x",
+    "kind": "swing",
+    "phase": 0.0,
+    "speed": 0.3
+   }
+  },
+  "bounds": {
+   "max": [
+    9.308,
+    13.05,
+    1.525
+   ],
+   "min": [
+    -9.492,
+    -0.06,
+    -1.516
+   ]
+  },
+  "kind": "prop",
+  "name": "Base_Arch",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Bunting": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     0,
+     9.0,
+     -0.85
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Lamp_Glow": {
+    "collide": false,
+    "glow": "FFD68C",
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "sign": [
+   0,
+   11.4,
+   -0.3
+  ],
+  "tris": 5808
+ },
+ "Base_Fence": {
+  "bounds": {
+   "max": [
+    4.399,
+    3.36,
+    0.399
+   ],
+   "min": [
+    -4.399,
+    -0.029,
+    -0.399
+   ]
+  },
+  "kind": "prop",
+  "name": "Base_Fence",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 368
+ },
+ "Base_Hatchery": {
+  "bounds": {
+   "max": [
+    10.41,
+    2.07,
+    10.41
+   ],
+   "min": [
+    -10.41,
+    -0.06,
+    -10.41
+   ]
+  },
+  "kind": "prop",
+  "name": "Base_Hatchery",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 3504
+ },
+ "Base_Incubator": {
+  "bounds": {
+   "max": [
+    1.295,
+    6.2,
+    1.295
+   ],
+   "min": [
+    -1.295,
+    -0.048,
+    -1.295
+   ]
+  },
+  "kind": "prop",
+  "name": "Base_Incubator",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamp_Glow": {
+    "collide": false,
+    "glow": "FFD68C",
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 908
+ },
+ "Base_Lamp": {
+  "bounds": {
+   "max": [
+    0.798,
+    8.45,
+    0.798
+   ],
+   "min": [
+    -0.798,
+    -0.048,
+    -1.946
+   ]
+  },
+  "kind": "prop",
+  "light": [
+   0,
+   6.8,
+   -1.3
+  ],
+  "name": "Base_Lamp",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Lamp_Glow": {
+    "collide": false,
+    "glow": "FFD68C",
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 576
+ },
+ "Base_PetHouse": {
+  "anim": {
+   "Flag": {
+    "amp": 10,
+    "axis": "y",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.35
+   }
+  },
+  "bounds": {
+   "max": [
+    7.026,
+    12.104,
+    5.813
+   ],
+   "min": [
+    -7.026,
+    -0.06,
+    -6.958
+   ]
+  },
+  "fx": {
+   "puffs": [
+    {
+     "at": [
+      -2.75,
+      10.46,
+      2.25
+     ],
+     "rate": 0.7,
+     "size": 1.0,
+     "tint": "smoke"
+    }
+   ]
+  },
+  "kind": "prop",
+  "name": "Base_PetHouse",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Flag": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     2.75,
+     7.6,
+     -3.5
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Windows_Glow": {
+    "collide": false,
+    "glow": "FFD68C",
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 7622
+ },
+ "Base_Pond": {
+  "anim": {
+   "Reeds": {
+    "amp": 5,
+    "axis": "z",
+    "kind": "sway",
+    "phase": 0.0,
+    "speed": 0.5
+   }
+  },
+  "bounds": {
+   "max": [
+    7.79,
+    2.835,
+    5.705
+   ],
+   "min": [
+    -8.497,
+    -0.5,
+    -5.978
+   ]
+  },
+  "fx": {
+   "fish": [
+    [
+     2.4,
+     0.25,
+     0.4
+    ],
+    [
+     -2.2,
+     0.25,
+     -0.6
+    ]
+   ],
+   "loops": [
+    {
+     "asset": "PondFx_Duck",
+     "bob": 0.05,
+     "center": [
+      -0.0,
+      0.25,
+      0.0
+     ],
+     "hop": 0.0,
+     "phase": 0.0,
+     "rx": 3.9,
+     "rz": 2.5,
+     "speed": 0.25,
+     "wake": true
+    },
+    {
+     "asset": "PondFx_Duckling",
+     "bob": 0.05,
+     "center": [
+      -0.0,
+      0.25,
+      0.0
+     ],
+     "hop": 0.0,
+     "phase": -0.57,
+     "rx": 3.9,
+     "rz": 2.5,
+     "speed": 0.25,
+     "wake": false
+    },
+    {
+     "asset": "PondFx_Duckling",
+     "bob": 0.05,
+     "center": [
+      -0.0,
+      0.25,
+      0.0
+     ],
+     "hop": 0.0,
+     "phase": -0.99,
+     "rx": 3.9,
+     "rz": 2.5,
+     "speed": 0.25,
+     "wake": false
+    }
+   ]
+  },
+  "kind": "prop",
+  "name": "Base_Pond",
+  "parts": {
+   "Body": {
+    "collide": true,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   },
+   "Reeds": {
+    "collide": false,
+    "glow": null,
+    "joint": [
+     6.9,
+     0.0,
+     2.4
+    ],
+    "material": null,
+    "parent": null
+   },
+   "Water": {
+    "collide": false,
+    "glow": null,
+    "joint": null,
+    "material": null,
+    "parent": null
+   }
+  },
+  "tris": 4876
  }
 }

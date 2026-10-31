@@ -149,15 +149,15 @@ World.Base = {
 	-- Props inside the park. Radius keeps wandering pets out of them; Size is the footprint
 	-- (X by Z before Yaw) that eggs can't be placed on (trees: just the trunk).
 	ParkProps = {
-		{ Asset = "Habitat", Position = Vector3.new(-29, 0, 31), Yaw = -33, Radius = 10, Size = Vector2.new(14.5, 13) },
-		{ Asset = "Pond", Position = Vector3.new(19, 0, 22), Yaw = 0, Radius = 7, Size = Vector2.new(16.4, 11.8) },
-		{ Asset = "Tree_Bulb", Position = Vector3.new(36, 0, -6), Yaw = 30, Radius = 3, Size = Vector2.new(3, 3) },
-		{ Asset = "Tree_Puff", Position = Vector3.new(-37, 0, 2), Yaw = 80, Radius = 3, Size = Vector2.new(3, 3) },
-		{ Asset = "Tree_Tall", Position = Vector3.new(4, 0, 37), Yaw = 140, Radius = 3, Size = Vector2.new(3, 3) },
-		{ Asset = "Mushroom_Glow", Position = Vector3.new(-12, 0, 12), Yaw = 0, Radius = 3, Size = Vector2.new(3.6, 3.6) },
-		{ Asset = "Boulder_1", Position = Vector3.new(34, 0, 35), Yaw = 60, Radius = 4, Size = Vector2.new(8.5, 7.4) },
-		{ Asset = "Crystal_Blue", Position = Vector3.new(-40, 0, 38), Yaw = 10, Radius = 2, Size = Vector2.new(2.6, 3.1) },
-		{ Asset = "Boulder_2", Position = Vector3.new(28, 0, 8), Yaw = 0, Radius = 2.5, Size = Vector2.new(5, 4.7) },
+		{ Asset = "Base_PetHouse", Position = Vector3.new(-29, 0, 31), Yaw = -33, Radius = 10, Size = Vector2.new(14.5, 13), Scale = 1 },
+		{ Asset = "Base_Pond", Position = Vector3.new(19, 0, 22), Yaw = 0, Radius = 7, Size = Vector2.new(16.4, 11.8), Scale = 1 },
+		{ Asset = "Park_TreeRound", Position = Vector3.new(36, 0, -6), Yaw = 30, Radius = 3, Size = Vector2.new(3, 3), Scale = 1.3 },
+		{ Asset = "Park_TreeTall", Position = Vector3.new(-37, 0, 2), Yaw = 80, Radius = 3, Size = Vector2.new(3, 3), Scale = 1.35 },
+		{ Asset = "Park_TreeAutumn", Position = Vector3.new(4, 0, 37), Yaw = 140, Radius = 3, Size = Vector2.new(3, 3), Scale = 1.3 },
+		{ Asset = "Park_Bench", Position = Vector3.new(-12, 0, 12), Yaw = 0, Radius = 3, Size = Vector2.new(3.6, 3.6), Scale = 1 },
+		{ Asset = "Park_Rock1", Position = Vector3.new(34, 0, 35), Yaw = 60, Radius = 4, Size = Vector2.new(8.5, 7.4), Scale = 2.2 },
+		{ Asset = "Park_FlowerBed", Position = Vector3.new(-40, 0, 38), Yaw = 10, Radius = 2, Size = Vector2.new(2.6, 3.1), Scale = 0.45 },
+		{ Asset = "Park_Rock2", Position = Vector3.new(28, 0, 8), Yaw = 0, Radius = 2.5, Size = Vector2.new(5, 4.7), Scale = 2.2 },
 	},
 }
 

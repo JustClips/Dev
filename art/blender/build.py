@@ -23,6 +23,7 @@ import parkdecor  # noqa: E402
 import beach  # noqa: E402
 import city  # noqa: E402
 import snowpeaks  # noqa: E402
+import basedecor  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "out")
 
@@ -46,7 +47,7 @@ def builders():
         yield k, fn
     for k, fn in fountain.ALL.items():
         yield k, fn
-    for mod in (parkdecor, beach, city, snowpeaks):
+    for mod in (parkdecor, beach, city, snowpeaks, basedecor):
         for k, fn in mod.ALL.items():
             yield k, fn
 

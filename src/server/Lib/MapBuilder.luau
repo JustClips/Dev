@@ -919,6 +919,15 @@ local function place(name: string, cf: CFrame, scale: number?, parent: Instance?
 	end
 	model:PivotTo(cf)
 	model.Parent = parent or propsFolder
+	if name == "Park_Fountain" then
+		model:AddTag("Fountain") -- FountainController (client) adds the moving water
+	else
+		-- ParkFxController (client) plays swaying/spinning parts, critters, smoke, leaves
+		local meta = AssetLibrary.meta(name) :: any
+		if meta and (meta.anim or meta.fx) then
+			model:AddTag("ParkFx")
+		end
+	end
 	return model
 end
 
@@ -951,7 +960,7 @@ local function fenceLine(baseCf: CFrame, a: Vector2, b: Vector2, parent: Instanc
 	local angle = math.atan2(-dir.Y, dir.X)
 	for k = 0, count - 1 do
 		local mid = a + dir * ((k + 0.5) * length / count)
-		place("Fence", baseCf * CFrame.new(mid.X, 0, mid.Y) * CFrame.Angles(0, angle, 0), scale, parent)
+		place("Base_Fence", baseCf * CFrame.new(mid.X, 0, mid.Y) * CFrame.Angles(0, angle, 0), scale, parent)
 	end
 end
 
@@ -960,13 +969,13 @@ function MapBuilder.buildBase(index: number): Model
 	local model = Instance.new("Model")
 	model.Name = "BaseProps" .. index
 	local B = World.Base
-	place("BaseArch", baseCf * CFrame.new(B.Arch), 1, model)
-	place("Hatchery", baseCf * CFrame.new(B.Hatchery), 1, model)
+	place("Base_Arch", baseCf * CFrame.new(B.Arch), 1, model)
+	place("Base_Hatchery", baseCf * CFrame.new(B.Hatchery), 1, model)
 	for _, p in B.Incubators do
-		place("Incubator", baseCf * CFrame.new(p), 1, model)
+		place("Base_Incubator", baseCf * CFrame.new(p), 1, model)
 	end
 	for _, p in B.Lamps do
-		place("Lamp", baseCf * CFrame.new(p) * yaw(180), 1, model)
+		place("Base_Lamp", baseCf * CFrame.new(p) * yaw(180), 1, model)
 	end
 	-- park fence with a gate gap at the front
 	local mn, mx, gap = B.ParkMin, B.ParkMax, B.ParkGateWidth / 2
@@ -976,7 +985,7 @@ function MapBuilder.buildBase(index: number): Model
 	fenceLine(baseCf, Vector2.new(mx.X, mx.Y), Vector2.new(mn.X, mx.Y), model)
 	fenceLine(baseCf, Vector2.new(mn.X, mx.Y), Vector2.new(mn.X, mn.Y), model)
 	for _, prop in B.ParkProps do
-		place(prop.Asset, baseCf * CFrame.new(prop.Position) * yaw(prop.Yaw), 1, model)
+		place(prop.Asset, baseCf * CFrame.new(prop.Position) * yaw(prop.Yaw), prop.Scale, model)
 	end
 	model.Parent = propsFolder
 	if skinOf[index] and skinOf[index] ~= BaseSkins.Default then
@@ -1154,16 +1163,7 @@ function MapBuilder.buildProps()
 		folder.Parent = propsFolder
 		for _, decor in list do
 			local at = Zones.decorPosition(zone, decor.At)
-			local model = place(decor.Asset, CFrame.new(at.X, zone.GroundY, at.Y) * yaw(decor.Yaw), decor.Scale, folder)
-			if model and decor.Asset == "Park_Fountain" then
-				model:AddTag("Fountain") -- FountainController (client) adds the moving water
-			elseif model then
-				-- ParkFxController (client) plays swinging/swaying parts, ducks, falling leaves
-				local meta = AssetLibrary.meta(decor.Asset) :: any
-				if meta and (meta.anim or meta.fx) then
-					model:AddTag("ParkFx")
-				end
-			end
+			place(decor.Asset, CFrame.new(at.X, zone.GroundY, at.Y) * yaw(decor.Yaw), decor.Scale, folder)
 		end
 	end
 	rockWalls(rng)
@@ -1180,7 +1180,14 @@ end
 -- stay visible (the stall's awning takes the skin colour).
 
 -- Hidden classic props that keep colliding (the skin draws them in the same place).
-local KEEP_COLLIDE = { Fence = true, BaseArch = true, Habitat = true, Hatchery = true, Incubator = true, Lamp = true }
+local KEEP_COLLIDE = {
+	Base_Fence = true,
+	Base_Arch = true,
+	Base_PetHouse = true,
+	Base_Hatchery = true,
+	Base_Incubator = true,
+	Base_Lamp = true,
+}
 
 local function remember(inst: Instance, attr: string, value: any): any
 	local saved = inst:GetAttribute(attr)

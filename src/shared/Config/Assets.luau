@@ -8374,6 +8374,199 @@ Assets.Models = {
 		},
 		sign = Vector3.new(0.0, 11.4, -0.3),
 	},
+	Base_Arch = {
+		anim = {
+			Bunting = {
+				amp = 6,
+				axis = "x",
+				kind = "swing",
+				phase = 0.0,
+				speed = 0.3,
+			},
+		},
+		bounds = {
+			max = Vector3.new(9.308, 13.05, 1.525),
+			min = Vector3.new(-9.492, -0.06, -1.516),
+		},
+		id = 127496276601969,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Bunting = {
+				collide = false,
+				joint = Vector3.new(0.0, 9.0, -0.85),
+			},
+			Lamp_Glow = {
+				collide = false,
+				glow = "FFD68C",
+			},
+		},
+		sign = Vector3.new(0.0, 11.4, -0.3),
+	},
+	Base_Fence = {
+		bounds = {
+			max = Vector3.new(4.399, 3.36, 0.399),
+			min = Vector3.new(-4.399, -0.029, -0.399),
+		},
+		id = 89138176144133,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Base_Hatchery = {
+		bounds = {
+			max = Vector3.new(10.41, 2.07, 10.41),
+			min = Vector3.new(-10.41, -0.06, -10.41),
+		},
+		id = 123815763430639,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+		},
+	},
+	Base_Incubator = {
+		bounds = {
+			max = Vector3.new(1.295, 6.2, 1.295),
+			min = Vector3.new(-1.295, -0.048, -1.295),
+		},
+		id = 88970041657971,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Lamp_Glow = {
+				collide = false,
+				glow = "FFD68C",
+			},
+		},
+	},
+	Base_Lamp = {
+		bounds = {
+			max = Vector3.new(0.798, 8.45, 0.798),
+			min = Vector3.new(-0.798, -0.048, -1.946),
+		},
+		id = 110898350981929,
+		kind = "prop",
+		light = Vector3.new(0.0, 6.8, -1.3),
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Lamp_Glow = {
+				collide = false,
+				glow = "FFD68C",
+			},
+		},
+	},
+	Base_PetHouse = {
+		anim = {
+			Flag = {
+				amp = 10,
+				axis = "y",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.35,
+			},
+		},
+		bounds = {
+			max = Vector3.new(7.026, 12.104, 5.813),
+			min = Vector3.new(-7.026, -0.06, -6.958),
+		},
+		fx = {
+			puffs = { {
+					at = Vector3.new(-2.75, 10.46, 2.25),
+					rate = 0.7,
+					size = 1.0,
+					tint = "smoke",
+				} },
+		},
+		id = 134365935928996,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Flag = {
+				collide = false,
+				joint = Vector3.new(2.75, 7.6, -3.5),
+			},
+			Windows_Glow = {
+				collide = false,
+				glow = "FFD68C",
+			},
+		},
+	},
+	Base_Pond = {
+		anim = {
+			Reeds = {
+				amp = 5,
+				axis = "z",
+				kind = "sway",
+				phase = 0.0,
+				speed = 0.5,
+			},
+		},
+		bounds = {
+			max = Vector3.new(7.79, 2.835, 5.705),
+			min = Vector3.new(-8.497, -0.5, -5.978),
+		},
+		fx = {
+			fish = { Vector3.new(2.4, 0.25, 0.4), Vector3.new(-2.2, 0.25, -0.6) },
+			loops = { {
+					asset = "PondFx_Duck",
+					bob = 0.05,
+					center = Vector3.new(-0.0, 0.25, 0.0),
+					hop = 0.0,
+					phase = 0.0,
+					rx = 3.9,
+					rz = 2.5,
+					speed = 0.25,
+					wake = true,
+				}, {
+					asset = "PondFx_Duckling",
+					bob = 0.05,
+					center = Vector3.new(-0.0, 0.25, 0.0),
+					hop = 0.0,
+					phase = -0.57,
+					rx = 3.9,
+					rz = 2.5,
+					speed = 0.25,
+					wake = false,
+				}, {
+					asset = "PondFx_Duckling",
+					bob = 0.05,
+					center = Vector3.new(-0.0, 0.25, 0.0),
+					hop = 0.0,
+					phase = -0.99,
+					rx = 3.9,
+					rz = 2.5,
+					speed = 0.25,
+					wake = false,
+				} },
+		},
+		id = 134960713460149,
+		kind = "prop",
+		parts = {
+			Body = {
+				collide = true,
+			},
+			Reeds = {
+				collide = false,
+				joint = Vector3.new(6.9, 0.0, 2.4),
+			},
+			Water = {
+				collide = false,
+			},
+		},
+	},
 	BeachFx_Crab = {
 		bounds = {
 			max = Vector3.new(0.871, 0.917, 0.477),
@@ -9116,7 +9309,7 @@ Assets.Models = {
 			max = Vector3.new(0.839, 9.79, 0.458),
 			min = Vector3.new(-0.839, -0.04, -2.839),
 		},
-		id = 82264883451789,
+		id = 135401411343823,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -9478,7 +9671,7 @@ Assets.Models = {
 			max = Vector3.new(1.7, 1.309, 1.7),
 			min = Vector3.new(-1.7, 0.0, -1.7),
 		},
-		id = 95092038865367,
+		id = 75413116388231,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10110,7 +10303,7 @@ Assets.Models = {
 			max = Vector3.new(7.232, 12.475, 5.9),
 			min = Vector3.new(-7.232, 0.0, -7.05),
 		},
-		id = 114875698982833,
+		id = 98388013918113,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10128,7 +10321,7 @@ Assets.Models = {
 			max = Vector3.new(9.0, 1.9, 9.0),
 			min = Vector3.new(-9.0, 0.0, -9.0),
 		},
-		id = 108609920230615,
+		id = 86856510643904,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10431,8 +10624,8 @@ Assets.Models = {
 			},
 		},
 		bounds = {
-			max = Vector3.new(11.884, 3.177, 8.614),
-			min = Vector3.new(-12.366, -0.377, -9.414),
+			max = Vector3.new(11.879, 3.177, 8.614),
+			min = Vector3.new(-12.352, -0.395, -9.414),
 		},
 		fx = {
 			fish = { Vector3.new(4.0, 0.3, 1.5), Vector3.new(-2.0, 0.3, 2.5), Vector3.new(1.0, 0.3, -3.0) },
@@ -10478,7 +10671,7 @@ Assets.Models = {
 					wake = false,
 				} },
 		},
-		id = 121448121192855,
+		id = 95413198747491,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10604,7 +10797,7 @@ Assets.Models = {
 			max = Vector3.new(0.785, 8.15, 0.68),
 			min = Vector3.new(-0.785, -0.04, -0.68),
 		},
-		id = 119018020258738,
+		id = 105858969653375,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10829,7 +11022,7 @@ Assets.Models = {
 			max = Vector3.new(8.099, 1.8, 5.908),
 			min = Vector3.new(-8.252, -0.5, -5.908),
 		},
-		id = 120446619890790,
+		id = 140185661729087,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10842,7 +11035,7 @@ Assets.Models = {
 			max = Vector3.new(0.595, 1.345, 1.011),
 			min = Vector3.new(-0.595, -0.105, -1.05),
 		},
-		id = 102391315930193,
+		id = 116117470504477,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10855,7 +11048,7 @@ Assets.Models = {
 			max = Vector3.new(0.327, 0.74, 0.556),
 			min = Vector3.new(-0.327, -0.058, -0.578),
 		},
-		id = 90398749226979,
+		id = 90911569261902,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -10868,7 +11061,7 @@ Assets.Models = {
 			max = Vector3.new(0.245, 0.315, 0.783),
 			min = Vector3.new(-0.245, -0.305, -0.525),
 		},
-		id = 135990314036255,
+		id = 102283765419879,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -11504,7 +11697,7 @@ Assets.Models = {
 					wake = false,
 				} },
 		},
-		id = 93302173058713,
+		id = 84393141954538,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -12091,7 +12284,7 @@ Assets.Models = {
 			max = Vector3.new(3.753, 10.0, 3.994),
 			min = Vector3.new(-3.93, -0.65, -3.962),
 		},
-		id = 138798623622064,
+		id = 98156313758836,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -12104,7 +12297,7 @@ Assets.Models = {
 			max = Vector3.new(2.08, 12.14, 2.08),
 			min = Vector3.new(-2.08, -0.65, -2.08),
 		},
-		id = 106653999716944,
+		id = 75871423966354,
 		kind = "prop",
 		parts = {
 			Body = {
@@ -12117,7 +12310,7 @@ Assets.Models = {
 			max = Vector3.new(3.791, 11.2, 3.806),
 			min = Vector3.new(-4.276, -0.65, -4.34),
 		},
-		id = 89821170555241,
+		id = 123201502244863,
 		kind = "prop",
 		parts = {
 			Body = {
