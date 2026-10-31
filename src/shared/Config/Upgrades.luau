@@ -39,8 +39,7 @@ local Stats: { [string]: StatDef } = {
 	Cash = { Name = "All Cash", Icon = "Icon_Cash", Format = "percent" }, -- BoostService (+ coin magnet range, CoinService)
 	PetIncome = { Name = "Pet Income", Icon = "Icon_Alien", Format = "percent" }, -- AlienService
 	Offline = { Name = "Offline Cash", Icon = "Icon_Daily", Format = "percent" }, -- AlienService
-	ComboMax = { Name = "Max Combo", Icon = "Icon_Boost", Format = "x" }, -- SweepService
-	ComboTime = { Name = "Combo Time", Icon = "Icon_Timer", Format = "seconds" }, -- SweepService
+	ComboTime = { Name = "Combo Time", Icon = "Icon_Timer", Format = "seconds" }, -- SweepService (pet passives only)
 	Crit = { Name = "Lucky Sweep", Icon = "Icon_Star", Format = "percent" }, -- SweepService
 	CritMult = { Name = "Lucky Payout", Icon = "Icon_Meteor", Format = "x" }, -- SweepService
 	Golden = { Name = "Golden Piles", Icon = "Icon_Sell", Format = "percent" }, -- SweepService
@@ -59,8 +58,6 @@ local Stats: { [string]: StatDef } = {
 	MutChance = { Name = "Mutation Chance", Icon = "Icon_MutationSpray", Format = "percent" }, -- HatchService: Golden/Rainbow/Sparkly
 	WeatherMut = { Name = "Weather Mutations", Icon = "Icon_Weather_Rain", Format = "percent" }, -- WeatherService: growing eggs
 	EggFind = { Name = "Eggs Found", Icon = "Icon_Egg", Format = "percent" }, -- EggService: eggs in the leaves
-	ComboKeep = { Name = "Combo Kept", Icon = "Icon_Boost", Format = "percent" }, -- SweepService: a broken combo keeps part of it
-	GoldenCombo = { Name = "Golden Combo", Icon = "Icon_Sell", Format = "x" }, -- SweepService: golden piles push the combo up
 	BunnyReach = { Name = "Bunny Reach", Icon = "Icon_Gift", Format = "percent" }, -- DustBunnyService
 	PetSell = { Name = "Pet Sell Price", Icon = "Icon_Cash", Format = "percent" }, -- InventoryService
 	PassivePower = { Name = "Pet Passives", Icon = "Icon_Alien", Format = "percent" }, -- PetPassives
@@ -136,7 +133,7 @@ export type TreeDef = { Id: string, Name: string, Root: string, Portal: string? 
 local Trees: { [string]: TreeDef } = {
 	Main = { Id = "Main", Name = "Upgrades", Root = "Power" },
 	Eggs = { Id = "Eggs", Name = "Egg Lab", Root = "Luck", Portal = "EggLab" },
-	Lucky = { Id = "Lucky", Name = "Lucky Lab", Root = "Combo", Portal = "LuckyLab" },
+	Lucky = { Id = "Lucky", Name = "Lucky Lab", Root = "Golden", Portal = "LuckyLab" },
 	Pets = { Id = "Pets", Name = "Pet Lab", Root = "PetIncome", Portal = "PetLab" },
 }
 
@@ -180,7 +177,7 @@ local Main = {
 		tier("Rocket Shoes",   "Walk even faster",                       5, 2,    3_000_000_000,   2.5, 1),
 	}),
 	lab("EggLab",   1, -1, "Eggs",  "Egg Lab",   "Egg luck, Huge pets, mutations and hatching", "Icon_Egg", 2_000),
-	lab("LuckyLab", 0, -1, "Lucky", "Lucky Lab", "Combos, lucky sweeps and golden piles",       "Icon_Star", 5_000),
+	lab("LuckyLab", 0, -1, "Lucky", "Lucky Lab", "Lucky sweeps, golden piles and bunnies",      "Icon_Star", 5_000),
 	lab("PetLab",  -1,  1, "Pets",  "Pet Lab",   "Pet income, passives and offline cash",       "Icon_Alien", 1_500),
 	t("Radius",     2, -1, "Backpack",  "Radius", {
 		tier("Wide Sweep",     "Sweep a bigger area at once",            5, 0.05, 25_000,          2.6),
@@ -231,21 +228,13 @@ local Eggs = inTree("Eggs", {
 
 -- stylua: ignore
 local Lucky = inTree("Lucky", {
-	t("Combo",       0,  0, nil,         "ComboMax", {
-		tier("Combo Master",  "Your sweep combo goes higher",           4, 0.25, 2_000,           3.0),
-		tier("Combo King",    "Your sweep combo goes even higher",      4, 0.25, 3_000_000_000,   3.0, 1),
-		tier("Combo God",     "Your sweep combo goes way higher",       2, 0.5,  300_000_000_000, 4.0, 3),
-	}),
-	t("ComboTime",   1, -1, "Combo",     "ComboTime", {
-		tier("Steady Hands",  "Your combo lasts longer between sweeps", 5, 0.3,  35_000,          2.6),
-		tier("Zen Focus",     "Your combo lasts even longer",           5, 0.3,  3_500_000_000,   2.6, 1),
-	}),
-	t("Golden",      1,  0, "Combo",     "Golden", {
+	-- The combo hexes went 2026-10-31 (Dev: the combo has no cap now); Golden is the root.
+	t("Golden",      0,  0, nil,         "Golden", {
 		tier("Golden Touch",  "Golden piles pay more",                  5, 0.20, 40_000,          2.8),
 		tier("Gold Rush",     "Golden piles pay even more",             5, 0.25, 4_000_000_000,   2.7, 1),
 		tier("Midas",         "Golden piles pay way more",              5, 0.50, 45_000_000_000,  2.8, 2),
 	}),
-	t("Crit",       -1,  1, "Combo",     "Crit", {
+	t("Crit",       -1,  1, "Golden",    "Crit", {
 		tier("Lucky Sweep",   "Chance a leaf pays 5x",                  5, 0.01, 50_000,          2.8),
 		tier("Lucky Streak",  "Even more lucky leaves",                 5, 0.01, 4_000_000_000,   2.8, 1),
 	}),
@@ -253,8 +242,6 @@ local Lucky = inTree("Lucky", {
 		tier("Jackpot",       "Lucky sweeps pay more",                  5, 1,    5_000_000_000,   2.7, 1),
 		tier("Mega Jackpot",  "Lucky sweeps pay way more",              3, 2,    150_000_000_000, 3.0, 3),
 	}),
-	n("SecondWind",  0, -1, "Combo",     "ComboKeep",   "Second Wind",  "When your combo breaks, keep part of it", 5, 0.10, 20_000,        2.8),
-	n("GoldenCombo", 2,  0, "Golden",    "GoldenCombo", "Golden Combo", "Golden piles push your combo up",         3, 0.5,  3_000_000_000, 3.0, 1),
 	n("BunnyNet",   -2,  2, "Crit",      "BunnyReach",  "Bunny Net",    "Catch dust bunnies from further away",    4, 0.25, 60_000,        2.8),
 })
 
@@ -278,7 +265,13 @@ local Pets = inTree("Pets", {
 -- Hexes removed in the 2026-10-30 remake: their levels are refunded (what they cost) the
 -- next time the player loads in (UpgradeService). BaseCost and CostGrowth as they were.
 -- stylua: ignore
-local Retired: { [string]: { BaseCost: number, CostGrowth: number } } = {
+export type RetiredDef = {
+	BaseCost: number,
+	CostGrowth: number,
+	-- Evolving hexes: each tier's levels, first price and growth (BaseCost is ignored).
+	Tiers: { { Levels: number, BaseCost: number, CostGrowth: number } }?,
+}
+local Retired: { [string]: RetiredDef } = {
 	Backpack2 = { BaseCost = 30_000, CostGrowth = 2.3 },          Backpack3 = { BaseCost = 3_000_000_000, CostGrowth = 2.3 },
 	Radius2 = { BaseCost = 3_000_000_000, CostGrowth = 2.6 },     Radius3 = { BaseCost = 200_000_000_000, CostGrowth = 2.8 },
 	Cash2 = { BaseCost = 5_000_000_000, CostGrowth = 2.5 },       Cash3 = { BaseCost = 250_000_000_000, CostGrowth = 2.5 },
@@ -294,6 +287,18 @@ local Retired: { [string]: { BaseCost: number, CostGrowth: number } } = {
 	CritMult2 = { BaseCost = 150_000_000_000, CostGrowth = 3.0 }, PetIncome2 = { BaseCost = 60_000, CostGrowth = 2.4 },
 	PetIncome3 = { BaseCost = 4_000_000_000, CostGrowth = 2.4 },  PetIncome4 = { BaseCost = 60_000_000_000, CostGrowth = 2.4 },
 	Offline2 = { BaseCost = 3_000_000_000, CostGrowth = 2.5 },
+	-- The combo hexes (2026-10-31: the combo has no cap or upgrades any more).
+	Combo = { BaseCost = 2_000, CostGrowth = 3.0, Tiers = {
+		{ Levels = 4, BaseCost = 2_000, CostGrowth = 3.0 },
+		{ Levels = 4, BaseCost = 3_000_000_000, CostGrowth = 3.0 },
+		{ Levels = 2, BaseCost = 300_000_000_000, CostGrowth = 4.0 },
+	} },
+	ComboTime = { BaseCost = 35_000, CostGrowth = 2.6, Tiers = {
+		{ Levels = 5, BaseCost = 35_000, CostGrowth = 2.6 },
+		{ Levels = 5, BaseCost = 3_500_000_000, CostGrowth = 2.6 },
+	} },
+	SecondWind = { BaseCost = 20_000, CostGrowth = 2.8 },
+	GoldenCombo = { BaseCost = 3_000_000_000, CostGrowth = 3.0 },
 }
 
 local List: { UpgradeDef } = {}
@@ -409,6 +414,16 @@ function Upgrades.retiredRefund(id: string, level: number): number
 		return 0
 	end
 	local total = 0
+	if old.Tiers then
+		local first = 0
+		for _, tr in old.Tiers do
+			for i = 0, math.min(level - first, tr.Levels) - 1 do
+				total += math.floor(tr.BaseCost * tr.CostGrowth ^ i)
+			end
+			first += tr.Levels
+		end
+		return total
+	end
 	for i = 0, level - 1 do
 		total += math.floor(old.BaseCost * old.CostGrowth ^ i)
 	end

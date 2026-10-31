@@ -106,9 +106,13 @@ local Economy = {
 		MoonBarFraction = 0.8,
 	},
 
-	-- Sweeping extras: keep sweeping to build a combo (cash x1 -> x3), golden dust piles
-	-- (much more cash) and dust bunnies that run away and drop rewards when swept.
-	Combo = { Step = 0.04, Max = 3, Timeout = 1.6 },
+	-- Sweeping extras: keep sweeping to build a combo, golden dust piles (much more cash)
+	-- and dust bunnies that run away and drop rewards when swept.
+	-- Combo (Dev, 2026-10-31): no cap and no upgrades. Every leaf pile you clear adds 1;
+	-- stop clearing for Timeout seconds (+ pet passives' ComboTime) and it drops to 0.
+	-- Cash multiplier: 1 + PerDouble * log2(1 + count / Pivot), so it keeps growing but
+	-- slower and slower (x1.5 at 50, x2 at 150, x3 at 750, x4 at 3150).
+	Combo = { Timeout = 1.6, Pivot = 50, PerDouble = 0.5 },
 	Golden = { PerZone = 4, Mult = 15, CheckSeconds = 6 },
 	TrashMult = 5, -- a trash tile (can, bottle...) pays this many times a leaf tile
 	Bunnies = {
@@ -146,5 +150,11 @@ end
 -- FriendLuckMaxFriends friends. Shown as a chip on the HUD.
 Economy.FriendLuckPerFriend = 0.1
 Economy.FriendLuckMaxFriends = 10
+
+-- Cash multiplier for a combo of `count` cleared piles (see Economy.Combo).
+function Economy.comboMult(count: number): number
+	local combo = Economy.Combo
+	return 1 + combo.PerDouble * math.log(1 + math.max(0, count) / combo.Pivot, 2)
+end
 
 return Economy

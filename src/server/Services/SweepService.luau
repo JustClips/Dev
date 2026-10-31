@@ -50,22 +50,20 @@ local function sweepArea(player: Player, session, position: Vector3, radius: num
 		return 0
 	end
 
-	-- Combo: keep clearing dust without a break to push the cash multiplier up to x3
-	-- (higher and longer with the upgrade tree). Second Wind keeps part of a broken combo.
-	local combo = Economy.Combo
-	local maxCombo = combo.Max + Upgrades.stat(levels, "ComboMax")
-	if now - (runtime.ComboAt or 0) > combo.Timeout + Upgrades.stat(levels, "ComboTime") then
-		local keep = math.clamp(Upgrades.stat(levels, "ComboKeep"), 0, 0.9)
-		runtime.Combo = 1 + ((runtime.Combo or 1) - 1) * keep
+	-- Combo: every pile cleared without a break adds 1 (no cap). The cash multiplier grows
+	-- slower the higher it gets (Economy.comboMult). A break drops it back to 0.
+	local comboHold = Economy.Combo.Timeout + Upgrades.stat(levels, "ComboTime")
+	if now - (runtime.ComboAt or 0) > comboHold then
+		runtime.ComboCount = 0
 	end
-	runtime.Combo = math.min(maxCombo, (runtime.Combo or 1) + combo.Step)
+	runtime.ComboCount = (runtime.ComboCount or 0) + #cleared
 	runtime.ComboAt = now
+	runtime.Combo = Economy.comboMult(runtime.ComboCount)
 
 	-- Lucky Sweep (upgrade tree): each tile has a small chance to pay several times over.
 	local critChance = Upgrades.stat(levels, "Crit")
 	local critMult = Upgrades.CritBaseMult + Upgrades.stat(levels, "CritMult")
 	local goldenMult = Economy.Golden.Mult * Upgrades.multiplier(levels, "Golden")
-	local goldenCombo = Upgrades.stat(levels, "GoldenCombo")
 	-- Leaf drops (Config/Items): Lucky Finds raises the chance.
 	local dropChance = Items.DropChance * Upgrades.multiplier(levels, "ItemFind")
 
@@ -78,10 +76,6 @@ local function sweepArea(player: Player, session, position: Vector3, radius: num
 		if S.DustService:TakeGolden(id) then
 			mult *= goldenMult
 			goldenHits += 1
-			-- Golden Combo (Lucky Lab): a golden pile pushes your combo up.
-			if goldenCombo > 0 then
-				runtime.Combo = math.min(maxCombo, runtime.Combo + goldenCombo)
-			end
 		end
 		-- Trash (cans, bottles...) lying among the leaves pays more.
 		local trash = Grid.trashKind(id)
@@ -112,6 +106,8 @@ local function sweepArea(player: Player, session, position: Vector3, radius: num
 		Full = S.BackpackService:IsFull(player),
 		Tiles = #cleared,
 		Combo = runtime.Combo,
+		ComboCount = runtime.ComboCount,
+		ComboHold = comboHold,
 		Golden = goldenHits,
 		Crit = critHits,
 		Trash = trashHits,

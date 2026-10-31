@@ -276,7 +276,7 @@ local function onSweepResult(result)
 	-- A pop per sweep that climbs in pitch with the combo.
 	if result.Tiles and result.Tiles > 0 then
 		local combo = result.Combo or 1
-		Ui.sound("Pop", 0.9 + math.min(combo - 1, 2) * 0.3)
+		Ui.sound("Pop", 0.9 + math.min(combo - 1, 2) * 0.2)
 	end
 	if result.Trash and result.Trash > 0 then
 		local name = TRASH_NAMES[result.TrashKind or ""] or "TRASH"
@@ -292,8 +292,8 @@ local function onSweepResult(result)
 		floatNumber(`LUCKY x{result.CritMult or 5}!`, root.Position + Vector3.new(0, 6.5, 0), Color3.fromRGB(120, 255, 140))
 		Ui.sound("Coin", 1.25)
 	end
-	if result.Combo then
-		C.HudController:SetCombo(result.Combo)
+	if result.ComboCount then
+		C.HudController:SetCombo(result.ComboCount, result.Combo, result.ComboHold)
 	end
 	if result.Full and os.clock() > fullWarnAt then
 		fullWarnAt = os.clock() + 6
