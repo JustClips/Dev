@@ -83,9 +83,10 @@ function WorldService:GetPad(index: number): BasePart
 	return bases[index]:FindFirstChild("Pad") :: BasePart
 end
 
+-- Where you spawn (join, respawn, Base teleport): the middle of your own egg delivery circle,
+-- facing out of the base toward the field. Hatching eggs sit on the nest ring, not the middle.
 function WorldService:GetSpawnCFrame(index: number): CFrame
-	local spawnPart = bases[index]:FindFirstChild("Spawn") :: BasePart
-	return spawnPart.CFrame * CFrame.new(0, 4, 0)
+	return World.baseCFrame(index) * CFrame.new(World.Base.Hatchery + Vector3.new(0, 4.5, 0))
 end
 
 function WorldService:GetSellPad(): BasePart
