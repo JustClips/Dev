@@ -459,7 +459,45 @@ local function claimJob()
 	})
 end
 
+-- Tutorial's last step: accept your first quest.
+local function acceptFirst()
+	if busy then
+		return
+	end
+	busy = true
+	local ok, message = invoke("Accept")
+	busy = false
+	if not ok then
+		C.DialogController:Say(message or "Hmm, that didn't work.", {
+			{ text = "Okay", color = GREY, pick = talk },
+		})
+		return
+	end
+	Ui.sound("Reveal")
+	-- The first job arrives with the next snapshot.
+	local job = nil
+	for _ = 1, 10 do
+		task.wait(0.2)
+		job = State.data and State.data.Quests and State.data.Quests.Job
+		if job then
+			break
+		end
+	end
+	local line = if job
+		then `Your first job: {job.Text}! Come back to me when it's done and I'll pay you {job.Reward}.`
+		else "You're all set! Check the Quests bar at the top for your first job."
+	C.DialogController:Say(line, {
+		{ text = "On it!", color = GREEN, pick = bye },
+	})
+end
+
 talk = function()
+	if State.data and State.data.TutorialStep == "Quest" then
+		C.DialogController:Say("Hi! I'm the Quest Master. I hand out jobs with awesome rewards. Want your first one?", {
+			{ text = "Accept quest!", color = GREEN, pick = acceptFirst },
+		})
+		return
+	end
 	local quests = State.data and State.data.Quests
 	if not quests or not quests.Job then
 		C.DialogController:Say("Hi there! Finish the tutorial first, then come see me for jobs and rewards.", {

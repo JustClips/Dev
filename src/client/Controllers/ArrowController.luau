@@ -109,6 +109,8 @@ local function targetFor(data): Vector3?
 		return eggSpot(data, true)
 	elseif step == "Sell" then
 		return if data.Backpack > 0 then dumpSpot else nil
+	elseif step == "Quest" and hasBase then
+		return (World.questCFrame(data.BaseIndex) * CFrame.new(0, 0, -4.5)).Position
 	end
 	if step ~= "Done" then
 		return nil

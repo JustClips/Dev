@@ -336,7 +336,7 @@ end
 -- the hotbar stay; every other button shows up at the step that uses it, alone:
 -- SELL at the Sell step, Gear at the Shop step, Upgrades at the Upgrade step, SPIN at the
 -- Wheel step. Everything comes back once the tutorial is done (or after a rebirth).
-local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10, Wheel = 11 }
+local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10, Wheel = 11, Quest = 12 }
 local function revealRail(data)
 	local key = data.TutorialStep
 	local step = STEP_ORDER[key] or 99

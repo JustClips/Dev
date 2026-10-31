@@ -36,7 +36,8 @@ local ONBOARDING: { { key: string, name: string } } = {
 	{ key = "Shop", name = "First sell" },
 	{ key = "Upgrade", name = "Got free Broom" },
 	{ key = "Wheel", name = "Got free Sweep Power" },
-	{ key = "Done", name = "Spun wheel / tutorial done" },
+	{ key = "Quest", name = "Spun wheel" },
+	{ key = "Done", name = "Accepted first quest / tutorial done" },
 }
 local ONBOARDING_INDEX: { [string]: number } = {}
 for i, step in ONBOARDING do

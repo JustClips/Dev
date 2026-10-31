@@ -98,12 +98,18 @@ local STEPS: { Step } = {
 		pad = "Press d-pad left, pick SPIN and press A for a FREE prize!",
 		icon = "Icon_Spin",
 	},
+	-- Last (Dev, 2026-10-31): hand off into quests. The arrow path leads to your Quest Master.
+	{
+		key = "Quest",
+		text = "Go accept a quest! Follow the arrow to the Quest Master.",
+		icon = "Icon_Quest",
+	},
 }
 -- The number on the card ("STEP 3/8"): planting is part of bringing it home, opening is
 -- part of hatching.
 local SHOWN_NUMBER: { [string]: number } =
-	{ Sweep = 1, Egg = 2, Base = 3, Place = 3, Hatching = 4, Open = 4, Sell = 5, Shop = 6, Upgrade = 7, Wheel = 8 }
-local SHOWN_TOTAL = 8
+	{ Sweep = 1, Egg = 2, Base = 3, Place = 3, Hatching = 4, Open = 4, Sell = 5, Shop = 6, Upgrade = 7, Wheel = 8, Quest = 9 }
+local SHOWN_TOTAL = 9
 -- A different cheer each time a step is done.
 local CHEERS = { "Nice!", "Awesome!", "Great job!", "WOW!", "You rock!", "Super!", "Amazing!", "Pro move!" }
 local cheerIndex = 0
@@ -295,6 +301,9 @@ local function worldTarget(data): Instance?
 		local index = World.nearestDump(if root then root.Position else World.RocketPosition)
 		local structures = Workspace:FindFirstChild("Structures")
 		return structures and structures:FindFirstChild("LeafDump" .. index)
+	elseif key == "Quest" and data.BaseIndex then
+		local masters = Workspace:FindFirstChild("QuestMasters")
+		return masters and masters:FindFirstChild("QuestMaster" .. data.BaseIndex)
 	end
 	return nil
 end

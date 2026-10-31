@@ -89,6 +89,11 @@ local function tutorialStep(player: Player, session: any): string
 	if type(spunAt) ~= "number" or os.time() - spunAt < Rewards.Wheel.SpinSeconds + 0.5 then
 		return "Wheel"
 	end
+	-- Very last (Dev, 2026-10-31): "Go accept a quest". The arrow path leads to your Quest
+	-- Master; talking to him and accepting (QuestService "Accept") sets QuestMet.
+	if data.Flags.QuestMet ~= true then
+		return "Quest"
+	end
 	data.Flags.TutorialDone = true
 	if not data.Flags.TutorialRewarded then
 		data.Flags.TutorialRewarded = true

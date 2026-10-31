@@ -686,6 +686,19 @@ function QuestService:Start()
 			return claimBonus(player)
 		elseif action == "ClaimZone" then
 			return claimZone(player, arg)
+		elseif action == "Accept" then
+			-- The tutorial's last step: talk to your Quest Master and accept. The tutorial
+			-- ends on the next snapshot (StateService) and the first job starts then.
+			local data = S.DataService:GetData(player)
+			if not data then
+				return false, "Still loading"
+			end
+			if not QuestService:IsNear(player) then
+				return false, "Walk up to the Quest Master first!"
+			end
+			data.Flags.QuestMet = true
+			S.StateService:Mark(player)
+			return true, nil
 		end
 		return false, "Unknown action"
 	end)
