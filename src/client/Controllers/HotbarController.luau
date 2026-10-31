@@ -278,10 +278,34 @@ local function usable(tool: Tool?): boolean
 	return tool ~= nil and tool:FindFirstChild("Handle") ~= nil
 end
 
+local leavingCar = false
 local function toggleTool()
 	local h = humanoid()
 	local character = player.Character
-	if not h or not character or h.SeatPart or h.Health <= 0 then
+	if not h or not character or h.Health <= 0 then
+		return
+	end
+	if h.SeatPart then
+		-- In your car: pressing 1 gets out and puts the tool in your hands (no need to
+		-- press 2 first).
+		local data = State.data
+		if leavingCar or not (data and data.InVehicle) then
+			return
+		end
+		leavingCar = true
+		task.spawn(function()
+			pcall(function()
+				Net.func("ToggleVehicle"):InvokeServer()
+			end)
+			local started = os.clock()
+			while h.SeatPart and os.clock() - started < 2 do
+				task.wait()
+			end
+			leavingCar = false
+			if not h.SeatPart and player.Character == character and not sweepTool(character) then
+				toggleTool()
+			end
+		end)
 		return
 	end
 	local held = sweepTool(character)
