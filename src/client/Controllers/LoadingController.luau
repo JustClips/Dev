@@ -30,7 +30,7 @@ local TERRAIN_MAX = 15
 local MODELS_MAX = 25
 local PROPS_MAX = 15
 local QUEUE_MAX = 6
-local SKIP_AFTER = 10
+local SKIP_AFTER = 3
 local TIPS = {
 	"Bigger tools sweep wider and hold more leaves.",
 	"Dump your trash into the green bins by the market to get cash.",
