@@ -499,22 +499,6 @@ def hud():
     # a thick bar with "310 / 500" inside; it turns red with FULL when the bag is full.
     wallet = frame("Wallet", U(0, 262, 0, 118), U(0, 14, 1, -14), (0, 1), children=[
         autoscale(), vlist(8, "Left", "Bottom"),
-        # Goals (GoalController, Dev 2026-10-31): after the tutorial, three goals right
-        # above the cash; all three ticked = a free wheel spin.
-        plate("Goals", U(0, 262, 0, 116), tint=BG, stroke=3, LayoutOrder=0, Visible=False, children=[
-            text("Title", "GOALS", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=17, color=PREMIUM, display=True, stroke=2, xa="Left"),
-            text("Reward", "All 3 = FREE SPIN", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=16, color=ACCENT, display=True, stroke=2,
-                 xa="Right"),
-        ] + [frame(f"Row{i}", U(1, -12, 0, 26), U(0, 6, 0, 30 + (i - 1) * 28), children=[
-            frame("Check", U(0, 20, 0, 20), U(0, 2, 0.5, 0), (0, 0.5), bg="#14171D", children=[
-                border(WHITE, 2),
-                text("Mark", "", U(1, 0, 1, 0), ts=18, color=WHITE, display=True, stroke=2),
-            ]),
-            text("Text", "", U(1, -112, 1, 0), U(0, 30, 0, 0), ts=17, display=True, stroke=2, xa="Left",
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 8})]),
-            text("Progress", "", U(0, 82, 1, 0), U(1, -2, 0, 0), (1, 0), ts=16, color="#C9D0DE", display=True, stroke=2,
-                 xa="Right", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
-        ]) for i in (1, 2, 3)]),
         plate("CashPanel", U(0, 262, 0, 62), tint=BG, stroke=3, LayoutOrder=1, children=[
             icon("Icon", "Cash", 50, U(0, 4, 0.5, 0), (0, 0.5)),
             text("Cash", "$0", U(1, -112, 0, 34), U(0, 58, 0, 3), ts=30, color=WHITE, display=True, xa="Left", stroke=2.5,
@@ -615,7 +599,33 @@ def hud():
         text("Label", "HOLD HERE", U(1, 0, 0, 30), U(0.5, 0, 1, -24), (0.5, 1), ts=26, display=True, stroke=3, ZIndex=18),
         text("Sub", "to sweep", U(1, 0, 0, 22), U(0.5, 0, 1, 0), (0.5, 1), ts=19, color=ACCENT, display=True, stroke=2.5, ZIndex=18),
     ])
-    write("Hud", screen([rail, spin, pills, moon, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, picker,
+    # Goals (GoalController, Dev 2026-10-31): a slim strip under the World Cleaned bar with
+    # the next goal; tap it to drop down all three. All three ticked = a free wheel spin.
+    def goal_row(i):
+        return frame(f"Row{i}", U(1, -12, 0, 26), U(0, 6, 0, 30 + (i - 1) * 28), children=[
+            frame("Check", U(0, 20, 0, 20), U(0, 2, 0.5, 0), (0, 0.5), bg="#14171D", children=[
+                border(WHITE, 2),
+                text("Mark", "", U(1, 0, 1, 0), ts=18, color=WHITE, display=True, stroke=2),
+            ]),
+            text("Text", "", U(1, -122, 1, 0), U(0, 30, 0, 0), ts=17, display=True, stroke=2, xa="Left",
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 8})]),
+            text("Progress", "", U(0, 92, 1, 0), U(1, -2, 0, 0), (1, 0), ts=16, color="#C9D0DE", display=True, stroke=2,
+                 xa="Right", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
+        ])
+    goals = button("Goals", U(0, 336, 0, 30), U(0.5, 0, 0, 118), (0.5, 0), color=BG, stroke=3, stud=False, Visible=False,
+                   children=[
+        autoscale(),
+        text("Count", "GOALS 0/3", U(0, 92, 1, 0), U(0, 8, 0, 0), ts=16, color=PREMIUM, display=True, stroke=2, xa="Left"),
+        text("Next", "", U(1, -112, 1, 0), U(0, 100, 0, 0), ts=16, display=True, stroke=2, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
+        text("Arrow", "v", U(0, 16, 1, 0), U(1, -6, 0, 0), (1, 0), ts=16, color="#C9D0DE", display=True),
+        plate("List", U(1, 0, 0, 116), U(0, 0, 1, 4), tint=BG, stroke=3, Visible=False, children=[
+            text("Title", "GOALS", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=17, color=PREMIUM, display=True, stroke=2, xa="Left"),
+            text("Reward", "All 3 = FREE SPIN", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=16, color=ACCENT, display=True, stroke=2,
+                 xa="Right"),
+        ] + [goal_row(i) for i in (1, 2, 3)]),
+    ])
+    write("Hud", screen([rail, spin, pills, moon, goals, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, picker,
                          spot, pointer, hold], order=1))
 
 

@@ -583,8 +583,13 @@ layout = function(s: number, compact: boolean)
 	HudController.barY = barY
 	el.MoonPanel.Position = UDim2.new(0.5, 0, 0, barY)
 	el.ZonePicker.Position = UDim2.new(0.5, 0, 0, barY)
-	el.Announcement.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(52 * s))
-	el.Toasts.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(54 * s) + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
+	-- The goals strip (GoalController) sits right under the World Cleaned bar; the
+	-- announcement and toasts go under it.
+	local goals = el.Goals :: GuiObject
+	goals.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(50 * s))
+	local goalsH = if goals.Visible then math.ceil(36 * s) else 0
+	el.Announcement.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(52 * s) + goalsH)
+	el.Toasts.Position = UDim2.new(0.5, 0, 0, barY + math.ceil(54 * s) + goalsH + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
 	local hotbarTop = 12 + math.ceil(88 * s)
 	el.Hint.Position = UDim2.new(0.5, 0, 1, -(hotbarTop + math.ceil(12 * s)))
 	local walletLayout = el.Wallet:FindFirstChildOfClass("UIListLayout")
@@ -685,6 +690,7 @@ function HudController:Init(controllers)
 	el.Pills = Ui.find(hud, "Pills")
 	el.SpinButton = Ui.find(hud, "SpinButton")
 	el.MoonPanel = Ui.find(hud, "MoonPanel")
+	el.Goals = Ui.find(hud, "Goals")
 	el.Toasts = Ui.find(hud, "Toasts")
 	el.Hint = Ui.find(hud, "Hint")
 	el.Combo = Ui.find(hud, "Combo")
