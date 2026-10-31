@@ -218,11 +218,13 @@ end
 -- New players see the left rail fill in as the tutorial goes (Dev, 2026-10-30: too many
 -- buttons at once on phones). Shop is always there; Index after the first pet, Upgrades
 -- at the step that uses it, Rebirth / Daily / Gifts once the tutorial is done (and the
--- top-right Spin button with them).
+-- top-right Spin button with them; the Spin button already shows at the tutorial's last
+-- step, which spins from it).
 local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10, Wheel = 11 }
 local function revealRail(data)
 	local step = STEP_ORDER[data.TutorialStep] or 99
 	local done = step == 99 or data.Rebirths > 0
+	local spin = done or step >= 11
 	local show = {
 		IndexButton = step >= 7,
 		UpgradesButton = step >= 10,
@@ -230,8 +232,8 @@ local function revealRail(data)
 		RewardsButton = done,
 		GiftsButton = done,
 	}
-	if el.SpinButton.Visible ~= done then
-		el.SpinButton.Visible = done
+	if el.SpinButton.Visible ~= spin then
+		el.SpinButton.Visible = spin
 	end
 	local changed = false
 	for name, visible in show do

@@ -38,9 +38,9 @@ type Step = { key: string, text: string, touch: string?, pad: string?, icon: str
 local STEPS: { Step } = {
 	{
 		key = "Sweep",
-		text = "Hold the mouse to sweep the leaves and find an egg!",
-		touch = "Hold your finger on the right side of the screen to sweep the leaves and find an egg!",
-		pad = "Hold R2 to sweep the leaves and find an egg!",
+		text = "Hold the mouse and WALK AROUND to sweep up leaves. Find an egg!",
+		touch = "Hold the right side of the screen and WALK AROUND to sweep up leaves. Find an egg!",
+		pad = "Hold R2 and WALK AROUND to sweep up leaves. Find an egg!",
 		icon = "Icon_Dust",
 	},
 	{
@@ -74,24 +74,12 @@ local STEPS: { Step } = {
 		icon = "Icon_Alien",
 	},
 	{ key = "Sell", text = "Dump your leaves at the market for cash!", icon = "Icon_Sell" },
-	{
-		key = "Shop",
-		text = "Open Gear and buy a better tool. It sweeps faster!",
-		pad = "Press d-pad right, open Gear and buy a better tool. It sweeps faster!",
-		icon = "Icon_Tools",
-	},
-	{
-		key = "Upgrade",
-		text = "Open Upgrades and double-click Sweep Power to buy it!",
-		touch = "Open Upgrades and double-tap Sweep Power to buy it!",
-		pad = "Press d-pad left, open Upgrades and press A twice on Sweep Power!",
-		icon = "Icon_Upgrade",
-	},
+	-- No Gear / Upgrades steps: the first sell gifts the Broom and Sweep Power 1 (server).
 	{
 		key = "Wheel",
-		text = "Go to the Lucky Wheel in the plaza and press E for your FREE spin!",
-		touch = "Go to the Lucky Wheel in the plaza and tap it for your FREE spin!",
-		pad = "Go to the Lucky Wheel in the plaza and press X for your FREE spin!",
+		text = "Click SPIN at the top right for your FREE Lucky Wheel spin!",
+		touch = "Tap SPIN at the top right for your FREE Lucky Wheel spin!",
+		pad = "Press d-pad left, pick SPIN and press A for your FREE spin!",
 		icon = "Icon_Spin",
 	},
 }
@@ -129,6 +117,11 @@ local readyPrimed = false
 local wasHolding = false
 local holdCooldown = 0
 local pointerTarget: GuiObject? = nil
+-- Sweep step: standing still while sweeping gets a "walk around" nudge.
+local STILL_SECONDS = 4
+local STILL_STUDS = 6
+local stillFrom: Vector3? = nil
+local stillSince = 0
 
 -- True while the sweeping tool is in your hands (the first step needs it).
 local function toolInHand(): boolean
@@ -271,9 +264,6 @@ local function worldTarget(data): Instance?
 		local index = World.nearestDump(if root then root.Position else World.RocketPosition)
 		local structures = Workspace:FindFirstChild("Structures")
 		return structures and structures:FindFirstChild("LeafDump" .. index)
-	elseif key == "Wheel" then
-		local structures = Workspace:FindFirstChild("Structures")
-		return structures and structures:FindFirstChild("LuckyWheel")
 	end
 	return nil
 end
@@ -339,6 +329,22 @@ local function petSlot(data): GuiObject?
 	return nil
 end
 
+-- True when the player has stayed in one small spot for a few seconds.
+local function standingStill(): boolean
+	local character = Players.LocalPlayer.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not root then
+		return false
+	end
+	local now = os.clock()
+	if not stillFrom or (root.Position - stillFrom).Magnitude > STILL_STUDS then
+		stillFrom = root.Position
+		stillSince = now
+		return false
+	end
+	return now - stillSince >= STILL_SECONDS
+end
+
 local function update()
 	local data = State.data
 	if not data then
@@ -377,6 +383,11 @@ local function update()
 		local needTool = key == "Sweep" and not toolInHand()
 		if key == "Sweep" and not celebrating then
 			local want = stepText(step)
+			if not needTool and standingStill() then
+				want = if UserInputService.TouchEnabled and not Ui.gamepad()
+					then "Keep moving! Use the joystick to walk onto new leaves while you sweep."
+					else "Keep moving! Walk onto new leaves while you sweep."
+			end
 			if textLabel.Text ~= want then
 				textLabel.Text = want
 			end
@@ -390,11 +401,9 @@ local function update()
 			pointAt(petTarget)
 		elseif key == "Place" and C.PlacementController:IsHolding() and autoPlace.Visible then
 			pointAt(autoPlace, false)
-		elseif key == "Shop" and not Ui.isOpen(Ui.screen("Garage")) then
-			pointAt(Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton"))
-		elseif key == "Upgrade" and not C.UpgradeController:IsOpen() then
-			pointAt(Ui.find(hud, "Rail.UpgradesButton"))
-		elseif key == "Wheel" and Ui.isOpen(Ui.screen("Wheel")) and not C.WheelController:IsSpinning() then
+		elseif key == "Wheel" and not Ui.isOpen(Ui.screen("Wheel")) then
+			pointAt(Ui.find(hud, "SpinButton"))
+		elseif key == "Wheel" and not C.WheelController:IsSpinning() then
 			pointAt(Ui.find(Ui.screen("Wheel"), "Window.Side.SpinButton"))
 		else
 			pointAt(nil)

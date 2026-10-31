@@ -107,9 +107,6 @@ local function targetFor(data): Vector3?
 		return eggSpot(data, true)
 	elseif step == "Sell" then
 		return if data.Backpack > 0 then dumpSpot else nil
-	elseif step == "Wheel" then
-		-- The spot in front of the wheel stand (its prompt is on the plinth).
-		return (World.Wheel * CFrame.new(0, 0, -4)).Position
 	end
 	if step ~= "Done" then
 		return nil
@@ -133,7 +130,6 @@ local function update()
 		current = nil
 		return
 	end
-	C.HudController:Highlight(if data.TutorialStep == "Shop" then "Tools" else nil)
 	local target = targetFor(data)
 	if not target or (target - root.Position).Magnitude < REACHED then
 		board.Enabled = false

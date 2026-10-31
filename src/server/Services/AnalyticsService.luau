@@ -34,8 +34,8 @@ local ONBOARDING: { { key: string, name: string } } = {
 	{ key = "PlacePet", name = "Hatched egg" },
 	{ key = "Sell", name = "Placed pet" },
 	{ key = "Shop", name = "First sell" },
-	{ key = "Upgrade", name = "Bought Broom" },
-	{ key = "Wheel", name = "Bought first upgrade" },
+	{ key = "Upgrade", name = "Got Broom" },
+	{ key = "Wheel", name = "Got Sweep Power" },
 	{ key = "Done", name = "Spun wheel / tutorial done" },
 }
 local ONBOARDING_INDEX: { [string]: number } = {}
