@@ -452,6 +452,14 @@
    "id": 122002365583388,
    "sha": "114bd99f17feac31ebdb93770945f3ad2c2fa58c73853f127c63d4d447acc33f"
   },
+  "Pet_LuckyCat_Idle": {
+   "id": 112853981853066,
+   "sha": "a47736d2781303d288dd3a07746ca62bc933d387f84444e83cc4247b915affbe"
+  },
+  "Pet_LuckyCat_Walk": {
+   "id": 74997033062388,
+   "sha": "2dcda5b06b4e6745fc4f2ca224f8f2a8732cff2baace8a25c5b36ea695b81577"
+  },
   "Pet_Mammoth_Idle": {
    "id": 120516502786655,
    "sha": "9a63199bfd7b6d469afdde4c97ada6f1955e16ce05de33fb68c5203230dceeee"
@@ -1541,6 +1549,10 @@
   "Icon_Luck": {
    "id": 70626605823022,
    "sha": "554286fd51792259708282ab43ba44471d6b05b711259e47f5e9dd67cdf2968c"
+  },
+  "Icon_LuckyCat": {
+   "id": 82725409080543,
+   "sha": "c6b82e81b604440e773e6e1e02d78176ebd0a26d2544514b4d6dce6765a6596d"
   },
   "Icon_LuckyClover": {
    "id": 101589111469741,
@@ -8987,6 +8999,10 @@
   "Alien_Lion": {
    "id": 116473394980379,
    "sha": "fe1f8349e2c69967edf95a9407128c0ab14058de8af0ff0c603859891debe1a9"
+  },
+  "Alien_LuckyCat": {
+   "id": 95475355731727,
+   "sha": "a7ce32dc8d06fb0c8088f692c993737900d570d63aa9e9c8b1b072cdcd6f42ed"
   },
   "Alien_LunarSlug": {
    "id": 85737391473490,

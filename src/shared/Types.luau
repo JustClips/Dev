@@ -123,7 +123,7 @@ export type AlienDef = {
 	Size: number,
 	Zone: string?, -- the zone whose eggs hatch it (nil = Landing)
 	Base: string?, -- zone variants: the Landing alien whose model they remix
-	Exclusive: string?, -- "Daily": only from that reward, never from eggs
+	Exclusive: string?, -- "Daily" | "Wheel": only from that reward, never from eggs
 	Passive: PetPassive?, -- bonus while placed (shared/PetPassives)
 }
 

@@ -4037,6 +4037,87 @@ Assets.Models = {
 		},
 		voxel = true,
 	},
+	Alien_LuckyCat = {
+		anims = {
+			idle = "Pet_LuckyCat_Idle",
+			walk = "Pet_LuckyCat_Walk",
+		},
+		aura = "GoldDust",
+		bounds = {
+			max = Vector3.new(0.877, 2.984, 1.579),
+			min = Vector3.new(-0.877, 0.0, -2.106),
+		},
+		id = 95475355731727,
+		kind = "alien",
+		parts = {
+			Bell_Glow = {
+				collide = false,
+				glow = "FFD23F",
+				joint = Vector3.new(-0.0, 1.053, -2.106),
+				parent = "Collar",
+			},
+			Body = {
+				collide = false,
+			},
+			Coin_Glow = {
+				collide = false,
+				glow = "FFD23F",
+				joint = Vector3.new(-0.0, 1.5795, 0.0),
+				parent = "Body",
+			},
+			Collar = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.2285, -1.404),
+				parent = "Head",
+			},
+			EarL = {
+				collide = false,
+				joint = Vector3.new(-0.4388, 2.457, -1.404),
+				parent = "Head",
+			},
+			EarR = {
+				collide = false,
+				joint = Vector3.new(0.4388, 2.457, -1.404),
+				parent = "Head",
+			},
+			Head = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.404, -1.053),
+				parent = "Body",
+			},
+			LegBL = {
+				collide = false,
+				joint = Vector3.new(-0.351, 0.702, 0.702),
+				parent = "Body",
+			},
+			LegBR = {
+				collide = false,
+				joint = Vector3.new(0.351, 0.702, 0.702),
+				parent = "Body",
+			},
+			LegFL = {
+				collide = false,
+				joint = Vector3.new(-0.351, 0.702, -0.702),
+				parent = "Body",
+			},
+			LegFR = {
+				collide = false,
+				joint = Vector3.new(0.351, 0.702, -0.702),
+				parent = "Body",
+			},
+			Tail = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.404, 1.053),
+				parent = "Body",
+			},
+			Tail2 = {
+				collide = false,
+				joint = Vector3.new(-0.0, 1.9305, 1.404),
+				parent = "Tail",
+			},
+		},
+		voxel = true,
+	},
 	Alien_LunarSlug = {
 		bounds = {
 			max = Vector3.new(0.6, 1.54, 1.45),
@@ -11647,6 +11728,8 @@ Assets.Animations = {
 	Pet_Lemming_Walk = 124248224161768,
 	Pet_Lion_Idle = 108544388212872,
 	Pet_Lion_Walk = 122002365583388,
+	Pet_LuckyCat_Idle = 112853981853066,
+	Pet_LuckyCat_Walk = 74997033062388,
 	Pet_Mammoth_Idle = 120516502786655,
 	Pet_Mammoth_Walk = 111259766409653,
 	Pet_MantaRay_Idle = 96581297653947,
@@ -11929,6 +12012,7 @@ Assets.Images = {
 	Icon_LeafBomb = "rbxassetid://121980103915006",
 	Icon_Lock = "rbxassetid://121878216910277",
 	Icon_Luck = "rbxassetid://70626605823022",
+	Icon_LuckyCat = "rbxassetid://82725409080543",
 	Icon_LuckyClover = "rbxassetid://101589111469741",
 	Icon_Merchant = "rbxassetid://90406456049168",
 	Icon_Meteor = "rbxassetid://115351344385246",

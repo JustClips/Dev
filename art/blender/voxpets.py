@@ -35,7 +35,7 @@ from lib import Asset  # noqa: E402
 U = 0.13            # cube size in studs (BASE_U times the pet's SCALE while it builds)
 BASE_U = U
 # Bigger pets: same cube grid, bigger cubes.
-SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6, "DustBunny": 1.9, "Koi": 1.2, "Flamingo": 1.1, "RedPanda": 1.1, "MossGolem": 1.6, "Pegasus": 1.6, "Pelican": 1.2, "SeaTurtle": 1.2, "Walrus": 1.3, "MantaRay": 1.3, "Orca": 1.4, "Narwhal": 1.4, "CoralDragon": 1.6, "GoldenSeahorse": 1.5, "PoliceDog": 1.1, "CyberWolf": 1.2, "JetpackMonkey": 1.2, "NeonDragon": 1.5, "GoldenLion": 1.3, "MuskOx": 1.2, "PolarBear": 1.3, "FrostBat": 1.2, "WoollyRhino": 1.4, "CrystalStag": 1.4, "IceDragon": 1.6, "GlacierTitan": 1.8, "Capybara": 1.3, "Axolotl": 1.2, "Sloth": 1.4, "Chameleon": 1.2}
+SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6, "DustBunny": 1.9, "Koi": 1.2, "Flamingo": 1.1, "RedPanda": 1.1, "MossGolem": 1.6, "Pegasus": 1.6, "Pelican": 1.2, "SeaTurtle": 1.2, "Walrus": 1.3, "MantaRay": 1.3, "Orca": 1.4, "Narwhal": 1.4, "CoralDragon": 1.6, "GoldenSeahorse": 1.5, "PoliceDog": 1.1, "CyberWolf": 1.2, "JetpackMonkey": 1.2, "NeonDragon": 1.5, "GoldenLion": 1.3, "MuskOx": 1.2, "PolarBear": 1.3, "FrostBat": 1.2, "WoollyRhino": 1.4, "CrystalStag": 1.4, "IceDragon": 1.6, "GlacierTitan": 1.8, "Capybara": 1.3, "Axolotl": 1.2, "Sloth": 1.4, "Chameleon": 1.2, "LuckyCat": 1.35}
 FPS = 30
 IDLE = (0, 90)      # frames
 WALK = (120, 138)
@@ -2878,6 +2878,84 @@ def chameleon():
     return a
 
 
+# Lucky Wheel exclusive (Dev, 2026-10-31): a beckoning lucky cat. White calico coat, red
+# collar with a glowing gold bell and a gold coin on its back; the front left paw waves.
+def lucky_cat():
+    W, WS, O, K, P, R, G, GD = "FAF6EE", "E6DFD2", "F29A38", "2E2A2A", "FF9AB0", "E0303A", "FFD23F", "D9A21E"
+    # white, white shade, orange patch, black patch, pink, red collar, gold, dark gold
+
+    def coat(i, j, k):
+        if (i - 2) ** 2 + (j - 2) ** 2 <= 5 and k >= 6:
+            return O                                        # orange patch over the hips
+        if (i + 2) ** 2 + (j + 3) ** 2 <= 3 and k >= 7:
+            return K                                        # black patch on the shoulder
+        return W
+    parts = legs(W, W, 4, -5, 3)
+    for c in parts[0].cells:                                # pink paw pads on the waving paw
+        if c[2] == 0:
+            parts[0].cells[c] = "FFC2CF"
+    body = Part("Body")
+    body.box(-3, 3, -6, 6, 4, 9, lambda i, j, k: WS if k == 4 else coat(i, j, k))
+    parts.append(body)
+
+    head = Part("Head", "Body", joint=(0, -6, 8))
+
+    def hcol(i, j, k):
+        if k >= 12 and 1 <= i <= 3 and j >= -10:
+            return O                                        # orange patch over one ear
+        if k >= 12 and -4 <= i <= -3 and j >= -8:
+            return K                                        # black patch over the other
+        return W
+    head.box(-4, 4, -11, -5, 7, 14, hcol)
+    for x0 in (-4, 1):                                      # happy closed eyes (^ ^)
+        head.set([(x0, -11, 10), (x0 + 1, -11, 11), (x0 + 2, -11, 10)], EYE)
+    head.set([(-4, -11, 9), (3, -11, 9)], P)               # blush (under the eyes)
+    head.box(-2, 2, -12, -11, 8, 10, W)                    # muzzle
+    head.set([(-1, -12, 9), (0, -12, 9)], P)               # nose
+    head.set([(-1, -12, 8), (0, -12, 8)], "8C4A3A")        # mouth
+    for side in (-1, 1):                                    # whiskers
+        x = 4 if side > 0 else -5
+        head.set([(x, -10, 9), (x, -10, 8)], WS)
+    parts.append(head)
+
+    ear = Part("EarL", "Head", joint=(2.5, -8, 14))
+    for k, xs in ((14, (1, 2, 3)), (15, (2, 3)), (16, (3,))):
+        for x in xs:
+            for y in (-9, -8):
+                inner = y == -9 and x == 2
+                ear.cells[(x, y, k)] = P if inner else (O if y == -8 else W)
+    earR = ear.mirror("EarR")
+    for c in earR.cells:
+        if earR.cells[c] == O:
+            earR.cells[c] = K
+    parts += [ear, earR]
+
+    collar = Part("Collar", "Head", joint=(0, -8, 7), noise=False)
+    collar.box(-4, 4, -11, -5, 6, 7, lambda i, j, k: R if i in (-4, 3) or j in (-11, -6) else None)
+    parts.append(collar)
+    bell = Part("Bell_Glow", "Collar", joint=(0, -12, 6), noise=False, glow=G)
+    bell.box(-1, 1, -12, -11, 4, 6, G)
+    bell.set([(-1, -12, 3), (0, -12, 3)], GD)
+    parts.append(bell)
+
+    coin = Part("Coin_Glow", "Body", joint=(0, 0, 9), noise=False, glow=G)  # gold koban on its back
+    coin.box(-1, 1, -2, 3, 9, 10, G)
+    coin.box(-2, 2, -1, 2, 9, 10, G)
+    coin.set([(-1, 0, 10), (0, 0, 10)], GD)
+    parts.append(coin)
+
+    tail = Part("Tail", "Body", joint=(0, 6, 8))
+    tail.box(-1, 1, 6, 8, 7, 9, W)
+    tail.box(-1, 1, 7, 9, 9, 11, lambda i, j, k: K if k == 10 else W)
+    tail2 = Part("Tail2", "Tail", joint=(0, 8, 11))
+    tail2.box(-1, 1, 7, 9, 11, 15, lambda i, j, k: O if k in (12, 14) else W)
+    tail2.box(-1, 1, 6, 8, 15, 16, O)
+    parts += [tail, tail2]
+    a = assemble("LuckyCat", parts)
+    a.extra["aura"] = "GoldDust"
+    return a
+
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
@@ -2898,7 +2976,7 @@ PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon":
         "PoliceDog": police_dog, "NeonCat": neon_cat, "CyberWolf": cyber_wolf, "JetpackMonkey": jetpack_monkey, "NeonDragon": neon_dragon, "GoldenLion": golden_lion,
         "ArcticFox": arctic_fox, "Lemming": lemming, "Puffin": puffin, "Husky": husky, "Reindeer": reindeer, "MuskOx": musk_ox,
         "PolarBear": polar_bear, "FrostBat": frost_bat, "WoollyRhino": woolly_rhino, "CrystalStag": crystal_stag, "IceDragon": ice_dragon, "GlacierTitan": glacier_titan,
-        "Capybara": capybara, "Axolotl": axolotl, "Sloth": sloth, "Chameleon": chameleon}
+        "Capybara": capybara, "Axolotl": axolotl, "Sloth": sloth, "Chameleon": chameleon, "LuckyCat": lucky_cat}
 
 
 # ------------------------------------------------------------------------- animation
@@ -3915,6 +3993,22 @@ def chameleon_walk(w):
     return p
 
 
+def lucky_cat_idle(w):
+    p = cat_idle(w)
+    beckon = 18 * s(4 * w)                                  # the lucky wave: paw up beside the face
+    p["LegFL"] = ((0.3, -0.5, 0.72), (-10 + beckon, -135, 0))
+    p["Body"] = ((0, 0, 0.015 * (1 - c(2 * w))), (-4 + 1.5 * s(4 * w), 0, 0))
+    p["Collar"] = ((0, 0, 0), (0, 0, 0))
+    p["Bell_Glow"] = ((0, 0, 0), (10 * s(4 * w + 0.6), 0, 0))
+    return p
+
+
+def lucky_cat_walk(w):
+    p = walk(30, 0.05, 14, 6, 4)(w)
+    p["Bell_Glow"] = ((0, 0, 0), (14 * s(2 * w), 0, 0))
+    return p
+
+
 ANIMS = {
     "Cat": {"Idle": cat_idle, "Walk": walk(30, 0.05, 14, 6, 4)},
     "Dog": {"Idle": dog_idle, "Walk": walk(34, 0.06, 26, -6, 14)},
@@ -3967,6 +4061,7 @@ ANIMS = {
     "Axolotl": {"Idle": axo_idle, "Walk": axo_walk},
     "Sloth": {"Idle": sloth_idle, "Walk": sloth_walk},
     "Chameleon": {"Idle": chameleon_idle, "Walk": chameleon_walk},
+    "LuckyCat": {"Idle": lucky_cat_idle, "Walk": lucky_cat_walk},
     "DustBunny": {"Idle": bunny_mob_idle, "Walk": bunny_mob_hop(1.0, 30, 20), "Run": bunny_mob_hop(2.4, 55, 45)},
     "Ladybug": {"Idle": bug_idle, "Walk": bug_walk},
     "Chipmunk": {"Idle": rat_idle, "Walk": walk(40, 0.08, 10, -10, 0)},

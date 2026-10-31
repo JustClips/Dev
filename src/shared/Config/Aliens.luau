@@ -246,6 +246,12 @@ local List: { AlienDef } = {
 	{ Id = "Chameleon", Name = "Golden Chameleon", Rarity = "Legendary", Zone = "Daily", Exclusive = "Daily", Income = 2_500,
 		Color = Color3.fromRGB(242, 194, 50), Size = 2.2,
 		Passive = { Name = "Gold Shift", Stat = "Golden", Value = 0.6 } },
+
+	-- Lucky Wheel exclusive (Dev, 2026-10-31: a reason to spin the wheel): only from the
+	-- wheel's 1% jackpot wedge, guaranteed by Rewards.Wheel.Pity spins. Never in eggs.
+	{ Id = "LuckyCat", Name = "Lucky Cat", Rarity = "Mythic", Zone = "Wheel", Exclusive = "Wheel", Income = 9_000,
+		Color = Color3.fromRGB(255, 214, 64), Size = 2.6,
+		Passive = { Name = "Lucky Paw", Stat = "Luck", Value = 0.45 } },
 }
 
 -- Zone sets: each entry is a Landing alien the variant is based on (empty until the new
@@ -317,7 +323,7 @@ local Aliens = {
 	HugeIncomeMult = 10,
 	HugeScale = 2,
 	-- Pets you can't hatch, by where they come from, in the order they're given out.
-	Exclusives = { Daily = {} :: { string } } :: { [string]: { string } },
+	Exclusives = { Daily = {} :: { string }, Wheel = {} :: { string } } :: { [string]: { string } },
 }
 
 for _, alien in List do

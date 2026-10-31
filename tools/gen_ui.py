@@ -1528,7 +1528,8 @@ def wheel():
     turns (its Rotation) and carries the face image and one "Seg<i>" icon + chance per wedge
     (wedge i spans (i-1)*45..i*45 degrees clockwise from the top, like art/wheel_art.py);
     the pointer stays on top. Right, kept simple (Dev, 2026-10-30: the first one was too
-    busy): spins you have, the big SPIN button, two Robux spin packs and a "Prize chances"
+    busy): spins you have, the big SPIN button (it counts down to the daily free spin), two
+    Robux spin packs, the Lucky Cat pity bar and a "Prize chances"
     button that swaps the packs for the full list of prizes (paid random rewards must show
     their odds)."""
     import math
@@ -1580,6 +1581,19 @@ def wheel():
                 node("Layout", "UIGridLayout", {"CellSize": U(0, 160, 0, 44), "CellPadding": U(0, 6, 0, 2),
                                                 "SortOrder": "LayoutOrder", "FillDirection": "Vertical"}),
             ] + [odds_row(i) for i in range(1, 9)]),
+        ]),
+        # The wheel-only pet (Dev, 2026-10-31: a reason to spin): its picture, and how many
+        # spins until it's guaranteed (Rewards.Wheel.Pity) with a bar that fills up.
+        plate("Pity", U(1, 0, 0, 84), U(0, 0, 0, 288), tint="#FFF4D6", stroke=3, children=[
+            icon("Icon", "LuckyCat", 72, U(0, 6, 0.5, 0), (0, 0.5), ZIndex=4),
+            text("Title", "EXCLUSIVE: LUCKY CAT", U(1, -90, 0, 24), U(0, 84, 0, 6), ts=19, color=INK, display=True,
+                 xa="Left", TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 19, "MinTextSize": 10})]),
+            text("Sub", "Guaranteed in 50 spins", U(1, -90, 0, 20), U(0, 84, 0, 30), ts=16, color=SUB, heavy=True, xa="Left",
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 9})]),
+            frame("Bar", U(1, -94, 0, 18), U(0, 84, 1, -10), (0, 1), bg="#3A3F4E", children=[
+                border(INK, 2),
+                frame("Fill", U(0, 0, 1, 0), bg="#FF7EB6"),
+            ]),
         ]),
         button("OddsButton", U(1, 0, 0, 52), U(0, 0, 1, 0), (0, 1), color="#4C8DFF", label="Prize chances", ts=22, ico="Star",
                ico_px=34),

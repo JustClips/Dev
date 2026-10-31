@@ -77,7 +77,9 @@ local function describe(reward: Rewards.Reward): (string, string, Color3?)
 		return "Icon_Spin", if amount > 1 then `{amount} Wheel Spins` else "Wheel Spin", nil
 	elseif reward.Kind == "Pet" then
 		local def = Aliens.ById[reward.Pet or ""]
-		return "Icon_Gift", if def then def.Name else "Exclusive Pet", nil
+		-- Pets with their own icon (the wheel's Lucky Cat: Icon_LuckyCat) show it.
+		local icon = if def and AssetLibrary.image("Icon_" .. def.Id) ~= "" then "Icon_" .. def.Id else "Icon_Gift"
+		return icon, if def then def.Name else "Exclusive Pet", nil
 	end
 	return "Icon_Gift", "", nil
 end

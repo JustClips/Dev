@@ -221,6 +221,21 @@ function RewardService:AddSpins(player: Player, count: number): number
 	return data.Spins
 end
 
+-- The wedge with the wheel's exclusive pet (the one the pity counter guarantees).
+local function wheelPetIndex(): number?
+	for i, seg in Rewards.Wheel.Segments do
+		if seg.Reward.Kind == "Pet" then
+			return i
+		end
+	end
+	return nil
+end
+
+-- Spins left until the wheel's exclusive pet is guaranteed (the window shows it).
+local function wheelPityLeft(data): number
+	return math.max(1, Rewards.Wheel.Pity - (tonumber(data.Flags.WheelPity) or 0))
+end
+
 local function rollSegment(): number
 	local pick = wheelRng:NextNumber() * Rewards.wheelTotal()
 	for i, seg in Rewards.Wheel.Segments do
@@ -263,6 +278,16 @@ local function spin(player: Player): (boolean, string?, number?)
 				break
 			end
 		end
+	end
+	-- The wheel-only pet (Rewards.Wheel.Pity): every spin counts toward it, and the spin that
+	-- reaches the pity count gives it for sure. Landing on it early starts the count again.
+	local pityIndex = wheelPetIndex()
+	if pityIndex then
+		local pity = (tonumber(data.Flags.WheelPity) or 0) + 1
+		if index ~= pityIndex and pity >= Rewards.Wheel.Pity then
+			index = pityIndex
+		end
+		data.Flags.WheelPity = if index == pityIndex then 0 else pity
 	end
 	local seg = Rewards.Wheel.Segments[index]
 	local got = grant(player, seg.Reward, "Wheel" .. index)
@@ -455,6 +480,7 @@ function RewardService:Snapshot(player: Player): { [string]: any }?
 		IndexSets = data.Flags.IndexSets or {},
 		FreeSpin = (freeSpin(data)),
 		FreeSpinAt = select(2, freeSpin(data)),
+		WheelPityLeft = wheelPityLeft(data),
 		Now = now(),
 	}
 end

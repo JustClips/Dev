@@ -1,7 +1,8 @@
 --!strict
 -- Lucky Wheel window (screen "Wheel", tools/gen_ui.py wheel()). Opened from the blue Spin
--- button on the rail or the big wheel in the plaza (prompt Opens = "Wheel"). One free spin,
--- then spins from the 5-minute playtime gift or Robux (Products, Kind "WheelSpins").
+-- button on the HUD or the big wheel in the plaza (prompt Opens = "Wheel"). One free spin a
+-- day (the SPIN button counts down to it), plus spins from quests, packs or Robux (Products,
+-- Kind "WheelSpins"). The Lucky Cat panel counts down to the guaranteed wheel-only pet.
 -- The server picks the prize (Rewards remote, "Spin" -> ok, message, segment index); this
 -- only turns the wheel so it lands on that wedge, then shows the prize.
 local ProximityPromptService = game:GetService("ProximityPromptService")
@@ -15,7 +16,6 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
-local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 local Rewards = require(Shared.Config.Rewards)
@@ -23,6 +23,7 @@ local Rewards = require(Shared.Config.Rewards)
 local GREEN = Color3.fromRGB(61, 220, 90)
 local GOLD = Color3.fromRGB(255, 200, 60)
 local GREY = Color3.fromRGB(166, 174, 194)
+local BLUE = Color3.fromRGB(76, 141, 255)
 local WHITE = Color3.new(1, 1, 1)
 local STEP = 360 / 8
 local BUYS = { Buy1 = "WheelSpin1", Buy5 = "WheelSpin5" }
@@ -46,6 +47,16 @@ end
 -- Spins you can use right now (the free one counts).
 local function available(r): number
 	return (r.Spins or 0) + (if r.FreeSpin then 1 else 0)
+end
+
+-- Biggest unit only, like "23H", "45M" or "30S" (the SPIN button countdown).
+local function shortTime(seconds: number): string
+	if seconds >= 3600 then
+		return `{math.floor(seconds / 3600)}H`
+	elseif seconds >= 60 then
+		return `{math.floor(seconds / 60)}M`
+	end
+	return `{math.max(1, math.ceil(seconds))}S`
 end
 
 -- White text with the dark outline on every colour (dark text on the gold button blurred
@@ -73,19 +84,25 @@ local function render()
 	if railBadge then
 		Ui.setBadge(railBadge, if count > 0 then count else nil)
 	end
+	-- The HUD Spin button counts down too ("23H") while there's nothing to spin.
+	local freeIn = if type(r.FreeSpinAt) == "number" then math.max(0, r.FreeSpinAt - State.now()) else nil
+	Ui.setText(Ui.find(Ui.screen("Hud"), "SpinButton"), if count <= 0 and freeIn then shortTime(freeIn) else "Spin")
 	if not Ui.isOpen(gui) then
 		return
 	end
 	;(Ui.find(gui, "Window.Side.Spins") :: TextLabel).Text = `Spins: {r.Spins or 0}`
+	-- One free spin a day (Dev, 2026-10-31): while it's waiting, the SPIN button counts down
+	-- ("FREE SPIN IN: 23H") unless you have spins to use, then the line above it does.
+	local timer = if freeIn then `FREE SPIN IN: {shortTime(freeIn)}` else nil
 	local note = Ui.find(gui, "Window.Side.FreeNote") :: TextLabel
 	if r.FreeSpin then
 		note.Text = "Your FREE spin is ready!"
 		note.TextColor3 = Color3.fromRGB(30, 158, 58)
-	elseif type(r.FreeSpinAt) == "number" then
-		note.Text = `Next free spin in {Format.countdown(math.max(0, r.FreeSpinAt - State.now()))}`
+	elseif timer and (r.Spins or 0) > 0 then
+		note.Text = timer
 		note.TextColor3 = Color3.fromRGB(91, 96, 112)
 	else
-		note.Text = "Get a free spin from Playtime Gifts!"
+		note.Text = "A free spin every day!"
 		note.TextColor3 = Color3.fromRGB(91, 96, 112)
 	end
 	if spinning then
@@ -94,10 +111,19 @@ local function render()
 		setButton(spinButton, "FREE SPIN!", GREEN)
 	elseif (r.Spins or 0) > 0 then
 		setButton(spinButton, "SPIN!", GREEN)
+	elseif timer then
+		setButton(spinButton, timer, BLUE)
 	else
-		local def = Products.ProductByKey.WheelSpin1
-		setButton(spinButton, if def and def.Id ~= 0 then `SPIN {Ui.ROBUX}{def.Price}` else "No spins", GOLD)
+		setButton(spinButton, "No spins", GREY)
 	end
+	-- Lucky Cat pity: spins left until it's guaranteed, and a bar that fills toward it.
+	local pity = Ui.find(gui, "Window.Side.Pity") :: Frame
+	local left = tonumber(r.WheelPityLeft) or Rewards.Wheel.Pity
+	;(pity:FindFirstChild("Sub") :: TextLabel).Text = if left <= 1
+		then "Guaranteed on your NEXT spin!"
+		else `Guaranteed in {left} spins`
+	local fill = Ui.find(pity, "Bar.Fill") :: Frame
+	fill.Size = UDim2.fromScale(math.clamp(1 - (left - 1) / Rewards.Wheel.Pity, 0, 1), 1)
 end
 
 local function percent(weight: number): string
@@ -423,7 +449,11 @@ local function spin()
 		return
 	end
 	if available(r) <= 0 then
-		buy("WheelSpin1")
+		local freeIn = if type(r.FreeSpinAt) == "number" then math.max(0, r.FreeSpinAt - State.now()) else nil
+		C.HudController:Toast(
+			if freeIn then `Free spin in {shortTime(freeIn)}. Get more spins below!` else "No spins left. Get more below!",
+			"Bad"
+		)
 		return
 	end
 	spinning = true
@@ -511,9 +541,11 @@ function WheelController:Start()
 	local odds = Ui.find(gui, "Window.Side.Odds") :: Frame
 	local packs = Ui.find(gui, "Window.Side.Buy") :: Frame
 	local oddsButton = Ui.find(gui, "Window.Side.OddsButton") :: GuiButton
+	local pityPanel = Ui.find(gui, "Window.Side.Pity") :: Frame
 	Ui.button(oddsButton, function()
 		odds.Visible = not odds.Visible
 		packs.Visible = not odds.Visible
+		pityPanel.Visible = not odds.Visible
 		Ui.setText(oddsButton, if odds.Visible then "Back to spins" else "Prize chances")
 	end)
 	for name, key in BUYS do

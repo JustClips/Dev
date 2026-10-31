@@ -5,8 +5,9 @@
 --     players get something right away).
 --   Stay: when a player opens the Roblox menu (about to leave), offer a potion for 5 more minutes.
 --   Group: join the group for potions + cash. Hidden while Group.Id is 0.
---   Wheel: the Lucky Wheel (plaza + Spin button on the rail). One free spin, more from the
---     5-minute playtime gift or Robux (Products, Kind "WheelSpins").
+--   Wheel: the Lucky Wheel (plaza + Spin button on the HUD). One free spin a day, more from
+--     quests, packs or Robux (Products, Kind "WheelSpins"). Its jackpot is the wheel-only
+--     Lucky Cat pet, guaranteed by spin Wheel.Pity.
 --   Events: sign up in the Daily window. Everyone gets the event's luck while it runs,
 --     and signed-up players get the event reward when they join during it. None scheduled.
 -- Cash rewards scale like cash packs: Seconds of the player's earnings, and at least
@@ -53,8 +54,9 @@ Rewards.Daily = {
 -- Minutes of play in one session -> gift. Claimed ones reset when the player rejoins.
 Rewards.Playtime = {
 	{ Minutes = 2, Reward = { Kind = "Cash", Seconds = 120, Floor = 0.2 } },
-	-- Dev (2026-10-30): the 2nd gift is a Lucky Wheel spin instead of the Rare Egg.
-	{ Minutes = 5, Reward = { Kind = "Spin", Amount = 1 } },
+	-- Dev (2026-10-31): the 2nd gift is no longer a wheel spin (the wheel has its own free
+	-- spin every day now).
+	{ Minutes = 5, Reward = { Kind = "Item", Item = "CashPotion", Amount = 1 } },
 	{ Minutes = 10, Reward = { Kind = "Cash", Seconds = 300, Floor = 0.3 } },
 	{ Minutes = 20, Reward = { Kind = "Item", Item = "LuckPotion", Amount = 1 } },
 	{ Minutes = 35, Reward = { Kind = "Item", Item = "SpeedPotion", Amount = 1 } },
@@ -68,20 +70,25 @@ Rewards.Playtime = {
 -- worth about 10 minutes of income, like a R$24 cash pack or a Cash Potion (2x for 10 min).
 -- Eggs match the daily streak (Rare = day 5, Epic = day 7); the Legendary jackpot is 1 in
 -- 100, while a Cosmic egg costs R$99, so spins speed you up without skipping progression.
--- FreeEvery: seconds between free spins, or nil for one free spin ever (Dev, 2026-10-30).
+-- FreeEvery: seconds between free spins, or nil for one free spin ever. Dev (2026-10-31): one
+-- free spin a day, with "FREE SPIN IN: 23H" on the SPIN button while it's waiting.
+-- Exclusive (Dev, 2026-10-31: give people a reason to spin): the Lucky Cat pet only comes
+-- from the wheel (Aliens Exclusive = "Wheel"). It's the 1% jackpot, and Pity makes sure you
+-- get it by that spin at the latest (the window counts down "Lucky Cat in N spins").
 export type WheelSegment = { Reward: Reward, Weight: number, Label: string?, Color: Color3 }
 
 Rewards.Wheel = {
-	FreeEvery = nil :: number?,
+	FreeEvery = 86400 :: number?,
+	Pity = 50,
 	SpinSeconds = 4.6, -- how long the wheel turns before the prize shows
 	Segments = {
-		{ Reward = { Kind = "Cash", Seconds = 600, Floor = 0.4 }, Weight = 26, Color = Color3.fromRGB(92, 214, 92) },
-		{ Reward = { Kind = "Item", Item = "LuckPotion", Amount = 1 }, Weight = 16, Color = Color3.fromRGB(76, 168, 255) },
+		{ Reward = { Kind = "Cash", Seconds = 600, Floor = 0.4 }, Weight = 32, Color = Color3.fromRGB(92, 214, 92) },
+		{ Reward = { Kind = "Item", Item = "LuckPotion", Amount = 1 }, Weight = 18, Color = Color3.fromRGB(76, 168, 255) },
 		{ Reward = { Kind = "Egg", Rarity = "Rare" }, Weight = 12, Color = Color3.fromRGB(155, 107, 255) },
-		{ Reward = { Kind = "Item", Item = "CashPotion", Amount = 1 }, Weight = 14, Color = Color3.fromRGB(255, 154, 60) },
+		{ Reward = { Kind = "Item", Item = "CashPotion", Amount = 1 }, Weight = 17, Color = Color3.fromRGB(255, 154, 60) },
 		{ Reward = { Kind = "Egg", Rarity = "Legendary" }, Weight = 1, Color = Color3.fromRGB(255, 194, 46) },
-		{ Reward = { Kind = "Item", Item = "HatchPotion", Amount = 2 }, Weight = 12, Color = Color3.fromRGB(127, 211, 255) },
-		{ Reward = { Kind = "Item", Item = "SpeedPotion", Amount = 1 }, Weight = 14, Color = Color3.fromRGB(255, 126, 182) },
+		{ Reward = { Kind = "Item", Item = "HatchPotion", Amount = 2 }, Weight = 14, Color = Color3.fromRGB(127, 211, 255) },
+		{ Reward = { Kind = "Pet", Pet = "LuckyCat" }, Weight = 1, Color = Color3.fromRGB(255, 126, 182) },
 		{ Reward = { Kind = "Egg", Rarity = "Epic" }, Weight = 5, Color = Color3.fromRGB(255, 75, 85) },
 	} :: { WheelSegment },
 }

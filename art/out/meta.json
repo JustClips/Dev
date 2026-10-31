@@ -23287,5 +23287,169 @@
    -1.8
   ],
   "tris": 1960
+ },
+ "Alien_LuckyCat": {
+  "name": "Alien_LuckyCat",
+  "kind": "alien",
+  "parts": {
+   "LegFL": {
+    "parent": "Body",
+    "joint": [
+     -0.351,
+     0.702,
+     -0.702
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegFR": {
+    "parent": "Body",
+    "joint": [
+     0.351,
+     0.702,
+     -0.702
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBL": {
+    "parent": "Body",
+    "joint": [
+     -0.351,
+     0.702,
+     0.702
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "LegBR": {
+    "parent": "Body",
+    "joint": [
+     0.351,
+     0.702,
+     0.702
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Body": {
+    "parent": null,
+    "joint": null,
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Head": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.404,
+     -1.053
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarL": {
+    "parent": "Head",
+    "joint": [
+     -0.4388,
+     2.457,
+     -1.404
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "EarR": {
+    "parent": "Head",
+    "joint": [
+     0.4388,
+     2.457,
+     -1.404
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Collar": {
+    "parent": "Head",
+    "joint": [
+     -0.0,
+     1.2285,
+     -1.404
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Bell_Glow": {
+    "parent": "Collar",
+    "joint": [
+     -0.0,
+     1.053,
+     -2.106
+    ],
+    "glow": "FFD23F",
+    "material": null,
+    "collide": false
+   },
+   "Coin_Glow": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.5795,
+     0.0
+    ],
+    "glow": "FFD23F",
+    "material": null,
+    "collide": false
+   },
+   "Tail": {
+    "parent": "Body",
+    "joint": [
+     -0.0,
+     1.404,
+     1.053
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   },
+   "Tail2": {
+    "parent": "Tail",
+    "joint": [
+     -0.0,
+     1.9305,
+     1.404
+    ],
+    "glow": null,
+    "material": null,
+    "collide": false
+   }
+  },
+  "voxel": true,
+  "anims": {
+   "idle": "Pet_LuckyCat_Idle",
+   "walk": "Pet_LuckyCat_Walk"
+  },
+  "aura": "GoldDust",
+  "bounds": {
+   "min": [
+    -0.877,
+    0.0,
+    -2.106
+   ],
+   "max": [
+    0.877,
+    2.984,
+    1.579
+   ]
+  },
+  "tris": 2284
  }
 }

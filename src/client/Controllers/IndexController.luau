@@ -60,7 +60,7 @@ local function tint(frame: GuiObject, color: Color3)
 	end
 end
 
--- Pets on a tab: one rarity (exclusives aside), or the daily exclusives. Zone order, then
+-- Pets on a tab: one rarity (exclusives aside), or the exclusives (daily streak, Lucky Wheel). Zone order, then
 -- income.
 local ZONE_ORDER: { [string]: number } = {}
 for i, zone in Zones.List do
@@ -70,7 +70,7 @@ end
 local function tabPets(name: string)
 	local list = {}
 	for _, def in Aliens.List do
-		local pick = if name == "Daily" then def.Exclusive == "Daily" else def.Rarity == name and not def.Exclusive
+		local pick = if name == "Daily" then def.Exclusive ~= nil else def.Rarity == name and not def.Exclusive
 		if pick then
 			table.insert(list, def)
 		end
@@ -142,7 +142,10 @@ local function render(force: boolean?)
 		;(card:FindFirstChild("Name") :: TextLabel).Text = if known then def.Name else "???"
 		local chance = card:FindFirstChild("Chance") :: TextLabel
 		local zoneLabel = card:FindFirstChild("Zone") :: TextLabel
-		if def.Exclusive then
+		if def.Exclusive == "Wheel" then
+			chance.Text = "1% jackpot"
+			zoneLabel.Text = "Lucky Wheel"
+		elseif def.Exclusive then
 			chance.Text = "Day 7"
 			zoneLabel.Text = "Daily streak"
 		else
@@ -178,7 +181,7 @@ local function render(force: boolean?)
 		end
 	else
 		title.Text = "EXCLUSIVE PETS"
-		rewardLabel.Text = "One every week from the day 7 daily reward"
+		rewardLabel.Text = "From the day 7 daily reward and the Lucky Wheel"
 		icon.Image = AssetLibrary.image("Icon_Daily")
 		setButton(claim, `{have}/{#pets} FOUND`, GREY)
 	end
