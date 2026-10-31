@@ -1424,17 +1424,20 @@ def group_reward():
     when you're not in it. Only group membership is rewarded (Roblox doesn't allow rewards
     for likes or favorites)."""
     def card(name, ico, label, order):
-        return plate(name, U(0, 240, 0, 200), tint=WHITE, stud=0.2, LayoutOrder=order, children=[
-            icon("Icon", ico, 112, U(0.5, 0, 0, 18), (0.5, 0)),
-            text("Label", label, U(1, -16, 0, 44), U(0.5, 0, 1, -12), (0.5, 1), ts=26, color=INK, display=True),
+        return plate(name, U(0, 196, 0, 168), tint=WHITE, stud=0.2, LayoutOrder=order, children=[
+            icon("Icon", ico, 92, U(0.5, 0, 0, 14), (0.5, 0)),
+            text("Label", label, U(1, -12, 0, 40), U(0.5, 0, 1, -8), (0.5, 1), ts=22, color=INK, display=True),
         ])
-    rewards = frame("Rewards", U(1, -28, 0, 200), U(0.5, 0, 0, 104), (0.5, 0), children=[
-        hlist(24, "Center", "Center"),
+    # Smaller than the other windows (Dev, 2026-10-31: "make the window smaller").
+    title = text("Title", "Join our group for a FREE reward!", U(1, -28, 0, 34), U(0.5, 0, 0, 80), (0.5, 0), ts=24,
+                 color=INK, display=True)
+    rewards = frame("Rewards", U(1, -28, 0, 168), U(0.5, 0, 0, 122), (0.5, 0), children=[
+        hlist(20, "Center", "Center"),
         card("Potions", "PotionLuck", "2 Luck Potions", 1),
         card("Cash", "Cash", "Free Cash", 2),
     ])
-    claim = button("Claim", U(0, 320, 0, 72), U(0.5, 0, 0, 340), (0.5, 0), color=SUCCESS, label="Claim", ts=32)
-    write("GroupReward", screen([dim(), window(WIN_W, WIN_H, "Free Reward", "Gift", [rewards, claim], header="#FFB020")],
+    claim = button("Claim", U(0, 280, 0, 64), U(0.5, 0, 0, 308), (0.5, 0), color=SUCCESS, label="Claim", ts=30)
+    write("GroupReward", screen([dim(), window(540, 396, "Free Reward", "Gift", [title, rewards, claim], header="#FFB020", size=(540, 396))],
                                order=10, enabled=False))
 
 
