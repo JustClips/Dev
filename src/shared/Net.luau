@@ -27,6 +27,7 @@ local EVENTS: { [string]: number } = {
 	EggUpgraded = 0, -- server -> all: (position, mutation) the weather upgraded a growing egg
 	BunnyPop = 0, -- server -> all: a dust bunny got swept at a position
 	TutorialDone = 0, -- server -> owner: tutorial finished, with the reward it gave
+	QuestDone = 0, -- server -> owner: { Text, Reward, Kind } a quest (or the daily chest) was finished and paid
 	SetAutoSweep = 4, -- client: toggle auto sweep (gamepass)
 	SetAutoSell = 4, -- client: toggle auto sell (Sell Anywhere pass)
 	DumpTick = 0, -- server -> owner: (cash, bagLeft 0-1) a bit of the bag poured into a leaf dump

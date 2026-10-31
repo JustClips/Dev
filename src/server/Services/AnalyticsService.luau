@@ -66,6 +66,7 @@ local WINDOWS: { [string]: boolean } = {
 	GroupReward = true,
 	BasePicker = true,
 	Codes = true,
+	Quests = true,
 	Merchant = true,
 	Wheel = true,
 }

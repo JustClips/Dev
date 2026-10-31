@@ -314,6 +314,7 @@ export type PlayerSnapshot = {
 	BaseIndex: number,
 	TutorialStep: string,
 	TutorialTarget: Vector3?,
+	Quests: any?, -- QuestService:Snapshot (nil until the tutorial is done)
 	AutoSweep: boolean,
 	AutoSell: boolean,
 	Settings: { Music: number?, Sfx: number?, Hotbar: { string }? },

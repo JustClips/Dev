@@ -115,6 +115,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 	local sendInventory = full == true or sentInventory[player] ~= invVersion
 	sentInventory[player] = invVersion
 	local step = tutorialStep(player, session)
+	S.QuestService:Update(player)
 	if lastStep[player] ~= step then
 		lastStep[player] = step
 		S.AnalyticsService:TutorialStep(player, step)
@@ -165,6 +166,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		CarryLimit = S.EggService:GetCarryLimit(player),
 		BaseIndex = runtime.BaseIndex or 0,
 		TutorialStep = step,
+		Quests = S.QuestService:Snapshot(player),
 		TutorialTarget = runtime.TutorialEggPosition,
 		AutoSweep = data.Settings.AutoSweep == true,
 		AutoSell = data.Settings.AutoSell ~= false,
