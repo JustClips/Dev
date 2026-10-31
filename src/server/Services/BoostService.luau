@@ -1,7 +1,8 @@
 --!strict
--- Server luck (2x/4x/8x/16x), personal boosts (potions, +10% luck per friend in the
--- server), plus the one place that computes a player's cash multiplier. Luck timers stack
--- additively per tier; the highest active tier is the server's luck.
+-- Server luck (one shared level: 1x > 2x > 4x > 8x > 16x), personal boosts (potions, +10%
+-- luck per friend in the server), plus the one place that computes a player's cash
+-- multiplier. Each Server Luck buy raises the level one step and restarts the shared timer;
+-- at the top level it adds time instead. When the timer runs out the server goes back to 1x.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -10,52 +11,90 @@ local Upgrades = require(Shared.Config.Upgrades)
 local Economy = require(Shared.Config.Economy)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
+local Products = require(Shared.Config.Products)
 local Rewards = require(Shared.Config.Rewards)
 
-local LUCK_TIERS = { 2, 4, 8, 16 }
+local LUCK_LEVELS = Products.ServerLuckLevels
 
 local BoostService = {}
 
 local S: any
-local luckEnds: { [number]: number } = {}
+local luckLevel = 1
+local luckEnds = 0
 -- Friend boost: who each player is friends with in this server (by UserId). Filled when
 -- someone joins (IsFriendsWith is a web call, so it's asked once per pair).
 local friendsOf: { [Player]: { [number]: boolean } } = {}
 
+-- The bought Server Luck level right now (1 = none).
+function BoostService:GetLuckLevel(): number
+	return if luckEnds > os.time() then luckLevel else 1
+end
+
 local function publish()
 	local state = S.StateService:GetServerState()
-	for _, tier in LUCK_TIERS do
-		local ends = luckEnds[tier] or 0
-		state:SetAttribute("Luck" .. tier, if ends > os.time() then ends else 0)
-	end
+	local level = BoostService:GetLuckLevel()
+	state:SetAttribute("LuckLevel", level)
+	state:SetAttribute("LuckEnds", if level > 1 then luckEnds else 0)
 	state:SetAttribute("LuckMult", BoostService:GetServerLuck())
 end
 
 function BoostService:GetServerLuck(): number
 	local now = os.time()
-	local best = 1
-	for _, tier in LUCK_TIERS do
-		if (luckEnds[tier] or 0) > now and tier > best then
-			best = tier
-		end
-	end
 	-- A live event (Config/Rewards.Events) multiplies whatever luck is running.
 	local event = Rewards.activeEvent(now)
 	-- So does the weather (Rainbow, Aurora Night).
 	-- Admin events (AdminService) stack on top.
-	return best * (if event then event.LuckMult else 1) * S.WeatherService:GetLuckMult() * S.AdminService:Mult("Luck")
+	return BoostService:GetLuckLevel() * (if event then event.LuckMult else 1) * S.WeatherService:GetLuckMult() * S.AdminService:Mult("Luck")
 end
 
+-- The Server Luck product the next buyer gets, or nil (and why) when nothing can be sold:
+-- the top level with its timer already full.
+function BoostService:NextLuckProduct(): (any, string?)
+	local level = BoostService:GetLuckLevel()
+	local def = Products.serverLuckNext(level)
+	if not def then
+		return nil, "Coming soon!"
+	end
+	local maxMinutes = Economy.ServerLuckMaxMinutes
+	if (def.Mult or 0) <= level and luckEnds - os.time() > (maxMinutes - (def.Minutes or Economy.ServerLuckMinutes)) * 60 then
+		return nil, `Server Luck is maxed out! Try again when it's under {maxMinutes - (def.Minutes or Economy.ServerLuckMinutes)} min.`
+	end
+	return def, nil
+end
+
+-- A paid Server Luck buy for level `mult`. If someone else raised the server to that level
+-- while the prompt was open, the buyer still pushes it one level higher (or adds time at
+-- the top), so nobody pays for nothing.
 function BoostService:AddServerLuck(mult: number, minutes: number, buyer: Player?)
-	if not table.find(LUCK_TIERS, mult) then
-		warn("[BoostService] unknown luck tier " .. mult)
+	if not table.find(LUCK_LEVELS, mult) then
+		warn("[BoostService] unknown luck level " .. mult)
 		return
 	end
 	local now = os.time()
-	luckEnds[mult] = math.max(luckEnds[mult] or 0, now) + minutes * 60
-	publish()
+	local current = BoostService:GetLuckLevel()
+	local top = LUCK_LEVELS[#LUCK_LEVELS]
+	local level = mult
+	if mult <= current then
+		level = current
+		for _, step in LUCK_LEVELS do
+			if step > current then
+				level = step
+				break
+			end
+		end
+	end
 	local who = if buyer then buyer.DisplayName else "Someone"
-	Net.fireAll("Announce", `{who} activated {mult}x Server Luck for {minutes} min!`, "Luck")
+	if level > current then
+		luckLevel = level
+		luckEnds = now + minutes * 60
+		Net.fireAll("Announce", `{who} has boosted Server Luck to {level}x!`, "Luck")
+	else
+		-- Already at the top: more time, up to the cap.
+		luckLevel = top
+		luckEnds = math.min(math.max(luckEnds, now) + minutes * 60, now + Economy.ServerLuckMaxMinutes * 60)
+		Net.fireAll("Announce", `{who} added {minutes} min of {top}x Server Luck!`, "Luck")
+	end
+	publish()
 end
 
 -- Personal timed boost (stacks time). Stored as an expiry unix time in the profile.

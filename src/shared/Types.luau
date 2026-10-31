@@ -171,6 +171,8 @@ export type ProductKind =
 	| "MeteorShower"
 	| "GiftPass"
 	| "WheelSpins"
+	| "MerchantRestock"
+	| "ItemPack"
 
 export type ProductDef = {
 	Key: string,
@@ -191,6 +193,7 @@ export type ProductDef = {
 	FloorFactor: number?,
 	Rebirth: number?,
 	Pass: string?,
+	Item: string?, -- ItemPack: Config/Items id
 }
 
 export type GamepassDef = {

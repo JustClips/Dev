@@ -66,6 +66,9 @@ function ShopService:GetCashPackAmounts(player: Player): { [string]: number }
 			amounts[key] = cashPackAmount(player, def)
 		end
 	end
+	-- What the Starter Pack's cash comes to for this player (shown on its banner).
+	local pack = Economy.StarterPack
+	amounts.StarterPack = cashPackAmount(player, { Seconds = pack.CashSeconds, FloorFactor = pack.CashFloor })
 	return amounts
 end
 
@@ -108,10 +111,12 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 		local data = S.DataService:GetData(recipient)
 		local pack = Economy.StarterPack
 		data.Flags.StarterPackBought = true
-		S.BackpackService:GiveCash(recipient, pack.Cash, "StarterPack", Enum.AnalyticsEconomyTransactionType.IAP)
+		local cash = cashPackAmount(recipient, { Seconds = pack.CashSeconds, FloorFactor = pack.CashFloor })
+		S.BackpackService:GiveCash(recipient, cash, "StarterPack", Enum.AnalyticsEconomyTransactionType.IAP)
 		S.BoostService:AddPersonalBoost(recipient, "Cash2x", pack.Cash2xMinutes)
 		S.InventoryService:AddEgg(recipient, pack.EggRarity, "Landing", true, true)
-		notify(recipient, `Starter Pack: cash, an {pack.EggRarity} egg (in your bag) and {pack.Cash2xMinutes} min of 2x cash!`)
+		S.InventoryService:AddItem(recipient, "LuckPotion", pack.LuckPotions)
+		notify(recipient, `Starter Pack: +{Format.cash(cash)}, an {pack.EggRarity} egg and {pack.LuckPotions} Luck Potions (in your bag), and {pack.Cash2xMinutes} min of 2x cash!`)
 	end,
 	ServerLuck = function(product, buyer)
 		S.BoostService:AddServerLuck(product.Mult, product.Minutes or Economy.ServerLuckMinutes, buyer)
@@ -194,6 +199,13 @@ local GRANTS: { [string]: (product: any, buyer: Player, recipient: Player) -> ()
 	WheelSpins = function(product, _buyer, recipient)
 		local got = S.RewardService:AddSpins(recipient, product.Count or 1)
 		notify(recipient, `+{product.Count or 1} wheel spin{if (product.Count or 1) == 1 then "" else "s"}! You have {got} now.`)
+	end,
+	ItemPack = function(product, _buyer, recipient)
+		if not product.Item then
+			error(`item pack {product.Key} has no item`)
+		end
+		S.InventoryService:AddItem(recipient, product.Item, product.Count or 1)
+		notify(recipient, `{product.Name} added to your bag! Use it from Items.`)
 	end,
 	MerchantRestock = function(_product, _buyer, recipient)
 		S.MerchantService:Restock(recipient)
@@ -294,6 +306,14 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		MarketplaceService:PromptGamePassPurchase(player, pass.Id)
 		S.AnalyticsService:PromptShown(player, pass.Key)
 		return true, nil
+	end
+	-- Server Luck is one card: always sell the next level up (the price climbs with it).
+	if key == "ServerLuck" or string.find(key, "^ServerLuck%d") then
+		local def, why = S.BoostService:NextLuckProduct()
+		if not def then
+			return false, why
+		end
+		key = def.Key
 	end
 	local product = Products.ProductByKey[key]
 	if not product or product.Id == 0 then

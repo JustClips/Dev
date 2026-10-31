@@ -37,6 +37,7 @@ local FEATURED_H = 150
 local OFFER_H = 104
 local HEADER_H = 56
 local CELL_H = 232 -- SHOP_CELL in tools/gen_ui.py
+local LUCK_H = 132 -- SHOP_LUCK_H in tools/gen_ui.py
 local CELL_GAP = 12
 local COLUMNS = 3
 
@@ -62,8 +63,8 @@ type Section = {
 }
 
 local TAGS = {
-	ServerLuck8 = "POPULAR",
-	ServerLuck16 = "BEST",
+	LuckPotion3 = "POPULAR",
+	HugeCharm1 = "RARE",
 	CosmicEgg3 = "BEST VALUE",
 	Cash3 = "POPULAR",
 	Cash5 = "BEST VALUE",
@@ -71,7 +72,7 @@ local TAGS = {
 }
 
 -- Short names for the tabs (the section titles are too long for them).
-local TAB_NAMES = { Boosts = "Boosts", Passes = "Passes", Tools = "Skip", Eggs = "Eggs", Cash = "Cash", Offers = "Offers" }
+local TAB_NAMES = { Potions = "Potions", Boosts = "Boosts", Passes = "Passes", Tools = "Skip", Eggs = "Eggs", Cash = "Cash", Offers = "Offers" }
 
 local PASS_ICONS = {
 	Cash2x = "Icon_Cash",
@@ -104,6 +105,8 @@ local tabs: { { key: string, button: TextButton } } = {}
 local litTab: string? = nil
 local sectionTop: { [string]: number } = {}
 local offerTimers: { { Label: TextLabel, Expires: number } } = {}
+local luckTemplate: Frame
+local luckCard: Frame? = nil
 
 local function toast(ok: boolean, message: string?)
 	if message and message ~= "" then
@@ -152,17 +155,40 @@ end
 
 -------------------------------------------------------------------------- sections
 
+-- Server Luck is its own wide card on top of this section (fillLuckCard); these are the
+-- other server-wide buys.
 local function boostItems(_data): { Item }
 	local items: { Item } = {}
-	for _, key in { "ServerLuck2", "ServerLuck4", "ServerLuck8", "ServerLuck16" } do
-		local item = robuxItem(key, "Better eggs for EVERYONE here. Time stacks.", "Icon_Luck")
-		if item then
-			table.insert(items, item)
-		end
+	local totem = robuxItem("WeatherTotem1", "Call a lucky weather for the whole server!", "Icon_WeatherTotem")
+	if totem then
+		table.insert(items, totem)
 	end
 	local shower = robuxItem("MeteorShower", "Start an Egg Rain for the whole server!", "Icon_Meteor")
 	if shower then
 		table.insert(items, shower)
+	end
+	return items
+end
+
+-- Small buys that go to your bag, cheapest first.
+local POTIONS = {
+	{ Key = "LeafBomb3", Icon = "Icon_LeafBomb", Desc = "Clear every leaf around you at once." },
+	{ Key = "LuckyClover1", Icon = "Icon_LuckyClover", Desc = "Next hatch: 3x more likely to go up a rarity." },
+	{ Key = "LuckPotion3", Icon = "Icon_PotionLuck", Desc = "2x egg luck for 10 min, three times." },
+	{ Key = "CashPotion3", Icon = "Icon_PotionCash", Desc = "2x cash for 10 min, three times." },
+	{ Key = "MutationSpray1", Icon = "Icon_MutationSpray", Desc = "A growing egg gets a weather mutation." },
+	{ Key = "SuperLuckPotion1", Icon = "Icon_PotionSuperLuck", Desc = "3x egg luck for 15 min." },
+	{ Key = "MegaCashPotion1", Icon = "Icon_PotionMegaCash", Desc = "3x cash for 15 min." },
+	{ Key = "HugeCharm1", Icon = "Icon_HugeCharm", Desc = "Next hatch: 10x more likely to be Huge." },
+}
+
+local function potionItems(_data): { Item }
+	local items: { Item } = {}
+	for _, entry in POTIONS do
+		local item = robuxItem(entry.Key, entry.Desc, entry.Icon)
+		if item then
+			table.insert(items, item)
+		end
 	end
 	return items
 end
@@ -264,6 +290,7 @@ local function sections(data): { Section }
 		{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Color = Color3.fromRGB(255, 95, 162), Note = "Hatch rare pets!", Items = eggItems(data) },
 		{ Key = "Passes", Title = "Gamepasses", Icon = "Icon_Star", Color = Color3.fromRGB(155, 107, 255), Note = "Yours forever", Items = passItems(data) },
 		{ Key = "Boosts", Title = "Server Boosts", Icon = "Icon_Luck", Color = Color3.fromRGB(255, 128, 48), Note = "Everyone on the server gets it!", Items = boostItems(data) },
+		{ Key = "Potions", Title = "Potions", Icon = "Icon_PotionLuck", Color = Color3.fromRGB(61, 190, 170), Note = "Goes to your bag", Items = potionItems(data) },
 		{ Key = "Cash", Title = "Cash", Icon = "Icon_Cash", Color = Color3.fromRGB(47, 191, 85), Note = "More cash right now", Items = cashItems(data) },
 		{ Key = "Tools", Title = "Tool Skip", Icon = "Icon_Tool", Color = Color3.fromRGB(76, 141, 255), Note = "Get your next tool now", Items = toolItems(data) },
 	}
@@ -409,6 +436,64 @@ local function buildCard(item: Item, order: number, color: Color3): Frame
 	return card
 end
 
+-------------------------------------------------------------------------- server luck card
+
+-- The Server Luck level running now (1 = none), from the server state.
+local function luckLevel(): number
+	local level = State.server("LuckLevel") or 1
+	local ends = State.server("LuckEnds") or 0
+	return if ends > State.now() then level else 1
+end
+
+-- Level now > next level, the next level's price and the shared timer. Runs every second
+-- (someone else on the server can raise the level any time).
+local function fillLuckCard()
+	local card = luckCard
+	if not card or not card.Parent then
+		return
+	end
+	local level = luckLevel()
+	local def = Products.serverLuckNext(level)
+	if not def then
+		return
+	end
+	local nextMult = def.Mult or level
+	local levels = Ui.find(card, "Levels") :: TextLabel
+	local desc = Ui.find(card, "Desc") :: TextLabel
+	local minutes = def.Minutes or Economy.ServerLuckMinutes
+	if nextMult > level then
+		levels.Text = `{level}x <font color="#FFE34D">&gt; {nextMult}x</font>`
+		desc.Text = "Rarer eggs for EVERYONE here. Each buy raises it and restarts the timer."
+	else
+		levels.Text = `<font color="#FFE34D">{level}x MAX</font>`
+		desc.Text = `Top level! Buying adds {minutes} min for everyone.`
+	end
+	local timer = Ui.find(card, "Timer") :: TextLabel
+	local left = (State.server("LuckEnds") or 0) - State.now()
+	timer.Text = if level > 1 and left > 0 then `Ends in {Format.time(left)}` else `Lasts {minutes} min`
+	local priceText = robuxPrice(def.Price)
+	local buy = Ui.find(card, "Buy") :: TextButton
+	if buy:GetAttribute("Price") ~= priceText then
+		buy:SetAttribute("Price", priceText)
+		setPrice(buy, priceText, ROBUX)
+	end
+end
+
+local function buildLuckCard(): Frame?
+	if not Products.serverLuckNext(1) then
+		return nil
+	end
+	local card = luckTemplate:Clone()
+	card.Name = "ServerLuck"
+	card.Visible = true
+	Ui.button(Ui.find(card, "Buy"), function()
+		prompt("ServerLuck")
+	end)
+	luckCard = card
+	fillLuckCard()
+	return card
+end
+
 local function renderFeatured(data): boolean
 	featuredEnds = Products.starterPackEnds(data, workspace:GetServerTimeNow())
 	local show = featuredEnds ~= nil
@@ -416,7 +501,9 @@ local function renderFeatured(data): boolean
 	if show then
 		local def = Products.ProductByKey.StarterPack
 		local pack = Economy.StarterPack
-		Ui.find(featured, "Desc").Text = `{Format.cash(pack.Cash)} + {pack.EggRarity} egg + {pack.Cash2xMinutes} min 2x cash`
+		local cash = data.CashPacks and data.CashPacks.StarterPack
+		local cashText = if cash then Format.cash(cash) else "Cash for your next tool"
+		Ui.find(featured, "Desc").Text = `{cashText} + {pack.EggRarity} egg + {pack.LuckPotions} Luck Potions + {pack.Cash2xMinutes} min 2x cash`
 		Ui.setText(Ui.find(featured, "Buy"), robuxPrice(def.Price))
 	end
 	return show
@@ -523,8 +610,10 @@ local function render()
 		y += OFFER_H + LIST_GAP
 		anything = true
 	end
+	luckCard = nil
 	for i, section in sections(data) do
-		if #section.Items == 0 then
+		local hasLuck = section.Key == "Boosts" and Products.serverLuckNext(1) ~= nil
+		if #section.Items == 0 and not hasLuck then
 			continue
 		end
 		anything = true
@@ -542,8 +631,19 @@ local function render()
 		for n, item in section.Items do
 			buildCard(item, n, section.Color).Parent = grid
 		end
+		-- Server Boosts: the wide Server Luck card sits between the title and the cards.
+		local top = HEADER_H
+		local card = if hasLuck then buildLuckCard() else nil
+		if card then
+			card.Position = UDim2.fromOffset(0, HEADER_H)
+			card.Size = UDim2.new(1, 0, 0, LUCK_H)
+			card.Parent = frame
+			top += LUCK_H + CELL_GAP
+			grid.Position = UDim2.fromOffset(0, top)
+			grid.Size = UDim2.new(1, 0, 1, -top)
+		end
 		local rows = math.ceil(#section.Items / COLUMNS)
-		local height = HEADER_H + rows * CELL_H + (rows - 1) * CELL_GAP
+		local height = if rows > 0 then top + rows * CELL_H + (rows - 1) * CELL_GAP else top - CELL_GAP
 		frame.Size = UDim2.new(1, 0, 0, height)
 		sectionTop[section.Key] = y
 		y += height + LIST_GAP
@@ -567,6 +667,7 @@ local function render()
 end
 
 local function tickTimers()
+	fillLuckCard()
 	local now = os.clock()
 	local expired = false
 	for _, timer in offerTimers do
@@ -627,6 +728,7 @@ function ShopController:Init(controllers)
 	offerTemplate = Ui.find(gui, "Window.List.Offer")
 	featured = Ui.find(gui, "Window.List.Featured")
 	cardTemplate = Ui.find(gui, "Window.Card")
+	luckTemplate = Ui.find(gui, "Window.LuckCard")
 	emptyLabel = Ui.find(gui, "Window.Empty")
 	giftPicker = Ui.find(gui, "Window.GiftPicker")
 	giftList = Ui.find(gui, "Window.GiftPicker.List")

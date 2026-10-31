@@ -100,8 +100,13 @@ function OfferService:OnToolBought(player: Player)
 end
 
 function OfferService:OnMoonBarHigh()
+	-- Sells the next Server Luck level (nothing when it's maxed out).
+	local def = S.BoostService:NextLuckProduct()
+	if not def or (def.Mult or 0) <= S.BoostService:GetLuckLevel() then
+		return
+	end
 	for player in S.DataService:GetSessions() do
-		show(player, "ServerLuck", "ServerLuck2", "Egg Rain soon!", "Boost the whole server's luck for the Egg Rain.")
+		show(player, "ServerLuck", def.Key, "Egg Rain soon!", `Boost the whole server's luck to {def.Mult}x for the Egg Rain.`)
 	end
 end
 

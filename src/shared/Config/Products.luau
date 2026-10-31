@@ -26,6 +26,17 @@ local Products: { ProductDef } = {
 	{ Key = "ServerLuck8", Id = 3723358752, Price = 79, Name = "8x Server Luck (15 min)", Kind = "ServerLuck", Category = "Boosts", Giftable = false, Mult = 8, Minutes = 15 },
 	{ Key = "ServerLuck16", Id = 3723358764, Price = 159, Name = "16x Server Luck (15 min)", Kind = "ServerLuck", Category = "Boosts", Giftable = false, Mult = 16, Minutes = 15 },
 	{ Key = "MeteorShower", Id = 3723358773, Price = 199, Name = "Egg Rain Now", Kind = "MeteorShower", Category = "Boosts", Giftable = false },
+	{ Key = "WeatherTotem1", Id = 3725034762, Price = 49, Name = "Weather Totem", Kind = "ItemPack", Category = "Boosts", Giftable = true, Item = "WeatherTotem", Count = 1 },
+
+	-- Small buys: potions and charms straight into your bag (use them from the Items tab).
+	{ Key = "LeafBomb3", Id = 3725034793, Price = 9, Name = "3 Leaf Bombs", Kind = "ItemPack", Category = "Potions", Giftable = true, Item = "LeafBomb", Count = 3 },
+	{ Key = "LuckyClover1", Id = 3725034819, Price = 15, Name = "Lucky Clover", Kind = "ItemPack", Category = "Potions", Giftable = true, Item = "LuckyClover", Count = 1 },
+	{ Key = "LuckPotion3", Id = 3725034825, Price = 19, Name = "3 Luck Potions", Kind = "ItemPack", Category = "Potions", Giftable = true, Item = "LuckPotion", Count = 3 },
+	{ Key = "CashPotion3", Id = 3725034833, Price = 25, Name = "3 Cash Potions", Kind = "ItemPack", Category = "Potions", Giftable = true, Item = "CashPotion", Count = 3 },
+	{ Key = "MutationSpray1", Id = 3725034852, Price = 25, Name = "Mutation Spray", Kind = "ItemPack", Category = "Potions", Giftable = true, Item = "MutationSpray", Count = 1 },
+	{ Key = "SuperLuckPotion1", Id = 3725034861, Price = 29, Name = "Super Luck Potion", Kind = "ItemPack", Category = "Potions", Giftable = true, Item = "SuperLuckPotion", Count = 1 },
+	{ Key = "MegaCashPotion1", Id = 3725034877, Price = 35, Name = "Mega Cash Potion", Kind = "ItemPack", Category = "Potions", Giftable = true, Item = "MegaCashPotion", Count = 1 },
+	{ Key = "HugeCharm1", Id = 3725034899, Price = 49, Name = "Huge Charm", Kind = "ItemPack", Category = "Potions", Giftable = true, Item = "HugeCharm", Count = 1 },
 
 	{ Key = "SkipHatchCommon", Id = 3723358783, Price = 3, Name = "Skip Hatch (Common)", Kind = "SkipHatch", Category = "Eggs", Giftable = true, Rarity = "Common" },
 	{ Key = "SkipHatchUncommon", Id = 3723358792, Price = 5, Name = "Skip Hatch (Uncommon)", Kind = "SkipHatch", Category = "Eggs", Giftable = true, Rarity = "Uncommon" },
@@ -108,6 +119,10 @@ local Products: { ProductDef } = {
 }
 
 local Config = {
+	-- Server Luck is one card with levels (Dev, 2026-10-31): each buy raises the whole
+	-- server one level and restarts the shared timer. The price is the product of the level
+	-- you go to, so it climbs with the level. At the top level a buy adds time instead.
+	ServerLuckLevels = { 2, 4, 8, 16 },
 	Gamepasses = Gamepasses,
 	Products = Products,
 	PassByKey = {} :: { [string]: GamepassDef },
@@ -139,6 +154,22 @@ end
 function Config.passGift(passKey: string): ProductDef?
 	local def = Config.ProductByKey["Gift" .. passKey]
 	return if def and def.Id ~= 0 and def.Kind == "GiftPass" then def else nil
+end
+
+-- The Server Luck product to sell when the server is at `level` (1 = no luck running):
+-- the next level up, or the top level again (adds time) once it's maxed.
+function Config.serverLuckNext(level: number): ProductDef?
+	local top: ProductDef? = nil
+	for _, mult in Config.ServerLuckLevels do
+		local def = Config.ProductByKey["ServerLuck" .. mult]
+		if def and def.Id ~= 0 then
+			if mult > level then
+				return def
+			end
+			top = def
+		end
+	end
+	return top
 end
 
 -- When the Starter Pack stops being on sale for this player (unix seconds), or nil if it

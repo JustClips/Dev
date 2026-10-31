@@ -39,7 +39,6 @@ local TOAST_COLORS: { [string]: Color3 } = {
 	Rare = Color3.fromRGB(255, 205, 60), -- rare finds (leaf drops, treasure)
 	Info = Color3.fromRGB(255, 255, 255),
 }
-local LUCK_TIERS = { 16, 8, 4, 2 }
 local GREEN = Color3.fromRGB(61, 220, 90)
 local DANGER = Color3.fromRGB(255, 77, 94)
 local LOCKED = Color3.fromRGB(255, 150, 160) -- readable on the blue zone rows
@@ -530,13 +529,10 @@ local function renderBoosts()
 	local function add(key: string, image: string, label: string, endsAt: number, title: string, text: string)
 		table.insert(entries, { key = key, image = image, label = label, endsAt = endsAt, title = title, text = text })
 	end
-	for _, tier in LUCK_TIERS do -- highest first
-		local ends = State.server("Luck" .. tier) or 0
-		if ends > now then
-			-- only the best server luck counts
-			add("ServerLuck", "Icon_Luck", `{tier}x`, ends, `{tier}x Server Luck`, `Everyone on this server finds rarer eggs, mutations and Huge pets {tier}x more often.`)
-			break
-		end
+	local luckLevel = State.server("LuckLevel") or 1
+	local luckEnds = State.server("LuckEnds") or 0
+	if luckLevel > 1 and luckEnds > now then
+		add("ServerLuck", "Icon_Luck", `{luckLevel}x`, luckEnds, `{luckLevel}x Server Luck`, `Everyone on this server finds rarer eggs, mutations and Huge pets {luckLevel}x more often.`)
 	end
 	local event = Rewards.activeEvent(now)
 	if event then

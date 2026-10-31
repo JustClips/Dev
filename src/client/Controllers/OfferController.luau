@@ -7,6 +7,7 @@ local TweenService = game:GetService("TweenService")
 
 local Client = script.Parent.Parent
 local Ui = require(Client.Ui)
+local State = require(Client.State)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
@@ -35,9 +36,12 @@ type Item = { icon: string, caption: string }
 local function itemsFor(product: string): { Item }
 	if product == "StarterPack" then
 		local pack = Economy.StarterPack
+		local data = State.data
+		local cash = data and data.CashPacks and data.CashPacks.StarterPack
 		return {
-			{ icon = AssetLibrary.image("Icon_Cash"), caption = Format.cash(pack.Cash) },
+			{ icon = AssetLibrary.image("Icon_Cash"), caption = if cash then Format.cash(cash) else "Cash" },
 			{ icon = AssetLibrary.image("Icon_Egg"), caption = `{pack.EggRarity} Egg` },
+			{ icon = AssetLibrary.image("Icon_PotionLuck"), caption = `{pack.LuckPotions} Luck Potions` },
 			{ icon = AssetLibrary.image("Icon_PotionCash"), caption = `2x Cash {pack.Cash2xMinutes}m` },
 		}
 	end

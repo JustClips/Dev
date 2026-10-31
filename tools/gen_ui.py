@@ -681,6 +681,7 @@ def hud():
 # ---------------------------------------------------------------- Shop
 SHOP_TABS_W = 150  # category tabs down the left side
 SHOP_CELL = (196, 232)  # 3 cards per row in the 612 px wide grid
+SHOP_LUCK_H = 132  # LUCK_H in ShopController
 
 
 def shop():
@@ -728,6 +729,24 @@ def shop():
         text("Desc", "", U(1, -290, 0, 30), U(0, 98, 0, 68), ts=16, heavy=True, stroke=2, xa="Left", ya="Top", ZIndex=3,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
         button("Buy", U(0, 170, 0, 54), U(1, -12, 0.5, 0), (1, 0.5), color=PREMIUM, label="", ts=26, label_color=INK, ZIndex=3),
+    ])
+    # Server Luck (Dev, 2026-10-31, from a reference): one wide card at the top of Server
+    # Boosts with the level now > the next level, a shared "Ends in" timer and the price of
+    # the next level. ShopController clones it into the Boosts section.
+    luck = plate("LuckCard", U(1, 0, 0, SHOP_LUCK_H), tint="#5CC930", Visible=False, children=[
+        node("Glow", "ImageLabel", base(U(0, 150, 0, 150), U(0, 62, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
+                                        ImageColor3=WHITE, ImageTransparency=0.35, ZIndex=1)),
+        icon("Icon", "LuckyClover", 100, U(0, 62, 0.5, 0), (0.5, 0.5)),
+        text("Title", "Server Luck", U(0, 260, 0, 28), U(0, 124, 0, 10), ts=24, display=True, stroke=3, xa="Left",
+             color="#E4FF8A", ZIndex=3),
+        text("Levels", "1x > 2x", U(1, -320, 0, 56), U(0, 124, 0, 38), ts=50, display=True, stroke=3.5, xa="Left",
+             ZIndex=3, RichText=True, TextScaled=True,
+             children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 50, "MinTextSize": 14})]),
+        text("Desc", "", U(1, -320, 0, 22), U(0, 124, 0, 96), ts=15, heavy=True, stroke=2, xa="Left", ZIndex=3,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 7})]),
+        text("Timer", "", U(0, 180, 0, 26), U(1, -12, 0, 12), (1, 0), ts=19, display=True, stroke=2.5, xa="Center",
+             color="#FF5A3C", ZIndex=3),
+        button("Buy", U(0, 180, 0, 58), U(1, -12, 1, -14), (1, 1), color=PREMIUM, label="", ts=28, label_color=INK, ZIndex=3),
     ])
     cw, ch = SHOP_CELL
     # Section: a title line with the section's icon and a thick colour rule under it.
@@ -777,7 +796,7 @@ def shop():
         scroller("List", U(1, -24, 1, -72), U(0, 12, 0, 62), [vlist(8), padding(2), gift_row]),
         text("Empty", "No one else is here yet.", U(1, -24, 0, 40), U(0, 12, 0.5, 0), ts=18, color=SUB, heavy=True, Visible=False),
     ])
-    write("Shop", screen([dim(), window(WIN_W, WIN_H, "Shop", "Shop", [tabs, lst, card, empty, gift], header="#E9A21F")],
+    write("Shop", screen([dim(), window(WIN_W, WIN_H, "Shop", "Shop", [tabs, lst, card, luck, empty, gift], header="#E9A21F")],
                          order=10, enabled=False))
 
 

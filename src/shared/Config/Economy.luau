@@ -83,8 +83,13 @@ local Economy = {
 	-- Products
 	-- On sale for Hours after you first see it (a "Leaves in" timer shows), and never once
 	-- you reach tool HideAtToolTier or rebirth.
-	StarterPack = { Cash = 500, EggRarity = "Uncommon", Cash2xMinutes = 10, Hours = 2, HideAtToolTier = 8 },
+	-- Contents (made richer 2026-10-31, Dev: "not worth it"): cash worth CashSeconds of your
+	-- earnings and at least CashFloor x your next tool, an EggRarity egg, LuckPotions Luck
+	-- Potions and Cash2xMinutes of 2x cash. Still R$ 9: it's the "first purchase" deal.
+	StarterPack = { CashSeconds = 1800, CashFloor = 1, EggRarity = "Epic", LuckPotions = 3, Cash2xMinutes = 30, Hours = 2, HideAtToolTier = 8 },
 	ServerLuckMinutes = 15,
+	-- At the top Server Luck level a buy adds ServerLuckMinutes, up to this much in total.
+	ServerLuckMaxMinutes = 60,
 
 	-- Meteor Shower (GAME_PLAN §5.8)
 	Shower = {
