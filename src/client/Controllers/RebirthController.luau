@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Client = script.Parent.Parent
 local State = require(Client.State)
 local Ui = require(Client.Ui)
+local Prices = require(Client.Prices)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BigNum = require(Shared.BigNum)
@@ -60,7 +61,7 @@ local function render()
 	skipButton.Visible = skip ~= nil
 	Ui.find(gui, "Window.Or").Visible = skip ~= nil
 	if skip then
-		Ui.find(skipButton, "Price").Text = `{Ui.ROBUX}{skip.Price}`
+		Ui.find(skipButton, "Price").Text = `{Ui.ROBUX}{Prices.of(skip)}`
 		Ui.find(skipButton, "Sub").Text = `[{math.floor(Economy.SkipRebirthMinShare * 100)}% of the cash needed]`
 	end
 end

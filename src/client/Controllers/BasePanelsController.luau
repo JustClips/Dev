@@ -12,6 +12,7 @@ local Client = script.Parent.Parent
 local ModelView = require(Client.ModelView)
 local State = require(Client.State)
 local Ui = require(Client.Ui)
+local Prices = require(Client.Prices)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AlienModel = require(Shared.AlienModel)
@@ -121,7 +122,7 @@ local function renderPets(data)
 	if data.Gamepasses.ExtraSlots or not pass then
 		setButton(addSlot, "+3 Slots: owned", GREY)
 	else
-		setButton(addSlot, `+{Economy.GamepassSlots} Slots {Ui.ROBUX}{pass.Price}`, GOLD, INK)
+		setButton(addSlot, `+{Economy.GamepassSlots} Slots {Ui.ROBUX}{Prices.of(pass)}`, GOLD, INK)
 	end
 	local sig = table.concat({ data.InvVersion or 0, data.PlacedCount, data.Slots, data.CashMultiplier or 1 }, "|")
 	if signatures.Active == sig then
@@ -185,7 +186,7 @@ end
 
 local function skipPrice(rarity: string): number?
 	local product = Products.ProductByKey["SkipHatch" .. rarity]
-	return product and product.Price
+	return product and Prices.of(product)
 end
 
 local function updateEggRow(row: Frame, entry)

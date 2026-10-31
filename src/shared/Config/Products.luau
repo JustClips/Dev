@@ -154,6 +154,9 @@ local Config = {
 	PassById = {} :: { [number]: GamepassDef },
 	ProductByKey = {} :: { [string]: ProductDef },
 	ProductById = {} :: { [number]: ProductDef },
+	-- Regional pricing is OFF on these kinds (everyone pays Price): gift-only passes and
+	-- server-wide boosts. tools/create_products.py --regional applies it on Roblox.
+	FullPriceKinds = { GiftPass = true, ServerLuck = true, MeteorShower = true } :: { [string]: boolean },
 	-- How long a "buy as gift" choice stays valid while the purchase prompt is open.
 	GiftWindowSeconds = 300,
 }

@@ -7,6 +7,7 @@ local TweenService = game:GetService("TweenService")
 
 local Client = script.Parent.Parent
 local Ui = require(Client.Ui)
+local Prices = require(Client.Prices)
 local State = require(Client.State)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -170,7 +171,7 @@ local function showOffer(offer)
 	local token = showToken
 	Ui.find(offerGui, "Window.Header.Title").Text = offer.Title
 	Ui.find(offerGui, "Window.Text").Text = LINE_TEXT[offer.Product] or offer.Text
-	Ui.setText(Ui.find(offerGui, "Window.Buy"), `{Ui.ROBUX} {offer.Price}`)
+	Ui.setText(Ui.find(offerGui, "Window.Buy"), `{Ui.ROBUX} {if Products.ProductByKey[offer.Product] then Prices.of(Products.ProductByKey[offer.Product]) else offer.Price}`)
 	Ui.find(offerGui, "Window.Tag.Label").Text = TAG_TEXT[offer.Product] or "LIMITED!"
 	local items = Ui.find(offerGui, "Window.Items") :: Frame
 	local template = items:FindFirstChild("Template") :: Frame
@@ -244,7 +245,7 @@ local function showWelcome(info)
 	local doubleAt = doubleButton.Position
 	collect.Position = UDim2.new(0.5, if doubleButton.Visible then -100 else 0, doubleAt.Y.Scale, doubleAt.Y.Offset)
 	if double then
-		Ui.setText(doubleButton, `2x for {Ui.ROBUX} {double.Price}`)
+		Ui.setText(doubleButton, `2x for {Ui.ROBUX} {Prices.of(double)}`)
 	end
 	Ui.show(welcomeGui)
 end

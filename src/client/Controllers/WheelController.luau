@@ -13,6 +13,7 @@ local TweenService = game:GetService("TweenService")
 local Client = script.Parent.Parent
 local State = require(Client.State)
 local Ui = require(Client.Ui)
+local Prices = require(Client.Prices)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
@@ -145,7 +146,7 @@ local function fill()
 		local def = Products.ProductByKey[key]
 		button.Visible = def ~= nil and def.Id ~= 0
 		if def then
-			(button:FindFirstChild("Price") :: TextLabel).Text = `{Ui.ROBUX} {def.Price}`
+			(button:FindFirstChild("Price") :: TextLabel).Text = `{Ui.ROBUX} {Prices.of(def)}`
 		end
 	end
 end

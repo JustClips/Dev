@@ -13,6 +13,7 @@ local BagItems = require(Client.BagItems)
 local ModelView = require(Client.ModelView)
 local State = require(Client.State)
 local Ui = require(Client.Ui)
+local Prices = require(Client.Prices)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
@@ -104,7 +105,7 @@ local function render()
 	local def = Products.ProductByKey.MerchantRestock
 	restock.Visible = here and def ~= nil and def.Id ~= 0
 	if def then
-		Ui.setText(restock, `New wares {Ui.ROBUX}{def.Price}`)
+		Ui.setText(restock, `New wares {Ui.ROBUX}{Prices.of(def)}`)
 	end
 	if not here then
 		timer.Text = ""

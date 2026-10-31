@@ -21,6 +21,49 @@ local S: any
 -- buyer -> pending gift choice, set when the server opens the purchase prompt.
 local pendingGifts: { [Player]: { productId: number, toUserId: number, at: number } } = {}
 
+-- Regional pricing (Dev turned it on 2026-10-31): Roblox charges players in some countries
+-- up to 70% less. Gifting would let a cheap-region player buy items for full-price players
+-- at a discount, so a gift is only allowed when the buyer's price level (1-1000, 1000 = full
+-- price) is at least the recipient's, as Roblox recommends. Kinds in FULL_PRICE_KINDS have
+-- regional pricing turned OFF on Roblox (tools/create_products.py keeps it off): gift-only
+-- passes and server-wide boosts, since one buyer's price would pay for the whole server.
+-- Levels are fetched on join and never kept past the session (Roblox's rule).
+local FULL_PRICE_KINDS = Products.FullPriceKinds
+local priceLevels: { [number]: number } = {}
+
+local function fetchPriceLevel(player: Player): number?
+	local ok, result = pcall(function()
+		return MarketplaceService:GetUsersPriceLevelsAsync({ player.UserId })
+	end)
+	if ok and type(result) == "table" then
+		for _, info in result do
+			if info.UserId == player.UserId and type(info.PriceLevel) == "number" then
+				priceLevels[player.UserId] = info.PriceLevel
+			end
+		end
+	end
+	return priceLevels[player.UserId]
+end
+
+local function priceLevel(player: Player): number?
+	return priceLevels[player.UserId] or fetchPriceLevel(player)
+end
+
+-- Whether buyer may gift this product to recipient under regional pricing.
+local function giftAllowed(product, buyer: Player, recipient: Player): (boolean, string?)
+	if FULL_PRICE_KINDS[product.Kind] then
+		return true, nil -- everyone pays the full price for these
+	end
+	local mine, theirs = priceLevel(buyer), priceLevel(recipient)
+	if not mine or not theirs then
+		return false, "Gifting is busy, try again in a moment"
+	end
+	if mine < theirs then
+		return false, `Robux prices are different where {recipient.DisplayName} lives, so you can't gift them this`
+	end
+	return true, nil
+end
+
 local function notify(player: Player, text: string, kind: string?)
 	Net.fire("Notify", player, text, kind or "Good")
 end
@@ -289,8 +332,10 @@ local function processReceipt(info): Enum.ProductPurchaseDecision
 	end
 	S.DataService:RecordReceipt(data, purchaseId, tostring(recipient.UserId))
 	S.StateService:Mark(recipient)
-	S.AnalyticsService:Custom(buyer, "RobuxPurchase", product.Price, { Product = product.Key, Gift = tostring(recipient ~= buyer) })
-	S.AnalyticsService:Purchased(buyer, product.Key, product.Price, product.Kind == "WheelSpins")
+	-- What the buyer really paid (less than Price with regional pricing).
+	local spent = if type(info.CurrencySpent) == "number" then info.CurrencySpent else product.Price
+	S.AnalyticsService:Custom(buyer, "RobuxPurchase", spent, { Product = product.Key, Gift = tostring(recipient ~= buyer) })
+	S.AnalyticsService:Purchased(buyer, product.Key, spent, product.Kind == "WheelSpins")
 	-- The purchase celebration (PurchaseController): instant "you got it" feedback.
 	if recipient ~= buyer then
 		Net.fire("Purchased", recipient, product.Key, { From = buyer.DisplayName })
@@ -383,6 +428,11 @@ local function promptPurchase(player: Player, key: any, giftToUserId: any): (boo
 		product = fits
 	end
 	if recipient ~= player then
+		local allowed, why = giftAllowed(product, player, recipient)
+		if not allowed then
+			pendingGifts[player] = nil
+			return false, why
+		end
 		pendingGifts[player] = { productId = product.Id, toUserId = recipient.UserId, at = os.clock() }
 	else
 		pendingGifts[player] = nil
@@ -448,7 +498,12 @@ function ShopService:Init(services)
 			data.Flags.StarterPackEnds = os.time() + pack.Hours * 3600
 		end
 	end)
+	Players.PlayerAdded:Connect(fetchPriceLevel)
+	for _, player in Players:GetPlayers() do
+		task.spawn(fetchPriceLevel, player)
+	end
 	Players.PlayerRemoving:Connect(function(player)
+		priceLevels[player.UserId] = nil
 		pendingGifts[player] = nil
 	end)
 end

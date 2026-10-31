@@ -27,6 +27,7 @@ local Workspace = game:GetService("Workspace")
 local Client = script.Parent.Parent
 local State = require(Client.State)
 local Ui = require(Client.Ui)
+local Prices = require(Client.Prices)
 local HatchFx = require(Client.HatchFx)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -1147,7 +1148,7 @@ local function updateEggPrompts()
 			p.Enabled = true
 		else
 			local product = Products.ProductByKey["SkipHatch" .. rarity]
-			p.ActionText = if product and product.Id ~= 0 then `Skip Hatch {Ui.ROBUX}{product.Price}` else "Growing..."
+			p.ActionText = if product and product.Id ~= 0 then `Skip Hatch {Ui.ROBUX}{Prices.of(product)}` else "Growing..."
 			p.Enabled = product ~= nil and product.Id ~= 0
 		end
 	end

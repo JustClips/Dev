@@ -24,6 +24,7 @@ local Client = script.Parent.Parent
 local ModelView = require(Client.ModelView)
 local State = require(Client.State)
 local Ui = require(Client.Ui)
+local Prices = require(Client.Prices)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Aliens = require(Shared.Config.Aliens)
@@ -215,7 +216,7 @@ local function productTile(key: string, hi: string?, lo: string?, iconName: stri
 	return {
 		Hi = hi,
 		Lo = lo,
-		Price = robuxPrice(def.Price),
+		Price = robuxPrice(Prices.of(def)),
 		Icon = iconName,
 		Enabled = true,
 		Tag = tag,
@@ -248,7 +249,7 @@ local function openGiftPicker(key: string)
 				local rebirths = stats and stats:FindFirstChild("Rebirths") :: IntValue?
 				local fits = Products.skipRebirthFor(if rebirths then rebirths.Value else 0)
 				if fits then
-					label = `{label} · {Ui.ROBUX} {fits.Price}`
+					label = `{label} · {Ui.ROBUX} {Prices.of(fits)}`
 				end
 			end
 			Ui.setText(button, label)
@@ -276,22 +277,22 @@ local function openQtyPicker(rarity: string)
 	local packs = Products.eggPacks(rarity)
 	local cheapest = math.huge
 	for _, def in packs do
-		cheapest = math.min(cheapest, def.Price / (def.Count or 1))
+		cheapest = math.min(cheapest, Prices.of(def) / (def.Count or 1))
 	end
 	for i, def in packs do
 		local count = def.Count or 1
 		local option = clone("Option")
 		option.LayoutOrder = i
 		Ui.find(option, "Count").Text = `x{count}`
-		local each = math.floor(def.Price / count + 0.5)
+		local each = math.floor(Prices.of(def) / count + 0.5)
 		Ui.find(option, "Each").Text = if count > 1 then `{Ui.ROBUX} {each} each` else "Just one"
 		local tag = Ui.find(option, "Tag") :: Frame
-		local tagText = if count == 3 then "MOST POPULAR" elseif count > 1 and def.Price / count <= cheapest then "BEST VALUE" else nil
+		local tagText = if count == 3 then "MOST POPULAR" elseif count > 1 and Prices.of(def) / count <= cheapest then "BEST VALUE" else nil
 		tag.Visible = tagText ~= nil
 		if tagText then
 			Ui.find(tag, "Label").Text = tagText
 		end
-		setPrice(Ui.find(option, "Buy"), robuxPrice(def.Price), ROBUX)
+		setPrice(Ui.find(option, "Buy"), robuxPrice(Prices.of(def)), ROBUX)
 		local key = def.Key
 		Ui.button(Ui.find(option, "Buy"), function()
 			qtyPicker.Visible = false
@@ -449,7 +450,7 @@ local function fillLuckCard(): boolean
 	local timer = Ui.find(card, "Timer") :: TextLabel
 	local left = (State.server("LuckEnds") or 0) - State.now()
 	timer.Text = if level > 1 and left > 0 then leftText(left, "") else `Lasts {minutes} min`
-	local priceText = robuxPrice(def.Price)
+	local priceText = robuxPrice(Prices.of(def))
 	local buy = Ui.find(card, "Buy") :: TextButton
 	if buy:GetAttribute("Price") ~= priceText then
 		buy:SetAttribute("Price", priceText)
@@ -514,7 +515,7 @@ local function addEggBanner(now: number)
 			ModelView.show(Ui.find(card, "Model"), AssetLibrary.alien(def.Id), "Alien_" .. def.Id)
 		end
 	end
-	local single = packs[1].Price / (packs[1].Count or 1)
+	local single = Prices.of(packs[1]) / (packs[1].Count or 1)
 	local buys = Ui.find(banner, "Buys") :: Frame
 	for i = #packs, 1, -1 do
 		local def = packs[i]
@@ -523,7 +524,7 @@ local function addEggBanner(now: number)
 		cell.LayoutOrder = #packs - i + 1
 		Ui.find(cell, "Count").Text = if count == 1 then "1 Egg" else `{count} Eggs`
 		local buy = Ui.find(cell, "Buy") :: TextButton
-		setPrice(buy, robuxPrice(def.Price), ROBUX)
+		setPrice(buy, robuxPrice(Prices.of(def)), ROBUX)
 		if i == #packs and count > 1 then
 			-- The biggest pack: rainbow button with what the same eggs cost one by one.
 			(Ui.find(buy, "Rainbow") :: UIGradient).Enabled = true
@@ -618,7 +619,7 @@ local function buildFeatured(data)
 				{ Icon = "Icon_PotionCash", Caption = `2x Cash {pack.Cash2xMinutes}m` },
 			},
 			Ends = starterEnds,
-			Price = Products.ProductByKey.StarterPack.Price,
+			Price = Prices.of(Products.ProductByKey.StarterPack),
 			OnBuy = function()
 				prompt("StarterPack")
 			end,
@@ -630,7 +631,7 @@ local function buildFeatured(data)
 		Ui.find(row, "Title").Text = offer.Title
 		Ui.find(row, "Desc").Text = offer.Text
 		Ui.find(row, "Icon").Image = AssetLibrary.image(productIcon(offer.Product))
-		setPrice(Ui.find(row, "Buy"), robuxPrice(offer.Price), ROBUX)
+		setPrice(Ui.find(row, "Buy"), robuxPrice(if Products.ProductByKey[offer.Product] then Prices.of(Products.ProductByKey[offer.Product]) else offer.Price), ROBUX)
 		local product = offer.Product
 		Ui.button(Ui.find(row, "Buy"), function()
 			prompt(product)
@@ -658,7 +659,7 @@ local function buildEggs(data, color: Color3)
 			table.insert(tiles, {
 				Hi = string.upper(rarity),
 				Lo = "EGG",
-				Price = robuxPrice(packs[1].Price),
+				Price = robuxPrice(Prices.of(packs[1])),
 				Rarity = rarity,
 				Enabled = true,
 				OnBuy = function()
@@ -698,7 +699,7 @@ local function buildPasses(data, color: Color3)
 			table.insert(tiles, {
 				Hi = if info then info.Hi else "",
 				Lo = if info then info.Lo else string.upper(pass.Name),
-				Price = if owned then "Owned" else robuxPrice(pass.Price),
+				Price = if owned then "Owned" else robuxPrice(Prices.of(pass)),
 				Enabled = not owned,
 				Icon = if info then info.Icon else "Icon_Star",
 				Tag = if owned or not info then nil else info.Tag,
@@ -914,6 +915,12 @@ end
 
 function ShopController:Start()
 	buildNav()
+	-- Regional prices arrive a moment after join: redraw with what this player pays.
+	Prices.Changed:Connect(function()
+		if State.data then
+			render()
+		end
+	end)
 	Ui.button(Ui.find(gui, "Window.Panel.Header.Close"), function()
 		Ui.close("Shop")
 	end)

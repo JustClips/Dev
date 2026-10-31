@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Client = script.Parent.Parent
 local State = require(Client.State)
 local Ui = require(Client.Ui)
+local Prices = require(Client.Prices)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
@@ -95,7 +96,7 @@ local function setRobux(row: Frame, product: any, verb: string)
 	local robux = row:FindFirstChild("Robux") :: TextButton
 	robux.Visible = product ~= nil
 	if product then
-		Ui.setText(robux, `{verb} {Ui.ROBUX}{product.Price}`)
+		Ui.setText(robux, `{verb} {Ui.ROBUX}{Prices.of(product)}`)
 		Ui.button(robux, function()
 			promptRobux(product.Key)
 		end)

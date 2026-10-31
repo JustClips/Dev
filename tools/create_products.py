@@ -10,6 +10,11 @@ game-pass and developer-product write scopes.
     python3 tools/create_products.py --dry-run  # show what would happen
     python3 tools/create_products.py --sync     # also rename existing ones to match the file
     python3 tools/create_products.py --sync --icons  # ...and re-upload their icons
+    python3 tools/create_products.py --regional  # turn regional pricing OFF on FULL_PRICE kinds
+
+Regional pricing: the kinds in FULL_PRICE_KINDS (gift-only passes and server-wide boosts,
+same list as Products.FullPriceKinds) always have managed/regional pricing turned off, both
+when they are created and with --regional. Everything else keeps Roblox's setting.
 """
 import argparse
 import json
@@ -51,6 +56,8 @@ KIND_TEXT = {
     "LimitedEgg": "A limited-time egg with exclusive Halloween pets. Gone when the timer runs out!",
 }
 
+FULL_PRICE_KINDS = {"GiftPass", "ServerLuck", "MeteorShower"}
+
 LINE = re.compile(r'\{ Key = "(?P<key>\w+)", Id = (?P<id>\d+), Price = (?P<price>\d+), Name = "(?P<name>[^"]*)"(?P<rest>[^\n]*)')
 
 
@@ -88,6 +95,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--sync", action="store_true")
     parser.add_argument("--icons", action="store_true")
+    parser.add_argument("--regional", action="store_true")
     args = parser.parse_args()
 
     source = open(CONFIG, encoding="utf-8").read()
@@ -137,10 +145,22 @@ def main():
         made = curl("POST", pbase, form)
         ids[key] = made["productId"]
         print("   ->", ids[key])
+        if kind in FULL_PRICE_KINDS:
+            curl("PATCH", f"{pbase}/{ids[key]}", {"isManagedPricingEnabled": "false"})
         time.sleep(0.4)
 
     if args.sync:
         sync(passes_src, products_src, base, pbase, args)
+
+    if args.regional:
+        for m in LINE.finditer(products_src):
+            kind = re.search(r'Kind = "(\w+)"', m["rest"])[1]
+            if kind in FULL_PRICE_KINDS and m["id"] != "0":
+                have = curl("GET", f"{pbase}/{m['id']}/creator")
+                if have.get("isManagedPricingEnabled"):
+                    print(f"product {m['key']}: regional pricing off")
+                    if not args.dry_run:
+                        curl("PATCH", f"{pbase}/{m['id']}", {"isManagedPricingEnabled": "false"})
 
     if args.dry_run or not ids:
         return

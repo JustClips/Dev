@@ -3,6 +3,8 @@
 local Client = script.Parent
 local State = require(Client:WaitForChild("State"))
 local Ui = require(Client:WaitForChild("Ui"))
+-- What this player pays for each product (regional pricing), fetched in the background.
+require(Client:WaitForChild("Prices")).load()
 
 -- LoadingController comes first so its Init puts the loading screen up right away.
 local ORDER = {
