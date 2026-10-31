@@ -63,6 +63,14 @@ end
 function GroupRewardController:Init(controllers)
 	C = controllers
 	gui = Ui.screen("GroupReward")
+	-- Studio places synced before the 2026-10-31 slim-down still hold the old parts.
+	local window = gui:FindFirstChild("Window")
+	for _, name in { "Join", "Support", "Note" } do
+		local stale = window and window:FindFirstChild(name)
+		if stale then
+			stale:Destroy()
+		end
+	end
 end
 
 function GroupRewardController:Start()

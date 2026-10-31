@@ -36,6 +36,10 @@ local function show(player: Player, key: string, productKey: string, title: stri
 	if not session or session.Data.Stats.Hatches < 1 or not isLive(productKey) then
 		return false
 	end
+	-- No offers during the tutorial (Dev, 2026-10-31). The Starter Pack comes on a later hatch.
+	if not session.Data.Flags.TutorialDone then
+		return false
+	end
 	local state = offerState(session)
 	local now = os.clock()
 	if not ignoreGlobal and now - state.lastAny < Economy.Offers.GlobalCooldown then

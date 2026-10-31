@@ -120,7 +120,6 @@ local card: Frame
 local cardIcon: ImageLabel
 local stepLabel: TextLabel
 local textLabel: TextLabel
-local cardSpin: GuiButton
 local barFill: Frame
 local doneFrame: Frame
 local doneLabel: TextLabel
@@ -444,12 +443,6 @@ local function update()
 			end
 			lastNeedTool = needTool
 		end
-		-- Lucky Wheel step: a SPIN button right on the card, the text making room for it.
-		local showSpin = key == "Wheel" and not celebrating and not Ui.isOpen(Ui.screen("Wheel"))
-		if cardSpin.Visible ~= showSpin then
-			cardSpin.Visible = showSpin
-			textLabel.Size = UDim2.new(1, if showSpin then -206 else -84, 0, 36)
-		end
 		-- Phones: show where to hold a finger once the tool is out.
 		holdHint.Visible = key == "Sweep" and not needTool and not goThere and not celebrating and UserInputService.TouchEnabled and not Ui.gamepad()
 		if needTool then
@@ -467,7 +460,7 @@ local function update()
 		elseif key == "Upgrade" and not C.UpgradeController:IsOpen() then
 			pointAt(Ui.find(hud, "Rail.UpgradesButton"))
 		elseif key == "Wheel" and not Ui.isOpen(Ui.screen("Wheel")) then
-			pointAt(cardSpin, false)
+			pointAt(Ui.find(hud, "SpinButton"))
 		elseif key == "Wheel" and not C.WheelController:IsSpinning() then
 			pointAt(Ui.find(Ui.screen("Wheel"), "Window.Side.SpinButton"))
 		else
@@ -485,10 +478,6 @@ local function update()
 
 	-- Tutorial finished.
 	pointAt(nil)
-	if cardSpin.Visible then
-		cardSpin.Visible = false
-		textLabel.Size = UDim2.new(1, -84, 0, 36)
-	end
 	holdHint.Visible = false
 	card.Position = UDim2.new(0.5, 0, 1, -cardLift(false))
 	glow.Enabled = false
@@ -550,7 +539,11 @@ function TutorialController:Init(controllers)
 	cardIcon = Ui.find(card, "Icon")
 	stepLabel = Ui.find(card, "Step")
 	textLabel = Ui.find(card, "Text")
-	cardSpin = Ui.find(card, "Spin")
+	-- Dev (2026-10-31) dropped the SPIN button that sat on this card for a while.
+	local staleSpin = card:FindFirstChild("Spin")
+	if staleSpin then
+		staleSpin:Destroy()
+	end
 	barFill = Ui.find(card, "Bar.Fill")
 	doneFrame = Ui.find(card, "Done")
 	doneLabel = Ui.find(card, "Done.Label")
@@ -586,9 +579,6 @@ function TutorialController:Start()
 	local function close()
 		Ui.close("TutorialDone")
 	end
-	Ui.button(cardSpin, function()
-		C.WheelController:Open()
-	end)
 	Ui.button(Ui.find(doneGui, "Window.Ok"), close)
 	Ui.button(Ui.find(doneGui, "Window.Close"), close)
 	Ui.button(Ui.find(doneGui, "Dim"), close)

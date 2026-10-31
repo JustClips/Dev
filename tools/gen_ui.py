@@ -601,10 +601,6 @@ def hud():
         frame("Done", U(1, 0, 1, 0), bg=SUCCESS, BackgroundTransparency=1, Visible=False, ZIndex=5, children=[
             text("Label", "✓  Nice!", U(1, 0, 1, 0), ts=30, display=True, stroke=3, TextTransparency=1, ZIndex=6),
         ]),
-        # The Lucky Wheel step: a SPIN button right on the card (Dev, 2026-10-31: the corner
-        # Spin button was too far up to notice).
-        button("Spin", U(0, 112, 0, 52), U(1, -10, 0.5, 0), (1, 0.5), color="#4C8DFF", label="SPIN!", ts=22, ico="Spin",
-               ico_px=30, stroke=3, Visible=False, ZIndex=22),
     ])
     # Tutorial spotlight: the screen dims except a cut-out around one button (four dark
     # frames around it), a pulsing ring on the button and a bouncing arrow above it.
@@ -683,9 +679,10 @@ def hud():
     goals = button("Goals", U(0, 336, 0, 30), U(0.5, 0, 0, 118), (0.5, 0), color=BG, stroke=3, stud=False, Visible=False,
                    children=[
         autoscale(),
-        text("Count", "GOALS 0/3", U(0, 92, 1, 0), U(0, 8, 0, 0), ts=16, color=PREMIUM, display=True, stroke=2, xa="Left"),
-        text("Next", "", U(1, -112, 1, 0), U(0, 100, 0, 0), ts=16, display=True, stroke=2, xa="Left",
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
+        text("Count", "GOALS 0/3", U(0, 84, 1, 0), U(0, 8, 0, 0), ts=15, color=PREMIUM, display=True, stroke=2, xa="Left",
+             TextWrapped=False),
+        # GoalController fits the text to the space (Ui.fitText): TextScaled overflowed here.
+        text("Next", "", U(1, -122, 1, -4), U(0, 96, 0, 2), ts=16, display=True, stroke=2, xa="Left", TextWrapped=False),
         text("Arrow", "v", U(0, 16, 1, 0), U(1, -6, 0, 0), (1, 0), ts=16, color="#C9D0DE", display=True),
         plate("List", U(1, 0, 0, 116), U(0, 0, 1, 4), tint=BG, stroke=3, Visible=False, children=[
             text("Title", "GOALS", U(1, -16, 0, 24), U(0, 8, 0, 4), ts=17, color=PREMIUM, display=True, stroke=2, xa="Left"),

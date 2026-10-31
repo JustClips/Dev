@@ -77,6 +77,7 @@ function GoalController:Init(controllers)
 	C = controllers
 	strip = Ui.find(Ui.screen("Hud"), "Goals")
 	list = Ui.find(strip, "List")
+	Ui.fitText(strip:FindFirstChild("Next") :: TextLabel, 16, 8)
 end
 
 function GoalController:Start()
