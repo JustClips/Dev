@@ -402,7 +402,7 @@ local function rollPets(scene: Scene, info, face: CFrame, petScale: number, coun
 		if onPet then
 			onPet(color)
 		end
-		local pet = AssetLibrary.alien(id)
+		local pet = AssetLibrary.alien(id, info.EggMutation) -- a mutated egg only rolls mutated pets
 		for _, d in pet:GetDescendants() do
 			if d:IsA("BasePart") then
 				d.CanCollide = false

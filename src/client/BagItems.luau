@@ -30,6 +30,7 @@ export type Entry = {
 	order: number,
 	count: number, -- eggs in a stack, potions owned; 1 for pets / single eggs
 	rarity: string?,
+	mutation: string?, -- eggs: a weather mutation it got in the field (its own stack)
 }
 
 local WHITE = Color3.new(1, 1, 1)
@@ -38,9 +39,21 @@ function BagItems.petName(pet): string
 	return (if pet.Huge then "Huge " else "") .. AlienModel.displayName(pet.Id, pet.Mutation)
 end
 
+-- The mutation's label ("Rainbow"), or "" for a plain egg.
+local function mutationLabel(mutation: string?): string
+	local def = mutation and Eggs.MutationByName[mutation]
+	return if def then def.Label .. " " elseif mutation then mutation .. " " else ""
+end
+
 function BagItems.eggName(egg): string
 	local size = egg.Size or "Normal"
-	return (if size ~= "Normal" then size .. " " else "") .. `{egg.Rarity} Egg`
+	return mutationLabel(egg.Mutation) .. (if size ~= "Normal" then size .. " " else "") .. `{egg.Rarity} Egg`
+end
+
+-- Eggs stack by rarity, and mutated eggs get their own stack per mutation (Dev, 2026-10-31:
+-- a Rainbow egg hid in the plain Common stack). "Common" or "Common:Rainbow".
+function BagItems.eggStack(egg): string
+	return if egg.Mutation then `{egg.Rarity}:{egg.Mutation}` else egg.Rarity
 end
 
 function BagItems.petWeight(pet): number
@@ -77,12 +90,14 @@ local function eggEntry(uid: string, egg): Entry
 	return {
 		kind = "Egg",
 		id = uid,
-		key = "E:" .. egg.Rarity,
+		key = "E:" .. BagItems.eggStack(egg),
 		name = BagItems.eggName(egg),
 		color = BagItems.rarityColor(egg.Rarity),
-		order = 2e9 - Eggs.order(egg.Rarity) * 1000 - math.min(BagItems.eggWeight(egg), 999),
+		-- Mutated stacks sit just before the plain stack of their rarity.
+		order = 2e9 - Eggs.order(egg.Rarity) * 1000 - (if egg.Mutation then 999 else math.min(BagItems.eggWeight(egg), 998)),
 		count = 1,
 		rarity = egg.Rarity,
+		mutation = egg.Mutation,
 	}
 end
 
@@ -158,14 +173,15 @@ function BagItems.bagEntries(data, query: string?, skip: ((string) -> boolean)?)
 			table.insert(list, e)
 		end
 	end
-	local rarities = {}
+	local stacks = {}
 	for _, egg in data.Eggs or {} do
-		if not table.find(rarities, egg.Rarity) then
-			table.insert(rarities, egg.Rarity)
+		local stack = BagItems.eggStack(egg)
+		if not table.find(stacks, stack) then
+			table.insert(stacks, stack)
 		end
 	end
-	for _, rarity in rarities do
-		local e = BagItems.resolve(data, "E:" .. rarity)
+	for _, stack in stacks do
+		local e = BagItems.resolve(data, "E:" .. stack)
 		if e and keep(e) then
 			table.insert(list, e)
 		end
@@ -196,11 +212,12 @@ function BagItems.counts(data): (number, number, number)
 	return pets, eggs, items
 end
 
--- The heaviest egg of a rarity (what an egg stack hands you).
-function BagItems.bestEgg(data, rarity: string): (string?, number)
+-- The heaviest egg of a stack (what an egg stack hands you). `stack` is a rarity, or
+-- "Rarity:Mutation" for mutated eggs (BagItems.eggStack).
+function BagItems.bestEgg(data, stack: string): (string?, number)
 	local best, bestKg, count = nil, -1, 0
 	for uid, egg in data.Eggs or {} do
-		if egg.Rarity == rarity then
+		if BagItems.eggStack(egg) == stack then
 			count += 1
 			local kg = BagItems.eggWeight(egg)
 			if kg > bestKg then
@@ -222,8 +239,9 @@ function BagItems.resolve(data, key: string): Entry?
 	elseif kind == "E" then
 		local uid, count = BagItems.bestEgg(data, id :: string)
 		if uid then
-			local e = eggEntry(uid, data.Eggs[uid])
-			e.name = `{id} Egg`
+			local egg = data.Eggs[uid]
+			local e = eggEntry(uid, egg)
+			e.name = `{mutationLabel(egg.Mutation)}{egg.Rarity} Egg`
 			e.count = count
 			return e
 		end
@@ -242,17 +260,22 @@ end
 -- the order an empty hotbar fills up: egg stacks (best rarity first), then your best pets.
 function BagItems.fillOrder(data): { Entry }
 	local out: { Entry } = {}
-	local rarities = {}
+	local stacks = {}
 	for _, egg in data.Eggs or {} do
-		if not table.find(rarities, egg.Rarity) then
-			table.insert(rarities, egg.Rarity)
+		local stack = BagItems.eggStack(egg)
+		if not table.find(stacks, stack) then
+			table.insert(stacks, stack)
 		end
 	end
-	table.sort(rarities, function(a, b)
-		return Eggs.order(a) > Eggs.order(b)
+	table.sort(stacks, function(a, b)
+		local ra, rb = string.match(a, "^[^:]+") :: string, string.match(b, "^[^:]+") :: string
+		if ra ~= rb then
+			return Eggs.order(ra) > Eggs.order(rb)
+		end
+		return #a > #b -- mutated first
 	end)
-	for _, rarity in rarities do
-		local e = BagItems.resolve(data, "E:" .. rarity)
+	for _, stack in stacks do
+		local e = BagItems.resolve(data, "E:" .. stack)
 		if e then
 			table.insert(out, e)
 		end
@@ -275,7 +298,9 @@ function BagItems.show(viewport: ViewportFrame, icon: ImageLabel?, entry: Entry,
 		ModelView.show(viewport, AssetLibrary.alien(pet.Id, pet.Mutation), "Alien_" .. pet.Id)
 	elseif entry.kind == "Egg" then
 		local rarity = entry.rarity or "Common"
-		ModelView.show(viewport, AssetLibrary.egg(rarity), "Egg_" .. rarity)
+		local model = AssetLibrary.egg(rarity)
+		AssetLibrary.applyMutation(model, entry.mutation)
+		ModelView.show(viewport, model, "Egg_" .. rarity)
 	elseif icon then
 		local def = Items.ById[entry.id]
 		icon.Image = if def then AssetLibrary.image(def.Icon) else ""
@@ -306,7 +331,7 @@ function BagItems.use(C: any, entry: Entry)
 	if entry.kind == "Egg" then
 		-- A stack: put away if you hold any egg of this rarity.
 		local heldEgg = held and data.Eggs and data.Eggs[held]
-		if held == entry.id or (heldEgg and entry.key == "E:" .. heldEgg.Rarity) then
+		if held == entry.id or (heldEgg and entry.key == "E:" .. BagItems.eggStack(heldEgg)) then
 			C.PlacementController:Stop()
 			return
 		end
@@ -337,7 +362,7 @@ function BagItems.isHeld(C: any, data, entry: Entry, stack: boolean?): boolean
 		return true
 	end
 	local egg = data.Eggs and data.Eggs[held]
-	return stack == true and egg ~= nil and entry.kind == "Egg" and entry.key == "E:" .. egg.Rarity
+	return stack == true and egg ~= nil and entry.kind == "Egg" and entry.key == "E:" .. BagItems.eggStack(egg)
 end
 
 return BagItems

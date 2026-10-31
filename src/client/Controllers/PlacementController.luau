@@ -15,6 +15,7 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Client = script.Parent.Parent
+local BagItems = require(Client.BagItems)
 local ModelView = require(Client.ModelView)
 local State = require(Client.State)
 local Ui = require(Client.Ui)
@@ -112,6 +113,7 @@ end
 local function makeGhost(egg)
 	clearGhost()
 	local model = AssetLibrary.egg(egg.Rarity)
+	AssetLibrary.applyMutation(model, egg.Mutation)
 	model:SetAttribute("Rarity", egg.Rarity)
 	local scale = Weights.visualScale(Weights.eggMult(egg.Rarity, egg.Weight))
 	model:ScaleTo(scale * 1.25)
@@ -346,12 +348,13 @@ function PlacementController:Hold(uid: string)
 	for _ in data.Eggs do
 		left += 1
 	end
-	local size = egg.Size or "Normal"
-	subLabel.Text = `{if size ~= "Normal" then size .. " " else ""}{egg.Rarity} Egg · {Weights.format(egg.Weight or Weights.eggKg(egg.Rarity))} · {left} in bag`
+	subLabel.Text = `{BagItems.eggName(egg)} · {Weights.format(egg.Weight or Weights.eggKg(egg.Rarity))} · {left} in bag`
 	subLabel.TextColor3 = Eggs.ByName[egg.Rarity].Color
 	icon.Visible = false
 	modelView.Visible = true
-	ModelView.show(modelView, AssetLibrary.egg(egg.Rarity), "Egg_" .. egg.Rarity)
+	local preview = AssetLibrary.egg(egg.Rarity)
+	AssetLibrary.applyMutation(preview, egg.Mutation)
+	ModelView.show(modelView, preview, "Egg_" .. egg.Rarity)
 	gui.Enabled = true
 	syncPlacing()
 	Ui.popIn(gui)
