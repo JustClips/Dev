@@ -26,6 +26,8 @@ local C: any
 
 local GOLD = Color3.fromRGB(255, 205, 40)
 local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
+-- Cartoon 4-point star (tools/gen_vfx.py), or the stock sparkle when it is missing.
+local STAR = if AssetLibrary.image("Vfx_Star") ~= "" then AssetLibrary.image("Vfx_Star") else SPARKLE
 local FLY_OUT = 0.7 -- seconds from the slot to the ground
 local FLY_IN = 0.22 -- seconds from the ground into you
 local REPORT_EVERY = 0.15
@@ -54,26 +56,37 @@ local lastReport = 0
 local streak = 0
 local lastPickup = 0
 
-local function take(): BasePart
-	local part = table.remove(pool)
-	if part then
-		return part
+-- The coin's look: the modelled Coin_Cash mesh (art/blender/coins.py: a gold coin with a
+-- raised rim, a "$" on both faces, a shine and a dark cartoon outline). Until that model has
+-- loaded, a stand-in built from parts is used; stand-ins are thrown away instead of pooled
+-- once the model is there. Either way the look is welded to an invisible root, so the
+-- movement code only moves the root. The coin's faces point along the root's Z, which the
+-- root's spin keeps level, so the coin stands up and turns.
+local function addLook(p: BasePart): (BasePart, boolean)
+	local model = AssetLibrary.get("Coin_Cash")
+	local body = model and model:FindFirstChild("Body")
+	if model and body and body:IsA("BasePart") then
+		body.Name = "Look"
+		body.Anchored = false
+		body.Massless = true
+		body.CanCollide = false
+		body.CanQuery = false
+		body.CanTouch = false
+		body.CastShadow = false
+		body.Material = Enum.Material.SmoothPlastic
+		body.CFrame = p.CFrame
+		local weld = Instance.new("WeldConstraint")
+		weld.Part0 = p
+		weld.Part1 = body
+		weld.Parent = body
+		body.Parent = p
+		model:Destroy()
+		return body, true
 	end
-	-- Cartoon coin (Dev 2026-10-31: "model them, cartoon look"): a chunky gold coin with a
-	-- dark outline ring, a darker rim, a raised face with a "$" on both sides, a soft glow
-	-- behind it and twinkles. The pooled part is an invisible root; the coin pieces are
-	-- welded to it so the movement code only moves the root. Their axis lies along the
-	-- root's Z, which the root's spin keeps level, so the coin stands up and turns.
-	local p = Instance.new("Part")
-	p.Name = "Coin"
-	p.Size = Vector3.one * 0.2
-	p.Transparency = 1
-	p.Anchored = true
-	p.CanCollide = false
-	p.CanQuery = false
-	p.CanTouch = false
-	p.CastShadow = false
-	local upright = CFrame.Angles(0, math.pi / 2, 0)
+	if model then
+		model:Destroy()
+	end
+	local upright = p.CFrame * CFrame.Angles(0, math.pi / 2, 0)
 	local function piece(name: string, thick: number, across: number, color: Color3): BasePart
 		local c = Instance.new("Part")
 		c.Name = name
@@ -95,25 +108,32 @@ local function take(): BasePart
 		c.Parent = p
 		return c
 	end
-	piece("Outline", 0.26, 1.62, Color3.fromRGB(74, 42, 8))
+	local outline = piece("Outline", 0.26, 1.62, Color3.fromRGB(74, 42, 8))
 	piece("Rim", 0.34, 1.46, Color3.fromRGB(232, 150, 18))
-	local face = piece("Face", 0.42, 1.12, Color3.fromRGB(255, 214, 58))
-	for _, side in { Enum.NormalId.Left, Enum.NormalId.Right } do
-		local gui = Instance.new("SurfaceGui")
-		gui.Face = side
-		gui.LightInfluence = 0.5
-		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-		gui.PixelsPerStud = 60
-		gui.Parent = face
-		local mark = Instance.new("TextLabel")
-		mark.BackgroundTransparency = 1
-		mark.Size = UDim2.fromScale(1, 1)
-		mark.Text = "$"
-		mark.TextScaled = true
-		mark.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
-		mark.TextColor3 = Color3.fromRGB(214, 128, 6)
-		mark.Parent = gui
+	piece("Face", 0.42, 1.12, Color3.fromRGB(255, 214, 58))
+	return outline, false
+end
+
+local function take(): BasePart
+	local part = table.remove(pool)
+	if part then
+		return part
 	end
+	local p = Instance.new("Part")
+	p.Name = "Coin"
+	p.Size = Vector3.one * 0.2
+	p.Transparency = 1
+	p.Anchored = true
+	p.CanCollide = false
+	p.CanQuery = false
+	p.CanTouch = false
+	p.CastShadow = false
+	p.CFrame = CFrame.new()
+	local look, real = addLook(p)
+	if not real then
+		p:SetAttribute("StandIn", true)
+	end
+	-- soft gold glow behind the coin
 	local halo = Instance.new("BillboardGui")
 	halo.Name = "Halo"
 	halo.Size = UDim2.fromScale(2.6, 2.6)
@@ -125,24 +145,29 @@ local function take(): BasePart
 	glow.Size = UDim2.fromScale(1, 1)
 	glow.Image = AssetLibrary.image("Vfx_Glow")
 	glow.ImageColor3 = Color3.fromRGB(255, 200, 40)
-	glow.ImageTransparency = 0.5
+	glow.ImageTransparency = 0.55
 	glow.Parent = halo
+	-- cartoon twinkle stars that pop on and off over the coin's surface
 	local twinkle = Instance.new("ParticleEmitter")
 	twinkle.Name = "Twinkle"
-	twinkle.Texture = SPARKLE
-	twinkle.Color = ColorSequence.new(Color3.fromRGB(255, 255, 220), GOLD)
-	twinkle.LightEmission = 0.5
-	twinkle.LightInfluence = 0.4
-	twinkle.Rate = 2.5
-	twinkle.Lifetime = NumberRange.new(0.5, 0.8)
-	twinkle.Speed = NumberRange.new(0.5, 1.5)
+	twinkle.Texture = STAR
+	twinkle.Color = ColorSequence.new(Color3.fromRGB(255, 255, 235), Color3.fromRGB(255, 236, 140))
+	twinkle.LightEmission = 0.6
+	twinkle.LightInfluence = 0
+	twinkle.Rate = 3
+	twinkle.Lifetime = NumberRange.new(0.45, 0.7)
+	twinkle.Speed = NumberRange.new(0.2, 0.6)
 	twinkle.SpreadAngle = Vector2.new(180, 180)
+	twinkle.Shape = Enum.ParticleEmitterShape.Sphere
+	twinkle.ShapeStyle = Enum.ParticleEmitterShapeStyle.Surface
+	twinkle.Rotation = NumberRange.new(-20, 20)
+	twinkle.RotSpeed = NumberRange.new(-90, 90)
 	twinkle.Size = NumberSequence.new({
 		NumberSequenceKeypoint.new(0, 0),
-		NumberSequenceKeypoint.new(0.4, 0.7),
+		NumberSequenceKeypoint.new(0.3, 0.75),
 		NumberSequenceKeypoint.new(1, 0),
 	})
-	twinkle.Parent = p
+	twinkle.Parent = look
 	return p
 end
 
@@ -161,7 +186,9 @@ local function makePop()
 	popPart.CanQuery = false
 	popPart.CanTouch = false
 	popSparks = Instance.new("ParticleEmitter")
-	popSparks.Texture = SPARKLE
+	popSparks.Texture = STAR
+	popSparks.Rotation = NumberRange.new(0, 360)
+	popSparks.RotSpeed = NumberRange.new(-180, 180)
 	popSparks.Enabled = false
 	popSparks.Color = ColorSequence.new(Color3.fromRGB(255, 255, 230), GOLD)
 	popSparks.LightEmission = 1
@@ -211,6 +238,10 @@ end
 
 local function give(part: BasePart)
 	part.Parent = nil
+	if part:GetAttribute("StandIn") and AssetLibrary.has("Coin_Cash") then
+		part:Destroy() -- the real model is in: the next coin gets it
+		return
+	end
 	table.insert(pool, part)
 end
 

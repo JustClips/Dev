@@ -96,6 +96,9 @@ class Asset:
         elif not getattr(self, "plain", False):
             img = build_palette_image(self.name, self.colors)
             mat = palette_material(self.name, img)
+        if getattr(self, "cull", False):
+            # single-sided (needed by inverted-hull outlines)
+            mat.use_backface_culling = True
         # parent objects in Blender (keeps world transforms) so the hierarchy is visible to Dev
         for name, p in self.parts.items():
             o = p["obj"]

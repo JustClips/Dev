@@ -8675,8 +8675,8 @@
    "sha": "91f91817f1ca59c865c74e95c719c72569f049f67d02b5172ec54633d3f7158a"
   },
   "Vfx_Star": {
-   "id": 112677765949874,
-   "sha": "1953e0a02e68a9edffb33ec221e1264c37ebd226eab5e2447ce951fa5f45addc"
+   "id": 138864840561900,
+   "sha": "5d6513151558d45e95633445c06ff11070aaff30b72e92a550a1dc77c3829041"
   },
   "Vfx_Trail": {
    "id": 91306814207040,
@@ -9363,6 +9363,10 @@
   "Clump_Snow2": {
    "id": 100813372736381,
    "sha": "15fd052bcfa17ef79722c64bb688238255fe1c234134413b8abca4bf297c43ca"
+  },
+  "Coin_Cash": {
+   "id": 112643542362753,
+   "sha": "b8a3771e4a6d27eff482ece601fa8cbded12a3907e5017b0663d5b7b82d5c821"
   },
   "Crystal_Blue": {
    "id": 95092038865367,
