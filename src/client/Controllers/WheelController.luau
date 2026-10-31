@@ -429,8 +429,11 @@ local function spin()
 	spinning = true
 	hidePrize()
 	render()
+	-- The prize is given right away on the server; its flight waits for the wheel to stop.
+	C.FlyController:Hold(Rewards.Wheel.SpinSeconds + 6)
 	local ok, message, index = Net.func("Rewards"):InvokeServer("Spin")
 	if not ok or type(index) ~= "number" then
+		C.FlyController:Release()
 		spinning = false
 		render()
 		if message then
@@ -449,6 +452,10 @@ local function spin()
 			C.HudController:Toast(message, "Good")
 		end
 		render()
+		-- Let the prize card show first, then the prize flies out to the wallet or the Bag.
+		task.delay(1.2, function()
+			C.FlyController:Release()
+		end)
 	end)
 end
 

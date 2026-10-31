@@ -152,6 +152,11 @@ local function stroke(parent: Instance, thickness: number)
 	st.Parent = parent
 end
 
+-- Hold: rewards that arrive while something plays out (the Lucky Wheel spinning) wait and
+-- fly once it's done (Dev, 2026-10-31: the prize flew before the wheel stopped).
+local heldUntil = 0
+local held: { any } = {}
+
 -- An icon that pops up at `from`, waits a moment, then flies to `target`. `text` shows
 -- under it (its share, "+$1.2K").
 local function launch(opts: {
@@ -166,6 +171,11 @@ local function launch(opts: {
 	textColor: Color3?,
 	onLand: () -> (),
 })
+	if heldUntil > os.clock() then
+		-- Waiting for something to finish (the wheel still spinning): fly afterwards.
+		table.insert(held, opts)
+		return
+	end
 	if #flyers >= MAX_LIVE then
 		opts.onLand()
 		return
@@ -207,6 +217,31 @@ local function launch(opts: {
 		size = opts.size,
 		onLand = opts.onLand,
 	})
+end
+
+local function release()
+	heldUntil = 0
+	local list = held
+	held = {}
+	for i, opts in list do
+		opts.delay = (i - 1) * 0.05
+		opts.from = randomPoint()
+		launch(opts)
+	end
+end
+
+-- Holds every reward flight for up to `seconds` (a safety cap); Release() lets them go.
+function FlyController:Hold(seconds: number)
+	heldUntil = os.clock() + seconds
+	task.delay(seconds, function()
+		if heldUntil > 0 and os.clock() >= heldUntil then
+			release()
+		end
+	end)
+end
+
+function FlyController:Release()
+	release()
 end
 
 ------------------------------------------------------------------------ counters

@@ -22,6 +22,8 @@ local Net = require(Shared.Net)
 
 local CoinController = {}
 
+local C: any
+
 local GOLD = Color3.fromRGB(255, 205, 40)
 local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
 local FLY_OUT = 0.7 -- seconds from the slot to the ground
@@ -395,8 +397,6 @@ local function step()
 		Net.event("CoinsCollect"):FireServer(batch)
 	end
 end
-
-local C: any
 
 function CoinController:Init(controllers)
 	C = controllers
