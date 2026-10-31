@@ -41,7 +41,8 @@ local ORDER = {
 	"CodeService",
 	"OfferService",
 	"LeaderboardService",
-	"DustBunnyService",
+	"EnemyService",
+	"CombatService",
 	"SweepService",
 	"AdminService",
 }

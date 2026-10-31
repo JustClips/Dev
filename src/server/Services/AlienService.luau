@@ -17,7 +17,7 @@ local Upgrades = require(Shared.Config.Upgrades)
 local Weights = require(Shared.Config.Weights)
 local World = require(Shared.Config.World)
 
-local FOLLOWER_COUNT = 3
+local FOLLOWER_COUNT = require(Shared.Combat).FighterCount
 
 local AlienService = {}
 
@@ -159,7 +159,7 @@ function AlienService:RefreshBase(player: Player)
 			entry:SetAttribute("Weight", pet.Weight or Weights.petKg(def.Rarity))
 			entry:SetAttribute("WeightMult", Weights.incomeMult(def.Rarity, pet.Weight))
 			entry.Parent = aliens
-			table.insert(placed, pet)
+			table.insert(placed, { uid = uid, pet = pet })
 		end
 	end
 	aliens:SetAttribute("OwnerUserId", player.UserId)
@@ -211,15 +211,25 @@ function AlienService:RefreshBase(player: Player)
 	end
 	hatching.Parent = base
 
-	-- Top placed pets follow the player around (rendered by each client).
+	-- Top placed pets follow the player around (rendered by each client) and are the
+	-- player's fighters, in the same order (CombatService). Ties keep a fixed order so the
+	-- slots don't swap around between refreshes.
 	table.sort(placed, function(a, b)
-		return Aliens.income(a) > Aliens.income(b)
+		local ia, ib = Aliens.income(a.pet), Aliens.income(b.pet)
+		if ia ~= ib then
+			return ia > ib
+		end
+		return tostring(a.uid) < tostring(b.uid)
 	end)
 	local followers = {}
+	local team = {}
 	for i = 1, math.min(FOLLOWER_COUNT, #placed) do
-		table.insert(followers, placed[i].Id .. ":" .. (placed[i].Mutation or "") .. ":" .. (if placed[i].Huge then "H" else ""))
+		local pet = placed[i].pet
+		table.insert(followers, pet.Id .. ":" .. (pet.Mutation or "") .. ":" .. (if pet.Huge then "H" else ""))
+		table.insert(team, placed[i])
 	end
 	player:SetAttribute("Followers", table.concat(followers, ","))
+	S.CombatService:SetTeam(player, team)
 	player:SetAttribute("AlienCount", #placed)
 	player:SetAttribute("SlotCount", AlienService:GetSlotCount(player))
 end

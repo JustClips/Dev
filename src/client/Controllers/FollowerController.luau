@@ -8,6 +8,11 @@
 -- over to you. While their owner drives a car they follow on the ground behind the
 -- car's back end instead of behind the driver (Dev, 2026-10-30: they ran inside the truck),
 -- keeping up with it however fast it goes.
+--
+-- Pet combat (CombatService): when their owner has a CombatTarget, awake pets run to a spot
+-- around that enemy, face it and lunge at it on every hit. Each pet shows a small health
+-- bar during fights; a knocked-out pet lies on its side where it fell with a "Zzz"
+-- countdown until it wakes up (PetSleep), then runs back.
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -16,6 +21,12 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local Combat = require(Shared.Combat)
+
+local FONT = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+local INK = Color3.fromRGB(16, 18, 28)
+local FIGHT_ANGLES = { math.rad(-60), math.rad(60), 0 } -- around the enemy, from the owner's side
+local LUNGE_SECONDS = 0.2
 
 local SCALE = 0.8
 local RENDER_DISTANCE = 150
@@ -39,10 +50,89 @@ type Follower = {
 	yaw: number,
 	speed: number,
 	groundY: number,
+	size: Vector3, -- extents after scaling (to lie down on its side)
+	lunge: number,
+	lungeAt: Vector3?,
+	hp: number, -- 0-1
+	wakeAt: number, -- server time; 0 = awake
+	gui: BillboardGui?,
+	fill: Frame?,
+	back: Frame?,
+	zzz: TextLabel?,
 }
-type Entry = { key: string, models: { Follower } }
+type Entry = { key: string, models: { Follower }, hpKey: string?, sleepKey: string? }
 local entries: { [Player]: Entry } = {}
 local folder: Folder
+local controllers: any
+
+-- Small health bar + sleep label over a pet (made the first time it's needed).
+local function ensureGui(follower: Follower)
+	if follower.gui then
+		return
+	end
+	local model = follower.model
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "PetCombat"
+	gui.Size = UDim2.fromOffset(54, 26)
+	gui.StudsOffsetWorldSpace = Vector3.new(0, follower.size.Y + 0.8, 0)
+	gui.MaxDistance = 70
+	gui.LightInfluence = 0
+	gui.Adornee = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+	gui.Enabled = false
+	local back = Instance.new("Frame")
+	back.BackgroundColor3 = Color3.fromRGB(30, 34, 44)
+	back.BorderSizePixel = 0
+	back.AnchorPoint = Vector2.new(0.5, 1)
+	back.Position = UDim2.fromScale(0.5, 1)
+	back.Size = UDim2.new(1, 0, 0, 7)
+	back.Parent = gui
+	local edge = Instance.new("UIStroke")
+	edge.Color = INK
+	edge.Thickness = 1.5
+	edge.LineJoinMode = Enum.LineJoinMode.Miter
+	edge.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	edge.Parent = back
+	local fill = Instance.new("Frame")
+	fill.BackgroundColor3 = Color3.fromRGB(92, 214, 92)
+	fill.BorderSizePixel = 0
+	fill.Size = UDim2.fromScale(1, 1)
+	fill.Parent = back
+	local zzz = Instance.new("TextLabel")
+	zzz.BackgroundTransparency = 1
+	zzz.Size = UDim2.fromScale(1, 1)
+	zzz.FontFace = FONT
+	zzz.TextSize = 16
+	zzz.TextColor3 = Color3.fromRGB(170, 200, 255)
+	zzz.Visible = false
+	zzz.Parent = gui
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = INK
+	stroke.Thickness = 2
+	stroke.LineJoinMode = Enum.LineJoinMode.Miter
+	stroke.Parent = zzz
+	gui.Parent = model
+	follower.gui, follower.fill, follower.back, follower.zzz = gui, fill, back, zzz
+end
+
+-- Reads PetHp / PetSleep ("a,b,c") into the followers when they change.
+local function readCombat(player: Player, entry: Entry)
+	local hpKey = player:GetAttribute("PetHp")
+	if hpKey ~= entry.hpKey then
+		entry.hpKey = hpKey
+		local parts = if type(hpKey) == "string" then string.split(hpKey, ",") else {}
+		for i, follower in entry.models do
+			follower.hp = tonumber(parts[i]) or 1
+		end
+	end
+	local sleepKey = player:GetAttribute("PetSleep")
+	if sleepKey ~= entry.sleepKey then
+		entry.sleepKey = sleepKey
+		local parts = if type(sleepKey) == "string" then string.split(sleepKey, ",") else {}
+		for i, follower in entry.models do
+			follower.wakeAt = tonumber(parts[i]) or 0
+		end
+	end
+end
 
 local function clear(player: Player)
 	local entry = entries[player]
@@ -91,6 +181,15 @@ local function rebuild(player: Player)
 				yaw = 0,
 				speed = 0,
 				groundY = 0,
+				size = model:GetExtentsSize(),
+				lunge = 0,
+				lungeAt = nil,
+				hp = 1,
+				wakeAt = 0,
+				gui = nil,
+				fill = nil,
+				back = nil,
+				zzz = nil,
 			})
 		end
 	end
@@ -104,7 +203,27 @@ local function watch(player: Player)
 	end)
 end
 
-function FollowerController:Init()
+-- Where a player's pet in follower slot `slot` is drawn (damage numbers), if it is.
+function FollowerController:PetPosition(userId: number, slot: number): Vector3?
+	local player = Players:GetPlayerByUserId(userId)
+	local entry = player and entries[player]
+	local follower = entry and entry.models[slot]
+	return follower and follower.pos
+end
+
+-- A pet hits an enemy: a quick jump at it.
+function FollowerController:Lunge(userId: number, slot: number, at: Vector3)
+	local player = Players:GetPlayerByUserId(userId)
+	local entry = player and entries[player]
+	local follower = entry and entry.models[slot]
+	if follower then
+		follower.lunge = LUNGE_SECONDS
+		follower.lungeAt = at
+	end
+end
+
+function FollowerController:Init(all)
+	controllers = all
 	folder = Instance.new("Folder")
 	folder.Name = "Followers"
 	folder.Parent = Workspace
@@ -210,6 +329,20 @@ function FollowerController:Start()
 			local character = player.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			readCombat(player, entry)
+			local serverNow = Workspace:GetServerTimeNow()
+			-- The enemy this player's pets are fighting (drawn by EnemyController), if any.
+			local targetName = player:GetAttribute("CombatTarget")
+			local enemyAt: Vector3? = nil
+			local enemyRadius = 2
+			if root and type(targetName) == "string" and targetName ~= "" then
+				enemyAt = controllers.EnemyController:Position(targetName)
+				local def = controllers.EnemyController:Def(targetName)
+				enemyRadius = if def then def.Radius else 2
+				if enemyAt and (enemyAt - root.Position).Magnitude > Combat.LeashRange + 10 then
+					enemyAt = nil
+				end
+			end
 			for i, follower in entry.models do
 				local model = follower.model
 				if not root or not humanoid or (root.Position - focus).Magnitude > RENDER_DISTANCE then
@@ -238,6 +371,43 @@ function FollowerController:Start()
 					local offset = root.CFrame:VectorToWorldSpace(OFFSETS[i])
 					slot = Vector3.new(root.Position.X + offset.X, feetY, root.Position.Z + offset.Z)
 				end
+				local asleep = follower.wakeAt > serverNow
+				-- Knocked out: lies on its side where it fell, with a Zzz countdown.
+				local lying = follower.pos
+				if asleep and lying and Vector3.new(lying.X - slot.X, 0, lying.Z - slot.Z).Magnitude <= TELEPORT_GAP then
+					local w, h = follower.size.X, follower.size.Y
+					model:PivotTo(
+						CFrame.new(lying) * CFrame.Angles(0, follower.yaw, 0) * CFrame.new(0, w / 2, 0) * CFrame.Angles(0, 0, math.pi / 2) * CFrame.new(0, -h / 2, 0)
+					)
+					follower.speed = 0
+					follower.lunge = 0
+					if follower.walk and follower.walking then
+						follower.walking = false
+						follower.walk:Stop(0.1)
+					end
+					ensureGui(follower)
+					local gui = follower.gui :: BillboardGui
+					gui.Enabled = true
+					gui.StudsOffsetWorldSpace = Vector3.new(0, w / 2 + 1.4, 0);
+					(follower.back :: Frame).Visible = false
+					local zzz = follower.zzz :: TextLabel
+					zzz.Visible = true
+					zzz.Text = "Zzz " .. math.max(1, math.ceil(follower.wakeAt - serverNow))
+					continue
+				end
+				-- Fighting: run to a spot around the enemy (spread out from the owner's side).
+				local fighting = false
+				if enemyAt and not asleep and not vehicle then
+					local away = Vector3.new(root.Position.X - enemyAt.X, 0, root.Position.Z - enemyAt.Z)
+					if away.Magnitude < 0.1 then
+						away = -Vector3.new(heading.LookVector.X, 0, heading.LookVector.Z)
+					end
+					local dir = CFrame.Angles(0, FIGHT_ANGLES[i] or 0, 0):VectorToWorldSpace(away.Unit)
+					local reach = enemyRadius + 1.2 + follower.size.Z * 0.4
+					slot = Vector3.new(enemyAt.X + dir.X * reach, feetY, enemyAt.Z + dir.Z * reach)
+					pace = math.max(pace, 24)
+					fighting = true
+				end
 				local pos = follower.pos
 				if not pos or (Vector3.new(pos.X - slot.X, 0, pos.Z - slot.Z)).Magnitude > TELEPORT_GAP then
 					-- First time, or left far behind: pop over to the spot.
@@ -261,9 +431,15 @@ function FollowerController:Start()
 					p += toSlot.Unit * step
 					follower.yaw = turn(follower.yaw, yawToward(toSlot), math.min(1, dt * TURN_RATE))
 				elseif follower.speed < 0.3 then
-					-- Standing: slowly turn to face the same way as the owner.
-					local look = heading.LookVector
-					follower.yaw = turn(follower.yaw, yawToward(Vector3.new(look.X, 0, look.Z)), math.min(1, dt * 3))
+					if fighting and enemyAt then
+						-- In a fight: face the enemy.
+						local at = enemyAt :: Vector3
+						follower.yaw = turn(follower.yaw, yawToward(Vector3.new(at.X - p.X, 0, at.Z - p.Z)), math.min(1, dt * 10))
+					else
+						-- Standing: slowly turn to face the same way as the owner.
+						local look = heading.LookVector
+						follower.yaw = turn(follower.yaw, yawToward(Vector3.new(look.X, 0, look.Z)), math.min(1, dt * 3))
+					end
 				end
 				-- Feet on the ground.
 				local ground = groundAt(p.X, p.Z, math.max(feetY, follower.groundY))
@@ -273,7 +449,37 @@ function FollowerController:Start()
 				local running = follower.speed > walkSpeed * 1.25
 				local hop = if running and not follower.floats then math.abs(math.sin(now * 14 + i)) * 0.35 else 0
 				local lift = if follower.floats then FLOAT_HEIGHT + bob else hop
-				model:PivotTo(CFrame.new(p.X, p.Y + lift, p.Z) * CFrame.Angles(0, follower.yaw, 0))
+				-- Hit lunge: a quick jump at the enemy and back.
+				local lungeOffset = Vector3.zero
+				if follower.lunge > 0 then
+					follower.lunge -= dt
+					local k = math.sin(math.max(follower.lunge, 0) / LUNGE_SECONDS * math.pi)
+					local at = follower.lungeAt
+					local toward = if at then Vector3.new(at.X - p.X, 0, at.Z - p.Z) else Vector3.zero
+					if toward.Magnitude > 0.01 then
+						lungeOffset = toward.Unit * k * 1.5
+					end
+					lungeOffset += Vector3.new(0, k * 0.7, 0)
+				end
+				model:PivotTo(CFrame.new(p.X, p.Y + lift, p.Z) * CFrame.Angles(0, follower.yaw, 0) + lungeOffset)
+				-- Health bar while fighting or hurt.
+				if fighting or follower.hp < 0.999 then
+					ensureGui(follower)
+					local gui = follower.gui :: BillboardGui
+					gui.Enabled = true
+					gui.StudsOffsetWorldSpace = Vector3.new(0, follower.size.Y + 0.8, 0)
+					local back = follower.back :: Frame
+					back.Visible = true
+					local fill = follower.fill :: Frame
+					fill.Size = UDim2.fromScale(math.clamp(follower.hp, 0, 1), 1)
+					fill.BackgroundColor3 = if follower.hp > 0.5
+						then Color3.fromRGB(92, 214, 92)
+						elseif follower.hp > 0.25 then Color3.fromRGB(255, 196, 46)
+						else Color3.fromRGB(240, 70, 60);
+					(follower.zzz :: TextLabel).Visible = false
+				elseif follower.gui then
+					follower.gui.Enabled = false
+				end
 				-- Walk cycle at the speed it actually moves.
 				local walk = follower.walk
 				local moving = follower.speed > 0.6

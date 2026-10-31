@@ -38,8 +38,9 @@ end
 local function sweepArea(player: Player, session, position: Vector3, radius: number, power: number, now: number, damage: number?): number
 	local runtime = session.Runtime
 	local levels = session.Data.Upgrades
-	-- Bunny Net (Lucky Lab) catches dust bunnies from further away.
-	S.DustBunnyService:TryCatch(player, position, radius * Upgrades.multiplier(levels, "BunnyReach"))
+	-- Sweeping hits enemies (dust bunnies...) in the circle and sends your pets at them.
+	-- Bunny Net (Lucky Lab) reaches them from further away.
+	S.EnemyService:SweepHit(player, position, radius * Upgrades.multiplier(levels, "BunnyReach"))
 	local cleared = {}
 	Grid.forEachInRadius(position, radius, function(id)
 		if S.DustService:Damage(id, damage or power, player) then

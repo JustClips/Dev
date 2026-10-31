@@ -49,7 +49,7 @@ local ORDER = {
 	"FollowerController",
 	"VehicleController",
 	"PetController",
-	"DustBunnyController",
+	"EnemyController",
 	"GarageController",
 	"BasePickerController",
 	"UpgradeController",

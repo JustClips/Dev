@@ -81,7 +81,7 @@ ZoneQuests.Lines = {
 		Steps = {
 			{ Kind = "Leaves", Goal = 250, Say = "Let's start easy. Sweep up some of these leaves for me!", Reward = CASH(120) },
 			{ Kind = "Golden", Goal = 2, Say = "See those shiny golden piles? They're worth a fortune. Grab a couple!", Reward = ITEM("LuckPotion") },
-			{ Kind = "Bunnies", Goal = 1, Say = "A dust bunny keeps hiding in my leaves. Catch it for me!", Reward = CASH(180) },
+			{ Kind = "Bunnies", Goal = 1, Say = "A dust bunny keeps hiding in my leaves. Send your pets after it!", Reward = CASH(180) },
 			{ Kind = "Trash", Goal = 8, Say = "Folks keep tossing cans and bottles in my yard. Pick them up!", Reward = EGG("Uncommon", "Landing") },
 			{ Kind = "Hatches", Goal = 3, Say = "Eggs from my yard hatch the cutest pets. Hatch a few!", Reward = ITEM("SpeedPotion") },
 			{ Kind = "Pets", Goal = 6, Say = "I love seeing new faces. Discover 6 different Backyard pets!", Reward = EGG("Rare", "Landing") },
@@ -104,7 +104,7 @@ ZoneQuests.Lines = {
 			{ Kind = "Leaves", Goal = 500, Say = "First, clear the paths so people can walk again!", Reward = CASH(180) },
 			{ Kind = "Eggs", Goal = 5, Say = "Park eggs hide under the leaves. Find 5 of them!", Reward = ITEM("LuckPotion") },
 			{ Kind = "Golden", Goal = 4, Say = "Golden piles pop up all over the Park. Sweep 4!", Reward = CASH(240) },
-			{ Kind = "Bunnies", Goal = 3, Say = "Dust bunnies are chewing my flowers! Catch 3 of them.", Reward = ITEM("SpeedPotion", 2) },
+			{ Kind = "Bunnies", Goal = 3, Say = "Dust bunnies are chewing my flowers! Beat 3 of them.", Reward = ITEM("SpeedPotion", 2) },
 			{ Kind = "Trash", Goal = 20, Say = "Picnic trash everywhere. Pick up 20 pieces!", Reward = EGG("Epic", "Crater") },
 			{ Kind = "Hatches", Goal = 5, Say = "Hatch 5 Park eggs. The animals here are special!", Reward = ITEM("SuperLuckPotion") },
 			{ Kind = "Pets", Goal = 8, Say = "I keep a list of every Park animal. Discover 8 of them!", Reward = SPIN(2) },
@@ -128,7 +128,7 @@ ZoneQuests.Lines = {
 			{ Kind = "Eggs", Goal = 8, Say = "Beach eggs wash up with the seaweed. Find 8!", Reward = ITEM("LuckPotion", 2) },
 			{ Kind = "Trash", Goal = 30, Say = "Bottles, cans, buckets... Pick up 30 pieces of trash!", Reward = CASH(300) },
 			{ Kind = "Golden", Goal = 6, Say = "Golden piles shine in the sun. Sweep 6 of them!", Reward = ITEM("MagnetPotion") },
-			{ Kind = "Bunnies", Goal = 4, Say = "Sandy dust bunnies keep digging holes! Catch 4.", Reward = EGG("Epic", "DarkSide") },
+			{ Kind = "Bunnies", Goal = 4, Say = "Sandy dust bunnies keep digging holes! Beat 4.", Reward = EGG("Epic", "DarkSide") },
 			{ Kind = "Hatches", Goal = 8, Say = "Hatch 8 Beach eggs. Sea creatures are the best!", Reward = ITEM("SuperLuckPotion") },
 			{ Kind = "Pets", Goal = 10, Say = "Discover 10 different Beach pets!", Reward = SPIN(3) },
 			{ Kind = "Leaves", Goal = 6000, Say = "Big wave coming! Clean the whole beach before it hits!", Reward = HUGE("Dolphin", ITEM("MegaCashPotion")) },
@@ -151,7 +151,7 @@ ZoneQuests.Lines = {
 			{ Kind = "Trash", Goal = 40, Say = "Pizza boxes everywhere! Pick up 40 pieces of trash.", Reward = ITEM("CashPotion", 2) },
 			{ Kind = "Eggs", Goal = 10, Say = "City eggs hide in the litter. Find 10!", Reward = ITEM("SuperLuckPotion") },
 			{ Kind = "Golden", Goal = 8, Say = "Sweep 8 golden piles before anyone else grabs them!", Reward = CASH(450) },
-			{ Kind = "Bunnies", Goal = 5, Say = "Street dust bunnies! Catch 5 of the little rascals.", Reward = EGG("Legendary", "Mars") },
+			{ Kind = "Bunnies", Goal = 5, Say = "Street dust bunnies! Beat 5 of the little rascals.", Reward = EGG("Legendary", "Mars") },
 			{ Kind = "Hatches", Goal = 10, Say = "Hatch 10 City eggs. Robots, neon, you name it!", Reward = ITEM("HugeCharm") },
 			{ Kind = "Pets", Goal = 12, Say = "Discover 12 different City pets!", Reward = SPIN(3) },
 			{ Kind = "Leaves", Goal = 8000, Say = "The mayor is visiting! Clean the WHOLE city, fast!", Reward = HUGE("NeonCat", ITEM("MegaCashPotion", 2)) },
@@ -173,7 +173,7 @@ ZoneQuests.Lines = {
 			{ Kind = "Leaves", Goal = 1200, Say = "Clear the snow off the ski trails!", Reward = CASH(300) },
 			{ Kind = "Eggs", Goal = 12, Say = "Frozen eggs hide in the drifts. Find 12!", Reward = ITEM("SuperLuckPotion") },
 			{ Kind = "Golden", Goal = 10, Say = "Golden piles sparkle in the snow. Sweep 10!", Reward = CASH(450) },
-			{ Kind = "Bunnies", Goal = 6, Say = "Snow bunnies are everywhere! Catch 6.", Reward = ITEM("MegaCashPotion") },
+			{ Kind = "Bunnies", Goal = 6, Say = "Snow bunnies are everywhere! Beat 6.", Reward = ITEM("MegaCashPotion") },
 			{ Kind = "Trash", Goal = 25, Say = "Lost cups and bottles in the snow. Pick up 25!", Reward = EGG("Legendary", "Europa") },
 			{ Kind = "Hatches", Goal = 12, Say = "Hatch 12 Snowy Peaks eggs!", Reward = ITEM("HugeCharm", 2) },
 			{ Kind = "Pets", Goal = 14, Say = "Discover 14 different Snowy Peaks pets!", Reward = SPIN(5) },
@@ -199,7 +199,7 @@ function ZoneQuests.text(step: Step): string
 	elseif k == "Golden" then
 		return if n == 1 then "Sweep a golden pile here" else `Sweep {num} golden piles here`
 	elseif k == "Bunnies" then
-		return if n == 1 then "Catch a dust bunny here" else `Catch {num} dust bunnies here`
+		return if n == 1 then "Beat a dust bunny here" else `Beat {num} dust bunnies here`
 	elseif k == "Trash" then
 		return `Pick up {num} trash here`
 	elseif k == "Hatches" then

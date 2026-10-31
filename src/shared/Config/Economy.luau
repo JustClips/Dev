@@ -115,9 +115,11 @@ local Economy = {
 	Combo = { Timeout = 1.6, Pivot = 50, PerDouble = 0.5 },
 	Golden = { PerZone = 4, Mult = 15, CheckSeconds = 6 },
 	TrashMult = 5, -- a trash tile (can, bottle...) pays this many times a leaf tile
+	-- Dust bunnies are now fought by your pets (Config/Enemies, shared/Combat). A fight
+	-- takes ~10 s instead of one sweep, so the reward went up from 25 s of earnings.
 	Bunnies = {
 		PerZone = 3,
-		CashSeconds = 25, -- reward = this many seconds of your earnings
+		CashSeconds = 40, -- reward = this many seconds of your earnings
 		MinCashPerZoneMult = 80, -- floor: zone cash mult x this
 		PotionChance = 0.22,
 		EggChance = 0.06,

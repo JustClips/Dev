@@ -43,7 +43,7 @@ local Stats: { [string]: StatDef } = {
 	Crit = { Name = "Lucky Sweep", Icon = "Icon_Star", Format = "percent" }, -- SweepService
 	CritMult = { Name = "Lucky Payout", Icon = "Icon_Meteor", Format = "x" }, -- SweepService
 	Golden = { Name = "Golden Piles", Icon = "Icon_Sell", Format = "percent" }, -- SweepService
-	Bunny = { Name = "Bunny Rewards", Icon = "Icon_Gift", Format = "percent" }, -- DustBunnyService
+	Bunny = { Name = "Bunny Rewards", Icon = "Icon_Gift", Format = "percent" }, -- EnemyService
 	HatchSpeed = { Name = "Hatch Speed", Icon = "Icon_PotionHatch", Format = "percent" }, -- HatchService
 	Incubators = { Name = "Eggs at Once", Icon = "Icon_Egg", Format = "plus" }, -- HatchService
 	Portal = { Name = "Lab", Icon = "Icon_Upgrade", Format = "plus" }, -- opens a sub-tree
@@ -58,10 +58,13 @@ local Stats: { [string]: StatDef } = {
 	MutChance = { Name = "Mutation Chance", Icon = "Icon_MutationSpray", Format = "percent" }, -- HatchService: Golden/Rainbow/Sparkly
 	WeatherMut = { Name = "Weather Mutations", Icon = "Icon_Weather_Rain", Format = "percent" }, -- WeatherService: growing eggs
 	EggFind = { Name = "Eggs Found", Icon = "Icon_Egg", Format = "percent" }, -- EggService: eggs in the leaves
-	BunnyReach = { Name = "Bunny Reach", Icon = "Icon_Gift", Format = "percent" }, -- DustBunnyService
+	BunnyReach = { Name = "Bunny Reach", Icon = "Icon_Gift", Format = "percent" }, -- EnemyService
 	PetSell = { Name = "Pet Sell Price", Icon = "Icon_Cash", Format = "percent" }, -- InventoryService
 	PassivePower = { Name = "Pet Passives", Icon = "Icon_Alien", Format = "percent" }, -- PetPassives
 	OfflineCap = { Name = "Offline Time", Icon = "Icon_Daily", Format = "hours" }, -- AlienService
+	-- Pet combat (2026-10-31): nothing raises these yet; hexes or pet passives can.
+	PetDamage = { Name = "Pet Damage", Icon = "Icon_Alien", Format = "percent" }, -- shared/Combat
+	PetHealth = { Name = "Pet Health", Icon = "Icon_Alien", Format = "percent" }, -- shared/Combat
 }
 
 -- A lucky sweep pays this many times a normal tile (plus CritMult from the tree).

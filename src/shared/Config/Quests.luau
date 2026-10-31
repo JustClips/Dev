@@ -145,7 +145,7 @@ function Quests.text(q: Quest): string
 	elseif k == "Sells" then
 		return if n == 1 then "Sell your bag" else `Sell your bag {num} times`
 	elseif k == "Bunnies" then
-		return if n == 1 then "Catch a dust bunny" else `Catch {num} dust bunnies`
+		return if n == 1 then "Beat a dust bunny" else `Beat {num} dust bunnies`
 	elseif k == "Golden" then
 		return if n == 1 then "Sweep a golden pile" else `Sweep {num} golden piles`
 	elseif k == "Trash" then

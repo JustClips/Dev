@@ -78,6 +78,11 @@ Sounds.Weather = {
 	RustlePaper = { Id = id(9117076285), Volume = 0.3 }, -- Newspaper Flutter 20
 	RustleSnow = { Id = id(9113480004), Volume = 0.3 }, -- Body Fall Snow 2
 	Gust = { Id = id(9114057128), Volume = 0.22 }, -- Desert Wind Whistley Light Gusts 2
+	-- Pet combat (CombatService / EnemyController)
+	PetSwing = { Id = id(15675012262), Volume = 0.18 }, -- Roblox_UI_Whoosh_04 (a pet lunges)
+	PetHit = { Id = id(9113533010), Volume = 0.35 }, -- Body Pats Cloth Hits 6 (a pet lands a hit)
+	PetHurt = { Id = id(9113502506), Volume = 0.3 }, -- Body Hits 8 (an enemy hits one of your pets)
+	PetSleep = { Id = id(9113861808), Volume = 0.35 }, -- Comic Snoring Female Vocals Snorting 5 (knocked out)
 } :: { [string]: { Id: string, Volume: number, Music: boolean? } }
 
 -- Background music, shuffled. Cute and calm so it never gets annoying.
