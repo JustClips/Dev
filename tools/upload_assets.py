@@ -116,17 +116,32 @@ def upload(path, asset_type, name):
 GRANTS = [("Universe", "10773346969", True), ("User", "347852675", False), ("Group", "351097046", False)]
 
 
-def grant(ids):
+def grant(ids, tries=6):
+    """Grants Use to every GRANTS subject. A model that was just uploaded can answer
+    CannotManageAsset for a little while (2026-10-31: 5 tool models ended up ungranted and
+    "not authorized" in Studio), so those are retried a few times, 10 s apart."""
     ids = [int(i) for i in ids]
     for subject, sid, deps in GRANTS:
-        for i in range(0, len(ids), 50):
-            body = {"subjectType": subject, "subjectId": sid, "action": "Use",
-                    "requests": [{"assetId": a, "grantToDependencies": deps} for a in ids[i:i + 50]]}
-            code, r = request("PATCH", "https://apis.roblox.com/asset-permissions-api/v1/assets/permissions",
-                              json.dumps(body).encode(), {"Content-Type": "application/json-patch+json"})
-            errs = r.get("errors") if isinstance(r, dict) else None
-            if code >= 300 or errs:
-                print(f"  grant to {subject} {sid}: {code} {errs or r}", flush=True)
+        todo = list(ids)
+        for attempt in range(tries):
+            retry = []
+            for i in range(0, len(todo), 50):
+                body = {"subjectType": subject, "subjectId": sid, "action": "Use",
+                        "requests": [{"assetId": a, "grantToDependencies": deps} for a in todo[i:i + 50]]}
+                code, r = request("PATCH", "https://apis.roblox.com/asset-permissions-api/v1/assets/permissions",
+                                  json.dumps(body).encode(), {"Content-Type": "application/json-patch+json"})
+                errs = r.get("errors") if isinstance(r, dict) else None
+                if code >= 300:
+                    print(f"  grant to {subject} {sid}: {code} {r}", flush=True)
+                for e in errs or []:
+                    if isinstance(e, dict) and e.get("code") == "CannotManageAsset" and attempt < tries - 1:
+                        retry.append(int(e["assetId"]))
+                    else:
+                        print(f"  grant to {subject} {sid}: {e}", flush=True)
+            if not retry:
+                break
+            todo = retry
+            time.sleep(10)
 
 
 def sha(path):
