@@ -20,6 +20,7 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local Eggs = require(Shared.Config.Eggs)
 local Net = require(Shared.Net)
 local Tools = require(Shared.Config.Tools)
 
@@ -204,6 +205,33 @@ local function useSlot(index: number)
 	end
 end
 
+-- A small coloured line over the slot's name for an egg's mutation.
+local function mutationTag(slot: GuiObject): TextLabel
+	local tag = slot:FindFirstChild("Mutation") :: TextLabel?
+	if tag then
+		return tag
+	end
+	local label = Instance.new("TextLabel")
+	label.Name = "Mutation"
+	label.BackgroundTransparency = 1
+	label.AnchorPoint = Vector2.new(0.5, 1)
+	label.Position = UDim2.new(0.5, 0, 1, -20)
+	label.Size = UDim2.new(1, -6, 0, 15)
+	label.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+	label.TextScaled = true
+	label.ZIndex = 5
+	local fit = Instance.new("UITextSizeConstraint")
+	fit.MaxTextSize = 14
+	fit.Parent = label
+	local stroke = Instance.new("UIStroke")
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+	stroke.Thickness = 2
+	stroke.Color = Color3.fromRGB(23, 25, 30)
+	stroke.Parent = label
+	label.Parent = slot
+	return label
+end
+
 local function renderItems(data)
 	local count = visibleSlots()
 	for i = 1, SLOTS do
@@ -215,9 +243,20 @@ local function renderItems(data)
 		local countLabel = slot:FindFirstChild("Count") :: TextLabel
 		local viewport = slot:FindFirstChild("Viewport") :: ViewportFrame
 		local icon = slot:FindFirstChild("Icon") :: ImageLabel
+		local mutLabel = mutationTag(slot)
+		mutLabel.Visible = false
 		if entry then
 			nameLabel.Text = entry.name
 			nameLabel.TextColor3 = entry.color
+			-- Mutated eggs: "Charged" on its own line over "Uncommon Egg" (Dev, 2026-10-31:
+			-- "Charged Uncommon Egg" didn't fit the slot).
+			local mutation = entry.kind == "Egg" and entry.mutation and Eggs.MutationByName[entry.mutation]
+			if mutation then
+				nameLabel.Text = `{entry.rarity} Egg`
+				mutLabel.Text = mutation.Label
+				mutLabel.TextColor3 = mutation.Color
+				mutLabel.Visible = true
+			end
 			countLabel.Visible = entry.count > 1
 			countLabel.Text = `x{entry.count}`
 			if shownKeys[i] ~= key then
