@@ -215,33 +215,49 @@ local function setToggle(button: GuiButton, owned: boolean, on: boolean)
 	button.BackgroundColor3 = if on then Color3.fromRGB(30, 120, 70) else NAVY
 end
 
--- New players see the left rail fill in as the tutorial goes (Dev, 2026-10-30: too many
--- buttons at once on phones). Shop is always there; Index after the first pet, Upgrades
--- at the step that uses it, Rebirth / Daily / Gifts once the tutorial is done (and the
--- top-right Spin button with them; the Spin button already shows at the tutorial's last
--- step, which spins from it).
+-- During the tutorial the screen is almost empty (Dev, 2026-10-31: "hide everything, only
+-- show stuff needed by the tutorial and only when it's needed"). The cash/bag panel and
+-- the hotbar stay; every other button shows up at the step that uses it, alone:
+-- SELL at the Sell step, Gear at the Shop step, Upgrades at the Upgrade step, SPIN at the
+-- Wheel step. Everything comes back once the tutorial is done (or after a rebirth).
 local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10, Wheel = 11 }
 local function revealRail(data)
-	local step = STEP_ORDER[data.TutorialStep] or 99
+	local key = data.TutorialStep
+	local step = STEP_ORDER[key] or 99
 	local done = step == 99 or data.Rebirths > 0
-	local spin = done or step >= 11
-	local show = {
-		IndexButton = step >= 7,
-		UpgradesButton = step >= 10,
-		RebirthButton = done,
-		RewardsButton = done,
-		GiftsButton = done,
-	}
-	if el.SpinButton.Visible ~= spin then
-		el.SpinButton.Visible = spin
-	end
 	local changed = false
-	for name, visible in show do
-		local button = el.Rail:FindFirstChild(name) :: GuiObject?
-		if button and button.Visible ~= visible then
-			button.Visible = visible
+	local function set(object: GuiObject?, visible: boolean)
+		if object and object.Visible ~= visible then
+			object.Visible = visible
 			changed = true
 		end
+	end
+	-- Left rail: only Upgrades at its step, all of it after.
+	set(el.Rail, done or key == "Upgrade")
+	for _, name in { "ShopButton", "IndexButton", "RebirthButton", "RewardsButton", "GiftsButton" } do
+		set(el.Rail:FindFirstChild(name) :: GuiObject?, done)
+	end
+	set(el.Rail:FindFirstChild("UpgradesButton") :: GuiObject?, done or key == "Upgrade")
+	-- Top pills: only SELL at its step (GroupRewardController keeps the Free pill hidden
+	-- during the tutorial).
+	set(el.Pills, done or key == "Sell")
+	set(el.Pills:FindFirstChild("BaseButton") :: GuiObject?, done)
+	set(el.Pills:FindFirstChild("ZonesButton") :: GuiObject?, done)
+	set(el.SpinButton, done or key == "Wheel")
+	set(el.MoonPanel, done)
+	set(el.Right, done)
+	set((el.BoostTemplate :: Instance).Parent :: GuiObject, done)
+	-- Right column (Eggs / Pets / Gear): only Gear at its step.
+	local buttons = Ui.screen("BasePanels"):FindFirstChild("Buttons") :: GuiObject?
+	if buttons then
+		set(buttons, done or key == "Shop")
+		set(buttons:FindFirstChild("EggsButton") :: GuiObject?, done)
+		set(buttons:FindFirstChild("PetsButton") :: GuiObject?, done)
+	end
+	if changed then
+		task.defer(function()
+			layout(Ui.scale(), Ui.compact())
+		end)
 	end
 	return changed
 end

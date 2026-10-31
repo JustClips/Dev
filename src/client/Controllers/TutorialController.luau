@@ -49,9 +49,9 @@ local STEPS: { Step } = {
 	},
 	{
 		key = "Egg",
-		text = "An egg! Walk to it and hold E!",
-		touch = "An egg! Walk to it and hold the button!",
-		pad = "An egg! Walk to it and hold X!",
+		text = "An egg! Walk to it and press E!",
+		touch = "An egg! Walk to it and tap the button!",
+		pad = "An egg! Walk to it and press X!",
 		icon = "Icon_Egg",
 	},
 	{ key = "Base", text = "Take it home! Follow the arrow.", icon = "Icon_Base" },
@@ -407,9 +407,14 @@ local function update()
 		local onHotbar = petTarget ~= nil
 		local autoPlace = Ui.find(Ui.screen("Placing"), "Bar.AutoPlace") :: GuiObject
 		local needTool = key == "Sweep" and not toolInHand()
+		-- Sweep in two parts (Dev: "first show go here with the arrow"): walk to the leaves,
+		-- then hold and walk.
+		local goThere = key == "Sweep" and not needTool and C.ArrowController:HasTarget()
 		if key == "Sweep" and not celebrating then
 			local want = stepText(step)
-			if not needTool and standingStill() then
+			if goThere then
+				want = "Go to the leaves! Follow the arrow."
+			elseif not needTool and standingStill() then
 				want = if UserInputService.TouchEnabled and not Ui.gamepad()
 					then "Keep moving! Use the joystick to walk onto new leaves while you sweep."
 					else "Keep moving! Walk onto new leaves while you sweep."
@@ -419,7 +424,7 @@ local function update()
 			end
 		end
 		-- Phones: show where to hold a finger once the tool is out.
-		holdHint.Visible = key == "Sweep" and not needTool and not celebrating and UserInputService.TouchEnabled and not Ui.gamepad()
+		holdHint.Visible = key == "Sweep" and not needTool and not goThere and not celebrating and UserInputService.TouchEnabled and not Ui.gamepad()
 		if needTool then
 			onHotbar = true
 			pointAt(Ui.find(hud, "Hotbar.ToolSlot"))

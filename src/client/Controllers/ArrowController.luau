@@ -1,7 +1,7 @@
 --!strict
--- Guide path (tutorial and helpful nudges): a trail of flat arrows on the ground from your
--- feet toward the target, sliding forward, and a big bouncing arrow over it, with the
--- distance. Steps come from the server
+-- Guide path (tutorial and helpful nudges): a big arrow over your head that turns toward
+-- the target, a trail of arrows on the ground from your feet sliding forward, and a big
+-- bouncing arrow over the target with the distance. Steps come from the server
 -- (State.data.TutorialStep): dust -> egg -> home -> plant the egg in your pet park -> open
 -- it -> rocket. After the tutorial it still points home when you carry an egg, at a
 -- ready egg in your park, and at the Rocket when your backpack is full.
@@ -24,7 +24,7 @@ local TRAIL_ARROWS = 12 -- arrows on the ground
 local TRAIL_GAP = 5 -- studs between them
 local TRAIL_START = 4 -- studs in front of you to the first one
 local TRAIL_SPEED = 4 -- studs per second they slide toward the target
-local ARROW_SIZE = 2.6
+local ARROW_SIZE = 3.6
 
 local ArrowController = {}
 
@@ -35,6 +35,10 @@ local trail: Folder
 local arrows: { BasePart } = {}
 local board: BillboardGui
 local distanceLabel: TextLabel
+-- A big arrow floating over your own head that turns toward the target (Dev, 2026-10-31:
+-- kids don't look at the floor).
+local headBoard: BillboardGui
+local headArrow: ImageLabel
 local moon: Instance
 local current: Vector3? = nil
 
@@ -220,7 +224,7 @@ local function drawTrail()
 			continue
 		end
 		local spot = root.Position + dir * along
-		local y = groundAt(spot, feet) + 0.12
+		local y = groundAt(spot, feet) + 0.3
 		arrow.CFrame = CFrame.fromMatrix(Vector3.new(spot.X, y, spot.Z), right, dir, Vector3.new(0, -1, 0))
 		-- Fade in near you and out at the far end of the trail.
 		local reach = TRAIL_START + (TRAIL_ARROWS - 1) * TRAIL_GAP
@@ -229,6 +233,11 @@ local function drawTrail()
 		image.ImageTransparency = math.clamp(0.1 + fade, 0.1, 1)
 		arrow.Parent = trail
 	end
+end
+
+-- True while the guide is pointing somewhere you haven't reached yet.
+function ArrowController:HasTarget(): boolean
+	return current ~= nil
 end
 
 function ArrowController:Init(controllers)
@@ -246,6 +255,22 @@ function ArrowController:Init(controllers)
 	trail = Instance.new("Folder")
 	trail.Name = "GuideTrail"
 	trail.Parent = Workspace
+
+	headBoard = Instance.new("BillboardGui")
+	headBoard.Name = "HeadArrow"
+	headBoard.Size = UDim2.fromOffset(96, 96)
+	headBoard.AlwaysOnTop = true
+	headBoard.LightInfluence = 0
+	headBoard.StudsOffsetWorldSpace = Vector3.new(0, 5, 0)
+	headBoard.Enabled = false
+	headBoard.Parent = trail
+	headArrow = Instance.new("ImageLabel")
+	headArrow.Name = "Arrow"
+	headArrow.BackgroundTransparency = 1
+	headArrow.Size = UDim2.fromScale(1, 1)
+	headArrow.Image = AssetLibrary.image("ArrowDown")
+	headArrow.ImageColor3 = COLOR
+	headArrow.Parent = headBoard
 
 	-- Big bouncing arrow over the target, with how far it is.
 	board = Instance.new("BillboardGui")
@@ -286,6 +311,22 @@ function ArrowController:Start()
 	State.Changed:Connect(update)
 	RunService.RenderStepped:Connect(function()
 		drawTrail()
+		local character0 = player.Character
+		local root0 = character0 and character0:FindFirstChild("HumanoidRootPart") :: BasePart?
+		local camera = Workspace.CurrentCamera
+		if board.Enabled and current and root0 and camera then
+			-- Turn the head arrow toward the target as seen from the camera: straight
+			-- ahead of the camera is up on screen.
+			local dir = (current - root0.Position) * Vector3.new(1, 0, 1)
+			local x = dir:Dot(camera.CFrame.RightVector)
+			local z = dir:Dot(camera.CFrame.LookVector * Vector3.new(1, 0, 1))
+			headBoard.Adornee = root0
+			headBoard.StudsOffsetWorldSpace = Vector3.new(0, 5 + math.abs(math.sin(os.clock() * 5)) * 0.6, 0)
+			headArrow.Rotation = 180 + math.deg(math.atan2(x, z))
+			headBoard.Enabled = true
+		else
+			headBoard.Enabled = false
+		end
 		if not board.Enabled or not current then
 			return
 		end

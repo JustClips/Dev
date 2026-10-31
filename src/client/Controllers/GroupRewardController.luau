@@ -40,7 +40,10 @@ local function render()
 		return
 	end
 	local on = info.GroupId ~= 0
-	local show = on and not info.GroupClaimed
+	-- Hidden during the tutorial (HudController shows only what the tutorial needs).
+	local data = State.data
+	local inTutorial = data ~= nil and data.TutorialStep ~= "Done" and (data.Rebirths or 0) == 0
+	local show = on and not info.GroupClaimed and not inTutorial
 	pill.Visible = show
 	Ui.setBadge(pill:FindFirstChild("Badge") :: GuiObject, if show then 1 else nil)
 	if show ~= lastShown then

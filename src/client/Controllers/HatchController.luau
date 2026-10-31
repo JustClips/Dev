@@ -1116,7 +1116,7 @@ local function updateEggPrompts()
 			local p = Instance.new("ProximityPrompt")
 			p.Name = "EggPrompt"
 			p.RequiresLineOfSight = false
-			p.HoldDuration = 0.25
+			p.HoldDuration = 0 -- press, no hold (Dev, 2026-10-31)
 			p.Parent = root
 			local uid = egg:GetAttribute("Uid") :: string
 			p.Triggered:Connect(function()

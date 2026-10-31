@@ -20,7 +20,7 @@ local EggService = {}
 
 local S: any
 local rng = Random.new()
-local PICKUP_HOLD = 0.35 -- seconds to hold the egg prompt
+local PICKUP_HOLD = 0 -- press, no hold (Dev, 2026-10-31: kids let go too early)
 local PICKUP_DISTANCE = 10 -- studs
 local eggFolder: Folder
 
