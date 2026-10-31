@@ -220,14 +220,14 @@ end
 -- at the step that uses it, Rebirth / Daily / Gifts once the tutorial is done (and the
 -- top-right Spin button with them; the Spin button already shows at the tutorial's last
 -- step, which spins from it).
-local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Hatch = 4, Sell = 5 }
+local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Shop = 9, Upgrade = 10, Wheel = 11 }
 local function revealRail(data)
 	local step = STEP_ORDER[data.TutorialStep] or 99
 	local done = step == 99 or data.Rebirths > 0
-	local spin = done
+	local spin = done or step >= 11
 	local show = {
-		IndexButton = step >= 5,
-		UpgradesButton = done,
+		IndexButton = step >= 7,
+		UpgradesButton = step >= 10,
 		RebirthButton = done,
 		RewardsButton = done,
 		GiftsButton = done,

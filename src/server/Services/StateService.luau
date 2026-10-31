@@ -18,6 +18,7 @@ local dirty: { [Player]: boolean } = {}
 local sentInventory: { [Player]: number } = {}
 -- Last tutorial step sent to each player (analytics logs each new one).
 local lastStep: { [Player]: string } = {}
+local TUTORIAL_STEP_CASH = 25
 local serverState: Folder
 
 -- Server-wide values (Moon %, event state, server luck) live as attributes on
@@ -38,12 +39,6 @@ local function rewardTutorial(player: Player)
 	S.StateService:Mark(player)
 end
 
--- The tutorial (remade 2026-10-31, Dev: "too many steps"). Four steps, all learn-by-doing
--- with one short line each; everything else is taught later in context (Gear wiggles until
--- you take the free Broom, the goals strip, the SPIN button's badge):
---   Sweep -> Egg (it picks itself up when you walk to it) -> Base (carry it home: it's
---   planted and opens by itself, and the pet goes on your base) -> Sell.
--- Step keys: Sweep, Egg, Base, Hatch, Sell, Done.
 local function tutorialStep(player: Player, session: any): string
 	local data = session.Data
 	if data.Flags.TutorialDone then
@@ -57,29 +52,14 @@ local function tutorialStep(player: Player, session: any): string
 		-- head, then one on the ground. A second egg found later never sends you back.
 		if #data.Hatching > 0 then
 			for _, entry in data.Hatching do
-				if entry.EndsAt <= os.time() and not runtime.TutorialOpening then
-					-- Ready: it opens by itself (the hatch show is the payoff).
-					runtime.TutorialOpening = true
-					task.defer(function()
-						S.HatchService:Open(player, entry.Uid)
-						runtime.TutorialOpening = nil
-					end)
-					break
+				if entry.EndsAt <= os.time() then
+					return "Open"
 				end
 			end
-			return "Hatch"
+			return "Hatching"
 		end
-		local uid = next(data.Eggs)
-		if uid ~= nil then
-			-- Delivered but not planted yet: plant it for them.
-			if not runtime.TutorialPlanting then
-				runtime.TutorialPlanting = true
-				task.defer(function()
-					S.HatchService:PlaceEgg(player, uid)
-					runtime.TutorialPlanting = nil
-				end)
-			end
-			return "Hatch"
+		if next(data.Eggs) ~= nil then
+			return "Place"
 		end
 		if runtime.Carried and #runtime.Carried > 0 then
 			return "Base"
@@ -89,9 +69,25 @@ local function tutorialStep(player: Player, session: any): string
 		end
 		return "Sweep"
 	end
-	-- The first pet goes on your base by itself (HatchService, 3 s after the hatch).
+	-- No "place your pet" step: the first hatched pet goes on your base by itself
+	-- (HatchService, 3 s after the hatch). The Broom and the first Sweep Power level are
+	-- bought in the Gear window / upgrade tree, FREE until the tutorial is done
+	-- (Tools.tutorialPrice).
 	if data.Stats.Sells == 0 then
 		return "Sell"
+	end
+	if data.ToolTier < 2 then
+		return "Shop"
+	end
+	if (data.Upgrades.Power or 0) < 1 then
+		return "Upgrade"
+	end
+	-- Last: the free spin from the SPIN button (first spin is always a Rare Egg) (Dev: so
+	-- players learn it's there). Counts as done once the wheel has stopped, so the
+	-- "Tutorial done" window doesn't cover the spin (RewardService re-marks after it).
+	local spunAt = data.Flags.FreeSpinAt
+	if type(spunAt) ~= "number" or os.time() - spunAt < Rewards.Wheel.SpinSeconds + 0.5 then
+		return "Wheel"
 	end
 	data.Flags.TutorialDone = true
 	if not data.Flags.TutorialRewarded then
@@ -122,6 +118,13 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 	local step = tutorialStep(player, session)
 	S.GoalService:Update(player)
 	if lastStep[player] ~= step then
+		-- Every finished tutorial step pays a little cash with the "you got" popup (kids
+		-- stay for small, frequent rewards). Not on the first snapshot after joining.
+		if lastStep[player] ~= nil and lastStep[player] ~= "Done" and step ~= "Done" then
+			task.defer(function()
+				S.BackpackService:GiveCash(player, TUTORIAL_STEP_CASH, "TutorialStep")
+			end)
+		end
 		lastStep[player] = step
 		S.AnalyticsService:TutorialStep(player, step)
 	end

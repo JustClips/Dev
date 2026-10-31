@@ -361,8 +361,6 @@ function EggService:MutateGroundEgg(egg: BasePart, mutation: string): boolean
 	return true
 end
 
-local TUTORIAL_GRAB = 7 -- studs: the tutorial egg picks itself up this close
-
 -- Before the first hatch, the tutorial arrow points at the player's egg on the ground.
 local function trackTutorialEgg(player: Player, session, egg: BasePart)
 	if session.Data.Stats.Hatches > 0 or #session.Data.Hatching > 0 or session.Runtime.TutorialEgg then
@@ -370,18 +368,6 @@ local function trackTutorialEgg(player: Player, session, egg: BasePart)
 	end
 	session.Runtime.TutorialEgg = egg
 	session.Runtime.TutorialEggPosition = egg.Position
-	-- Picked up just by walking to it (no hold): 1 in 5 new players never held the prompt.
-	task.spawn(function()
-		-- (Not an egg they put down themselves: it would jump straight back up.)
-		while egg.Parent and session.Runtime.TutorialEgg == egg and player.Parent and egg:GetAttribute("DroppedBy") == nil do
-			local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
-			if root and (root.Position - egg.Position).Magnitude <= TUTORIAL_GRAB then
-				pickup(player, egg)
-				break
-			end
-			task.wait(0.15)
-		end
-	end)
 	egg.Destroying:Connect(function()
 		if session.Runtime.TutorialEgg == egg then
 			session.Runtime.TutorialEgg = nil
@@ -481,9 +467,6 @@ local function deliver(player: Player, baseIndex: number)
 	end
 	if #remaining > 0 then
 		Net.fire("Notify", player, "Your egg bag is full! Place or open some eggs first.", "Bad")
-	elseif session.Data.Stats.Hatches == 0 and not session.Data.Flags.TutorialDone then
-		-- Tutorial: it gets planted for you (StateService), no bag message.
-		S.StateService:Mark(player)
 	else
 		local word = if #carried == 1 then "Egg" else `{#carried} eggs`
 		Net.fire("Notify", player, `{word} added to your bag! Place it in an incubator to hatch.`, "Egg")

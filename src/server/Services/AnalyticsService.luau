@@ -28,9 +28,15 @@ local ONBOARDING: { { key: string, name: string } } = {
 	{ key = "FirstSweep", name = "First sweep" },
 	{ key = "Egg", name = "Tutorial egg appeared" },
 	{ key = "Base", name = "Picked up egg" },
-	{ key = "Hatch", name = "Brought egg home" },
-	{ key = "Sell", name = "Hatched first pet" },
-	{ key = "Done", name = "First sell / tutorial done" },
+	{ key = "Place", name = "Brought egg home" },
+	{ key = "Hatching", name = "Placed egg" },
+	{ key = "Open", name = "Egg ready to open" },
+	{ key = "PlacePet", name = "Hatched egg" },
+	{ key = "Sell", name = "Pet placed (auto)" },
+	{ key = "Shop", name = "First sell" },
+	{ key = "Upgrade", name = "Got free Broom" },
+	{ key = "Wheel", name = "Got free Sweep Power" },
+	{ key = "Done", name = "Spun wheel / tutorial done" },
 }
 local ONBOARDING_INDEX: { [string]: number } = {}
 for i, step in ONBOARDING do

@@ -1,11 +1,14 @@
 --!strict
 -- The tutorial, step by step (the server decides the step: State.data.TutorialStep).
--- Four steps: sweep, grab the egg, carry it home (it plants and hatches by itself), sell.
---   * The step card above the hotbar: "STEP 2/4", one short line, a progress bar. Finishing
---     a step flashes it green ("Nice!") with a chime before the next one shows.
---   * World steps glow the target through walls (the egg, your pad, your growing egg, the
---     leaf dump) and ArrowController draws the guide path to it. Button steps (tool slot,
---     SELL) get a pulsing ring and a bouncing arrow.
+--   * The step card above the hotbar: "STEP 3/9", what to do, a progress bar. Finishing a
+--     step flashes it green ("Nice!") with a chime before the next one shows.
+--   * Spotlight: for button steps the screen dims except a cut-out around the button, which
+--     gets a pulsing ring and a bouncing arrow (Place for me while you hold your first egg,
+--     the hotbar slot your new pet went to, Gear for the first tool). For world steps the target glows with an outline you can see
+--     through walls (the egg, your pad, your growing egg, the Rocket's sell pad), and
+--     ArrowController draws the guide path to it.
+--   * Planting the first egg: walk into your pet park and the egg is already in your
+--     hands; click a green spot or press Place for me.
 --   * When it's done the server gives a reward and the "Tutorial done!" window shows it.
 -- After the tutorial the same card pops up for a few seconds, once, when something needs
 -- you (an egg just got ready).
@@ -27,35 +30,83 @@ local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local World = require(Shared.Config.World)
 
+local NEAR_PARK = 75 -- studs from the park centre to put the egg in your hands
 local NUDGE_SECONDS = 5
 
 type Step = { key: string, text: string, touch: string?, pad: string?, icon: string }
 
--- Remade 2026-10-31 (Dev: "too many steps"): four steps the player sees, each one short
--- line, learned by doing. The server plants and opens the first egg by itself, and the pet
--- goes on the base by itself; Gear, Upgrades and the wheel are taught later in context.
+-- Written for kids (Dev, 2026-10-31): one short action line per step, the button or key
+-- right in it, "FREE" where something is free. Kids skim, so the arrow, glow and
+-- spotlight do the explaining, and every finished step pays a little cash (StateService)
+-- with a different cheer.
 local STEPS: { Step } = {
 	{
 		key = "Sweep",
-		text = "Hold the mouse and WALK AROUND to sweep leaves!",
-		touch = "Hold the screen and WALK AROUND to sweep leaves!",
-		pad = "Hold R2 and WALK AROUND to sweep leaves!",
+		text = "Hold the mouse and WALK to sweep leaves!",
+		touch = "Hold the screen and WALK to sweep leaves!",
+		pad = "Hold R2 and WALK to sweep leaves!",
 		icon = "Icon_Dust",
 	},
-	{ key = "Egg", text = "You found an egg! Walk to it to grab it.", icon = "Icon_Egg" },
-	{ key = "Base", text = "Carry your egg home! Follow the arrow.", icon = "Icon_Base" },
-	{ key = "Hatch", text = "Your egg is hatching...", icon = "Icon_Egg" },
+	{
+		key = "Egg",
+		text = "An egg! Walk to it and hold E!",
+		touch = "An egg! Walk to it and hold the button!",
+		pad = "An egg! Walk to it and hold X!",
+		icon = "Icon_Egg",
+	},
+	{ key = "Base", text = "Take it home! Follow the arrow.", icon = "Icon_Base" },
+	{
+		key = "Place",
+		text = "Click a green spot, or Place for me!",
+		touch = "Tap a green spot, or Place for me!",
+		pad = "Face a green spot and press R2, or Place for me!",
+		icon = "Icon_Egg",
+	},
+	{ key = "Hatching", text = "It's hatching... watch it grow!", icon = "Icon_Timer" },
+	{
+		key = "Open",
+		text = "It's ready! Walk to it and press E!",
+		touch = "It's ready! Walk to it and tap Open!",
+		pad = "It's ready! Walk to it and press X!",
+		icon = "Icon_Egg",
+	},
+	-- No "place your pet" step: the first pet goes on your base by itself after the hatch.
 	{
 		key = "Sell",
-		text = "Your pet makes money now! Click SELL to cash in your leaves.",
-		touch = "Your pet makes money now! Tap SELL to cash in your leaves.",
-		pad = "Your pet makes money now! Walk to the market to sell your leaves.",
+		text = "Your pet makes money! Click SELL to cash in your leaves!",
+		touch = "Your pet makes money! Tap SELL to cash in your leaves!",
+		pad = "Your pet makes money! Walk to the market to sell your leaves!",
 		icon = "Icon_Sell",
 	},
+	{
+		key = "Shop",
+		text = "Open Gear and grab a FREE Broom!",
+		pad = "Press d-pad right, open Gear and grab a FREE Broom!",
+		icon = "Icon_Tools",
+	},
+	{
+		key = "Upgrade",
+		text = "Open Upgrades and double-click Sweep Power. FREE!",
+		touch = "Open Upgrades and double-tap Sweep Power. FREE!",
+		pad = "Press d-pad left, open Upgrades, press A twice on Sweep Power. FREE!",
+		icon = "Icon_Upgrade",
+	},
+	{
+		key = "Wheel",
+		text = "Click SPIN for a FREE prize!",
+		touch = "Tap SPIN for a FREE prize!",
+		pad = "Press d-pad left, pick SPIN and press A for a FREE prize!",
+		icon = "Icon_Spin",
+	},
 }
--- The number shown on the card ("STEP 3/4"): hatching is part of "carry it home".
-local SHOWN_NUMBER: { [string]: number } = { Sweep = 1, Egg = 2, Base = 3, Hatch = 3, Sell = 4 }
-local SHOWN_TOTAL = 4
+-- The number on the card ("STEP 3/8"): planting is part of bringing it home, opening is
+-- part of hatching.
+local SHOWN_NUMBER: { [string]: number } =
+	{ Sweep = 1, Egg = 2, Base = 3, Place = 3, Hatching = 4, Open = 4, Sell = 5, Shop = 6, Upgrade = 7, Wheel = 8 }
+local SHOWN_TOTAL = 8
+-- A different cheer each time a step is done.
+local CHEERS = { "Nice!", "Awesome!", "Great job!", "WOW!", "You rock!", "Super!", "Amazing!", "Pro move!" }
+local cheerIndex = 0
 local STEP_INDEX: { [string]: number } = {}
 for i, step in STEPS do
 	STEP_INDEX[step.key] = i
@@ -87,6 +138,8 @@ local nudgeUntil = 0
 local nudgeText = ""
 local readySeen: { [string]: boolean } = {}
 local readyPrimed = false
+local wasHolding = false
+local holdCooldown = 0
 local pointerTarget: GuiObject? = nil
 -- Sweep step: standing still while sweeping gets a "walk around" nudge.
 local STILL_SECONDS = 4
@@ -139,6 +192,8 @@ local function celebrate(nextStep: Step?)
 	doneFrame.Visible = true
 	doneFrame.BackgroundTransparency = 0.05
 	doneLabel.TextTransparency = 0
+	cheerIndex = cheerIndex % #CHEERS + 1
+	doneLabel.Text = CHEERS[cheerIndex]
 	TweenService:Create(barFill, TweenInfo.new(0.35), { Size = UDim2.fromScale(1, 1) }):Play()
 	task.wait(0.8)
 	TweenService:Create(doneFrame, TweenInfo.new(0.25), { BackgroundTransparency = 1 }):Play()
@@ -223,7 +278,9 @@ local function worldTarget(data): Instance?
 		return best
 	elseif key == "Base" and base then
 		return base:FindFirstChild("Pad")
-	elseif key == "Hatch" and base then
+	elseif key == "Place" and base then
+		return base:FindFirstChild("Park")
+	elseif (key == "Hatching" or key == "Open") and base then
 		local hatching = base:FindFirstChild("Hatching")
 		return hatching and hatching:GetChildren()[1]
 	elseif key == "Sell" then
@@ -235,6 +292,32 @@ local function worldTarget(data): Instance?
 		return structures and structures:FindFirstChild("LeafDump" .. index)
 	end
 	return nil
+end
+
+local function placeEggNearPark(data)
+	local holding = C.PlacementController:IsHolding()
+	if wasHolding and not holding then
+		holdCooldown = os.clock() + 6 -- they put it away: don't push it back right away
+	end
+	wasHolding = holding
+	if holding or os.clock() < holdCooldown or not data.BaseIndex or data.BaseIndex == 0 then
+		return
+	end
+	local character = Players.LocalPlayer.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not root then
+		return
+	end
+	local c = (World.Base.ParkMin + World.Base.ParkMax) / 2
+	local centre = World.baseCFrame(data.BaseIndex) * Vector3.new(c.X, 0, c.Y)
+	if (root.Position - centre).Magnitude > NEAR_PARK then
+		return
+	end
+	local uid = next(data.Eggs or {})
+	if uid then
+		holdCooldown = os.clock() + 2
+		C.PlacementController:Hold(uid)
+	end
 end
 
 -- Once per egg: a short nudge when it gets ready (after the tutorial).
@@ -251,6 +334,25 @@ local function checkReadyEggs(data)
 		end
 	end
 	readyPrimed = true
+end
+
+-- Where the newly hatched pet is: its hotbar slot (new pets go there first), or the Bag
+-- when the hotbar was full.
+local function petSlot(data): GuiObject?
+	for i = 1, 6 do
+		local key = C.HotbarController:SlotKey(i)
+		local uid = string.match(key, "^P:(.+)$")
+		local pet = uid and data.Pets and data.Pets[uid]
+		if pet and not pet.Placed and C.HotbarController:InHotbar(key) then
+			return C.HotbarController:SlotButton(i)
+		end
+	end
+	for _, pet in data.Pets or {} do
+		if not pet.Placed then
+			return Ui.find(hud, "Hotbar.BagSlot")
+		end
+	end
+	return nil
 end
 
 -- True when the player has stayed in one small spot for a few seconds.
@@ -284,6 +386,9 @@ local function update()
 		or Ui.isOpen(Ui.screen("WelcomeBack"))
 
 	if step then
+		if key == "Place" then
+			placeEggNearPark(data)
+		end
 		if shownStep ~= key and not celebrating then
 			local previous = shownStep and STEP_INDEX[shownStep]
 			shownStep = key
@@ -298,7 +403,9 @@ local function update()
 		glow.Adornee = worldTarget(data)
 		glow.Enabled = glow.Adornee ~= nil
 		local inventoryOpen = Ui.isOpen(Ui.screen("Inventory"))
-		local onHotbar = false
+		local petTarget = if key == "PlacePet" and not inventoryOpen and not C.PlacementController:HeldPet() then petSlot(data) else nil
+		local onHotbar = petTarget ~= nil
+		local autoPlace = Ui.find(Ui.screen("Placing"), "Bar.AutoPlace") :: GuiObject
 		local needTool = key == "Sweep" and not toolInHand()
 		if key == "Sweep" and not celebrating then
 			local want = stepText(step)
@@ -316,8 +423,21 @@ local function update()
 		if needTool then
 			onHotbar = true
 			pointAt(Ui.find(hud, "Hotbar.ToolSlot"))
+		elseif petTarget then
+			pointAt(petTarget)
+		elseif key == "Place" and C.PlacementController:IsHolding() and autoPlace.Visible then
+			pointAt(autoPlace, false)
 		elseif key == "Sell" and data.Backpack > 0 and not Ui.gamepad() then
-			pointAt(Ui.find(hud, "Pills.SellButton"), false)
+			-- Spotlight on SELL: the rest of the screen dims (Dev, 2026-10-31).
+			pointAt(Ui.find(hud, "Pills.SellButton"))
+		elseif key == "Shop" and not Ui.isOpen(Ui.screen("Garage")) then
+			pointAt(Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton"))
+		elseif key == "Upgrade" and not C.UpgradeController:IsOpen() then
+			pointAt(Ui.find(hud, "Rail.UpgradesButton"))
+		elseif key == "Wheel" and not Ui.isOpen(Ui.screen("Wheel")) then
+			pointAt(Ui.find(hud, "SpinButton"))
+		elseif key == "Wheel" and not C.WheelController:IsSpinning() then
+			pointAt(Ui.find(Ui.screen("Wheel"), "Window.Side.SpinButton"))
 		else
 			pointAt(nil)
 		end
