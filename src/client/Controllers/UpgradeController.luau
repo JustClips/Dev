@@ -80,9 +80,10 @@ local selected: string? = nil -- tapped once: tooltip stays, the next tap buys
 
 -- Phones: the first tap shows the tooltip, so buying takes a second tap. With a mouse or a
 -- controller the tooltip is already up from hovering, so one click buys (Dev, 2026-10-31).
--- One tap buys everywhere now (Dev, 2026-10-31: like Slime RNG, no "tap again").
+-- Phones: the first tap shows the tooltip (the exact numbers), the second buys. With a mouse
+-- the tooltip is up from hovering, so one click buys (Dev, 2026-10-31).
 local function twoTaps(): boolean
-	return false
+	return UserInputService:GetLastInputType() == Enum.UserInputType.Touch
 end
 
 local flashText: string? = nil -- a short message in the tooltip (e.g. "Need $50 more")
@@ -386,6 +387,8 @@ local function setTip(id: string?)
 			if not BigNum.gte(data.Cash, cost) then
 				hint.TextColor3 = RED
 				hint.Text = `Need {Format.cash(BigNum.sub(cost, data.Cash))} more`
+			elseif twoTaps() and selected == id then
+				hint.Text = "Tap again to buy"
 			end
 		end
 	end
@@ -1068,7 +1071,8 @@ function UpgradeController:Start()
 			local pad = Ui.gamepad()
 			tutorialHint.Text = if pad
 				then "Press A on the middle hex to buy it!"
-				elseif touch then "Tap the middle hex to buy it!"
+				elseif touch and selected == Upgrades.Root then "Tap it again to buy!"
+				elseif touch then "Double-tap the middle hex to buy it!"
 				else "Click the middle hex to buy it!"
 			local k = 1 + math.abs(math.sin(os.clock() * 4)) * 0.08
 			root.Size = UDim2.fromOffset(nodeSize.X.Offset * k, nodeSize.Y.Offset * k);

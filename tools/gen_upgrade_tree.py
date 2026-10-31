@@ -98,7 +98,41 @@ SPEC = [
     ('Pets', 'PetArmor', 'ThickFur', 'PetHealth', 'Your pets can take way more hits', 5, 0.3, 3000000000, 5.7, 1, 'Icon_UpShield'),
 ]
 
-# Short stat words for hex names ("+50% Leaves").
+# Hex names: one name per stat, numbered I, II, III... from cheapest to dearest (Dev,
+# 2026-10-31: "Big Bag I, Big Bag II"). The exact numbers are in the tooltip.
+FAMILY = {
+    "Power": "Sweep Power", "Backpack": "Big Bag", "Speed": "Fast Feet", "DustValue": "Leaf Value", "Radius": "Wide Sweep",
+    "Cash": "Coin Magnet", "DumpSpeed": "Quick Dump", "ItemFind": "Lucky Finds", "PotionTime": "Long Potions",
+    "MerchantDiscount": "Merchant Deal", "MerchantSlots": "Merchant Cart", "Regrow": "Fast Regrow", "Luck": "Egg Luck",
+    "HatchSpeed": "Quick Hatch", "EggFind": "Egg Finder", "Huge": "Huge Hunter", "Incubators": "Egg Slot",
+    "WeatherMut": "Storm Eggs", "MutChance": "Shiny Pets", "Golden": "Golden Piles", "Crit": "Lucky Leaves",
+    "CritMult": "Jackpot", "Bunny": "Bunny Cash", "BunnyReach": "Bunny Net", "PetIncome": "Pet Income",
+    "Offline": "Offline Cash", "OfflineCap": "Long Nap", "PetSell": "Pet Trader", "PetDamage": "Pet Power",
+    "PetHealth": "Pet Armor", "PassivePower": "Pet Passives",
+}
+
+
+def roman(n):
+    out = ""
+    for v, sym in ((10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")):
+        while n >= v:
+            out += sym
+            n -= v
+    return out
+
+
+def name_hexes(hexes):
+    by_stat = {}
+    for h in hexes:
+        if not h["lab"]:
+            by_stat.setdefault(h["stat"], []).append(h)
+    for stat, hs in by_stat.items():
+        hs.sort(key=lambda h: (h["rb"], h["cost"]))
+        for i, h in enumerate(hs):
+            h["name"] = f"{FAMILY[stat]} {roman(i + 1)}" if len(hs) > 1 else FAMILY[stat]
+
+
+# Short stat words (old names, kept for reference).
 LABEL = {
     "Power": "Leaves", "Backpack": "Bag Space", "Speed": "Speed", "DustValue": "Leaf Price", "Radius": "Sweep Size",
     "Cash": "Cash + Magnet", "DumpSpeed": "Dump Speed", "ItemFind": "Item Drops", "PotionTime": "Potion Time",
@@ -285,6 +319,7 @@ def preview(hexes):
 
 if __name__ == "__main__":
     hx = build()
+    name_hexes(hx)
     write(hx)
     if "--preview" in sys.argv:
         preview(hx)
