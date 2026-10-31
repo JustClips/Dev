@@ -35,7 +35,7 @@ from lib import Asset  # noqa: E402
 U = 0.13            # cube size in studs (BASE_U times the pet's SCALE while it builds)
 BASE_U = U
 # Bigger pets: same cube grid, bigger cubes.
-SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6, "DustBunny": 1.9, "Koi": 1.2, "Flamingo": 1.1, "RedPanda": 1.1, "MossGolem": 1.6, "Pegasus": 1.6, "Pelican": 1.2, "SeaTurtle": 1.2, "Walrus": 1.3, "MantaRay": 1.3, "Orca": 1.4, "Narwhal": 1.4, "CoralDragon": 1.6, "GoldenSeahorse": 1.5, "PoliceDog": 1.1, "CyberWolf": 1.2, "JetpackMonkey": 1.2, "NeonDragon": 1.5, "GoldenLion": 1.3, "MuskOx": 1.2, "PolarBear": 1.3, "FrostBat": 1.2, "WoollyRhino": 1.4, "CrystalStag": 1.4, "IceDragon": 1.6, "GlacierTitan": 1.8, "Capybara": 1.3, "Axolotl": 1.2, "Sloth": 1.4, "Chameleon": 1.2, "LuckyCat": 1.35}
+SCALE = {"Dragon": 1.5, "Phoenix": 1.8, "Kitsune": 1.6, "AutumnStag": 1.4, "Peacock": 1.2, "Griffin": 1.6, "Dolphin": 1.3, "Shark": 1.4, "SeaSerpent": 1.6, "Bulldog": 1.1, "RoboPup": 1.2, "Gargoyle": 1.6, "SnowLeopard": 1.1, "Mammoth": 1.6, "FrostEagle": 1.5, "Yeti": 1.6, "ButterflyQueen": 1.5, "Kraken": 1.6, "MechaRex": 1.5, "AuroraWhale": 1.6, "DustBunny": 1.9, "Koi": 1.2, "Flamingo": 1.1, "RedPanda": 1.1, "MossGolem": 1.6, "Pegasus": 1.6, "Pelican": 1.2, "SeaTurtle": 1.2, "Walrus": 1.3, "MantaRay": 1.3, "Orca": 1.4, "Narwhal": 1.4, "CoralDragon": 1.6, "GoldenSeahorse": 1.5, "PoliceDog": 1.1, "CyberWolf": 1.2, "JetpackMonkey": 1.2, "NeonDragon": 1.5, "GoldenLion": 1.3, "MuskOx": 1.2, "PolarBear": 1.3, "FrostBat": 1.2, "WoollyRhino": 1.4, "CrystalStag": 1.4, "IceDragon": 1.6, "GlacierTitan": 1.8, "Capybara": 1.3, "Axolotl": 1.2, "Sloth": 1.4, "Chameleon": 1.2, "LuckyCat": 1.35, "VampireBat": 1.2, "SkeletonWolf": 1.2, "ShadowDragon": 1.6}
 FPS = 30
 IDLE = (0, 90)      # frames
 WALK = (120, 138)
@@ -2956,6 +2956,129 @@ def lucky_cat():
     return a
 
 
+
+# ------------------------------------------------------------------ Halloween exclusives
+# Halloween Egg pets (Dev, 2026-10-31): only from the limited Halloween Egg in the shop.
+
+
+def pumpkin_hat(head_joint=(0, -8, 14)):
+    """A little jack-o'-lantern sitting between a cat's ears, with glowing carved eyes."""
+    O, R, G = "FF7A1A", "D9550A", "4E8A2E"
+    hat = Part("Hat", "Head", joint=head_joint)
+    hat.rbox(-2, 2, -10, -6, 14, 17, lambda i, j, k: R if i in (-1, 0) and j in (-10, -7) else O, edges=(True, True, False))
+    hat.box(-1, 0, -8, -7, 17, 19, G)
+    hat.set([(0, -8, 18)], G)
+    face = Part("Hat_Glow", "Hat", joint=(0, -10, 15.5), noise=False, glow="FFD54A")
+    face.set([(-2, -11, 16), (1, -11, 16), (-1, -11, 15), (0, -11, 15)], "FFD54A")
+    return [hat, face]
+
+
+def witch_hat():
+    """Purple witch hat with an orange band, perched above the ears with a bent tip."""
+    P, B, D = "6A2FA8", "FF8A1E", "3E1A66"
+    hat = Part("Hat", "Head", joint=(0, -8, 14))
+    hat.box(-1, 1, -9, -7, 14, 17, D)                       # post between the ears
+    hat.box(-5, 5, -12, -4, 17, 18, P)                       # brim
+    hat.box(-3, 3, -10, -6, 18, 19, B)                       # band
+    hat.box(-3, 3, -10, -6, 19, 21, P)
+    hat.box(-2, 2, -9, -7, 21, 23, P)
+    hat.box(-1, 1, -8, -6, 23, 25, P)
+    hat.set([(-1, -6, 25), (0, -6, 25), (-1, -5, 25), (0, -5, 24)], P)   # bent tip
+    return [hat]
+
+
+def pumpkin_cat():
+    # cream cat with dark stripes so the pumpkin hat pops
+    return cat("PumpkinCat", O="EFE6D6", S="3A2E3C", C="FFFFFF", P="FF7A1A", B="FFB070")
+
+
+def witch_cat():
+    return cat("WitchCat", O="2E2838", S="1C1824", C="5E5272", P="B57BFF", B="8E6AC8")
+
+
+def zombie_dog():
+    a = dog("ZombieDog", T="86A85E", C="C2D69A", E="4E6B3A", N="2A1C16", P="9C3A4A", spots="5E7A44")
+    a.extra["aura"] = "Gloom"
+    return a
+
+
+def vampire_bat():
+    D, M, I, E, P = "2A1E2E", "7A1428", "C0203A", "FF3040", "8A2A44"
+    parts = []
+    body = Part("Body")
+    body.rbox(-3, 3, -3, 4, 3, 9, lambda i, j, k: shade(D, 0.15) if j == -3 else D)
+    parts.append(body)
+    head = Part("Head", "Body", joint=(0, -2, 9))
+    head.rbox(-3, 3, -5, 1, 8, 13, D, edges=(True, False, True))
+    eye_cells = [(x, -5, 11) for x in (-2, 1)]
+    for c in eye_cells:
+        head.cells.pop(c, None)
+    head.set([(-1, -5, 9), (0, -5, 9)], P)
+    head.set([(-2, -5, 8), (1, -5, 8)], "FFFFFF")                    # fangs
+    parts.append(head)
+    glow = Part("Eyes_Glow", "Head", joint=(0, -5, 11), noise=False, glow=E)
+    glow.set(eye_cells, E)
+    parts.append(glow)
+    ear = Part("EarL", "Head", joint=(2, -2, 13))
+    ear.box(1, 3, -3, -1, 13, 16, lambda i, j, k: P if i == 1 and k < 15 else D)
+    parts += [ear, ear.mirror("EarR")]
+    wing = Part("WingL", "Body", joint=(3, 0, 8))
+    for d in range(11):
+        for j in range(-3, 4 - (d % 4 == 3) * 2 - d // 4):
+            wing.cells[(3 + d, j, 8 + d // 4)] = D if (j == -3 or d in (0, 4, 8)) else (I if d >= 8 else M)
+    parts += [wing, wing.mirror("WingR")]
+    leg = Part("LegL", "Body", joint=(1.5, 2, 3))
+    leg.box(1, 2, 2, 3, 1, 3, D)
+    parts += [leg, leg.mirror("LegR")]
+    # a high vampire collar behind the head
+    collar = Part("Collar", "Body", joint=(0, -1, 9))
+    collar.box(-4, 4, 0, 1, 8, 13, lambda i, j, k: I if k == 8 else M)
+    parts.append(collar)
+    a = assemble("VampireBat", parts)
+    a.extra["float"] = True
+    a.extra["aura"] = "Gloom"
+    return a
+
+
+def skeleton_wolf():
+    global assemble
+    inner = assemble
+
+    def ribs(key, parts, name=None, kind="alien"):
+        # dark gaps between bone-white ribs down both sides, and a spine line on the back
+        for p in parts:
+            if p.name == "Body":
+                for (i, j, k), col in list(p.cells.items()):
+                    if i in (-3, 2) and 7 <= k <= 10 and -6 <= j <= 5 and j % 2 == 0:
+                        p.cells[(i, j, k)] = "34303C"
+                    elif k == 11 and i in (-1, 0) and j % 2 == 0:
+                        p.cells[(i, j, k)] = "34303C"
+        return inner(key, parts, name, kind)
+    assemble = ribs
+    try:
+        a = arctic_wolf("SkeletonWolf", W="E8E2D0", G="34303C", B="F6F2E6", N="1A1A1A", I="7CFF6A")
+    finally:
+        assemble = inner
+    a.extra["aura"] = "Gloom"
+    return a
+
+
+def shadow_dragon():
+    return dragon("ShadowDragon", R="3A2458", D="1A1028", B="9B6BFF", C="C8FF8A", M="6A3FA0", aura="Gloom")
+
+
+HALLOWEEN = {"PumpkinCat": pumpkin_cat, "WitchCat": witch_cat, "ZombieDog": zombie_dog, "VampireBat": vampire_bat,
+             "SkeletonWolf": skeleton_wolf, "ShadowDragon": shadow_dragon}
+# Hats ride on the cat's head; added inside assemble() so the base cat code stays as is.
+HATS = {"PumpkinCat": pumpkin_hat, "WitchCat": witch_hat}
+_assemble = assemble
+
+
+def assemble(key, parts, name=None, kind="alien"):  # noqa: F811
+    if key in HATS:
+        parts = parts + HATS[key]()
+    return _assemble(key, parts, name, kind)
+
 PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon": raccoon, "Duck": duck,
         "Fox": fox, "Turtle": turtle, "Penguin": penguin,
         "Panda": panda, "Owl": owl, "Tiger": tiger,
@@ -2977,6 +3100,7 @@ PETS = {"Cat": cat, "Dog": dog, "Bunny": bunny, "Squirrel": squirrel, "Raccoon":
         "ArcticFox": arctic_fox, "Lemming": lemming, "Puffin": puffin, "Husky": husky, "Reindeer": reindeer, "MuskOx": musk_ox,
         "PolarBear": polar_bear, "FrostBat": frost_bat, "WoollyRhino": woolly_rhino, "CrystalStag": crystal_stag, "IceDragon": ice_dragon, "GlacierTitan": glacier_titan,
         "Capybara": capybara, "Axolotl": axolotl, "Sloth": sloth, "Chameleon": chameleon, "LuckyCat": lucky_cat}
+PETS.update(HALLOWEEN)
 
 
 # ------------------------------------------------------------------------- animation
@@ -4112,6 +4236,10 @@ ANIMS = {
     "IceDragon": fly(35, quad=True, base=dragon_idle),
     "GlacierTitan": {"Idle": golem_idle, "Walk": yeti_walk},
 }
+# Halloween exclusives move like the pets they're built from.
+for _k, _base in {"PumpkinCat": "Cat", "WitchCat": "Cat", "ZombieDog": "Dog", "VampireBat": "FrostBat",
+                  "SkeletonWolf": "ArcticWolf", "ShadowDragon": "Dragon"}.items():
+    ANIMS[_k] = ANIMS[_base]
 
 
 def joint_empties(a):

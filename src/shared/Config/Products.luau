@@ -4,6 +4,7 @@
 -- An Id of 0 means "not created yet": its button is hidden and the server logs a warning once.
 local Types = require(script.Parent.Parent.Types)
 local Economy = require(script.Parent.Economy)
+local LimitedEgg = require(script.Parent.LimitedEgg)
 
 type ProductDef = Types.ProductDef
 type GamepassDef = Types.GamepassDef
@@ -63,8 +64,10 @@ local Products: { ProductDef } = {
 	{ Key = "CosmicEgg3", Id = 3723358868, Price = 249, Name = "3 Cosmic Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Cosmic", Count = 3 },
 	{ Key = "CosmicEgg10", Id = 3725049875, Price = 799, Name = "10 Cosmic Eggs", Kind = "EggPack", Category = "Eggs", Giftable = true, Rarity = "Cosmic", Count = 10 },
 
-	-- Limited bundle (Economy.LimitedPack): once per player, gone after its end date.
-	{ Key = "HalloweenPack", Id = 3725049892, Price = 149, Name = "Spooky Halloween Pack", Kind = "LimitedPack", Category = "Special", Giftable = false },
+	-- The limited egg (Config/LimitedEgg): exclusive pets, gone after its end date.
+	{ Key = "HalloweenEgg1", Id = 3725068763, Price = 59, Name = "Halloween Egg", Kind = "LimitedEgg", Category = "Special", Giftable = true, Count = 1 },
+	{ Key = "HalloweenEgg3", Id = 3725068779, Price = 149, Name = "3 Halloween Eggs", Kind = "LimitedEgg", Category = "Special", Giftable = true, Count = 3 },
+	{ Key = "HalloweenEgg10", Id = 3725068801, Price = 449, Name = "10 Halloween Eggs", Kind = "LimitedEgg", Category = "Special", Giftable = true, Count = 10 },
 
 	-- "Next tool now": priced per target tier.
 	{ Key = "ToolSkip2", Id = 3723358874, Price = 3, Name = "Unlock Broom", Kind = "ToolSkip", Category = "Tools", Giftable = true, Tier = 2 },
@@ -193,14 +196,21 @@ function Config.serverLuckNext(level: number): ProductDef?
 	return top
 end
 
--- When the limited pack stops being on sale for this player, or nil (bought or over).
-function Config.limitedPackEnds(data: any, now: number): number?
-	local def = Config.ProductByKey.HalloweenPack
-	local pack = Economy.LimitedPack
-	if not def or def.Id == 0 or data.Flags.LimitedPackBought == pack.Id or now >= pack.EndsAt then
-		return nil
+-- The limited egg's packs, smallest first (empty once it has left the shop).
+function Config.limitedEggPacks(now: number): { ProductDef }
+	local out = {}
+	if not LimitedEgg.onSale(now) then
+		return out
 	end
-	return pack.EndsAt
+	for _, def in Products do
+		if def.Kind == "LimitedEgg" and def.Id ~= 0 then
+			table.insert(out, def)
+		end
+	end
+	table.sort(out, function(a, b)
+		return (a.Count or 1) < (b.Count or 1)
+	end)
+	return out
 end
 
 -- The egg packs for one rarity, smallest first (the shop's "how many?" picker).

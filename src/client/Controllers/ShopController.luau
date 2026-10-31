@@ -11,6 +11,10 @@
 --   Cash    - cash packs, Skip Rebirth, the next tool skip
 -- A tile is a big picture, a short name, one short line and one price button; giftable
 -- tiles get a pink gift corner. Layout templates come from tools/gen_ui.py shop().
+-- Look (Dev, 2026-10-31, from a reference): dark body, green header, centred yellow
+-- "-- FEATURED --" headings, green Robux buttons, purple gift buttons, timers as
+-- "1d 22h 12m Left". The limited egg (Config/LimitedEgg) gets the top banner on Deals: the
+-- pets you can get with their odds and 1 / 3 / 10 buy cells.
 -- Free / cash things (tools, cars) are in the Gear window and base skins in the base picker.
 -- Robux items whose ID is still 0 are hidden. The rail Shop button and the Deals tab show
 -- a badge while a special offer is up.
@@ -25,15 +29,18 @@ local Ui = require(Client.Ui)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local BigNum = require(Shared.BigNum)
+local Eggs = require(Shared.Config.Eggs)
 local Economy = require(Shared.Config.Economy)
 local Format = require(Shared.Format)
-local Items = require(Shared.Config.Items)
+local Aliens = require(Shared.Config.Aliens)
+local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 local Tools = require(Shared.Config.Tools)
 
 local GREY = Color3.fromRGB(166, 174, 194)
-local ROBUX = Color3.fromRGB(255, 200, 60)
+-- Robux buttons are green with white text (Dev's reference).
+local ROBUX = Color3.fromRGB(61, 190, 58)
 local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(27, 31, 58)
 
@@ -57,18 +64,19 @@ type Chip = { Icon: string?, Rarity: string?, Caption: string }
 type Page = {
 	Key: string,
 	Title: string,
+	Heading: string?, -- the page's big yellow heading, if not the title
 	Icon: string,
 	Color: Color3,
 	Note: string,
 }
 
 local PAGES: { Page } = {
-	{ Key = "Deals", Title = "Deals", Icon = "Icon_Star", Color = Color3.fromRGB(255, 77, 94), Note = "Big savings, not here for long!" },
+	{ Key = "Deals", Title = "Deals", Heading = "Featured", Icon = "Icon_Star", Color = Color3.fromRGB(255, 77, 94), Note = "Big savings, not here for long!" },
 	{ Key = "Eggs", Title = "Eggs", Icon = "Icon_Egg", Color = Color3.fromRGB(255, 95, 162), Note = "Hatch rare pets!" },
 	{ Key = "Passes", Title = "Passes", Icon = "Icon_Star", Color = Color3.fromRGB(155, 107, 255), Note = "Yours forever" },
 	{ Key = "Boosts", Title = "Boosts", Icon = "Icon_Luck", Color = Color3.fromRGB(255, 128, 48), Note = "The whole server gets it!" },
 	{ Key = "Potions", Title = "Potions", Icon = "Icon_PotionLuck", Color = Color3.fromRGB(46, 184, 160), Note = "Goes to your bag" },
-	{ Key = "Cash", Title = "Cash", Icon = "Icon_Cash", Color = Color3.fromRGB(47, 191, 85), Note = "More cash right now" },
+	{ Key = "Cash", Title = "Cash", Icon = "Icon_Cash", Color = Color3.fromRGB(46, 140, 230), Note = "More cash right now" },
 }
 local PAGE_BY_KEY: { [string]: Page } = {}
 for _, page in PAGES do
@@ -144,6 +152,11 @@ local function prompt(key: string, giftTo: number?)
 	end
 end
 
+-- "1d 22h 12m 5s Left" (the reference's timer style).
+local function leftText(seconds: number, gone: string): string
+	return if seconds > 0 then `{Format.dhms(seconds)} Left` else gone
+end
+
 local function robuxPrice(price: number): string
 	return `{Ui.ROBUX} {price}`
 end
@@ -161,12 +174,7 @@ local function setPrice(buy: GuiButton, price: string, color: Color3)
 	tint(buy, color)
 	local label = buy:FindFirstChild("Label") :: TextLabel?
 	if label then
-		-- Dark text on gold, white text on green/grey.
-		label.TextColor3 = if color == ROBUX then INK else WHITE
-		local stroke = label:FindFirstChildOfClass("UIStroke")
-		if stroke then
-			stroke.Enabled = color ~= ROBUX
-		end
+		label.TextColor3 = WHITE
 	end
 end
 
@@ -305,10 +313,8 @@ end
 
 local function addTitle(page: Page)
 	local row = clone("PageTitle")
-	Ui.find(row, "Title").Text = page.Title
+	Ui.find(row, "Title").Text = `-- {string.upper(page.Heading or page.Title)} --`
 	Ui.find(row, "Note").Text = page.Note
-	Ui.find(row, "Icon").Image = AssetLibrary.image(page.Icon)
-	Ui.find(row, "Rule").BackgroundColor3 = page.Color
 	place(row)
 end
 
@@ -363,7 +369,6 @@ local function addBanner(opts: {
 	Art: string?,
 	Chips: { Chip },
 	Ends: number?,
-	TimerWord: string,
 	Worth: number?,
 	Price: number,
 	OnBuy: () -> (),
@@ -399,14 +404,13 @@ local function addBanner(opts: {
 	Ui.button(Ui.find(banner, "Buy"), opts.OnBuy)
 	local timer = Ui.find(banner, "Timer") :: TextLabel
 	local ends = opts.Ends
-	local word = opts.TimerWord
 	local function tick(): boolean
 		if not ends then
 			timer.Text = ""
 			return false
 		end
 		local left = ends - workspace:GetServerTimeNow()
-		timer.Text = if left > 0 then `{word} {Format.time(left)}` else "Gone!"
+		timer.Text = leftText(left, "Gone!")
 		return left <= 0
 	end
 	tick()
@@ -448,7 +452,7 @@ local function fillLuckCard(): boolean
 	end
 	local timer = Ui.find(card, "Timer") :: TextLabel
 	local left = (State.server("LuckEnds") or 0) - State.now()
-	timer.Text = if level > 1 and left > 0 then `Ends in {Format.time(left)}` else `Lasts {minutes} min`
+	timer.Text = if level > 1 and left > 0 then leftText(left, "") else `Lasts {minutes} min`
 	local priceText = robuxPrice(def.Price)
 	local buy = Ui.find(card, "Buy") :: TextButton
 	if buy:GetAttribute("Price") ~= priceText then
@@ -472,6 +476,66 @@ local function addLuckCard()
 	place(card)
 	fillLuckCard()
 	table.insert(timers, fillLuckCard)
+end
+
+-------------------------------------------------------------------------- limited egg
+
+-- The limited egg banner: title, New! sticker, "1d 22h 12m Left", every pet you can get
+-- with its odds (rarest last), and a buy cell per pack with its gift button.
+local function addEggBanner(now: number)
+	local packs = Products.limitedEggPacks(now)
+	if #packs == 0 then
+		return
+	end
+	local banner = clone("EggBanner")
+	banner.Name = "LimitedEgg"
+	Ui.find(banner, "Title").Text = LimitedEgg.Name
+	local pets = Ui.find(banner, "Pets") :: Frame
+	for i, entry in LimitedEgg.Odds do
+		local def = Aliens.ById[entry.Pet]
+		if def then
+			local card = clone("PetCard")
+			card.LayoutOrder = i
+			local rarity = Eggs.ByName[def.Rarity]
+			tint(card, if rarity then rarity.Color else GREY)
+			Ui.find(card, "Chance").Text = `{entry.Chance}%`
+			Ui.find(card, "Name").Text = def.Name
+			card.Parent = pets
+			ModelView.show(Ui.find(card, "Model"), AssetLibrary.alien(def.Id), "Alien_" .. def.Id)
+		end
+	end
+	local cheapest = math.huge
+	for _, def in packs do
+		cheapest = math.min(cheapest, def.Price / (def.Count or 1))
+	end
+	local buys = Ui.find(banner, "Buys") :: Frame
+	for i, def in packs do
+		local count = def.Count or 1
+		local cell = clone("BuyCell")
+		cell.LayoutOrder = i
+		Ui.find(cell, "Count").Text = if count == 1 then "1 Egg" else `{count} Eggs`
+		;(Ui.find(cell, "Tag") :: Frame).Visible = count > 1 and def.Price / count <= cheapest
+		local key = def.Key
+		setPrice(Ui.find(cell, "Buy"), robuxPrice(def.Price), ROBUX)
+		Ui.button(Ui.find(cell, "Buy"), function()
+			prompt(key)
+		end)
+		local gift = Ui.find(cell, "Gift") :: TextButton
+		gift.Visible = def.Giftable == true
+		Ui.button(gift, function()
+			openGiftPicker(key)
+		end)
+		cell.Parent = buys
+	end
+	local timer = Ui.find(banner, "Timer") :: TextLabel
+	local function tick(): boolean
+		local left = LimitedEgg.EndsAt - workspace:GetServerTimeNow()
+		timer.Text = leftText(left, "Gone!")
+		return left <= 0
+	end
+	tick()
+	table.insert(timers, tick)
+	place(banner)
 end
 
 -------------------------------------------------------------------------- deals
@@ -516,60 +580,13 @@ end
 local function specialCount(data): number
 	local now = workspace:GetServerTimeNow()
 	return (if Products.starterPackEnds(data, now) then 1 else 0)
-		+ (if Products.limitedPackEnds(data, now) then 1 else 0)
+		+ (if #Products.limitedEggPacks(now) > 0 then 1 else 0)
 		+ #liveOffers(data)
-end
-
--- Short names so banner captions stay big enough to read.
-local SHORT_NAMES: { [string]: string } = {
-	SuperLuckPotion = "Super Luck",
-	MegaCashPotion = "Mega Cash",
-	LuckPotion = "Luck",
-	CashPotion = "Cash x2",
-}
-
-local function itemChips(chips: { Chip }, items: { [string]: number })
-	-- Fixed order so the banner doesn't shuffle between renders.
-	for _, def in Items.List do
-		local count = items[def.Id]
-		if count then
-			local name = SHORT_NAMES[def.Id] or def.Name
-			table.insert(chips, { Icon = def.Icon, Caption = if count > 1 then `{name} x{count}` else name })
-		end
-	end
 end
 
 local function buildDeals(data)
 	local now = workspace:GetServerTimeNow()
-	local limitedEnds = Products.limitedPackEnds(data, now)
-	if limitedEnds then
-		local pack = Economy.LimitedPack
-		local def = Products.ProductByKey.HalloweenPack
-		local chips: { Chip } = {}
-		for _, rarity in { "Cosmic", "Mythic", "Legendary", "Epic" } do
-			if pack.Eggs[rarity] then
-				table.insert(chips, { Rarity = rarity, Caption = rarity })
-			end
-		end
-		itemChips(chips, pack.Items)
-		table.insert(chips, { Icon = "Icon_Spin", Caption = `{pack.Spins} Spins` })
-		-- Halloween look (Dev, 2026-10-31): night purple with pumpkin orange.
-		addBanner({
-			Tag = "HALLOWEEN",
-			TagColor = Color3.fromRGB(255, 128, 32),
-			Title = pack.Name,
-			TitleColor = Color3.fromRGB(255, 166, 48),
-			Color = Color3.fromRGB(92, 45, 145),
-			Chips = chips,
-			Ends = limitedEnds,
-			TimerWord = "Leaves in",
-			Worth = pack.Worth,
-			Price = def.Price,
-			OnBuy = function()
-				prompt("HalloweenPack")
-			end,
-		})
-	end
+	addEggBanner(now)
 	local starterEnds = Products.starterPackEnds(data, now)
 	if starterEnds then
 		local pack = Economy.StarterPack
@@ -585,7 +602,6 @@ local function buildDeals(data)
 				{ Icon = "Icon_PotionCash", Caption = `2x Cash {pack.Cash2xMinutes}m` },
 			},
 			Ends = starterEnds,
-			TimerWord = "Leaves in",
 			Price = Products.ProductByKey.StarterPack.Price,
 			OnBuy = function()
 				prompt("StarterPack")
@@ -607,7 +623,7 @@ local function buildDeals(data)
 		local expires = offer.Expires
 		local function tick(): boolean
 			local left = expires - os.clock()
-			label.Text = if left > 0 then `Ends in {Format.time(left)}` else "Ended"
+			label.Text = leftText(left, "Ended")
 			return left <= 0
 		end
 		tick()
@@ -873,7 +889,7 @@ function ShopController:Init(controllers)
 	C = controllers
 	gui = Ui.screen("Shop")
 	list = Ui.find(gui, "Window.List")
-	for _, name in { "PageTitle", "Banner", "Chip", "Offer", "LuckCard", "Grid", "Tile" } do
+	for _, name in { "PageTitle", "Banner", "Chip", "EggBanner", "PetCard", "BuyCell", "Offer", "LuckCard", "Grid", "Tile" } do
 		templates[name] = Ui.find(gui, "Window." .. name)
 	end
 	emptyLabel = Ui.find(gui, "Window.Empty")
@@ -927,7 +943,6 @@ function ShopController:Start()
 			data.EffectiveTier,
 			tostring(BigNum.gte(data.Cash, nextTool.Price)),
 			tostring(data.Flags.StarterPackBought),
-			tostring(data.Flags.LimitedPackBought),
 			data.Rebirths,
 			if data.CashPacks and data.CashPacks.Cash1 then Format.cash(data.CashPacks.Cash1) else "",
 			table.concat(hatching, ","),

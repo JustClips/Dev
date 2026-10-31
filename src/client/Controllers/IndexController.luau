@@ -16,6 +16,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Items = require(Shared.Config.Items)
+local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
 local Zones = require(Shared.Config.Zones)
@@ -145,6 +146,15 @@ local function render(force: boolean?)
 		if def.Exclusive == "Wheel" then
 			chance.Text = "1% jackpot"
 			zoneLabel.Text = "Lucky Wheel"
+		elseif def.Exclusive == LimitedEgg.Id then
+			local odds = 0
+			for _, entry in LimitedEgg.Odds do
+				if entry.Pet == def.Id then
+					odds = entry.Chance
+				end
+			end
+			chance.Text = `{odds}%`
+			zoneLabel.Text = LimitedEgg.Name
 		elseif def.Exclusive then
 			chance.Text = "Day 7"
 			zoneLabel.Text = "Daily streak"

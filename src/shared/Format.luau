@@ -91,6 +91,19 @@ function Format.time(seconds: number): string
 	return string.format("%d:%02d", m, sec)
 end
 
+-- Shop countdowns (Dev, 2026-10-31, from a reference): 167553 -> "1d 22h 32m 33s",
+-- 5400 -> "1h 30m 0s", 90 -> "1m 30s".
+function Format.dhms(seconds: number): string
+	local s = math.max(0, math.floor(seconds))
+	local d, h, m, sec = s // 86400, (s % 86400) // 3600, (s % 3600) // 60, s % 60
+	if d > 0 then
+		return `{d}d {h}h {m}m {sec}s`
+	elseif h > 0 then
+		return `{h}h {m}m {sec}s`
+	end
+	return `{m}m {sec}s`
+end
+
 -- 93600 -> "1d 2h", 7300 -> "2h 1m", 300 -> "5m", 40 -> "40s"
 function Format.duration(seconds: number): string
 	local s = math.max(0, math.floor(seconds))
