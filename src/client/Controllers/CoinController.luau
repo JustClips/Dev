@@ -56,62 +56,30 @@ local lastReport = 0
 local streak = 0
 local lastPickup = 0
 
--- The coin's look: the modelled Coin_Cash mesh (art/blender/coins.py: a gold coin with a
--- raised rim, a "$" on both faces, a shine and a dark cartoon outline). Until that model has
--- loaded, a stand-in built from parts is used; stand-ins are thrown away instead of pooled
--- once the model is there. Either way the look is welded to an invisible root, so the
--- movement code only moves the root. The coin's faces point along the root's Z, which the
--- root's spin keeps level, so the coin stands up and turns.
-local function addLook(p: BasePart): (BasePart, boolean)
+-- The coin itself is the part the movement code moves: the modelled Coin_Cash mesh
+-- (art/blender/coins.py: a gold coin with a raised rim, a "$" on both faces, a shine and a
+-- dark cartoon outline). No welds: welded pieces set up outside Workspace stayed behind at
+-- the map origin, so only the glow showed in game (Dev: "just a shiny orb"). Until the model
+-- has loaded a plain gold disc stands in; stand-ins are thrown away instead of pooled once
+-- the model is there. The coin stands up and the spin turns it around the vertical axis.
+local function newLook(): (BasePart, boolean)
 	local model = AssetLibrary.get("Coin_Cash")
 	local body = model and model:FindFirstChild("Body")
 	if model and body and body:IsA("BasePart") then
-		body.Name = "Look"
-		body.Anchored = false
-		body.Massless = true
-		body.CanCollide = false
-		body.CanQuery = false
-		body.CanTouch = false
-		body.CastShadow = false
-		body.Material = Enum.Material.SmoothPlastic
-		body.CFrame = p.CFrame
-		local weld = Instance.new("WeldConstraint")
-		weld.Part0 = p
-		weld.Part1 = body
-		weld.Parent = body
-		body.Parent = p
+		body.Parent = nil
 		model:Destroy()
+		body.Name = "Coin"
 		return body, true
 	end
 	if model then
 		model:Destroy()
 	end
-	local upright = p.CFrame * CFrame.Angles(0, math.pi / 2, 0)
-	local function piece(name: string, thick: number, across: number, color: Color3): BasePart
-		local c = Instance.new("Part")
-		c.Name = name
-		c.Shape = Enum.PartType.Cylinder
-		c.Size = Vector3.new(thick, across, across)
-		c.Color = color
-		c.Material = Enum.Material.SmoothPlastic
-		c.Anchored = false
-		c.Massless = true
-		c.CanCollide = false
-		c.CanQuery = false
-		c.CanTouch = false
-		c.CastShadow = false
-		c.CFrame = upright
-		local weld = Instance.new("WeldConstraint")
-		weld.Part0 = p
-		weld.Part1 = c
-		weld.Parent = c
-		c.Parent = p
-		return c
-	end
-	local outline = piece("Outline", 0.26, 1.62, Color3.fromRGB(74, 42, 8))
-	piece("Rim", 0.34, 1.46, Color3.fromRGB(232, 150, 18))
-	piece("Face", 0.42, 1.12, Color3.fromRGB(255, 214, 58))
-	return outline, false
+	local disc = Instance.new("Part")
+	disc.Name = "Coin"
+	disc.Shape = Enum.PartType.Cylinder
+	disc.Size = Vector3.new(0.4, 1.5, 1.5)
+	disc.Color = Color3.fromRGB(255, 205, 40)
+	return disc, false
 end
 
 local function take(): BasePart
@@ -119,24 +87,20 @@ local function take(): BasePart
 	if part then
 		return part
 	end
-	local p = Instance.new("Part")
-	p.Name = "Coin"
-	p.Size = Vector3.one * 0.2
-	p.Transparency = 1
+	local p, real = newLook()
 	p.Anchored = true
 	p.CanCollide = false
 	p.CanQuery = false
 	p.CanTouch = false
 	p.CastShadow = false
-	p.CFrame = CFrame.new()
-	local look, real = addLook(p)
+	p.Material = Enum.Material.SmoothPlastic
 	if not real then
 		p:SetAttribute("StandIn", true)
 	end
-	-- soft gold glow behind the coin
+	-- a faint gold glow behind the coin (kept small so it reads as a coin, not an orb)
 	local halo = Instance.new("BillboardGui")
 	halo.Name = "Halo"
-	halo.Size = UDim2.fromScale(2.6, 2.6)
+	halo.Size = UDim2.fromScale(2.2, 2.2)
 	halo.LightInfluence = 0
 	halo.MaxDistance = 160
 	halo.Parent = p
@@ -145,7 +109,7 @@ local function take(): BasePart
 	glow.Size = UDim2.fromScale(1, 1)
 	glow.Image = AssetLibrary.image("Vfx_Glow")
 	glow.ImageColor3 = Color3.fromRGB(255, 200, 40)
-	glow.ImageTransparency = 0.55
+	glow.ImageTransparency = 0.7
 	glow.Parent = halo
 	-- cartoon twinkle stars that pop on and off over the coin's surface
 	local twinkle = Instance.new("ParticleEmitter")
@@ -167,7 +131,7 @@ local function take(): BasePart
 		NumberSequenceKeypoint.new(0.3, 0.75),
 		NumberSequenceKeypoint.new(1, 0),
 	})
-	twinkle.Parent = look
+	twinkle.Parent = p
 	return p
 end
 
@@ -426,14 +390,14 @@ local function step()
 			local t = math.clamp((now - coin.start) / FLY_OUT, 0, 1)
 			local arc = 4 + (coin.to - coin.from).Magnitude * 0.25
 			local pos = coin.from:Lerp(coin.to, t) + Vector3.new(0, math.sin(t * math.pi) * arc, 0)
-			part.CFrame = CFrame.new(pos) * CFrame.Angles(0, t * 12, math.pi / 2)
+			part.CFrame = CFrame.new(pos) * CFrame.Angles(0, t * 12, 0)
 			if t >= 1 then
 				coin.state = "ground"
 			end
 		elseif coin.state == "ground" then
 			-- Spins slowly and bobs while it waits.
 			local bob = math.sin(now * 3 + coin.spin) * 0.25
-			part.CFrame = CFrame.new(coin.to + Vector3.new(0, bob, 0)) * CFrame.Angles(0, now * 2.5 + coin.spin, math.pi / 2)
+			part.CFrame = CFrame.new(coin.to + Vector3.new(0, bob, 0)) * CFrame.Angles(0, now * 2.5 + coin.spin, 0)
 			if target then
 				local d = target - coin.to
 				if Vector2.new(d.X, d.Z).Magnitude <= range and math.abs(d.Y) < 14 then
@@ -443,7 +407,7 @@ local function step()
 		else
 			local t = math.clamp((now - coin.inStart) / FLY_IN, 0, 1)
 			local goal = if target then target else coin.inFrom
-			part.CFrame = CFrame.new(coin.inFrom:Lerp(goal, t * t)) * CFrame.Angles(0, now * 10, math.pi / 2)
+			part.CFrame = CFrame.new(coin.inFrom:Lerp(goal, t * t)) * CFrame.Angles(0, now * 10, 0)
 			if t >= 1 then
 				if coin.report then
 					table.insert(toReport, coin.id)
