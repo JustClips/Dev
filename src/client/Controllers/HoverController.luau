@@ -59,14 +59,17 @@ end
 -- The effects line: the mutation and what it does, in its colour.
 local function showEffects(lines: { string }, color: Color3?)
 	extraLabel.Visible = #lines > 0
-	extraLabel.Text = table.concat(lines, " · ")
+	extraLabel.Text = table.concat(lines, "\n")
 	extraLabel.TextColor3 = color or Color3.fromRGB(200, 208, 232)
 end
 
-local function mutationLine(mutation: string?): (string?, Color3?)
+local function mutationLine(mutation: string?, pet: boolean?): (string?, Color3?)
 	local def = mutation and Eggs.MutationByName[mutation]
 	if not def then
 		return nil, nil
+	end
+	if pet and def.PassiveMult then
+		return `{def.Label} x{def.IncomeMult} cash, x{def.PassiveMult} passive`, def.Color
 	end
 	return `{def.Label} x{def.IncomeMult} cash`, def.Color
 end
@@ -89,7 +92,8 @@ local function showPet(model: Model)
 	incomeLabel.Text = `+{Format.cash(model:GetAttribute("Income") or 0)}/s`
 	incomeLabel.TextColor3 = Color3.fromRGB(124, 255, 140)
 	local lines = {}
-	local text, color = mutationLine(model:GetAttribute("Mutation"))
+	local mutation = model:GetAttribute("Mutation") :: string?
+	local text, color = mutationLine(mutation, true)
 	if text then
 		table.insert(lines, text)
 	end
@@ -97,10 +101,16 @@ local function showPet(model: Model)
 		table.insert(lines, "HUGE")
 		color = color or Color3.fromRGB(255, 200, 60)
 	end
-	local passive = PetPassives.describe(alienId, huge)
+	local seasons = PetPassives.seasons()
+	local passive = PetPassives.describe(alienId, huge, mutation, seasons)
 	if passive then
 		table.insert(lines, passive)
 		color = color or Color3.fromRGB(150, 220, 255)
+	end
+	-- "IN SEASON! Passive x3, +15% All Cash, 2x cash" / "Passive x3 during Disco: ..."
+	local season = PetPassives.seasonLine(mutation, huge, seasons)
+	if season then
+		table.insert(lines, season)
 	end
 	showEffects(lines, color)
 	return true
@@ -166,6 +176,10 @@ function HoverController:Init()
 	weightLabel = Ui.find(card, "Weight")
 	incomeLabel = Ui.find(card, "Income")
 	extraLabel = Ui.find(card, "Extra")
+	-- One effect per line (mutation, passive, season); the card grows to fit.
+	extraLabel.TextWrapped = true
+	extraLabel.Size = UDim2.new(1, 0, 0, 0)
+	extraLabel.AutomaticSize = Enum.AutomaticSize.Y
 end
 
 function HoverController:Start()

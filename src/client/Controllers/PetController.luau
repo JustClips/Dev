@@ -17,8 +17,10 @@ local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
+local PetPassives = require(Shared.PetPassives)
 local Weights = require(Shared.Config.Weights)
 local World = require(Shared.Config.World)
+local State = require(script.Parent.Parent.State)
 
 local PARK_SCALE = 1.4
 local ACTIVE_DISTANCE = 230 -- camera focus to base centre
@@ -404,6 +406,85 @@ local function cycleRainbows(now: number)
 	end
 end
 
+-- Mutated pets "in season" (their weather or moon is live, shared/PetPassives) sparkle
+-- and glow in their mutation's colour.
+local function setSeasonFx(model: Model, mutation: string?, on: boolean)
+	local rootPart = model.PrimaryPart
+	if not rootPart then
+		return
+	end
+	local fx = rootPart:FindFirstChild("SeasonFx")
+	if not on then
+		if fx then
+			fx:Destroy()
+		end
+		local light = rootPart:FindFirstChild("SeasonLight")
+		if light then
+			light:Destroy()
+		end
+		return
+	end
+	if fx then
+		return
+	end
+	local def = mutation and Eggs.MutationByName[mutation]
+	local color = if def then def.Color else Color3.new(1, 1, 1)
+	local sparkles = Instance.new("ParticleEmitter")
+	sparkles.Name = "SeasonFx"
+	sparkles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	sparkles.Color = ColorSequence.new(color, Color3.new(1, 1, 1))
+	sparkles.LightEmission = 1
+	sparkles.Rate = 8
+	sparkles.Lifetime = NumberRange.new(0.8, 1.4)
+	sparkles.Speed = NumberRange.new(1.5, 3)
+	sparkles.SpreadAngle = Vector2.new(180, 180)
+	sparkles.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0) })
+	sparkles.Parent = rootPart
+	local light = Instance.new("PointLight")
+	light.Name = "SeasonLight"
+	light.Color = color
+	light.Brightness = 1.5
+	light.Range = 9
+	light.Parent = rootPart
+end
+
+-- Every couple of seconds: sparkle in-season pets, and tell the player when theirs power up.
+local lastSeasonKey = ""
+local function updateSeasons()
+	local seasons = PetPassives.seasons()
+	for _, park in parks do
+		for _, pet in park.pets do
+			local mutation = pet.model:GetAttribute("Mutation") :: string?
+			setSeasonFx(pet.model, mutation, mutation ~= nil and PetPassives.inSeason(mutation, seasons))
+		end
+	end
+	-- "Your 2 Disco pets are in season: passives x3!"
+	local counts: { [string]: number } = {}
+	local data = State.data
+	for _, pet in (data and data.Pets or {}) :: any do
+		if pet.Placed and pet.Mutation and PetPassives.inSeason(pet.Mutation, seasons) then
+			counts[pet.Mutation] = (counts[pet.Mutation] or 0) + 1
+		end
+	end
+	local names = {}
+	for mutation in counts do
+		table.insert(names, mutation)
+	end
+	table.sort(names)
+	local key = table.concat(names, ",")
+	if key ~= lastSeasonKey then
+		lastSeasonKey = key
+		for _, mutation in names do
+			local def = Eggs.MutationByName[mutation]
+			local n = counts[mutation]
+			C.HudController:Toast(
+				`Your {if n > 1 then `{n} ` else ""}{def.Label} pet{if n > 1 then "s are" else " is"} IN SEASON: passive x{PetPassives.SeasonMult}!`,
+				"Good"
+			)
+		end
+	end
+end
+
 function PetController:Init(controllers)
 	C = controllers
 	root = Instance.new("Folder")
@@ -421,6 +502,12 @@ function PetController:Start()
 			watchBase(i, base)
 		end
 	end
+	task.spawn(function()
+		while true do
+			updateSeasons()
+			task.wait(2)
+		end
+	end)
 	local rainbowClock = 0
 	RunService.Heartbeat:Connect(function(dt)
 		local camera = Workspace.CurrentCamera

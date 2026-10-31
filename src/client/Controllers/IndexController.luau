@@ -110,7 +110,7 @@ local function renderDetail(data)
 	local zone = Zones.ById[def.Zone or "Landing"]
 	local passive = PetPassives.describe(def.Id)
 	hint.Text = if known
-		then (if passive then `{passive} (pet passive, works while placed)` else "Hatched! Golden and Rainbow ones earn even more.")
+		then (if passive then `{passive} (works while placed, mutations make it stronger)` else "Hatched! Golden and Rainbow ones earn even more.")
 		else `Hatch a {def.Rarity} egg from {zone and zone.Name or "the Backyard"} to find it.`
 end
 

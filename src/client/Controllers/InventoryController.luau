@@ -67,7 +67,7 @@ local function describe(entry: BagItems.Entry, data): string
 		local pet = data.Pets[entry.id]
 		local def = Aliens.ById[pet.Id]
 		local passive = def and def.Passive
-		local short = PetPassives.short(pet.Id, pet.Huge)
+		local short = PetPassives.short(pet.Id, pet.Huge, pet.Mutation, PetPassives.seasons())
 		return `{entry.name} · {entry.rarity} · {Weights.format(BagItems.petWeight(pet))}`
 			.. (if passive and short then ` · {passive.Name}: {short}` else "")
 	elseif entry.kind == "Egg" then
@@ -130,7 +130,7 @@ local function tileFor(entry: BagItems.Entry, data): TextButton
 	count.Text = `x{entry.count}`
 	if entry.kind == "Pet" then
 		local pet = data.Pets[entry.id]
-		local passive = PetPassives.short(pet.Id, pet.Huge)
+		local passive = PetPassives.short(pet.Id, pet.Huge, pet.Mutation, PetPassives.seasons())
 		passiveLabel.Visible = passive ~= nil
 		passiveLabel.Text = passive or ""
 	end

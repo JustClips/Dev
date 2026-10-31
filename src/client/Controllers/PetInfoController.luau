@@ -55,7 +55,17 @@ local function fill(uid: string): boolean
 	local mutation = pet.Mutation and Eggs.MutationByName[pet.Mutation]
 	local mutationLabel = Ui.find(gui, "Window.Mutation") :: TextLabel
 	if mutation then
-		mutationLabel.Text = `{mutation.Label}: {mutation.IncomeMult}x cash`
+		-- "Disco: 3x cash, 2x passive (x3 during Disco)" / "... · IN SEASON!"
+		local text = `{mutation.Label}: {mutation.IncomeMult}x cash`
+		if mutation.PassiveMult then
+			text ..= `, {mutation.PassiveMult}x passive`
+		end
+		if PetPassives.inSeason(pet.Mutation, PetPassives.seasons()) then
+			text ..= " · IN SEASON!"
+		elseif mutation.Seasons then
+			text ..= ` (x{PetPassives.SeasonMult} {PetPassives.seasonText(pet.Mutation)})`
+		end
+		mutationLabel.Text = text
 		mutationLabel.TextColor3 = mutation.Color
 	else
 		mutationLabel.Text = if pet.Huge then "Huge: 2x passive" else "No mutation"
@@ -65,7 +75,7 @@ local function fill(uid: string): boolean
 	local passive = def.Passive
 	if passive then
 		Ui.find(box, "Title").Text = `Passive: {passive.Name}`
-		Ui.find(box, "Text").Text = PetPassives.short(pet.Id, pet.Huge) or ""
+		Ui.find(box, "Text").Text = PetPassives.short(pet.Id, pet.Huge, pet.Mutation, PetPassives.seasons()) or ""
 	else
 		Ui.find(box, "Title").Text = "Passive"
 		Ui.find(box, "Text").Text = "None"
