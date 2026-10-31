@@ -406,7 +406,7 @@ local function buildSkyClouds(): boolean
 			part = part,
 			rainEmitter = rainEmitter,
 			start = Vector2.new(seeded:NextNumber(0, CLOUD_TILE), seeded:NextNumber(0, CLOUD_TILE)),
-			speed = seeded:NextNumber(9, 15),
+			speed = seeded:NextNumber(4.5, 7.5),
 			y = seeded:NextNumber(CLOUD_ALTITUDE.Min, CLOUD_ALTITUDE.Max),
 			yaw = seeded:NextNumber(-0.5, 0.5),
 			index = i,
