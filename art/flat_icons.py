@@ -814,6 +814,163 @@ def _turbovac():
     return out
 
 
+# Tools added 2026-10-31 (ForgeUI out of credits again, so drawn here like the others).
+def _sparkles(points, col=WHITE):
+    return [poly(star_points(x, y, r, r * 0.42, n=4, rot=0), col, shade=False) for x, y, r in points]
+
+
+@fit_icon("Tool_Rake")
+def _rake():
+    out = [rect(228, 0, 56, 330, WOOD, r=28), rect(222, 40, 68, 120, DGREEN, r=30)]
+    for i in range(7):
+        ang = -42 + i * 14
+        t = rect(246, 330, 20, 190, GREEN if i % 2 else LEAF, r=10)
+        t.attrs["transform"] = "rotate(%s 256 330)" % ang
+        out.append(t)
+    out += [rect(196, 300, 120, 56, GREY, r=18), hl(248, 90, 7, 40, rot=0, opacity=0.5)]
+    out = turn(out, 30)
+    out += leaf(150, 470, 56, -30, ORANGE) + leaf(330, 500, 48, 40, RED)
+    return out
+
+
+@fit_icon("Tool_PushBroom")
+def _pushbroom():
+    out = [rect(228, 0, 56, 340, RED, r=28), rect(222, 30, 68, 120, DGREY, r=30)]
+    out += [rect(60, 330, 392, 80, BROWN, r=20)]
+    for i in range(9):
+        out.append(rect(74 + i * 42, 400, 34, 90, "#4A4038" if i % 2 else "#5E5248", r=8))
+    out += [stroke_line("M 256 300 L 150 340 M 256 300 L 362 340", width=W * 1.2, color=GREY),
+            hl(248, 100, 7, 40, rot=0, opacity=0.5), hl(110, 352, 26, 8, rot=0)]
+    return turn(out, 30)
+
+
+def _blower_body(body, body_d, tube, nozzle, handle=DGREY):
+    return [
+        stroke_line("M 110 220 C 110 90 270 90 270 220", width=W * 3.2),
+        stroke_line("M 110 220 C 110 90 270 90 270 220", width=W * 1.4, color=handle),
+        rect(260, 250, 170, 74, tube, r=30, rot=14),
+        rect(410, 270, 46, 96, nozzle, r=14, rot=14),
+        rect(40, 190, 280, 210, body, r=80),
+        rect(40, 330, 280, 70, body_d, r=34, shade=False),
+        circle(150, 280, 62, DGREY, body=False, shade=False),
+        circle(150, 280, 34, GREY, body=False, shade=False, line=False),
+        stroke_line("M 150 230 L 150 330 M 100 280 L 200 280", width=10, color=DGREY),
+        hl(80, 240, 16, 34, rot=20),
+    ]
+
+
+@fit_icon("Tool_LeafVac")
+def _leafvac():
+    out = [ellipse(170, 450, 150, 80, TAN), stroke_line("M 60 450 L 280 450", width=10, color=darker(TAN, 0.7))]
+    out += _blower_body(GREEN, DGREEN, DGREEN, DGREY)
+    out += leaf(540, 300, 54, 70, ORANGE) + leaf(600, 400, 46, 140, YELLOW)
+    return out
+
+
+@fit_icon("Tool_PressureWasher")
+def _washer():
+    out = [
+        stroke_line("M 120 200 C 120 90 260 90 260 200", width=W * 3.2),
+        stroke_line("M 120 200 C 120 90 260 90 260 200", width=W * 1.4, color=DGREY),
+        rect(250, 268, 250, 40, STEEL, r=20, rot=14),
+        rect(330, 270, 70, 60, DGREY, r=18, rot=14),
+        rect(480, 318, 56, 44, YELLOW, r=12, rot=14),
+        rect(50, 180, 250, 220, BLUE, r=60),
+        rect(90, 150, 110, 60, "#BFE6FF", r=24),
+        circle(220, 300, 46, WHITE, body=False, shade=False),
+        stroke_line("M 220 300 L 244 276", width=10, color=RED),
+        hl(90, 240, 16, 34, rot=20),
+    ]
+    for dy in (-40, 0, 40):
+        out.append(stroke_line("M 560 %s L 660 %s" % (360 + dy * 0.3, 380 + dy), width=W * 1.4))
+        out.append(stroke_line("M 560 %s L 660 %s" % (360 + dy * 0.3, 380 + dy), width=W * 0.6, color=SKY))
+    return out
+
+
+@fit_icon("Tool_StormBlower")
+def _stormblower():
+    out = _blower_body(NAVY, darker(NAVY, 0.8), DGREY, YELLOW)
+    out.append(poly([(200, 200), (160, 280), (200, 280), (176, 350), (250, 260), (210, 260), (236, 200)], YELLOW, shade=False))
+    for y in (230, 300, 370):
+        out.append(stroke_line("M 480 %s L 600 %s" % (y, y - 10), width=W * 1.6))
+        out.append(stroke_line("M 480 %s L 600 %s" % (y, y - 10), width=W * 0.6, color=WHITE))
+    return out
+
+
+def _canister_vac(body, glass, head, head_d, extra):
+    out = [
+        stroke_line("M 256 30 L 256 200", width=W * 3),
+        stroke_line("M 256 30 L 256 200", width=W * 1.3, color=DGREY),
+        rect(206, -30, 100, 70, DGREY, r=30),
+        rect(176, 150, 160, 250, body, r=60),
+        rect(202, 196, 108, 120, glass, r=30, shade=False),
+    ] + extra + [
+        rect(110, 380, 292, 100, head, r=36),
+        rect(130, 452, 252, 30, head_d, r=14, shade=False),
+        hl(150, 404, 24, 9, rot=0),
+    ]
+    return turn(out, 18, 256, 300)
+
+
+@fit_icon("Tool_TornadoVac")
+def _tornado():
+    swirl = [stroke_line("M 220 220 C 300 220 300 260 240 262 C 190 266 200 300 260 300", width=10, color="#28B4B4")]
+    out = _canister_vac("#28B4B4", "#D8FAFF", "#1E8C8C", "#78FFF0", swirl)
+    for y, x0 in ((190, 40), (270, 10), (350, 40)):
+        out.append(stroke_line("M %s %s L %s %s" % (x0, y, x0 + 80, y), width=W * 1.8))
+        out.append(stroke_line("M %s %s L %s %s" % (x0, y, x0 + 80, y), width=W * 0.7, color="#78FFF0"))
+    return out
+
+
+@fit_icon("Tool_GalaxyVacuum")
+def _galaxy():
+    stars = _sparkles([(230, 230, 18), (280, 280, 12), (240, 300, 9)], YELLOW)
+    out = _canister_vac("#4B2A8C", "#1E0F3C", GOLD, PINK, stars)
+    out += _sparkles([(70, 120, 40), (460, 150, 30), (60, 420, 26)], YELLOW)
+    return out
+
+
+@fit_icon("Tool_GoldenBroom")
+def _goldenbroom():
+    parts = broom_parts()
+    swap = {WOOD: GOLD, STRAW: "#FFE680", STRAW_D: GOLD, RED: "#E83A5A"}
+    for sh in parts:
+        if sh.fill in swap:
+            sh.fill = swap[sh.fill]
+        col = sh.attrs.get("stroke")
+        if col in swap:
+            sh.attrs["stroke"] = swap[col]
+    out = turn(parts, 32)
+    return out + _sparkles([(80, 90, 46), (450, 120, 34), (480, 420, 40)])
+
+
+@fit_icon("Tool_DiamondMop")
+def _diamondmop():
+    out = [rect(228, 0, 56, 300, WHITE, r=28)]
+    for i, (dx, ang) in enumerate(((-88, 20), (-52, 11), (-18, 3), (18, -3), (52, -11), (88, -20))):
+        x = 256 + dx
+        st = poly([(x - 22, 300), (x + 22, 300), (x + 16, 440), (x, 500), (x - 16, 440)], SKY if i % 2 == 0 else "#C8F4FF")
+        st.attrs["transform"] = "rotate(%s %s %s)" % (ang, x, 300)
+        out.append(st)
+    out += [rect(170, 268, 172, 70, BLUE, r=22), hl(248, 80, 7, 50, rot=0, opacity=0.5)]
+    out = turn(out, 30)
+    return out + _sparkles([(470, 300, 42), (90, 120, 30)])
+
+
+@fit_icon("Tool_RainbowDuster")
+def _rainbow():
+    out = [rect(232, 0, 48, 300, WHITE, r=24), rect(226, 30, 60, 100, PURPLE, r=26)]
+    cols = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK]
+    # a fluffy fan of feathers, one per rainbow colour
+    for k, col in enumerate(cols):
+        ang = -54 + k * 18
+        f = ellipse(256, 410, 44, 120, col)
+        f.attrs["transform"] = "rotate(%s 256 300)" % ang
+        out.append(f)
+    out += [rect(212, 270, 88, 50, GOLD, r=16), hl(248, 90, 7, 40, rot=0, opacity=0.5)]
+    return turn(out, 30)
+
+
 @fit_icon("Tools")  # the Gear button / window
 def _gear():
     wrench = [

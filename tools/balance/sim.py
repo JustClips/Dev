@@ -362,16 +362,23 @@ class Player:
 
     # ---------------------------------------------------------- stats
     def passive_bonus(self) -> dict:
-        seen, out = set(), {}
+        """shared/PetPassives: each kind counts once (its best copy), Huge x2, mutation
+        PassiveMult; in-season weather boosts are left out (they come and go)."""
+        best = {}
         for p in self.pets:
             d = p["def"]
             pas = d.get("Passive")
-            if not pas or d["Id"] in seen:
+            if not pas:
                 continue
-            seen.add(d["Id"])
-            out[pas["Stat"]] = out.get(pas["Stat"], 0) + pas["Value"] * (2 if p.get("huge") else 1)
+            v = pas["Value"] * (2 if p.get("huge") else 1) * p.get("pmult", 1.0)
+            if v > best.get(d["Id"], (None, 0))[1]:
+                best[d["Id"]] = (pas["Stat"], v)
+        out = {}
+        for stat, v in best.values():
+            out[stat] = out.get(stat, 0) + v
         k = 1 + self.stat("PassivePower")
-        return {key: v * k for key, v in out.items()}
+        caps = {"Crit": 0.35, "ComboKeep": 0.6}
+        return {key: min(v * k, caps.get(key, math.inf)) for key, v in out.items()}
 
     def stat(self, s: str, passive: dict | None = None) -> float:
         cache = self._stats
@@ -536,14 +543,16 @@ class Player:
         d = rng.choice(pool)
         luck = self.luck()
         inc = d["Income"] * WEIGHT_MULT * rng.uniform(0.85, 1.15)
+        pmult = 1.0
         for m in sorted(c.mutations, key=lambda m: m["Chance"], reverse=True):
             if rng.random() < min(1, luck / m["Chance"]):
                 inc *= m["IncomeMult"]
+                pmult = m.get("PassiveMult", 1.0)  # shared/PetPassives: mutations boost the passive
                 break
         huge = rng.random() < min(1, c.huge_chance * luck)
         if huge:
             inc *= c.huge_mult
-        pet = {"income": inc, "def": d, "huge": huge}
+        pet = {"income": inc, "def": d, "huge": huge, "pmult": pmult}
         if len(self.pets) < self.slots():
             self.pets.append(pet)
         else:

@@ -123,7 +123,7 @@ def rake(w, use, tid):
         lift = max(0.0, S(u)) ** 2        # lifted while going back out
         return body(lean=-16 - 8 * pull, twist=-9 + 6 * S(u + 1.0), shift=(0, 0, -0.18 * pull),
                     head=10 + 4 * pull, roll=-2 * S(u),
-                    right=(32 + 14 * pull + 6 * lift, 0, -26, 40 - 18 * pull))
+                    right=(32 + 10 * pull + 3 * lift, 0, -26, 40 - 14 * pull))
     b = breathe(w)
     return body(lean=-13 + b["lean"], twist=-9 + b["twist"], shift=b["shift"], head=9 + 1.5 * S(w + 1),
                 right=(30, 0, -26, 38))
@@ -217,6 +217,8 @@ def stance_for(fam):
     return fn
 
 
+# Highest the business end may lift off the ground during a stroke (standing).
+MAX_LIFT = {"scrub": 0.25, "sweep": 0.35, "rake": 0.45, "mop": 0.2, "push": 0.2, "vacuum": 0.25, "blower": 9}
 DROP = {"scrub": 0.42, "sweep": 0.3, "rake": 0.28, "mop": 0.3, "push": 0.3, "blower": 0.25, "vacuum": 0.25}
 
 
@@ -237,8 +239,13 @@ def legs(hip, feet, guess=None):
             f = r15.solve(p)
             # ankle = lower leg frame * C0 of the ankle joint
             a = (f[side + "LowerLeg"] @ r15.T(0, -0.596, 0))[:3, 3]
+            k = (f[side + "UpperLeg"] @ r15.T(0, -0.449, 0))[:3, 3]
+            h = (f["LowerTorso"] @ r15.T(0.5 if side == "Right" else -0.5, -0.2, 0))[:3, 3]
             e = a - target
-            return float(e @ e) + 1e-5 * (v[1] - fy * 0.5) ** 2 + 1e-6 * v[3] ** 2
+            # knees point out over the toes (no knock knees) and forward (never backward)
+            kx = k[0] - (0.35 * h[0] + 0.65 * a[0])
+            back = max(0.0, k[2] - min(h[2], a[2]) + 0.05)
+            return float(e @ e) + 0.05 * kx * kx + 0.5 * back * back + 1e-5 * (v[1] - fy * 0.5) ** 2 + 1e-6 * v[3] ** 2
         x0 = g if g is not None else np.array([20.0, fy * 0.5, 0.0, -40.0])
         best = minimize(cost, x0, method="L-BFGS-B",
                         bounds=[(-60, 100), (-60, 60), (-40, 40), (-150, 0)], options={"ftol": 1e-14, "gtol": 1e-10})
@@ -274,7 +281,7 @@ FAM = {
     "mop": dict(aim=("ground", None, 0), two=True, hold=2.6, use=1.2),
     "push": dict(aim=("ground", None, 0), two=True, hold=2.6, use=0.8),
     "blower": dict(aim=("at", (0.6, r15.GROUND, -5.0)), two=True, left=(-0.42, -0.3, -0.1), hold=2.6, use=1.7),
-    "vacuum": dict(aim=("at", (0.4, r15.GROUND + 0.2, -4.6)), two=True, left=(-0.48, -0.3, 0.0), hold=2.6, use=1.0),
+    "vacuum": dict(aim=("ground", None, -8), two=True, left=(-0.48, -0.3, 0.0), hold=2.6, use=1.0),
 }
 # A few tools stroke faster or slower than their family.
 SPEED = {"GoldenBroom": 0.9, "RainbowDuster": 0.85, "TurboVacuum": 0.75, "GalaxyVacuum": 0.8, "TornadoVac": 0.85,
@@ -401,7 +408,34 @@ def frames_for(st, M, pts, use, duration, crouch):
     for i in range(n + 1):
         w = 2 * math.pi * i / n
         poses = st["pose"](w, use)
-        solve_p = with_hips(poses, st, w) if crouch else poses
+        solve_p = with_hips(poses, st, w)
+        if st["aim"][0] == "ground":
+            # Never through the floor: raise the arm (shoulder forward, elbow a little
+            # straighter) just enough that the head stays on the ground in the crouch.
+            base_r = poses["RightUpperArm"][1]
+            base_e = poses["RightLowerArm"][1][0]
+
+            def tip_y(k):
+                p = dict(solve_p)
+                p["RightUpperArm"] = ((0, 0, 0), (base_r[0] + D(k), base_r[1], base_r[2]))
+                p["RightLowerArm"] = ((0, 0, 0), (base_e - D(0.5 * k), 0, 0))
+                return tool_world(r15.solve(p), M, grip, tip)[1]
+            floor = r15.GROUND + 0.02
+            ceil = floor + (MAX_LIFT[st["family"]] if use else 0.6)
+            y0, k = tip_y(0), 0.0
+            if y0 < floor or y0 > ceil:
+                goal = floor if y0 < floor else ceil
+                lo_k, hi_k = (0.0, 45.0) if y0 < floor else (-45.0, 0.0)
+                for _ in range(18):
+                    mid = (lo_k + hi_k) / 2
+                    lo_k, hi_k = (mid, hi_k) if tip_y(mid) < goal else (lo_k, mid)
+                k = hi_k if y0 < floor else lo_k
+            if k:
+                for p in (poses, solve_p):
+                    p["RightUpperArm"] = ((0, 0, 0), (base_r[0] + D(k), base_r[1], base_r[2]))
+                    p["RightLowerArm"] = ((0, 0, 0), (base_e - D(0.5 * k), 0, 0))
+        if not crouch:
+            solve_p = poses
         if st["two"]:
             f = r15.solve(solve_p)
             target = tool_world(f, M, grip, grip2)
@@ -516,14 +550,25 @@ def main():
             line = line.rstrip("\n")
             if line.startswith("\t") and " = CFrame" in line:
                 old[line.strip().split(" ")[0]] = line
+    todo = [tid for tid in FAMILY if f"Tool_{tid}" in meta and (not only or tid in only)]
+    from multiprocessing import Pool
+    with Pool(min(8, os.cpu_count() or 2)) as pool:
+        done = dict(pool.starmap(build_tool, [(tid, meta, plot_dir) for tid in todo]))
     for tid in FAMILY:
-        if f"Tool_{tid}" not in meta:
+        if tid in done:
+            lua.append(done[tid])
+        elif tid in old:
+            lua.append(old[tid])
+        else:
             print("skip", tid, "(no meta)")
-            continue
-        if only and tid not in only:
-            if tid in old:
-                lua.append(old[tid])
-            continue
+    lua.append("}")
+    with open(GRIPS_LUA, "w") as fh:
+        fh.write("\n".join(lua) + "\n")
+    print("wrote", GRIPS_LUA)
+
+
+def build_tool(tid, meta, plot_dir):
+    if True:
         st = style(tid)
         pts = tool_points(meta, tid, st)
         M = solve_grip(st, pts[0], pts[2])
@@ -539,16 +584,12 @@ def main():
         lo_c = min(t[1] for t in tips_crouch) - r15.GROUND
         hi_c = max(t[1] for t in tips_crouch) - r15.GROUND
         lo_w = min(t[1] for t in tips_walk) - r15.GROUND
-        print(f"{tid:15s} {st['family']:7s} tip above ground: standing {lo_c:+.2f}..{hi_c:+.2f}, walking from {lo_w:+.2f}"
-              + (f", left hand off by up to {worst:.2f}" if st["two"] else ""))
-        lua.append(f"\t{tid} = {rot_lua(M)},")
+        print(flush=True, *[f"{tid:15s} {st['family']:7s} tip above ground: standing {lo_c:+.2f}..{hi_c:+.2f}, walking from {lo_w:+.2f}"
+              + (f", left hand off by up to {worst:.2f}" if st["two"] else "")])
         if plot_dir:
             os.makedirs(plot_dir, exist_ok=True)
             plot(plot_dir, tid, st, M, pts, use_frames, stance)
-    lua.append("}")
-    with open(GRIPS_LUA, "w") as fh:
-        fh.write("\n".join(lua) + "\n")
-    print("wrote", GRIPS_LUA)
+        return tid, f"\t{tid} = {rot_lua(M)},"
 
 
 if __name__ == "__main__":
