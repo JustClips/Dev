@@ -1096,6 +1096,21 @@ def _treasure_map():
     ]
 
 
+@icon("Quest")  # a parchment scroll with a big "!" (the Quests button, 2026-10-31)
+def _quest():
+    return [
+        rect(112, 96, 288, 320, CREAM),
+        stroke_line("M 150 140 L 150 372", width=W * 0.5, color=TAN),
+        rect(78, 62, 356, 68, TAN, r=34),
+        rect(78, 382, 356, 68, TAN, r=34),
+        circle(112, 96, 16, BROWN, body=False, shade=False), circle(400, 96, 16, BROWN, body=False, shade=False),
+        circle(112, 416, 16, BROWN, body=False, shade=False), circle(400, 416, 16, BROWN, body=False, shade=False),
+        rect(220, 150, 72, 148, YELLOW, r=30),
+        circle(256, 344, 36, YELLOW),
+        hl(256, 82, 70, 9, rot=0),
+    ]
+
+
 @icon("LuckyClover")
 def _lucky_clover():
     out = ICONS["Luck"]()

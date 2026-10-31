@@ -358,12 +358,13 @@ local function revealRail(data)
 	set(el.MoonPanel, done)
 	set(el.Right, done)
 	set((el.BoostTemplate :: Instance).Parent :: GuiObject, done)
-	-- Right column (Eggs / Pets / Gear): only Gear at its step.
+	-- Right column (Eggs / Pets / Gear / Quests): only Gear at its step.
 	local buttons = Ui.screen("BasePanels"):FindFirstChild("Buttons") :: GuiObject?
 	if buttons then
 		set(buttons, done or key == "Shop")
 		set(buttons:FindFirstChild("EggsButton") :: GuiObject?, done)
 		set(buttons:FindFirstChild("PetsButton") :: GuiObject?, done)
+		set(buttons:FindFirstChild("QuestsButton") :: GuiObject?, done)
 	end
 	if changed then
 		task.defer(function()
@@ -690,7 +691,7 @@ local RAIL_CENTRE = -30
 -- Phones: how far the side button columns sit below their top spot (gui px before scale).
 HudController.SIDE_DROP = 44
 local SIDE_DROP = HudController.SIDE_DROP
-local STACK_BUTTONS, STACK_GAP, STACK_RIGHT = 324, 16, 50
+local STACK_BUTTONS, STACK_GAP, STACK_RIGHT = 432, 16, 50
 -- The Lucky Wheel button (top right, fixed size like the ADMIN button).
 local SPIN_W, SPIN_H, ADMIN_H = 104, 38, 34
 -- Phones, admins only: the Spin button sits under ADMIN, so the right-hand columns start

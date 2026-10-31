@@ -302,7 +302,7 @@ function BasePanelsController:Show(name: string?)
 	render()
 end
 
--- Eggs / Pets / Tools stacked on the right edge. Phones: from the top right corner, hugging
+-- Eggs / Pets / Gear / Quests stacked on the right edge. Phones: from the top right corner, hugging
 -- the edge (Ui.edges), with HudController's boost chips in a column left of them; PC:
 -- above the next-tool card.
 -- Each button is placed by its centre instead of by a list layout, so a button growing on
@@ -318,6 +318,8 @@ local function layoutButtons(_scale: number, compact: boolean)
 	petsButton.AnchorPoint = Vector2.new(0.5, 0.5)
 	local toolsButton = buttons:FindFirstChild("ToolsButton") :: GuiObject
 	toolsButton.AnchorPoint = Vector2.new(0.5, 0.5)
+	local questsButton = buttons:FindFirstChild("QuestsButton") :: GuiObject
+	questsButton.AnchorPoint = Vector2.new(0.5, 0.5)
 	local s = _scale
 	if compact then
 		local screenGui = buttons:FindFirstAncestorOfClass("ScreenGui") :: ScreenGui
@@ -328,10 +330,12 @@ local function layoutButtons(_scale: number, compact: boolean)
 		local top = math.max(4, (C.HudController.barY or 10) - math.ceil(4 * s)) + math.ceil(C.HudController.SIDE_DROP * s)
 		top = math.max(top, 8 + (C.HudController.RightDrop or 0))
 		buttons.Position = UDim2.new(1, -right, 0, top)
-		buttons.Size = UDim2.fromOffset(80, 280)
+		-- 8 px gaps (not 16) so four buttons stay clear of the jump button on short phones.
+		buttons.Size = UDim2.fromOffset(80, 344)
 		eggsButton.Position = UDim2.fromOffset(40, 40)
-		petsButton.Position = UDim2.fromOffset(40, 136)
-		toolsButton.Position = UDim2.fromOffset(40, 232)
+		petsButton.Position = UDim2.fromOffset(40, 128)
+		toolsButton.Position = UDim2.fromOffset(40, 216)
+		questsButton.Position = UDim2.fromOffset(40, 304)
 		-- Popups open to the left of the column.
 		for _, panel in panels do
 			panel.AnchorPoint = Vector2.new(1, 0)
@@ -342,10 +346,11 @@ local function layoutButtons(_scale: number, compact: boolean)
 		-- as the left rail (HudController.rightStackTop).
 		buttons.AnchorPoint = Vector2.new(1, 0)
 		buttons.Position = UDim2.new(1, -14, 0.5, C.HudController.rightStackTop(s))
-		buttons.Size = UDim2.fromOffset(80, 324)
+		buttons.Size = UDim2.fromOffset(80, 432)
 		eggsButton.Position = UDim2.fromOffset(40, 68)
 		petsButton.Position = UDim2.fromOffset(40, 176)
 		toolsButton.Position = UDim2.fromOffset(40, 284)
+		questsButton.Position = UDim2.fromOffset(40, 392)
 		-- Popups open to the left of the buttons.
 		for _, panel in panels do
 			panel.AnchorPoint = Vector2.new(1, 0.5)
@@ -393,6 +398,10 @@ function BasePanelsController:Start()
 	Ui.button(Ui.find(gui, "Buttons.ToolsButton"), function()
 		BasePanelsController:Show(nil)
 		C.GarageController:Toggle()
+	end)
+	Ui.button(Ui.find(gui, "Buttons.QuestsButton"), function()
+		BasePanelsController:Show(nil)
+		C.QuestController:Open(nil)
 	end)
 	for name, screen in screens do
 		local function close()

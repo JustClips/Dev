@@ -10889,6 +10889,7 @@ Assets.Images = {
 	Icon_PotionMegaCash = "rbxassetid://132025505325695",
 	Icon_PotionSpeed = "rbxassetid://90939304609976",
 	Icon_PotionSuperLuck = "rbxassetid://124429159561733",
+	Icon_Quest = "rbxassetid://123632428336784",
 	Icon_Rebirth = "rbxassetid://95864030518587",
 	Icon_Sell = "rbxassetid://102301398920075",
 	Icon_Shop = "rbxassetid://87494234333633",

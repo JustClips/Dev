@@ -492,7 +492,11 @@ local function questStall(parent: Instance, cf: CFrame)
 		block(model, "Awning", Vector3.new(1.13, 0.25, 6.2), cf * CFrame.new(x, 8.3, -0.8) * CFrame.Angles(math.rad(-8), 0, 0),
 			if k % 2 == 0 then blue else yellow, nil, { CanCollide = false })
 	end
-	sign(model, "QuestSign", cf * CFrame.new(0, 10.2, -0.4), 8, 2.2, Color3.fromRGB(110, 190, 255), "QUESTS", "Jobs and rewards")
+	-- Like the trader's: the sign rests on the awning with two legs, not floating.
+	sign(model, "QuestSign", cf * CFrame.new(0, 9.75, -0.4), 8, 2.2, Color3.fromRGB(110, 190, 255), "QUESTS", "Jobs and rewards")
+	for _, x in { -2.8, 2.8 } do
+		block(model, "SignLeg", Vector3.new(0.45, 3.2, 0.45), cf * CFrame.new(x, 9.3, 0.15), WOOD_DARK, M.Wood, { CanCollide = false })
+	end
 	-- Notice board behind him, pinned with job notes.
 	local boardCf = cf * CFrame.new(0, 4.6, 1.9)
 	block(model, "Board", Vector3.new(6.4, 3.6, 0.3), boardCf, Color3.fromRGB(176, 120, 72), M.Wood, { CanCollide = false })

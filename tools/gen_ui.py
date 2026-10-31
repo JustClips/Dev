@@ -945,13 +945,14 @@ def popup_list(screen_name, title, ico, header_color, head_button, row_children,
 
 
 def base_panels():
-    # Eggs / Pets / Tools buttons on the right edge (BasePanelsController lays them out:
-    # stacked on PC, a row at the top right on phones).
-    buttons = frame("Buttons", U(0, 80, 0, 324), U(1, -14, 0.5, -130), (1, 1), children=[
+    # Eggs / Pets / Gear / Quests buttons on the right edge (BasePanelsController lays them
+    # out: stacked on PC, a column from the top right on phones).
+    buttons = frame("Buttons", U(0, 80, 0, 432), U(1, -14, 0.5, -130), (1, 1), children=[
         autoscale(compact=0.88),
         side_button("EggsButton", "Eggs", "Egg", DANGER, 1),
         side_button("PetsButton", "Pets", "Alien", "#FF9A3C", 2),
         side_button("ToolsButton", "Gear", "Tools", "#4C8DFF", 3),
+        side_button("QuestsButton", "Quests", "Quest", "#9B6BFF", 4),
     ])
     write("BasePanels", screen([buttons], order=4))
     head = dict(size=U(0, 132, 0, 40), pos=U(1, -50, 0, 28), anchor=(1, 0.5))
