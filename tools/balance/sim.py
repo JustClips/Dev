@@ -34,7 +34,7 @@ WALK = 16  # studs/s
 TICKS = 10  # sweep ticks per second
 SELL_TRIP = 10.0  # seconds lost per sell (teleport to the dumps, pour, teleport back)
 SELL_TRIP_PASS = 1.5  # Sell Anywhere: one tap
-COMBO = 1.6  # average combo multiplier while sweeping (x1..x3)
+COMBO_RUN = 20.0  # seconds of steady sweeping before a kid breaks the combo (wanders, opens a menu)
 GOLDEN = 1.12  # golden piles and dust bunnies on top
 EFFICIENCY = 0.5  # kids on phones wander, chat, open menus (tuned for mobile, PC players go faster)
 FIELD_SHARE = 0.5  # share of a zone's regrowth one player gets (others sweep too)
@@ -272,6 +272,18 @@ class Config:
                     z["Tiles"] = w * h / z["TileSize"] ** 2
 
 
+def combo_avg(eco: dict, rate: float, seconds: float) -> float:
+    """Average Economy.comboMult over a run of `seconds` clearing `rate` piles a second
+    (1 + PerDouble * log2(1 + count / Pivot), count = rate * t, back to 0 after the run)."""
+    c = eco["Combo"]
+    a = rate / c["Pivot"]
+    if a * seconds < 1e-9 or seconds <= 0:
+        return 1.0
+    x = 1 + a * seconds
+    integral = (x * math.log(x) - (x - 1)) / (a * math.log(2))
+    return 1 + c["PerDouble"] * integral / seconds
+
+
 # ---------------------------------------------------------------- the player
 @dataclass
 class Spender:
@@ -419,7 +431,10 @@ class Player:
         value_m = 1 + self.stat("DustValue", pas)
         crit = self.stat("Crit", pas) * (5 + self.stat("CritMult", pas) - 1)
         gold = 1 + (GOLDEN - 1) * (1 + self.stat("Golden", pas))
-        combo = COMBO + 0.15 * self.stat("ComboMax", pas) + 0.05 * self.stat("ComboTime", pas)
+        # Combo runs end on every sell trip and whenever a kid stops (COMBO_RUN); passives'
+        # ComboTime makes a pause less likely to break it.
+        hold = c.eco["Combo"]["Timeout"] + self.stat("ComboTime", pas)
+        run_len = COMBO_RUN * hold / c.eco["Combo"]["Timeout"]
         walk = WALK + self.stat("Speed", pas) + (10 if self.boost("Speed") else 0)
         tool = c.tools[self.tier - 1]
         gear = [(tool["Radius"], tool["Power"], tool["Capacity"], walk)]
@@ -446,6 +461,8 @@ class Player:
                 trash = 1 + z.get("TrashPercent", 0) / 100 * (c.eco["TrashMult"] - 1)
                 fill = cap / units
                 share = fill / (fill + trip)
+                active = tiles / max(eff, 1e-9)  # piles a second while actually sweeping
+                combo = combo_avg(c.eco, active, min(run_len, fill))
                 cps = units * z["CashMult"] * value_m * combo * gold * trash * (1 + crit) * share
                 if cps > best[0]:
                     best = (cps, tiles * share, trip, z["Id"])

@@ -18,7 +18,7 @@ local Economy = {
 	},
 	-- Robux shortcuts that speed you up without skipping the game:
 	SkipRebirthMinShare = 0.3, -- Skip Rebirth needs 30% of the rebirth cost saved up
-	CarRobuxMinTier = 4, -- Robux cars (unlock or rent) need the Leaf Blower first
+	CarRobuxMinTier = 6, -- Robux cars (unlock or rent) need the Leaf Blower first
 	RebirthCostGrowth = 1.6,
 	RebirthCashBonus = 0.5, -- +50% cash per rebirth
 	RebirthsPerExtraSlot = 2,
@@ -83,7 +83,7 @@ local Economy = {
 	-- Products
 	-- On sale for Hours after you first see it (a "Leaves in" timer shows), and never once
 	-- you reach tool HideAtToolTier or rebirth.
-	StarterPack = { Cash = 500, EggRarity = "Uncommon", Cash2xMinutes = 10, Hours = 2, HideAtToolTier = 5 },
+	StarterPack = { Cash = 500, EggRarity = "Uncommon", Cash2xMinutes = 10, Hours = 2, HideAtToolTier = 8 },
 	ServerLuckMinutes = 15,
 
 	-- Meteor Shower (GAME_PLAN §5.8)

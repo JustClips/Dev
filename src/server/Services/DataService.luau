@@ -15,7 +15,7 @@ local ProfileStore = require(script.Parent.Parent.Lib.ProfileStore)
 local MockDataStore = require(script.Parent.Parent.Lib.MockDataStore)
 
 local STORE_NAME = "PlayerData_v1"
-local CURRENT_VERSION = 3
+local CURRENT_VERSION = 4
 local RECEIPTS_KEPT = 100
 
 local TEMPLATE: Types.ProfileData = {
@@ -144,6 +144,21 @@ local MIGRATIONS: { [number]: (any) -> () } = {
 		end
 		data.Hatching = hatching
 		data.NextUid = nextUid
+	end,
+	-- v4 (2026-10-31): the tool ladder went from 6 to 16 tools, with new ones slotted in
+	-- between. Old tiers move to where the same tool sits now.
+	[3] = function(data)
+		local map = { 1, 2, 4, 6, 8, 10 }
+		local function remap(t: any): any
+			return if type(t) == "number" and map[t] then map[t] else t
+		end
+		data.ToolTier = remap(data.ToolTier or 1)
+		data.EquippedTool = remap(data.EquippedTool)
+		local owned = {}
+		for t = 1, data.ToolTier do
+			owned[t] = true
+		end
+		data.OwnedTools = owned
 	end,
 }
 

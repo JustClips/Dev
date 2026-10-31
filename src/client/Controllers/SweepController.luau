@@ -90,10 +90,10 @@ end
 
 -- Tool in hand: each tool has its own hold and use animation (Tool_<Id>_Hold / _Use, see
 -- art/anim/tool_anims.py); tools without them fall back to the broom pair.
-local currentPair: { hold: string, use: string }? = nil
+local currentPair: { hold: string, use: string, stance: string? }? = nil
 local toolActive = false
 
-local function animPair(char: Model?): { hold: string, use: string }?
+local function animPair(char: Model?): { hold: string, use: string, stance: string? }?
 	local tool = char and char:FindFirstChildOfClass("Tool")
 	local id = tool and tool:GetAttribute("ToolId")
 	if type(id) ~= "string" then
@@ -101,7 +101,8 @@ local function animPair(char: Model?): { hold: string, use: string }?
 	end
 	local hold, use = `Tool_{id}_Hold`, `Tool_{id}_Use`
 	if Assets.Animations[hold] and Assets.Animations[use] then
-		return { hold = hold, use = use }
+		local stance = `Tool_{id}_Stance`
+		return { hold = hold, use = use, stance = if Assets.Animations[stance] then stance else nil }
 	end
 	return { hold = "Player_Hold", use = "Player_Sweep" }
 end
@@ -122,7 +123,7 @@ local function setToolAnimation(equipped: boolean, sweeping: boolean)
 	if currentPair and pair and (pair.hold ~= currentPair.hold) then
 		-- Switched tools: put the old tool's animations away.
 		for name, t in tracks do
-			if name == currentPair.hold or name == currentPair.use then
+			if name == currentPair.hold or name == currentPair.use or name == currentPair.stance then
 				t:Stop(0.15)
 			end
 		end
@@ -132,7 +133,19 @@ local function setToolAnimation(equipped: boolean, sweeping: boolean)
 		return
 	end
 	setTrack(track(humanoid, pair.hold), equipped, 0.2, 0.2)
-	setTrack(track(humanoid, pair.use), equipped and sweeping, 0.15, 0.25)
+	local useTrack = track(humanoid, pair.use)
+	setTrack(useTrack, equipped and sweeping, 0.15, 0.25)
+	-- Standing still while sweeping: plant the feet and bend the knees (Tool_<Id>_Stance),
+	-- in step with the stroke. Walking hands the legs back to the walk animation.
+	if pair.stance then
+		local still = humanoid.MoveDirection.Magnitude < 0.1 and humanoid.FloorMaterial ~= Enum.Material.Air and humanoid.SeatPart == nil
+		local stance = track(humanoid, pair.stance)
+		local wasPlaying = stance ~= nil and stance.IsPlaying
+		setTrack(stance, equipped and sweeping and still, 0.2, 0.15)
+		if stance and stance.IsPlaying and not wasPlaying and useTrack and useTrack.IsPlaying and stance.Length > 0 then
+			stance.TimePosition = useTrack.TimePosition % stance.Length
+		end
+	end
 end
 
 local function shouldSweep(): (boolean, Vector3?)

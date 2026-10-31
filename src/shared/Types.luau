@@ -22,6 +22,7 @@ export type ToolDef = {
 	Tier: number,
 	Id: string,
 	Name: string,
+	Style: string, -- "Scrub" | "Brush" | "Blower" | "Spray" | "Vacuum"
 	Radius: number,
 	Power: number,
 	Capacity: number,

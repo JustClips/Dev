@@ -24,9 +24,20 @@ JOINTS = {
     "LeftUpperArm": ("UpperTorso", (-0.972, 0.598, 0), (0.501, 0.419, 0)),
     "LeftLowerArm": ("LeftUpperArm", (0, -0.355, 0), (0, 0.275, 0)),
     "LeftHand": ("LeftLowerArm", (0, -0.532, 0), (0, 0.132, 0)),
+    # legs (rig attachments dumped through Luau Execution on 2026-10-31)
+    "RightUpperLeg": ("LowerTorso", (0.5, -0.2, 0), (0, 0.471, 0)),
+    "RightLowerLeg": ("RightUpperLeg", (0, -0.449, 0), (0, 0.413, 0)),
+    "RightFoot": ("RightLowerLeg", (0, -0.596, 0), (0, 0.106, 0)),
+    "LeftUpperLeg": ("LowerTorso", (-0.5, -0.2, 0), (0, 0.471, 0)),
+    "LeftLowerLeg": ("LeftUpperLeg", (0, -0.449, 0), (0, 0.413, 0)),
+    "LeftFoot": ("LeftLowerLeg", (0, -0.596, 0), (0, 0.106, 0)),
 }
 ORDER = ["LowerTorso", "UpperTorso", "Head", "RightUpperArm", "RightLowerArm", "RightHand",
-         "LeftUpperArm", "LeftLowerArm", "LeftHand"]
+         "LeftUpperArm", "LeftLowerArm", "LeftHand",
+         "RightUpperLeg", "RightLowerLeg", "RightFoot", "LeftUpperLeg", "LeftLowerLeg", "LeftFoot"]
+# Ankle joint height above the ground with straight legs (foot centre 0.106 below the ankle,
+# half a foot 0.156 below that).
+ANKLE_UP = 0.262
 
 
 def T(x, y, z):

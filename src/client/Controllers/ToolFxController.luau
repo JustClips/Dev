@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Assets = require(Shared.Config.Assets)
+local Tools = require(Shared.Config.Tools)
 
 local ToolFxController = {}
 
@@ -216,7 +217,141 @@ local STYLES: { [string]: (Attachment) -> { ParticleEmitter } } = {
 	TurboVacuum = function(tip)
 		return suction(tip, rgb(90, 255, 240))
 	end,
+	-- 2026-10-31 tools
+	Rake = function(tip)
+		return { dust(tip, 10, 3), leaves(tip, 7, 4, rgb(220, 130, 50)), leaves(tip, 4, 4, rgb(190, 60, 40)) }
+	end,
+	PushBroom = function(tip)
+		return { dust(tip, 22, 5), leaves(tip, 5, 6, rgb(160, 115, 60)) }
+	end,
+	LeafVac = function(tip)
+		return suction(tip, nil)
+	end,
+	PressureWasher = function(tip)
+		return {
+			emitter(tip, {
+				Texture = img("FxStreak", SMOKE),
+				Rate = 40,
+				Lifetime = NumberRange.new(0.15, 0.22),
+				Speed = NumberRange.new(30, 38),
+				SpreadAngle = Vector2.new(4, 4),
+				Size = seq(0.25, 0.6),
+				Transparency = seq(0.2, 1),
+				Color = ColorSequence.new(rgb(190, 235, 255)),
+				Orientation = Enum.ParticleOrientation.VelocityParallel,
+				LightEmission = 0.4,
+			}),
+			emitter(tip, {
+				Texture = img("FxDrop", SMOKE),
+				Rate = 22,
+				Lifetime = NumberRange.new(0.3, 0.5),
+				Speed = NumberRange.new(8, 14),
+				SpreadAngle = Vector2.new(25, 25),
+				Size = seq(0.18, 0.1),
+				Color = ColorSequence.new(rgb(150, 210, 255)),
+				Acceleration = Vector3.new(0, -30, 0),
+				Orientation = Enum.ParticleOrientation.VelocityParallel,
+			}),
+		}
+	end,
+	GoldenBroom = function(tip)
+		return {
+			dust(tip, 12, 4),
+			emitter(tip, {
+				Texture = img("Sparkle", SMOKE),
+				Rate = 10,
+				Lifetime = NumberRange.new(0.4, 0.7),
+				Speed = NumberRange.new(1, 3),
+				SpreadAngle = Vector2.new(180, 180),
+				Size = seq(0.45, 0),
+				Color = ColorSequence.new(rgb(255, 220, 90)),
+				LightEmission = 0.8,
+			}),
+		}
+	end,
+	StormBlower = function(tip)
+		return {
+			emitter(tip, {
+				Texture = img("FxStreak", SMOKE),
+				Rate = 44,
+				Lifetime = NumberRange.new(0.2, 0.3),
+				Speed = NumberRange.new(32, 42),
+				SpreadAngle = Vector2.new(12, 12),
+				Size = seq(0.7, 1.2),
+				Transparency = seq(0.3, 1),
+				Color = ColorSequence.new(rgb(220, 235, 255)),
+				Orientation = Enum.ParticleOrientation.VelocityParallel,
+				LightEmission = 0.4,
+			}),
+			emitter(tip, {
+				Texture = img("Sparkle", SMOKE),
+				Rate = 6,
+				Lifetime = NumberRange.new(0.1, 0.2),
+				Speed = NumberRange.new(10, 20),
+				SpreadAngle = Vector2.new(20, 20),
+				Size = seq(0.5, 0),
+				Color = ColorSequence.new(rgb(255, 230, 60)),
+				LightEmission = 1,
+			}),
+			leaves(tip, 8, 20, rgb(120, 180, 70)),
+			leaves(tip, 6, 18, rgb(230, 140, 50)),
+		}
+	end,
+	TornadoVac = function(tip)
+		return suction(tip, rgb(120, 255, 240))
+	end,
+	DiamondMop = function(tip)
+		return {
+			emitter(tip, {
+				Texture = img("Sparkle", SMOKE),
+				Rate = 12,
+				Lifetime = NumberRange.new(0.4, 0.7),
+				Speed = NumberRange.new(1, 3),
+				SpreadAngle = Vector2.new(180, 180),
+				Size = seq(0.4, 0),
+				Color = ColorSequence.new(rgb(170, 245, 255)),
+				LightEmission = 0.9,
+			}),
+			emitter(tip, {
+				Texture = img("FxBubble", SMOKE),
+				Rate = 8,
+				Lifetime = NumberRange.new(0.5, 0.8),
+				Speed = NumberRange.new(0.5, 1.5),
+				SpreadAngle = Vector2.new(180, 180),
+				Size = seq(0.15, 0.3),
+				Color = ColorSequence.new(rgb(220, 250, 255)),
+				Acceleration = Vector3.new(0, 2, 0),
+			}),
+		}
+	end,
+	RainbowDuster = function(tip)
+		return {
+			dust(tip, 10, 3),
+			emitter(tip, {
+				Texture = img("Sparkle", SMOKE),
+				Rate = 14,
+				Lifetime = NumberRange.new(0.5, 0.8),
+				Speed = NumberRange.new(1, 3),
+				SpreadAngle = Vector2.new(180, 180),
+				Size = seq(0.4, 0),
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, rgb(255, 80, 90)),
+					ColorSequenceKeypoint.new(0.25, rgb(255, 220, 60)),
+					ColorSequenceKeypoint.new(0.5, rgb(90, 220, 90)),
+					ColorSequenceKeypoint.new(0.75, rgb(60, 160, 255)),
+					ColorSequenceKeypoint.new(1, rgb(170, 90, 255)),
+				}),
+				LightEmission = 0.8,
+			}),
+		}
+	end,
+	GalaxyVacuum = function(tip)
+		return suction(tip, rgb(255, 110, 230))
+	end,
 }
+
+-- Tools without their own entry above get their style's effects.
+local BY_STYLE: { [string]: string } = { Scrub = "Toothbrush", Brush = "Broom", Blower = "LeafBlower", Spray = "PressureWasher", Vacuum = "ShopVac" }
 
 local function build(tool: Tool): Fx?
 	local fx = built[tool]
@@ -227,6 +362,10 @@ local function build(tool: Tool): Fx?
 	local handle = tool:FindFirstChild("Handle")
 	local tip = handle and handle:FindFirstChild("Tip")
 	local style = type(id) == "string" and STYLES[id] or nil
+	if not style and type(id) == "string" then
+		local def = Tools.ById[id]
+		style = def and STYLES[BY_STYLE[def.Style] or ""] or nil
+	end
 	if not tip or not tip:IsA("Attachment") or not style then
 		return nil
 	end

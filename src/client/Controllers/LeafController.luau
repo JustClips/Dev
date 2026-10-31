@@ -33,6 +33,7 @@ local Ui = require(Client.Ui)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local Assets = require(Shared.Config.Assets)
+local Tools = require(Shared.Config.Tools)
 local Grid = require(Shared.Grid)
 local Net = require(Shared.Net)
 local Sounds = require(Shared.Config.Sounds)
@@ -1222,7 +1223,11 @@ local function burstKind(id: number): string
 	return if Grid.hash(id, 8) < 0.6 then "Leaf" else "Oval"
 end
 
-local VACUUMS = { ShopVac = true, TurboVacuum = true }
+-- How each hand tool clears leaves (Config/Tools Style).
+local function toolStyle(toolId: any): string?
+	local def = type(toolId) == "string" and Tools.ById[toolId] or nil
+	return def and def.Style or nil
+end
 
 -- A player's sweeper: where their leaves go (the car's brush, the vacuum's nozzle, their
 -- backpack for brooms) and how they clear (style).
@@ -1244,12 +1249,13 @@ local function sweeperOf(character: Model): Sweeper?
 	local tool = character:FindFirstChildOfClass("Tool")
 	local toolId = tool and tool:GetAttribute("ToolId")
 	local handle = tool and tool:FindFirstChild("Handle")
-	if toolId == "LeafBlower" then
+	local style = toolStyle(toolId)
+	if style == "Blower" or style == "Spray" then
 		return { root = rootPart.Position, style = "blower", target = function()
 			return rootPart.Position
 		end }
 	end
-	if handle and handle:IsA("BasePart") and VACUUMS[toolId :: any] then
+	if handle and handle:IsA("BasePart") and style == "Vacuum" then
 		local tip = handle:FindFirstChild("Tip")
 		return { root = rootPart.Position, style = "vacuum", target = function()
 			return if tip and tip:IsA("Attachment") then tip.WorldPosition else handle.Position
