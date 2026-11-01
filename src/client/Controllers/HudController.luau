@@ -982,6 +982,17 @@ function HudController:Init(controllers)
 	el.NextGoal = Ui.find(hud, "NextGoal")
 	el.Offers = Ui.find(hud, "Offers")
 	el.Toasts = Ui.find(hud, "Toasts")
+	-- Toasts ride in their own ScreenGui above the windows ("Not enough cash!" hid behind
+	-- Gear; Dev, 2026-11-01). Same inset settings as the HUD, so positions don't change.
+	local layer = Instance.new("ScreenGui")
+	layer.Name = "ToastLayer"
+	layer.ResetOnSpawn = false
+	layer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	layer.IgnoreGuiInset = hud.IgnoreGuiInset
+	layer.ScreenInsets = hud.ScreenInsets
+	layer.DisplayOrder = 20
+	layer.Parent = hud.Parent
+	el.Toasts.Parent = layer
 	el.Hint = Ui.find(hud, "Hint")
 	-- Studio places synced before the combo rework still hold the old frame: drop it.
 	local stale = hud:FindFirstChild("Combo")
