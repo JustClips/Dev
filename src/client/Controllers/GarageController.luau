@@ -82,6 +82,13 @@ local picked: { [string]: string? } = {}
 local mainAction: () -> () = function() end
 local robuxAction: () -> () = function() end
 
+-- A grey Buy (not enough cash) opens the Shop at Money, like most games (Dev, 2026-11-01:
+-- it did nothing).
+local function needCash()
+	toast(false, "Not enough cash! Get more in the Shop.")
+	C.ShopController:Open("Money")
+end
+
 local function toolEntries(data): ({ Entry }, Entry?)
 	local entries = {}
 	local current = data.EffectiveTier or data.ToolTier
@@ -129,6 +136,11 @@ local function toolEntries(data): ({ Entry }, Entry?)
 			e.mainText = if toolPrice == 0 then "FREE!" else `Buy {Format.cash(toolPrice)}`
 			e.mainColor = if afford then GREEN else GREY
 			e.onMain = function()
+				local cash = State.data and State.data.Cash
+				if cash and not BigNum.gte(cash, toolPrice) then
+					needCash()
+					return
+				end
 				local teaching = State.data ~= nil and State.data.TutorialStep == "Upgrade"
 				local ok, message = Net.func("BuyNextTool"):InvokeServer()
 				toast(ok, message)
@@ -219,6 +231,11 @@ local function carEntries(data): ({ Entry }, Entry?)
 			e.mainText = `Buy {Format.cash(car.Price)}`
 			e.mainColor = if BigNum.gte(data.Cash, car.Price) then GREEN else GREY
 			e.onMain = function()
+				local cash = State.data and State.data.Cash
+				if cash and not BigNum.gte(cash, car.Price) then
+					needCash()
+					return
+				end
 				toast(Net.func("BuyVehicle"):InvokeServer(car.Id))
 			end
 			-- Robux: unlock (until rebirth), or rent for this run if unlock isn't on sale.
