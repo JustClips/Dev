@@ -64,6 +64,9 @@ end
 
 function MenuController:Open(name: string)
 	MenuController:Close()
+	-- Opening a menu closes the open window first; otherwise the "a window is open" check
+	-- below shut the menu right away (Dev, 2026-11-01: Upgrade over the inventory flashed).
+	Ui.closeWindows()
 	local menu = menus[name]
 	if not menu then
 		return

@@ -422,6 +422,16 @@ function Ui.anyWindowOpen(): boolean
 	return false
 end
 
+-- Closes every open window (a HUD menu opening over a window would be shut by it again).
+function Ui.closeWindows()
+	for _, name in MODALS do
+		local gui = playerGui:FindFirstChild(name) :: ScreenGui?
+		if gui and Ui.isOpen(gui) then
+			Ui.hide(gui)
+		end
+	end
+end
+
 function Ui.close(name: string)
 	local gui = playerGui:FindFirstChild(name) :: ScreenGui?
 	if gui then
