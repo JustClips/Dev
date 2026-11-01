@@ -11,6 +11,7 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 local Client = script.Parent.Parent
+local ModelView = require(Client.ModelView)
 local State = require(Client.State)
 local Ui = require(Client.Ui)
 local Prices = require(Client.Prices)
@@ -127,6 +128,14 @@ local function fill()
 		local icon = slot:FindFirstChild("Icon") :: ImageLabel
 		icon.Image = AssetLibrary.image(image)
 		icon.ImageColor3 = tint or WHITE
+		-- Egg prizes show the real brick egg (Dev, 2026-11-01: the tinted egg icons looked bad).
+		local model = slot:FindFirstChild("Model") :: ViewportFrame?
+		local rarity = seg.Reward.Kind == "Egg" and seg.Reward.Rarity
+		if model and rarity then
+			ModelView.show(model, AssetLibrary.egg(rarity), "Egg_" .. rarity)
+			model.Visible = true
+			icon.Visible = false
+		end
 		local chance = slot:FindFirstChild("Label") :: TextLabel
 		chance.Text = percent(seg.Weight)
 		local row = Ui.find(gui, `Window.Side.Odds.List.Odds{i}`)
@@ -139,7 +148,7 @@ local function fill()
 		nameLabel.Text = name
 		local chanceLabel = row:FindFirstChild("Chance") :: TextLabel
 		chanceLabel.Text = if seg.Weight <= 1 then `{percent(seg.Weight)}  JACKPOT!` else percent(seg.Weight)
-		chanceLabel.TextColor3 = if seg.Weight <= 1 then Color3.fromRGB(230, 60, 170) else chanceLabel.TextColor3
+		chanceLabel.TextColor3 = if seg.Weight <= 1 then Color3.fromRGB(255, 110, 200) else chanceLabel.TextColor3
 	end
 	for name, key in BUYS do
 		local button = Ui.find(gui, `Window.Side.Buy.{name}`) :: GuiButton
@@ -490,6 +499,25 @@ end
 function WheelController:Init(controllers)
 	C = controllers
 	gui = Ui.screen("Wheel")
+	-- 2026-11-01 remake (no big window): LiveSync never deletes GUI children in Dev's Studio
+	-- place, so drop the old window's header, outline and panel styling.
+	local window = gui:WaitForChild("Window")
+	local side = window:WaitForChild("Side")
+	for _, pair in { { window, "Header" }, { window, "Stroke" }, { window, "Shade" } } do
+		local stale = pair[1]:FindFirstChild(pair[2])
+		if stale then
+			stale:Destroy()
+		end
+	end
+	for _, name in { "Odds", "Pity" } do
+		local panel = side:FindFirstChild(name)
+		for _, part in { "Stroke", "Shade" } do
+			local stale = panel and panel:FindFirstChild(part)
+			if stale then
+				stale:Destroy()
+			end
+		end
+	end
 	spinner = Ui.find(gui, "Window.WheelArea.Spinner")
 	spinButton = Ui.find(gui, "Window.Side.SpinButton")
 	railBadge = Ui.find(Ui.screen("Hud"), "SpinButton"):FindFirstChild("Badge") :: Frame?
@@ -497,6 +525,8 @@ end
 
 function WheelController:Start()
 	fill()
+	-- The egg models on the wheel load after the UI: draw them again once they're in.
+	AssetLibrary.onCoreReady(fill)
 	Ui.button(Ui.find(Ui.screen("Hud"), "SpinButton"), function()
 		if Ui.isOpen(gui) then
 			Ui.close("Wheel")

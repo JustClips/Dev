@@ -819,7 +819,7 @@ function HudController:Init(controllers)
 	-- HUD overhaul (2026-11-01): LiveSync never deletes GUI children in Dev's Studio place,
 	-- so drop what the new layout no longer has: the top pills, the rebirth wallet row, the
 	-- old FULL tag spot and the rail tiles that moved into the Upgrade / More menus.
-	for _, path in { "Pills", "Wallet.RebirthRow", "Wallet.BackpackPanel.Full" } do
+	for _, path in { "Pills", "Wallet.RebirthRow", "Wallet.BackpackPanel.Full", "Right.EggsReady" } do
 		local current: Instance? = hud
 		for part in string.gmatch(path, "[^%.]+") do
 			current = current and current:FindFirstChild(part)

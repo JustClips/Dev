@@ -473,26 +473,14 @@ local badgeBase: { [GuiObject]: number } = setmetatable({}, { __mode = "k" }) ::
 local pulseStarted = false
 local BADGE_FILL = Color3.fromRGB(214, 22, 52)
 local BADGE_RING = Color3.fromRGB(255, 255, 255)
-local PULSE_EVERY = 10 -- seconds between pulse pairs
-local PULSE_GAP = 0.45 -- seconds between the two waves
-local PULSE_TIME = 0.8 -- how long one wave takes to grow and fade
-local PULSE_GROW = 2.1 -- how big a wave gets, relative to the badge
-
-local function badgePop(badge: GuiObject)
-	if Ui.reducedMotion() then
-		return
-	end
-	local pop = badge:FindFirstChild("Pop") :: UIScale?
-	if not pop then
-		local s = Instance.new("UIScale")
-		s.Name = "Pop"
-		s.Parent = badge
-		pop = s
-	end
-	local scale = pop :: UIScale
-	scale.Scale = 1.6
-	TweenService:Create(scale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-end
+-- Waves (Dev, 2026-11-01, like Slime RNG): every badge sends out thin rings that grow and
+-- fade, the badge itself stays still. Each badge keeps its own random timer so they never
+-- all go at once.
+local PULSE_MIN, PULSE_MAX = 7, 13 -- seconds between one badge's ring pairs
+local PULSE_GAP = 0.35 -- seconds between the two rings of a pair
+local PULSE_TIME = 1.1 -- how long one ring takes to grow and fade
+local PULSE_GROW = 2.4 -- how big a ring gets, relative to the badge
+local nextPulse: { [GuiObject]: number } = setmetatable({}, { __mode = "k" }) :: any
 
 -- Turns a badge into the round red + white border style (once per badge).
 local function styleBadge(badge: GuiObject)
@@ -501,6 +489,11 @@ local function styleBadge(badge: GuiObject)
 	end
 	badgeBase[badge] = badge.Size.Y.Offset
 	badge.Rotation = 0
+	-- Centred on the button's top-right corner, a little inside it, so it reads as part of
+	-- that button and never hangs half off the screen (Dev, 2026-11-01: badges looked
+	-- misplaced).
+	badge.AnchorPoint = Vector2.new(0.5, 0.5)
+	badge.Position = UDim2.new(1, -4, 0, 4)
 	badge.BackgroundColor3 = BADGE_FILL
 	badge.BackgroundTransparency = 0
 	local corner = badge:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
@@ -518,7 +511,10 @@ local function styleBadge(badge: GuiObject)
 		label.TextScaled = false
 		label.TextWrapped = false
 		label.Size = UDim2.fromScale(1, 1)
-		label.Position = UDim2.fromScale(0.5, 0.5)
+		-- Montserrat digits sit low in their box: lift them to the optical centre.
+		label.Position = UDim2.new(0.5, 0, 0.5, -1)
+		label.TextXAlignment = Enum.TextXAlignment.Center
+		label.TextYAlignment = Enum.TextYAlignment.Center
 		label.AnchorPoint = Vector2.new(0.5, 0.5)
 		for _, child in label:GetChildren() do
 			if child:IsA("UIStroke") then
@@ -528,42 +524,48 @@ local function styleBadge(badge: GuiObject)
 	end
 end
 
--- One red wave: a red circle behind the badge that grows and fades. It is a sibling of
--- the badge one layer below it (with Sibling z-order a child would draw on top).
+-- One ring: a thin red-and-white outline circle behind the badge that grows and fades.
+-- It is a sibling of the badge one layer below it (with Sibling z-order a child would draw
+-- on top).
 local function waveFrom(badge: GuiObject)
 	local host = badge.Parent
 	if not (host and host:IsA("GuiObject")) then
 		return
 	end
 	local size = badge.Size
-	local w, h = size.X.Offset, size.Y.Offset
+	local h = size.Y.Offset
 	local pos, anchor = badge.Position, badge.AnchorPoint
-	local wave = Instance.new("Frame")
-	wave.Name = "BadgeWave"
-	wave.BorderSizePixel = 0
-	wave.BackgroundColor3 = BADGE_FILL
-	wave.BackgroundTransparency = 0.25
-	wave.AnchorPoint = Vector2.new(0.5, 0.5)
-	wave.Size = UDim2.fromOffset(w, h)
-	wave.Position = UDim2.new(
+	local w = size.X.Offset
+	local ring = Instance.new("Frame")
+	ring.Name = "BadgeWave"
+	ring.BorderSizePixel = 0
+	ring.BackgroundTransparency = 1
+	ring.AnchorPoint = Vector2.new(0.5, 0.5)
+	ring.Size = UDim2.fromOffset(h, h)
+	ring.Position = UDim2.new(
 		pos.X.Scale + size.X.Scale * (0.5 - anchor.X),
 		pos.X.Offset + w * (0.5 - anchor.X),
 		pos.Y.Scale + size.Y.Scale * (0.5 - anchor.Y),
 		pos.Y.Offset + h * (0.5 - anchor.Y)
 	)
-	wave.ZIndex = badge.ZIndex - 1
+	ring.ZIndex = badge.ZIndex - 1
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0.5, 0)
-	corner.Parent = wave
-	local grow = Instance.new("UIScale")
-	grow.Scale = 1
-	grow.Parent = wave
-	wave.Parent = host
+	corner.Parent = ring
+	local stroke = Instance.new("UIStroke")
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Color = BADGE_FILL
+	stroke.Thickness = math.max(2, math.floor(h / 9 + 0.5))
+	stroke.Transparency = 0.1
+	stroke.Parent = ring
+	ring.Parent = host
+	-- Grow the frame itself (a UIScale would also thicken the outline).
 	local info = TweenInfo.new(PULSE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	TweenService:Create(grow, info, { Scale = PULSE_GROW }):Play()
-	local fade = TweenService:Create(wave, info, { BackgroundTransparency = 1 })
+	local big = math.floor(h * PULSE_GROW + 0.5)
+	TweenService:Create(ring, info, { Size = UDim2.fromOffset(big, big) }):Play()
+	local fade = TweenService:Create(stroke, info, { Transparency = 1, Thickness = 1 })
 	fade.Completed:Once(function()
-		wave:Destroy()
+		ring:Destroy()
 	end)
 	fade:Play()
 end
@@ -575,16 +577,24 @@ local function startPulse()
 	pulseStarted = true
 	task.spawn(function()
 		while true do
-			task.wait(PULSE_EVERY)
+			task.wait(0.25)
 			if not Ui.reducedMotion() then
-				for wave = 1, 2 do
-					for badge in badgeCounts do
+				local now = os.clock()
+				for badge in badgeCounts do
+					local due = nextPulse[badge]
+					if not due then
+						-- First time: somewhere in the next few seconds, not in step with others.
+						nextPulse[badge] = now + PULSE_MIN * 0.3 + math.random() * (PULSE_MAX - PULSE_MIN)
+					elseif now >= due then
+						nextPulse[badge] = now + PULSE_MIN + math.random() * (PULSE_MAX - PULSE_MIN)
 						if badge.Parent and badge.Visible then
 							waveFrom(badge)
+							task.delay(PULSE_GAP, function()
+								if badge.Parent and badge.Visible then
+									waveFrom(badge)
+								end
+							end)
 						end
-					end
-					if wave == 1 then
-						task.wait(PULSE_GAP)
 					end
 				end
 			end
@@ -638,8 +648,9 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	badgeCounts[badge] = shown
 	badge.Visible = true
 	liftHost(badge, true)
-	if before ~= shown and (before == nil or (tonumber(shown) or 0) > (tonumber(before) or 0)) then
-		badgePop(badge)
+	-- A new or bigger count sends a ring right away (the badge itself doesn't grow).
+	if before ~= shown and (before == nil or (tonumber(shown) or 0) > (tonumber(before) or 0)) and not Ui.reducedMotion() then
+		task.defer(waveFrom, badge)
 	end
 	startPulse()
 end

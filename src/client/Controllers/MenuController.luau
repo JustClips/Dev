@@ -8,8 +8,7 @@
 -- A menu opens beside its button; tapping outside, the button again, or anything that
 -- opens a window closes it. A core button shows a red badge while something inside its
 -- menu has one.
--- Also here: the Gear badge (next tool affordable) and the "Open eggs" chip that shows
--- while eggs at your base are ready (it replaced the Eggs panel).
+-- Also here: the Gear badge (next tool affordable).
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -20,7 +19,6 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BigNum = require(Shared.BigNum)
-local Net = require(Shared.Net)
 local Tools = require(Shared.Config.Tools)
 
 local MenuController = {}
@@ -32,7 +30,6 @@ local away: GuiButton
 local menus: { [string]: Frame } = {}
 local cores: { [string]: GuiButton } = {}
 local openName: string? = nil
-local eggsChip: TextButton
 
 -- Menu name -> the core button that opens it.
 local CORE = { UpgradeMenu = "UpgradesButton", MoreMenu = "MoreButton" }
@@ -137,21 +134,6 @@ local function render()
 		Ui.find(menus.UpgradeMenu, "Items.ToolsButton.Badge"),
 		if data.ToolTier < Tools.MaxTier and BigNum.gte(data.Cash, nextTool.Price) then 1 else nil
 	)
-	-- Eggs ready to open at your base.
-	local ready = 0
-	for _, entry in data.Hatching or {} do
-		if entry.EndsAt <= State.now() then
-			ready += 1
-		end
-	end
-	-- Not during the tutorial or the egg lesson (that one teaches opening at the hatchery).
-	local showEggs = ready > 0 and (State.tutorialStep(data) == "Done" or data.Rebirths > 0)
-	if eggsChip.Visible ~= showEggs then
-		eggsChip.Visible = showEggs
-	end
-	if showEggs then
-		Ui.setText(eggsChip, if ready == 1 then "Open egg" else `Open {ready} eggs`)
-	end
 	-- Core buttons carry their menu's badges.
 	for name, menu in menus do
 		local n = anyBadge(menu)
@@ -168,7 +150,6 @@ function MenuController:Init(controllers)
 		menus[name] = Ui.find(hud, name)
 		cores[name] = Ui.find(rail, coreName)
 	end
-	eggsChip = Ui.find(hud, "Right.EggsReady")
 	-- The Eggs / Pets / Gear / Quests column and its two popups are gone (2026-11-01).
 	-- LiveSync never deletes screens from Dev's Studio place, so drop the old ones.
 	local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -238,12 +219,6 @@ function MenuController:Start()
 			end
 		end
 	end
-	Ui.button(eggsChip, function()
-		local ok, message = Net.func("Inventory"):InvokeServer("OpenReady")
-		if message and message ~= "" then
-			C.HudController:Toast(message, if ok then "Good" else "Bad")
-		end
-	end)
 	Ui.onScale(function()
 		if openName then
 			place(openName)

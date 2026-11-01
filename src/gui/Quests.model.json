@@ -724,16 +724,16 @@
         "Position": [
          [
           1,
-          6
+          -4
          ],
          [
           0,
-          -10
+          4
          ]
         ],
         "AnchorPoint": [
-         1,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "Visible": false,
@@ -1045,16 +1045,16 @@
         "Position": [
          [
           1,
-          6
+          -4
          ],
          [
           0,
-          -10
+          4
          ]
         ],
         "AnchorPoint": [
-         1,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "Visible": false,
@@ -1366,16 +1366,16 @@
         "Position": [
          [
           1,
-          6
+          -4
          ],
          [
           0,
-          -10
+          4
          ]
         ],
         "AnchorPoint": [
-         1,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "Visible": false,

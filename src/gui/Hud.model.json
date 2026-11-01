@@ -358,16 +358,16 @@
         "Position": [
          [
           1,
-          6
+          -4
          ],
          [
           0,
-          -10
+          4
          ]
         ],
         "AnchorPoint": [
-         1,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "Visible": false,
@@ -724,16 +724,16 @@
         "Position": [
          [
           1,
-          6
+          -4
          ],
          [
           0,
-          -10
+          4
          ]
         ],
         "AnchorPoint": [
-         1,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "Visible": false,
@@ -1090,16 +1090,16 @@
         "Position": [
          [
           1,
-          6
+          -4
          ],
          [
           0,
-          -10
+          4
          ]
         ],
         "AnchorPoint": [
-         1,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "Visible": false,
@@ -1456,16 +1456,16 @@
         "Position": [
          [
           1,
-          6
+          -4
          ],
          [
           0,
-          -10
+          4
          ]
         ],
         "AnchorPoint": [
-         1,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "Visible": false,
@@ -2061,16 +2061,16 @@
           "Position": [
            [
             1,
-            6
+            -4
            ],
            [
             0,
-            -10
+            4
            ]
           ],
           "AnchorPoint": [
-           1,
-           0
+           0.5,
+           0.5
           ],
           "BorderSizePixel": 0,
           "Visible": false,
@@ -2427,16 +2427,16 @@
           "Position": [
            [
             1,
-            6
+            -4
            ],
            [
             0,
-            -10
+            4
            ]
           ],
           "AnchorPoint": [
-           1,
-           0
+           0.5,
+           0.5
           ],
           "BorderSizePixel": 0,
           "Visible": false,
@@ -2793,16 +2793,16 @@
           "Position": [
            [
             1,
-            6
+            -4
            ],
            [
             0,
-            -10
+            4
            ]
           ],
           "AnchorPoint": [
-           1,
-           0
+           0.5,
+           0.5
           ],
           "BorderSizePixel": 0,
           "Visible": false,
@@ -3421,16 +3421,16 @@
           "Position": [
            [
             1,
-            6
+            -4
            ],
            [
             0,
-            -10
+            4
            ]
           ],
           "AnchorPoint": [
-           1,
-           0
+           0.5,
+           0.5
           ],
           "BorderSizePixel": 0,
           "Visible": false,
@@ -3787,16 +3787,16 @@
           "Position": [
            [
             1,
-            6
+            -4
            ],
            [
             0,
-            -10
+            4
            ]
           ],
           "AnchorPoint": [
-           1,
-           0
+           0.5,
+           0.5
           ],
           "BorderSizePixel": 0,
           "Visible": false,
@@ -4153,16 +4153,16 @@
           "Position": [
            [
             1,
-            6
+            -4
            ],
            [
             0,
-            -10
+            4
            ]
           ],
           "AnchorPoint": [
-           1,
-           0
+           0.5,
+           0.5
           ],
           "BorderSizePixel": 0,
           "Visible": false,
@@ -4519,16 +4519,16 @@
           "Position": [
            [
             1,
-            6
+            -4
            ],
            [
             0,
-            -10
+            4
            ]
           ],
           "AnchorPoint": [
-           1,
-           0
+           0.5,
+           0.5
           ],
           "BorderSizePixel": 0,
           "Visible": false,
@@ -4885,16 +4885,16 @@
           "Position": [
            [
             1,
-            6
+            -4
            ],
            [
             0,
-            -10
+            4
            ]
           ],
           "AnchorPoint": [
-           1,
-           0
+           0.5,
+           0.5
           ],
           "BorderSizePixel": 0,
           "Visible": false,
@@ -5252,16 +5252,16 @@
           "Position": [
            [
             1,
-            6
+            -4
            ],
            [
             0,
-            -10
+            4
            ]
           ],
           "AnchorPoint": [
-           1,
-           0
+           0.5,
+           0.5
           ],
           "BorderSizePixel": 0,
           "Visible": false,
@@ -5613,16 +5613,16 @@
       "Position": [
        [
         1,
-        6
+        -4
        ],
        [
         0,
-        -10
+        4
        ]
       ],
       "AnchorPoint": [
-       1,
-       0
+       0.5,
+       0.5
       ],
       "BorderSizePixel": 0,
       "Visible": false,
@@ -6598,16 +6598,16 @@
       "Position": [
        [
         1,
-        6
+        -4
        ],
        [
         0,
-        -10
+        4
        ]
       ],
       "AnchorPoint": [
-       1,
-       0
+       0.5,
+       0.5
       ],
       "BorderSizePixel": 0,
       "Visible": false,
@@ -8606,364 +8606,6 @@
       "VerticalAlignment": "Center",
       "SortOrder": "LayoutOrder"
      }
-    },
-    {
-     "name": "EggsReady",
-     "className": "TextButton",
-     "properties": {
-      "Size": [
-       [
-        0,
-        230
-       ],
-       [
-        0,
-        50
-       ]
-      ],
-      "Position": [
-       [
-        0,
-        0
-       ],
-       [
-        0,
-        0
-       ]
-      ],
-      "AnchorPoint": [
-       0,
-       0
-      ],
-      "BorderSizePixel": 0,
-      "BackgroundColor3": "#3DDC5A",
-      "Text": "",
-      "AutoButtonColor": false,
-      "ZIndex": 1,
-      "LayoutOrder": 1,
-      "Visible": false
-     },
-     "children": [
-      {
-       "name": "Stroke",
-       "className": "UIStroke",
-       "properties": {
-        "Color": "#17191E",
-        "Thickness": 4,
-        "ApplyStrokeMode": "Border",
-        "LineJoinMode": "Round"
-       }
-      },
-      {
-       "name": "Shine",
-       "className": "UIGradient",
-       "properties": {
-        "Color": {
-         "keypoints": [
-          [
-           0,
-           "#FFFFFF"
-          ],
-          [
-           0.55,
-           "#FFFFFF"
-          ],
-          [
-           1,
-           "#9AA3B8"
-          ]
-         ]
-        },
-        "Rotation": 90
-       }
-      },
-      {
-       "name": "Studs",
-       "className": "ImageLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          0
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "Position": [
-         [
-          0,
-          0
-         ],
-         [
-          0,
-          0
-         ]
-        ],
-        "AnchorPoint": [
-         0,
-         0
-        ],
-        "BorderSizePixel": 0,
-        "BackgroundTransparency": 1,
-        "Image": "rbxassetid://117181516497135",
-        "ScaleType": "Tile",
-        "TileSize": [
-         [
-          0,
-          48
-         ],
-         [
-          0,
-          48
-         ]
-        ],
-        "ImageColor3": "#3DDC5A",
-        "ImageTransparency": 0.45,
-        "ZIndex": 0
-       },
-       "children": []
-      },
-      {
-       "name": "Bevel",
-       "className": "Frame",
-       "properties": {
-        "Size": [
-         [
-          1,
-          -6
-         ],
-         [
-          1,
-          -6
-         ]
-        ],
-        "Position": [
-         [
-          0.5,
-          0
-         ],
-         [
-          0.5,
-          0
-         ]
-        ],
-        "AnchorPoint": [
-         0.5,
-         0.5
-        ],
-        "BorderSizePixel": 0,
-        "ZIndex": 0,
-        "BackgroundTransparency": 1
-       },
-       "children": [
-        {
-         "name": "Stroke",
-         "className": "UIStroke",
-         "properties": {
-          "Color": "#FFFFFF",
-          "Thickness": 2,
-          "Transparency": 0.55,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Miter"
-         }
-        }
-       ]
-      },
-      {
-       "name": "Icon",
-       "className": "ImageLabel",
-       "properties": {
-        "Size": [
-         [
-          0,
-          40
-         ],
-         [
-          0,
-          40
-         ]
-        ],
-        "Position": [
-         [
-          0,
-          8
-         ],
-         [
-          0.5,
-          0
-         ]
-        ],
-        "AnchorPoint": [
-         0,
-         0.5
-        ],
-        "BorderSizePixel": 0,
-        "BackgroundTransparency": 1,
-        "Image": "rbxassetid://126920991672769",
-        "ScaleType": "Fit",
-        "ZIndex": 3
-       }
-      },
-      {
-       "name": "Label",
-       "className": "TextLabel",
-       "properties": {
-        "Size": [
-         [
-          1,
-          -56
-         ],
-         [
-          1,
-          0
-         ]
-        ],
-        "Position": [
-         [
-          0,
-          50
-         ],
-         [
-          0,
-          0
-         ]
-        ],
-        "AnchorPoint": [
-         0,
-         0
-        ],
-        "BorderSizePixel": 0,
-        "BackgroundTransparency": 1,
-        "Text": "Open eggs",
-        "TextColor3": "#FFFFFF",
-        "TextSize": 20,
-        "TextXAlignment": "Left",
-        "TextYAlignment": "Center",
-        "TextWrapped": true,
-        "ZIndex": 2,
-        "FontFace": {
-         "family": "rbxasset://fonts/families/Montserrat.json",
-         "weight": "Heavy",
-         "style": "Normal"
-        }
-       },
-       "children": [
-        {
-         "name": "TextStroke",
-         "className": "UIStroke",
-         "properties": {
-          "Color": "#17191E",
-          "Thickness": 2.5,
-          "ApplyStrokeMode": "Contextual",
-          "LineJoinMode": "Round"
-         }
-        }
-       ]
-      },
-      {
-       "name": "Badge",
-       "className": "Frame",
-       "properties": {
-        "Size": [
-         [
-          0,
-          24
-         ],
-         [
-          0,
-          24
-         ]
-        ],
-        "Position": [
-         [
-          1,
-          6
-         ],
-         [
-          0,
-          -10
-         ]
-        ],
-        "AnchorPoint": [
-         1,
-         0
-        ],
-        "BorderSizePixel": 0,
-        "Visible": false,
-        "ZIndex": 6,
-        "BackgroundTransparency": 0,
-        "BackgroundColor3": "#D61634"
-       },
-       "children": [
-        {
-         "name": "Corner",
-         "className": "UICorner",
-         "properties": {
-          "CornerRadius": [
-           0.5,
-           0
-          ]
-         }
-        },
-        {
-         "name": "Stroke",
-         "className": "UIStroke",
-         "properties": {
-          "Color": "#FFFFFF",
-          "Thickness": 2,
-          "ApplyStrokeMode": "Border",
-          "LineJoinMode": "Round"
-         }
-        },
-        {
-         "name": "Label",
-         "className": "TextLabel",
-         "properties": {
-          "Size": [
-           [
-            1,
-            0
-           ],
-           [
-            1,
-            0
-           ]
-          ],
-          "Position": [
-           [
-            0.5,
-            0
-           ],
-           [
-            0.5,
-            0
-           ]
-          ],
-          "AnchorPoint": [
-           0.5,
-           0.5
-          ],
-          "BorderSizePixel": 0,
-          "BackgroundTransparency": 1,
-          "Text": "1",
-          "TextColor3": "#FFFFFF",
-          "TextSize": 16,
-          "TextXAlignment": "Center",
-          "TextYAlignment": "Center",
-          "TextWrapped": false,
-          "ZIndex": 7,
-          "FontFace": {
-           "family": "rbxasset://fonts/families/Montserrat.json",
-           "weight": "Heavy",
-           "style": "Normal"
-          }
-         }
-        }
-       ]
-      }
-     ]
     },
     {
      "name": "AutoButton",
@@ -12782,16 +12424,16 @@
         "Position": [
          [
           1,
-          6
+          -4
          ],
          [
           0,
-          -10
+          4
          ]
         ],
         "AnchorPoint": [
-         1,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "Visible": false,
