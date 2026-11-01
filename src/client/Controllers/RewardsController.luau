@@ -147,7 +147,7 @@ local function fillCard(card: GuiButton, reward: Rewards.Reward, petId: string?)
 		end
 	end
 	if pet then
-		;(card:FindFirstChild("Day") :: TextLabel).TextColor3 = Color3.fromRGB(214, 140, 0)
+		(card:FindFirstChild("Day") :: TextLabel).TextColor3 = Color3.fromRGB(214, 140, 0)
 	end
 end
 
