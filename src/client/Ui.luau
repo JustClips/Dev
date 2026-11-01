@@ -474,7 +474,6 @@ local pulseStarted = false
 local BADGE_TOP = Color3.fromRGB(255, 72, 96) -- glossy top of the red
 local BADGE_BOTTOM = Color3.fromRGB(176, 8, 40)
 local BADGE_RING = Color3.fromRGB(255, 255, 255)
-local BADGE_OUTLINE = Color3.fromRGB(40, 14, 22)
 -- Pulse (Dev, 2026-11-01, round 3, then "only twice each 10s": "pulse twice, a gap of 0.5s ... each
 -- pulse should increase by 0.2x with a tween in 0.4s", cartoony not harsh): the badge
 -- circle itself bumps to 1.2x and back, twice, each bump sending out a thin ring. Every badge
@@ -502,40 +501,29 @@ local function styleBadge(badge: GuiObject)
 	-- misplaced).
 	badge.AnchorPoint = Vector2.new(0.5, 0.5)
 	badge.Position = UDim2.new(1, -4, 0, 4)
-	-- The badge itself is the white rim; "Red" sits inside it.
-	badge.BackgroundColor3 = BADGE_RING
+	-- One disc: glossy red fill with a thick white rim drawn by the stroke (a red disc
+	-- nested inside a white one rounded to different pixels on small screens and looked
+	-- off-centre, Dev 2026-11-01).
+	badge.BackgroundColor3 = Color3.new(1, 1, 1)
 	badge.BackgroundTransparency = 0
 	local corner = badge:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0.5, 0)
 	corner.Parent = badge
 	local stroke = badge:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
-	stroke.Color = BADGE_OUTLINE
-	stroke.Thickness = math.max(1.5, px / 16)
+	stroke.Color = BADGE_RING
+	stroke.Thickness = math.max(2, math.floor(px / 10 + 0.5))
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.LineJoinMode = Enum.LineJoinMode.Round
 	stroke.Parent = badge
-	local old = badge:FindFirstChildOfClass("UIGradient")
-	if old then
-		old:Destroy()
-	end
-	local label = badge:FindFirstChild("Label") :: TextLabel?
-	local rim = math.max(2, math.floor(px / 9 + 0.5))
-	local red = badge:FindFirstChild("Red") :: Frame? or Instance.new("Frame")
-	red.Name = "Red"
-	red.BorderSizePixel = 0
-	red.BackgroundColor3 = Color3.new(1, 1, 1)
-	red.AnchorPoint = Vector2.new(0.5, 0.5)
-	red.Position = UDim2.fromScale(0.5, 0.5)
-	red.Size = UDim2.new(1, -2 * rim, 1, -2 * rim)
-	red.ZIndex = if label then label.ZIndex - 1 else badge.ZIndex
-	local redCorner = red:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
-	redCorner.CornerRadius = UDim.new(0.5, 0)
-	redCorner.Parent = red
-	local gradient = red:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
+	local gradient = badge:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
 	gradient.Color = ColorSequence.new(BADGE_TOP, BADGE_BOTTOM)
 	gradient.Rotation = 90
-	gradient.Parent = red
-	red.Parent = badge
+	gradient.Parent = badge
+	local oldRed = badge:FindFirstChild("Red")
+	if oldRed then
+		oldRed:Destroy()
+	end
+	local label = badge:FindFirstChild("Label") :: TextLabel?
 	local pop = badge:FindFirstChild("BadgePop") :: UIScale? or Instance.new("UIScale")
 	pop.Name = "BadgePop"
 	pop.Scale = 1
