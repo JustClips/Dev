@@ -150,7 +150,10 @@ local function placeGear(gear: GuiObject)
 	end
 	local size = math.floor(math.clamp(height - 14, 32, 48))
 	gear.Size = UDim2.fromOffset(size, size)
-	gear.Position = UDim2.fromOffset(math.max(inset.Min.X, 104) + 4, inset.Min.Y + math.floor((height - size) / 2))
+	-- Roblox's own buttons sit low in the top bar (12 px down in the 58 px bar, 2 px above
+	-- its bottom), not centred, so the gear does the same to line up with them (Dev,
+	-- 2026-11-01: it sat ~5 px higher on phones and PC).
+	gear.Position = UDim2.fromOffset(math.max(inset.Min.X, 104) + 4, inset.Min.Y + math.max(height - size - 2, 0))
 end
 
 local function bindSlider(key: string, row: Frame)
