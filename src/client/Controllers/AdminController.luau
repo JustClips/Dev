@@ -486,7 +486,9 @@ local function buildEvents()
 			table.insert(list, { label = def.Name, value = def.Id })
 		end
 		for _, def in Weather.Moons do
-			if def.Duration > 0 then
+			-- Every moon has Duration 0 (it lasts the night), so pick the special ones by
+			-- their blurb: the plain Normal moon has none.
+			if def.Blurb ~= "" then
 				table.insert(list, { label = def.Name, value = def.Id, color = PURPLE })
 			end
 		end

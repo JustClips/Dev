@@ -399,7 +399,12 @@ local function removeEvent(id: string)
 	end
 	active[id] = nil
 	if e.Type == "Weather" then
-		S.WeatherService:Stop()
+		local def = Weather.ById[e.Value or ""]
+		if def and def.Kind == "Moon" then
+			S.WeatherService:StopMoon(def.Id)
+		else
+			S.WeatherService:Stop()
+		end
 	elseif e.Type == "EggRain" then
 		S.EventService:AdminStopShower()
 	end

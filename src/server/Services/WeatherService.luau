@@ -116,6 +116,14 @@ function WeatherService:Begin(id: string, seconds: number?): boolean
 	return true
 end
 
+-- Ends a special moon early (admin event stopped). Leaves any other moon alone.
+function WeatherService:StopMoon(id: string)
+	if moon and moon.Id == id then
+		moon = nil
+		publish()
+	end
+end
+
 function WeatherService:Stop()
 	weather = nil
 	weatherEnds = 0
@@ -331,6 +339,7 @@ local function onNight()
 	publish()
 end
 
+local lastPhase = "Day" -- phase the cycle loop last saw
 local trusted = false -- set while the admin panel runs a command (AdminService checked it)
 
 local function isAdmin(player: Player?): boolean
@@ -340,9 +349,20 @@ local function isAdmin(player: Player?): boolean
 	return player ~= nil and (RunService:IsStudio() or table.find(Weather.Admins, player.UserId) ~= nil)
 end
 
--- Moves the cycle so it is now `t` seconds into it.
+-- Moves the cycle so it is now `t` seconds into it. A jump into a new phase runs that
+-- phase's start here, so the cycle loop doesn't run it again half a second later (that
+-- re-rolled the night's moon and wiped a moon an admin had just set).
 local function jumpTo(t: number)
 	cycleStart = serverNow() - t
+	local phase = Weather.phase(t)
+	if phase ~= lastPhase then
+		lastPhase = phase
+		if phase == "Day" then
+			onDay()
+		elseif phase == "Night" then
+			onNight()
+		end
+	end
 	publish()
 end
 
@@ -508,7 +528,7 @@ function WeatherService:Start()
 	end
 
 	task.spawn(function()
-		local lastPhase = "Day"
+		lastPhase = "Day"
 		local nextStrike, nextDrop, nextEggTick, nextGrow = 0, 0, os.clock() + Weather.EggTick, os.clock() + 5
 		while true do
 			task.wait(0.5)
