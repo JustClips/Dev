@@ -431,7 +431,7 @@ def hud():
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("UpgradesButton", "Upgrade", "Upgrade", "#FF9A3C", 2),
         rail_tile("BaseButton", "Base", "Base", PILL_BASE, 3),
-        rail_tile("MoreButton", "More", "More", REBIRTH, 4, ico_px=74, ico_x=1, ico_y=39, label_x=-2),
+        rail_tile("MoreButton", "More", "More", REBIRTH, 4, ico_px=74, ico_x=1, ico_y=42, label_x=-2),
     ])
 
     def menu(name, title, tiles):
