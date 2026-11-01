@@ -10,6 +10,7 @@
 -- menu has one.
 -- Also here: the Gear badge (next tool affordable).
 local GuiService = game:GetService("GuiService")
+local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -67,7 +68,6 @@ function MenuController:Open(name: string)
 	end
 	openName = name
 	menu.Visible = true
-	away.Visible = true
 	place(name)
 	task.defer(place, name) -- AutomaticSize settles a frame later
 	Ui.popFrame(menu)
@@ -109,7 +109,12 @@ end
 
 -- Called by the ZonePicker (HudController): the click-away also closes the picker.
 function MenuController:SetAway(on: boolean)
-	away.Visible = on or openName ~= nil
+	away.Visible = on
+end
+
+local function inside(gui: GuiObject, at: Vector2): boolean
+	local p, size = gui.AbsolutePosition, gui.AbsoluteSize
+	return at.X >= p.X and at.X <= p.X + size.X and at.Y >= p.Y and at.Y <= p.Y + size.Y
 end
 
 local function anyBadge(menu: Frame): number
@@ -219,6 +224,29 @@ function MenuController:Start()
 			end
 		end
 	end
+	-- A tap outside the open menu closes it, and that same tap still reaches whatever it
+	-- hit (Dev, 2026-11-01: a full-screen click catcher ate the first click). Taps on the
+	-- menu or its own core button are left to them.
+	UserInputService.InputBegan:Connect(function(input)
+		local name = openName
+		if not name then
+			return
+		end
+		local kind = input.UserInputType
+		if kind ~= Enum.UserInputType.MouseButton1 and kind ~= Enum.UserInputType.Touch then
+			return
+		end
+		local at = Vector2.new(input.Position.X, input.Position.Y)
+		local menu, core = menus[name], cores[name]
+		if inside(menu, at) or inside(core, at) then
+			return
+		end
+		task.defer(function()
+			if openName == name then
+				MenuController:Close()
+			end
+		end)
+	end)
 	Ui.onScale(function()
 		if openName then
 			place(openName)
