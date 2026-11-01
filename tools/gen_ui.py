@@ -1601,16 +1601,24 @@ def settings():
             ]),
         ])
 
+    sweep_t = auto_toggle("AutoSweep", "Auto Sweep", "Auto", 1)
+    sell_t = auto_toggle("AutoSell", "Auto Sell", "Sell", 2)
+    for t in (sweep_t, sell_t):
+        t["properties"]["Size"] = U(0.5, -6, 1, 0)
+        t["properties"]["Visible"] = True
     body = [
         row("Music", "Music", "Music", 80),
         row("Sfx", "Sound effects", "Speaker", 176),
         # Roblox's own feedback prompt (SocialService:PromptFeedbackSubmissionAsync).
         # Codes moved to the end of the Shop (Dev, 2026-10-31).
-        button("Feedback", U(1, -28, 0, 52), U(0, 14, 0, 272), color=HEADER, label="Feedback", ts=22, ico="Star", ico_px=32),
+        # Auto Sweep / Auto Sell switches (Dev 2026-11-01: on the HUD they ran into the quest
+        # list). Pass owners flip them here; without the pass the tag says GET (HudController).
+        frame("Autos", U(1, -28, 0, 52), U(0, 14, 0, 272), children=[hlist(12, "Left", "Center"), sweep_t, sell_t]),
+        button("Feedback", U(1, -28, 0, 52), U(0, 14, 0, 336), color=HEADER, label="Feedback", ts=22, ico="Star", ico_px=32),
         text("Track", "", U(1, -28, 0, 22), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True),
     ]
-    # 370 tall so "Now playing" has its own line under the buttons.
-    write("Settings", screen([dim(), window(520, 370, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
+    # 434 tall so "Now playing" has its own line under the buttons.
+    write("Settings", screen([dim(), window(520, 434, "Settings", "Gear", body, header="#5A6585", scale=1.4)], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Group reward

@@ -330,6 +330,23 @@ local function setToggle(button: GuiButton, owned: boolean, on: boolean)
 	button.BackgroundColor3 = if on then Color3.fromRGB(30, 120, 70) else NAVY
 end
 
+-- Settings switches: ON / OFF for pass owners, GET (opens the pass in the Shop) otherwise.
+local function setSettingsToggle(button: GuiButton?, owned: boolean, on: boolean)
+	if not button then
+		return
+	end
+	setToggle(button, true, owned and on)
+	if not owned then
+		local state = button:FindFirstChild("State") :: Frame?
+		local label = state and state:FindFirstChild("Label") :: TextLabel?
+		if state and label then
+			state.BackgroundColor3 = Color3.fromRGB(255, 196, 46)
+			label.Text = "GET"
+		end
+	end
+	button:SetAttribute("Owned", owned)
+end
+
 -- During the tutorial the screen is almost empty (Dev, 2026-10-31: "hide everything, only
 -- show stuff needed by the tutorial and only when it's needed"). The cash/bag panel and
 -- the hotbar stay; every other button shows up at the step that uses it, alone:
@@ -401,8 +418,11 @@ local function render(data)
 		progress.Visible = false
 	end
 
-	setToggle(el.AutoButton, data.Gamepasses.AutoSweep == true, data.AutoSweep)
-	setToggle(el.AutoSellButton, data.Gamepasses.SellAnywhere == true, data.AutoSell)
+	-- The switches live in Settings now (Dev 2026-11-01); the HUD ones stay hidden.
+	el.AutoButton.Visible = false
+	el.AutoSellButton.Visible = false
+	setSettingsToggle(el.SetAutoSweep, data.Gamepasses.AutoSweep == true, data.AutoSweep)
+	setSettingsToggle(el.SetAutoSell, data.Gamepasses.SellAnywhere == true, data.AutoSell)
 	revealRail(data)
 
 	if el.ZonePicker.Visible then
@@ -954,6 +974,9 @@ function HudController:Init(controllers)
 	el.BoostTip = Ui.find(hud, "BoostTip")
 	el.AutoButton = Ui.find(hud, "Right.AutoButton")
 	el.AutoSellButton = Ui.find(hud, "Right.AutoSellButton")
+	local settings = Ui.screen("Settings")
+	el.SetAutoSweep = settings:FindFirstChild("AutoSweep", true)
+	el.SetAutoSell = settings:FindFirstChild("AutoSell", true)
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
 	el.SpinButton = Ui.find(hud, "SpinButton")
@@ -1275,6 +1298,23 @@ function HudController:Start()
 			Net.event("SetAutoSell"):FireServer(not data.AutoSell)
 		end
 	end)
+	for _, pair in { { el.SetAutoSweep, "SetAutoSweep", "AutoSweep" }, { el.SetAutoSell, "SetAutoSell", "AutoSell" } } do
+		local button, remote, field = pair[1], pair[2], pair[3]
+		if button then
+			Ui.button(button, function()
+				local data = State.data
+				if not data then
+					return
+				end
+				if button:GetAttribute("Owned") then
+					Net.event(remote):FireServer(not data[field])
+				else
+					Ui.close("Settings")
+					C.ShopController:Open("Passes")
+				end
+			end)
+		end
+	end
 
 	Net.event("Notify").OnClientEvent:Connect(function(text: string, kind: string?)
 		HudController:Toast(text, kind)
