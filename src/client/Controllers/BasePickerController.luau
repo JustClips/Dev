@@ -84,6 +84,8 @@ end
 -- hidden while the try-on bar is up and comes back as it was afterwards.
 local hiddenScreens: { ScreenGui } = {}
 local function hideOtherScreens(on: boolean)
+	-- Prompts ("Change Base", eggs...) too (Dev 2026-11-01).
+	ProximityPromptService.Enabled = not on
 	if on then
 		local gui = Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")
 		if not gui then
