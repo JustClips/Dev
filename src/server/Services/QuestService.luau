@@ -139,8 +139,14 @@ local function jobState(player: Player, data, now_: { [string]: number }): (Ques
 		flags.QuestBase = table.clone(now_)
 		flags.QuestJobsV = Quests.JobsVersion
 	elseif flags.QuestJobsV ~= Quests.JobsVersion then
-		-- Saves from before the starter jobs were put in front: keep them on the same job.
-		flags.QuestJob += Quests.StarterJobs
+		-- Keep saves on the same job when jobs were added or removed in front of it.
+		-- v1 (none) -> v3: +1 (FreeSpin added). v2 -> v3: Broom and Power (jobs 1-2)
+		-- removed, so jobs 1-2 become job 1 and later ones move down 2.
+		if flags.QuestJobsV == 2 then
+			flags.QuestJob = math.max(1, flags.QuestJob - 2)
+		else
+			flags.QuestJob += 1
+		end
 		flags.QuestJobsV = Quests.JobsVersion
 	end
 	local q = Quests.job(flags.QuestJob)

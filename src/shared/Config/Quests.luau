@@ -59,15 +59,14 @@ end
 
 -- The Quest Master's jobs, in order. They start once the tutorial is done (the tutorial
 -- covers the first sweep, egg, hatch and sell).
--- The first 3 (Dev, 2026-10-31, shorter tutorial) used to be tutorial steps: the free
--- Broom, the free Sweep Power level and the free spin. They check what you have, so
--- players who already did them can claim them right away.
-Quests.StarterJobs = 3
--- Bump when jobs are inserted before existing ones: QuestService moves saved job numbers.
-Quests.JobsVersion = 2
+-- The first one is the free wheel spin (checks what you have, so players who already
+-- spun can claim it right away). The free Broom and free Sweep Power jobs were removed
+-- 2026-11-01 (Dev): the tutorial teaches both now.
+Quests.StarterJobs = 1
+-- Bump when jobs are added/removed before existing ones: QuestService moves saved job
+-- numbers (v2 added Broom, Power, FreeSpin in front; v3 removed Broom and Power).
+Quests.JobsVersion = 3
 Quests.Jobs = {
-	{ Kind = "Tool", Goal = Tools.FreeTier, Free = true, Reward = CASH(60, 0.25) },
-	{ Kind = "Power", Goal = 1, Free = true, Reward = CASH(90, 0.3) },
 	{ Kind = "FreeSpin", Goal = 1, Free = true, Reward = ITEM("LuckPotion") },
 	{ Kind = "Leaves", Goal = 200, Reward = CASH(120, 0.3) },
 	{ Kind = "Sells", Goal = 3, Reward = ITEM("LuckPotion") },

@@ -126,7 +126,18 @@ local function toolRows(data)
 			setStatus(row, "NEXT", GOLD)
 			-- The price is on the button (Dev: it was easy to miss under the name).
 			setMain(row, if toolPrice == 0 then "FREE!" else `Buy {Format.cash(toolPrice)}`, if afford then GREEN else GREY, function()
-				toast(Net.func("BuyNextTool"):InvokeServer())
+				local teaching = State.data ~= nil and State.data.TutorialStep == "Upgrade"
+				local ok, message = Net.func("BuyNextTool"):InvokeServer()
+				toast(ok, message)
+				-- Tutorial (Dev, 2026-11-01): after the free Broom, Gear closes by itself a
+				-- second later and the Upgrade menu opens, so the next step's spotlight lands
+				-- straight on the Upgrades tile.
+				if ok and teaching then
+					task.delay(1, function()
+						Ui.close("Garage")
+						C.MenuController:Open("UpgradeMenu")
+					end)
+				end
 			end)
 		else
 			setStatus(row, "LOCKED", GREY)
