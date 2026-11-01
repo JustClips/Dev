@@ -437,6 +437,11 @@ function Ui.toggle(name: string)
 	end
 end
 
+-- The scale full windows open at (fits the screen).
+function Ui.windowScale(): number
+	return windowScale
+end
+
 function Ui.scale(): number
 	return currentScale
 end

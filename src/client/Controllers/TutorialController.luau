@@ -490,7 +490,11 @@ local function update()
 		-- window when it's open.
 		local lift = cardLift(onHotbar)
 		if inventoryOpen then
-			lift = math.ceil((112 + 370) * Ui.scale()) + 10
+			local inv = Ui.screen("Inventory")
+			local window = inv:FindFirstChild("Window") :: GuiObject?
+			if window then
+				lift = math.ceil(inv.AbsolutePosition.Y + inv.AbsoluteSize.Y - window.AbsolutePosition.Y) + 10
+			end
 		end
 		card.Position = UDim2.new(0.5, 0, 1, -lift)
 		return

@@ -13,6 +13,7 @@
 -- Robux (+3, the pass). Tap a pet in your park to pick it up or see its card. Sell pets
 -- at the Pet Trader on your base (TraderController).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local Client = script.Parent.Parent
@@ -446,10 +447,39 @@ end
 
 ------------------------------------------------------------------ public
 
+-- The bag sits right above the hotbar and below the World Cleaned bar, shrunk to fit in
+-- between (Dev, 2026-11-01: on phones it went up into the top bar and over other HUD).
+local WIN_H = 384
+local function place(tween: boolean)
+	local window = gui:FindFirstChild("Window") :: Frame?
+	local scale = window and window:FindFirstChild("AutoScale") :: UIScale?
+	if not (window and scale) then
+		return
+	end
+	local hud = Ui.screen("Hud")
+	local origin = gui.AbsolutePosition.Y
+	local hotbar = hud:FindFirstChild("Hotbar") :: GuiObject?
+	local moon = hud:FindFirstChild("MoonPanel") :: GuiObject?
+	local bottom = if hotbar then hotbar.AbsolutePosition.Y - origin - 8 else gui.AbsoluteSize.Y - 112
+	local top = 8
+	if moon and moon.Visible then
+		top = math.max(top, moon.AbsolutePosition.Y + moon.AbsoluteSize.Y - origin + 8)
+	end
+	local target = math.clamp((bottom - top) / WIN_H, 0.3, Ui.windowScale())
+	window.AnchorPoint = Vector2.new(0.5, 1)
+	window.Position = UDim2.new(0.5, 0, 0, math.floor(bottom))
+	if tween then
+		TweenService:Create(scale, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = target }):Play()
+	else
+		scale.Scale = target
+	end
+end
+
 function InventoryController:Open(_tab: string?)
 	table.clear(fresh)
 	markSeen()
 	Ui.open("Inventory")
+	place(true)
 	render(true)
 end
 
@@ -483,6 +513,11 @@ function InventoryController:Init(controllers)
 end
 
 function InventoryController:Start()
+	Ui.onScale(function()
+		if gui.Enabled then
+			place(false)
+		end
+	end)
 	-- Tiles drawn before the pet/egg models loaded show placeholders: redraw once they're in.
 	AssetLibrary.onCoreReady(function()
 		lastSignature = ""
