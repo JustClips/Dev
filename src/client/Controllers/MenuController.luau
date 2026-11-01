@@ -39,7 +39,9 @@ local function place(name: string)
 	local menu = menus[name]
 	local button = cores[name]
 	local origin = hud.AbsolutePosition
-	local x = button.AbsolutePosition.X + button.AbsoluteSize.X + 10 - origin.X
+	-- Far enough right that the core button's badge (sticking out of its corner) stays
+	-- visible next to the menu (Dev, 2026-11-01: the menu covered it).
+	local x = button.AbsolutePosition.X + button.AbsoluteSize.X + math.ceil(22 * Ui.scale()) - origin.X
 	local y = button.AbsolutePosition.Y + button.AbsoluteSize.Y / 2 - origin.Y
 	-- Keep the whole strip (and its title above it) on screen.
 	local half = menu.AbsoluteSize.Y / 2
