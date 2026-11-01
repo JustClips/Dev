@@ -13380,6 +13380,7 @@ Assets.Images = {
 	Icon_LuckyCat = "rbxassetid://82725409080543",
 	Icon_LuckyClover = "rbxassetid://101589111469741",
 	Icon_Merchant = "rbxassetid://90406456049168",
+	Icon_More = "rbxassetid://88336006873108",
 	Icon_Meteor = "rbxassetid://115351344385246",
 	Icon_MutationSpray = "rbxassetid://131781520151089",
 	Icon_Potion = "rbxassetid://117153372879344",

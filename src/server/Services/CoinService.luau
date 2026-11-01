@@ -77,7 +77,9 @@ end
 -- Drops `amount` cash as `count` coins flying out of `origin` and landing on leaf tiles
 -- around `center` (between minR and maxR studs away; with `facing`, only in front). With no
 -- leaf tiles nearby (Sell Anywhere at your base) they land in a ring around center.
-function CoinService:Drop(player: Player, amount: number, origin: Vector3, center: Vector3, count: number, minR: number, maxR: number, facing: Vector3?)
+-- `ring`: land in a plain circle around `center` (minR..maxR) instead of on leaf tiles
+-- (the leaf dumps: coins pile up around the bin, Dev 2026-11-01).
+function CoinService:Drop(player: Player, amount: number, origin: Vector3, center: Vector3, count: number, minR: number, maxR: number, facing: Vector3?, ring: boolean?)
 	if amount <= 0 then
 		return
 	end
@@ -95,7 +97,7 @@ function CoinService:Drop(player: Player, amount: number, origin: Vector3, cente
 	local each = amount / count
 	local expires = os.clock() + Economy.Coins.AutoCollectSeconds
 	local flat = if facing then Vector3.new(facing.X, 0, facing.Z) else nil
-	local tiles = landingTiles(center, minR, maxR, if flat and flat.Magnitude > 0 then flat.Unit else nil)
+	local tiles = if ring then {} else landingTiles(center, minR, maxR, if flat and flat.Magnitude > 0 then flat.Unit else nil)
 	local sent = {}
 	for _ = 1, count do
 		nextId += 1
@@ -107,7 +109,12 @@ function CoinService:Drop(player: Player, amount: number, origin: Vector3, cente
 			pos = tile + Vector3.new(rng:NextNumber(-jitter, jitter), 0, rng:NextNumber(-jitter, jitter))
 		else
 			local a = rng:NextNumber(0, math.pi * 2)
-			local r = rng:NextNumber(math.min(minR, 3), math.min(maxR, 9))
+			if ring and flat and flat.Magnitude > 0 then
+				-- The front half only (round the side the player stands on, clear of the
+				-- market hall or the Pet Trader behind the bin).
+				a = math.atan2(flat.Z, flat.X) + rng:NextNumber(-1.9, 1.9)
+			end
+			local r = if ring then rng:NextNumber(minR, maxR) else rng:NextNumber(math.min(minR, 3), math.min(maxR, 9))
 			pos = Vector3.new(center.X + math.cos(a) * r, center.Y, center.Z + math.sin(a) * r)
 		end
 		mine[nextId] = { value = each, pos = pos, expires = expires }

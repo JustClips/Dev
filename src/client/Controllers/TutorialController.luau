@@ -381,7 +381,10 @@ local function jobPointer(data): GuiObject?
 	if not job or job.Done or (job.Number or 99) > Quests.StarterJobs then
 		return nil
 	end
-	if job.Kind == "Tool" and not Ui.isOpen(Ui.screen("Garage")) then
+	if job.Kind == "Tool" then
+		if Ui.isOpen(Ui.screen("Garage")) then
+			return C.GarageController:NextToolButton()
+		end
 		return C.MenuController:PointerFor("UpgradeMenu", "ToolsButton")
 	elseif job.Kind == "Power" and not C.UpgradeController:IsOpen() then
 		return C.MenuController:PointerFor("UpgradeMenu", "TreeButton")
@@ -477,6 +480,9 @@ local function update()
 			pointAt(Ui.find(hud, "Rail.BaseButton"))
 		elseif key == "Upgrade" and not Ui.isOpen(Ui.screen("Garage")) then
 			pointAt(C.MenuController:PointerFor("UpgradeMenu", "ToolsButton"))
+		elseif key == "Upgrade" then
+			-- Gear is open: the spotlight moves onto the FREE! button of the Broom card.
+			pointAt(C.GarageController:NextToolButton())
 		else
 			pointAt(nil)
 		end
@@ -567,6 +573,19 @@ function TutorialController:Init(controllers)
 	spot = Ui.find(hud, "Spot")
 	ring = Ui.find(spot, "Ring")
 	ringStroke = Ui.find(ring, "Stroke")
+	-- The spotlight and arrow also point at buttons inside windows (the FREE! Broom in
+	-- Gear), so they live in their own screen above every window. Same insets as the HUD,
+	-- so HUD coordinates still line up.
+	local top = Instance.new("ScreenGui")
+	top.Name = "TutorialTop"
+	top.ResetOnSpawn = false
+	top.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	top.DisplayOrder = 30
+	top.IgnoreGuiInset = hud.IgnoreGuiInset
+	top.ScreenInsets = hud.ScreenInsets
+	top.Parent = hud.Parent
+	spot.Parent = top
+	pointer.Parent = top
 	doneGui = Ui.screen("TutorialDone")
 	glow = Instance.new("Highlight")
 	glow.Name = "TutorialGlow"

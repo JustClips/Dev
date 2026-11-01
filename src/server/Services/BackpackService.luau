@@ -212,8 +212,9 @@ local function dropCoins(player: Player, dump: Dump)
 	end
 	local count = math.max(Economy.Coins.MinBurst, coinCount(player, dump.unpaidUnits))
 	local cf = World.Dumps[dump.spot]
-	-- Out over the leaf field in front of the dump, well clear of the market hall.
-	S.CoinService:Drop(player, dump.unpaid, (cf * CFrame.new(0, 3, -3.8)).Position, World.dumpSpot(dump.spot), count, 7, 26, cf.LookVector)
+	-- In a ring on the ground around the bin (Dev, 2026-11-01: coins flying from the base out
+	-- onto the leaves looked weird).
+	S.CoinService:Drop(player, dump.unpaid, (cf * CFrame.new(0, 3, -3.8)).Position, cf.Position, count, 6.5, 11, cf.LookVector, true)
 	dump.unpaid = 0
 	dump.unpaidUnits = 0
 end

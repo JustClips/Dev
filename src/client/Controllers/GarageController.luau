@@ -125,7 +125,7 @@ local function toolRows(data)
 		elseif isNext then
 			setStatus(row, "NEXT", GOLD)
 			-- The price is on the button (Dev: it was easy to miss under the name).
-			setMain(row, if toolPrice == 0 then "Get it FREE" else `Buy {Format.cash(toolPrice)}`, if afford then GREEN else GREY, function()
+			setMain(row, if toolPrice == 0 then "FREE!" else `Buy {Format.cash(toolPrice)}`, if afford then GREEN else GREY, function()
 				toast(Net.func("BuyNextTool"):InvokeServer())
 			end)
 		else
@@ -251,6 +251,19 @@ function GarageController:Open(which: string?)
 	tab = which or tab
 	Ui.open("Garage")
 	render()
+end
+
+-- The Buy button of the next tool's card while the Tools tab is open (the tutorial and
+-- the first Quest Master job point at it), else nil.
+function GarageController:NextToolButton(): GuiObject?
+	if not Ui.isOpen(gui) or tab ~= "Tools" then
+		return nil
+	end
+	local data = State.data
+	local nextTool = data and data.ToolTier < Tools.MaxTier and Tools.get(data.ToolTier + 1)
+	local row = nextTool and list:FindFirstChild(nextTool.Id)
+	local main = row and row:FindFirstChild("Main")
+	return if main and main:IsA("GuiObject") then main else nil
 end
 
 function GarageController:Toggle()
