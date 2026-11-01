@@ -243,11 +243,13 @@ end
 local function layoutSpot(target: GuiObject)
 	local scale = Ui.scale()
 	local pad = 8 * scale
-	local pos, size = target.AbsolutePosition, target.AbsoluteSize
+	-- In the spotlight's own coordinates (its screen can sit at a different origin than
+	-- the target's window).
+	local pos, size = target.AbsolutePosition - spot.AbsolutePosition, target.AbsoluteSize
 	-- Whole pixels: half-pixel edges left a thin bright seam across the dimmed screen.
 	local x0, y0 = math.floor(pos.X - pad), math.floor(pos.Y - pad)
 	local x1, y1 = math.ceil(pos.X + size.X + pad), math.ceil(pos.Y + size.Y + pad)
-	local w, h = hud.AbsoluteSize.X, hud.AbsoluteSize.Y
+	local w, h = spot.AbsoluteSize.X, spot.AbsoluteSize.Y
 	local big = 3000
 	local function put(name: string, x: number, y: number, sw: number, sh: number)
 		local f = spot:FindFirstChild(name) :: Frame
@@ -593,6 +595,9 @@ function TutorialController:Init(controllers)
 	top.DisplayOrder = 30
 	top.IgnoreGuiInset = hud.IgnoreGuiInset
 	top.ScreenInsets = hud.ScreenInsets
+	-- The dim must reach the screen edges: by default a ScreenGui is clipped to the safe
+	-- area, which left the notch strip and bottom edge bright on phones (Dev, 2026-11-01).
+	top.ClipToDeviceSafeArea = false
 	top.Parent = hud.Parent
 	spot.Parent = top
 	pointer.Parent = top
@@ -648,7 +653,7 @@ function TutorialController:Start()
 		local bob = math.abs(math.sin(os.clock() * 5)) * 12 * Ui.scale()
 		local size = 56 * Ui.scale()
 		pointer.Size = UDim2.fromOffset(size, size)
-		local at = target.AbsolutePosition
+		local at = target.AbsolutePosition - spot.AbsolutePosition
 		pointer.Position = UDim2.fromOffset(at.X + target.AbsoluteSize.X / 2, at.Y - 4 - bob)
 	end)
 	State.Changed:Connect(update)
