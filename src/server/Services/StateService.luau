@@ -53,8 +53,17 @@ local function tutorialStep(player: Player, session: any): string
 		return "Done"
 	end
 	if data.Stats.Sells == 0 then
+		-- Once Sell shows it stays until you've sold (Dev, 2026-11-01: the tutorial went back
+		-- a step when the bag dipped under the goal, e.g. capacity changed in a car).
+		if session.Runtime.TutorialSell then
+			return "Sell"
+		end
 		local goal = math.min(SWEEP_GOAL, S.ToolService:GetCapacity(player))
-		return if data.Backpack >= goal then "Sell" else "Sweep"
+		if data.Backpack >= goal then
+			session.Runtime.TutorialSell = true
+			return "Sell"
+		end
+		return "Sweep"
 	end
 	if data.ToolTier < Tools.FreeTier then
 		return "Upgrade"
@@ -77,7 +86,9 @@ end
 -- The egg lesson: after the tutorial, until the first hatch. The furthest egg step wins:
 -- an egg growing, then one in the bag, then one in your hands, then one on the ground.
 -- nil when there's nothing to teach right now (no egg found yet, or already hatched one).
-local function eggLesson(session: any): string?
+local LESSON_ORDER = { Egg = 1, Base = 2, Place = 3, Hatching = 4, Open = 5 }
+
+local function lessonNow(session: any): string?
 	local data = session.Data
 	if not data.Flags.TutorialDone or data.Stats.Hatches > 0 then
 		return nil
@@ -101,6 +112,25 @@ local function eggLesson(session: any): string?
 		return "Egg"
 	end
 	return nil
+end
+
+-- Never steps back (Dev, 2026-11-01: "it can go down a step"): picking an egg back out of
+-- the bag or dropping it would show an earlier step. The furthest step reached this
+-- session stays until the lesson ends (the first hatch).
+local function eggLesson(session: any): string?
+	local lesson = lessonNow(session)
+	local runtime = session.Runtime
+	if not lesson then
+		if session.Data.Stats.Hatches > 0 then
+			runtime.LessonMax = nil
+		end
+		return if session.Data.Stats.Hatches > 0 then nil else runtime.LessonMax
+	end
+	if runtime.LessonMax and LESSON_ORDER[runtime.LessonMax] > LESSON_ORDER[lesson] then
+		return runtime.LessonMax
+	end
+	runtime.LessonMax = lesson
+	return lesson
 end
 
 -- The tutorial step this player was last shown ("Done" once finished).
