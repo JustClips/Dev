@@ -36,6 +36,7 @@ local AssetLibrary = require(Shared.AssetLibrary)
 local EggModel = require(Shared.EggModel)
 local Aliens = require(Shared.Config.Aliens)
 local Eggs = require(Shared.Config.Eggs)
+local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Format = require(Shared.Format)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
@@ -579,9 +580,8 @@ local function play(info)
 			end
 		end
 	end
-	local egg = AssetLibrary.egg(eggRarity)
+	local egg = AssetLibrary.eggOf({ Rarity = eggRarity, Zone = info.EggZone, Mutation = info.EggMutation })
 	egg.Name = "OpeningEgg"
-	AssetLibrary.applyMutation(egg, info.EggMutation)
 	local eggLooks = looks(egg)
 	egg:ScaleTo(scene.eggScale)
 	egg:PivotTo(scene.origin)
@@ -1142,7 +1142,7 @@ local function updateEggPrompts()
 		-- which made Skip Hatch show up from far away on big eggs.
 		p.MaxActivationDistance = EGG_PROMPT_RANGE + math.max(root.Size.X, root.Size.Z) / 2
 		p:SetAttribute("Ready", ready)
-		p.ObjectText = `{rarity} Egg`
+		p.ObjectText = if egg:GetAttribute("Zone") == LimitedEgg.Id then LimitedEgg.Name else `{rarity} Egg`
 		if ready then
 			p.ActionText = "Open"
 			p.Enabled = true
@@ -1224,8 +1224,7 @@ local function playOther(info)
 		local tier = TIERS[power]
 		local eggRarity = info.EggRarity or info.Rarity
 		local eggScale = Weights.visualScale(Weights.eggMult(eggRarity, info.EggWeight)) * 1.25
-		local egg = AssetLibrary.egg(eggRarity)
-		AssetLibrary.applyMutation(egg, info.EggMutation)
+		local egg = AssetLibrary.eggOf({ Rarity = eggRarity, Zone = info.EggZone, Mutation = info.EggMutation })
 		looks(egg)
 		egg:ScaleTo(eggScale)
 		egg:PivotTo(spot)
@@ -1315,9 +1314,8 @@ function HatchController:Start()
 			local spot = eggSpot(info)
 			if spot then
 				local eggRarity = info.EggRarity or info.Rarity
-				local egg = AssetLibrary.egg(eggRarity)
+				local egg = AssetLibrary.eggOf({ Rarity = eggRarity, Zone = info.EggZone, Mutation = info.EggMutation })
 				egg.Name = "WaitingEgg"
-				AssetLibrary.applyMutation(egg, info.EggMutation)
 				for _, d in egg:GetDescendants() do
 					if d:IsA("BasePart") then
 						d.Anchored = true

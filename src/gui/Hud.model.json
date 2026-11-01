@@ -6449,26 +6449,26 @@
         "Size": [
          [
           1,
-          0
+          -8
          ],
          [
           1,
-          0
+          -2
          ]
         ],
         "Position": [
          [
-          0,
+          0.5,
           0
          ],
          [
-          0,
+          0.5,
           0
          ]
         ],
         "AnchorPoint": [
-         0,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,

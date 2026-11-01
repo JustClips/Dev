@@ -570,7 +570,8 @@ local function addEggBanner(now: number)
 	banner.Name = "LimitedEgg"
 	Ui.find(banner, "Strip.Title").Text = string.upper(LimitedEgg.Name)
 	Ui.find(banner, "Strip.Tag.Label").Text = "LIMITED"
-	ModelView.show(Ui.find(banner, "Egg"), AssetLibrary.egg(LimitedEgg.EggRarity), "Egg_" .. LimitedEgg.EggRarity)
+	local limitedKey = AssetLibrary.eggKey({ Rarity = LimitedEgg.EggRarity, Zone = LimitedEgg.Id })
+	ModelView.show(Ui.find(banner, "Egg"), AssetLibrary.limitedEgg(), limitedKey)
 	local pets = Ui.find(banner, "Pets") :: Frame
 	local odds = table.clone(LimitedEgg.Odds)
 	table.sort(odds, function(a, b)

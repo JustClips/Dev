@@ -91,8 +91,7 @@ local function refreshCarryVisual(player: Player)
 	folder.Name = "CarriedEggs"
 	for i, entry in carried do
 		-- A smaller copy of the egg model, welded above the head.
-		local egg = AssetLibrary.egg(entry.Rarity)
-		AssetLibrary.applyMutation(egg, entry.Mutation)
+		local egg = AssetLibrary.eggOf(entry)
 		egg:ScaleTo(0.6)
 		egg:PivotTo(head.CFrame * CFrame.new(0, 0.8 + (i - 1) * 1.6, 0))
 		for _, part in egg:GetDescendants() do

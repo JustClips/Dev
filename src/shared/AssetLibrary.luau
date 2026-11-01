@@ -9,6 +9,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Assets = require(script.Parent.Config.Assets)
 local AlienModel = require(script.Parent.AlienModel)
 local EggModel = require(script.Parent.EggModel)
+local LimitedEgg = require(script.Parent.Config.LimitedEgg)
 
 local AssetLibrary = {}
 
@@ -563,6 +564,42 @@ function AssetLibrary.egg(rarity: string): Model
 	local placeholder = EggModel.build(rarity)
 	placeholder:SetAttribute("Placeholder", true)
 	return placeholder
+end
+
+-- The model for one egg ({ Rarity, Zone?, Mutation? }: a bag egg, a hatching entry...).
+-- The limited egg (Config/LimitedEgg) uses its own model "Egg_<Id>" once that is uploaded,
+-- and until then the base rarity's egg in its skin, so it looks the same everywhere.
+function AssetLibrary.eggOf(entry: { Rarity: string, Zone: string?, Mutation: string? }): Model
+	if LimitedEgg.isEgg(entry) then
+		local own = AssetLibrary.get("Egg_" .. LimitedEgg.Id)
+		if own then
+			own.Name = LimitedEgg.Id .. "Egg"
+			own:SetAttribute("EggRarity", LimitedEgg.EggRarity)
+			own:SetAttribute("LimitedEgg", LimitedEgg.Id)
+			AssetLibrary.eggExtras(own, LimitedEgg.Id)
+			return own
+		end
+		local model = AssetLibrary.egg(LimitedEgg.EggRarity)
+		AssetLibrary.applyMutation(model, LimitedEgg.EggMutation)
+		return model
+	end
+	local model = AssetLibrary.egg(entry.Rarity)
+	AssetLibrary.applyMutation(model, entry.Mutation)
+	return model
+end
+
+-- The asset name ModelView waits for when showing eggOf(entry).
+function AssetLibrary.eggKey(entry: { Rarity: string, Zone: string? }): string
+	if LimitedEgg.isEgg(entry) then
+		local own = "Egg_" .. LimitedEgg.Id
+		return if Assets.Models[own] then own else "Egg_" .. LimitedEgg.EggRarity
+	end
+	return "Egg_" .. entry.Rarity
+end
+
+-- The limited egg itself (shop banner, purchase popup).
+function AssetLibrary.limitedEgg(): Model
+	return AssetLibrary.eggOf({ Rarity = LimitedEgg.EggRarity, Zone = LimitedEgg.Id })
 end
 
 -- Glow and particles per rarity, added to the egg's Body (they scale with Model:ScaleTo).

@@ -129,8 +129,11 @@ local function tileFor(entry: BagItems.Entry, data): TextButton
 	BagItems.show(viewport, icon, entry, data)
 	nameLabel.Text = entry.name
 	nameLabel.TextColor3 = entry.color
-	Ui.fitText(nameLabel, 16, 7)
-	Ui.fitText(passiveLabel, 14, 6)
+	-- Roblox's own fit (TextScaled + the template's size limits): long names like "Super
+	-- Luck Potion" ran into the next tile with the measured fit (Dev 2026-11-01).
+	nameLabel.TextScaled = true
+	nameLabel.TextWrapped = true
+	passiveLabel.TextScaled = true
 	local newTag = tile:FindFirstChild("New") :: Frame?
 	if newTag then
 		newTag.Visible = fresh[entry.key] == true
@@ -528,7 +531,13 @@ function InventoryController:Start()
 	end)
 	for _, name in { "All", "Pets", "Eggs", "Items" } do
 		local tab = tabsFrame:FindFirstChild(name) :: TextButton
-		Ui.fitText(tab:FindFirstChild("Label") :: TextLabel, 16, 8)
+		local tabLabel = tab:FindFirstChild("Label") :: TextLabel
+		tabLabel.TextScaled = true
+		tabLabel.TextWrapped = false
+		local limit = tabLabel:FindFirstChildOfClass("UITextSizeConstraint") or Instance.new("UITextSizeConstraint")
+		limit.MaxTextSize = 16
+		limit.MinTextSize = 8
+		limit.Parent = tabLabel
 		Ui.button(tab, function()
 			filter = name
 			render(true)

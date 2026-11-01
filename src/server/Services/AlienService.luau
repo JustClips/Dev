@@ -177,7 +177,7 @@ function AlienService:RefreshBase(player: Player)
 		local rarity = Eggs.ByName[entry.Rarity]
 		local spot = baseCf * CFrame.new(entry.X or 0, 0.2, entry.Z or 0)
 		local scale = Weights.visualScale(Weights.eggMult(entry.Rarity, entry.Weight))
-		local egg = AssetLibrary.egg(entry.Rarity)
+		local egg = AssetLibrary.eggOf(entry)
 		egg.Name = entry.Uid
 		-- Built at its current size; every client keeps growing it (HatchController).
 		local fullScale = scale * 1.25

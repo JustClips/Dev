@@ -18,6 +18,7 @@ local Combat = require(Shared.Combat)
 local Aliens = require(Shared.Config.Aliens)
 local PetPassives = require(Shared.PetPassives)
 local Eggs = require(Shared.Config.Eggs)
+local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Format = require(Shared.Format)
 local Weights = require(Shared.Config.Weights)
 local Weather = require(Shared.Config.Weather)
@@ -128,7 +129,8 @@ local function showEgg(model: Model)
 	local size = model:GetAttribute("Size") or "Normal"
 	local weight = model:GetAttribute("Weight") or Weights.eggKg(rarityName)
 	local class = Weights.ByName[size] or Weights.Classes[1]
-	nameLabel.Text = `{if size ~= "Normal" then size .. " " else ""}{rarityName} Egg`
+	local limited = model:GetAttribute("Zone") == LimitedEgg.Id
+	nameLabel.Text = if limited then LimitedEgg.Name else `{if size ~= "Normal" then size .. " " else ""}{rarityName} Egg`
 	nameLabel.TextColor3 = rarity.Color
 	weightLabel.Text = `{Weights.format(weight)} · {class.Name}`
 	weightLabel.TextColor3 = class.Color
@@ -136,7 +138,8 @@ local function showEgg(model: Model)
 	incomeLabel.Text = if left > 0 then `Ready in {Format.time(left)}` else "Ready to open!"
 	incomeLabel.TextColor3 = if left > 0 then Color3.new(1, 1, 1) else Color3.fromRGB(124, 255, 140)
 	local lines = {}
-	local text, color = mutationLine(model:GetAttribute("Mutation"))
+	-- The limited egg's skin is part of its look, not a mutation.
+	local text, color = mutationLine(if limited then nil else model:GetAttribute("Mutation"))
 	if text then
 		table.insert(lines, text)
 	end

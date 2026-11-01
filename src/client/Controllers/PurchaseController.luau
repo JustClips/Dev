@@ -74,7 +74,7 @@ local gui: ScreenGui
 local queue: { { key: string, info: any } } = {}
 local playing = false
 
-type Look = { name: string, icon: string?, egg: string?, color: Color3, toBag: boolean }
+type Look = { name: string, icon: string?, egg: string?, eggZone: string?, color: Color3, toBag: boolean }
 
 -- What to show for a product or pass key: a picture (icon or 3D egg), its name and colour.
 local function lookFor(key: string): Look
@@ -90,7 +90,8 @@ local function lookFor(key: string): Look
 	if kind == "EggPack" or kind == "LimitedEgg" then
 		local rarity = if kind == "LimitedEgg" then LimitedEgg.EggRarity else def.Rarity or "Epic"
 		local tier = Eggs.ByName[rarity]
-		return { name = def.Name, egg = rarity, color = if tier then tier.Color else GOLD, toBag = true }
+		return { name = def.Name, egg = rarity, eggZone = if kind == "LimitedEgg" then LimitedEgg.Id else nil,
+			color = if tier then tier.Color else GOLD, toBag = true }
 	elseif kind == "ItemPack" then
 		for _, item in Items.List do
 			if item.Id == def.Item then
@@ -255,7 +256,8 @@ local function play(key: string, info: any)
 			LightColor = WHITE,
 			ZIndex = 4,
 		}, stage)
-		ModelView.show(viewport, AssetLibrary.egg(look.egg), "Egg_" .. look.egg)
+		local egg = { Rarity = look.egg, Zone = look.eggZone }
+		ModelView.show(viewport, AssetLibrary.eggOf(egg), AssetLibrary.eggKey(egg))
 		item = viewport
 	else
 		item = make("ImageLabel", {

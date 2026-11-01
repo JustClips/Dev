@@ -24,7 +24,7 @@ local POP = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local SCALE = if game:GetService("UserInputService").TouchEnabled then 0.8 else 0.62
 
 local folder: ScreenGui
-type Shown = { gui: BillboardGui, fill: Frame, scale: UIScale, holdStart: number?, conns: { RBXScriptConnection }, outline: Highlight? }
+type Shown = { gui: BillboardGui, fill: Frame, scale: UIScale, pop: NumberValue, holdStart: number?, conns: { RBXScriptConnection }, outline: Highlight? }
 local shown: { [ProximityPrompt]: Shown } = {}
 
 local function keyText(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInputType): string
@@ -91,6 +91,9 @@ local function build(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInp
 	local scale = Instance.new("UIScale")
 	scale.Scale = SCALE * 0.6
 	scale.Parent = holder
+	-- The pop animation runs on this; the frame loop multiplies it with the distance size.
+	local pop = Instance.new("NumberValue")
+	pop.Value = 0.6
 
 	-- Key box with the hold fill.
 	local key = Instance.new("Frame")
@@ -154,7 +157,7 @@ local function build(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInp
 	end
 	refresh()
 
-	local entry: Shown = { gui = gui, fill = fill, scale = scale, holdStart = nil, conns = {} }
+	local entry: Shown = { gui = gui, fill = fill, scale = scale, pop = pop, holdStart = nil, conns = {} }
 	table.insert(entry.conns, prompt:GetPropertyChangedSignal("ActionText"):Connect(refresh))
 	table.insert(entry.conns, prompt:GetPropertyChangedSignal("ObjectText"):Connect(refresh))
 	-- Tapping / clicking the billboard presses the key.
@@ -176,11 +179,11 @@ local function build(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInp
 		fill.Size = UDim2.fromScale(1, 0)
 	end))
 	table.insert(entry.conns, prompt.Triggered:Connect(function()
-		scale.Scale = SCALE * 1.15
-		TweenService:Create(scale, POP, { Scale = SCALE }):Play()
+		pop.Value = 1.15
+		TweenService:Create(pop, POP, { Value = 1 }):Play()
 	end))
 	gui.Parent = folder
-	TweenService:Create(scale, POP, { Scale = SCALE }):Play()
+	TweenService:Create(pop, POP, { Value = 1 }):Play()
 	return entry
 end
 
@@ -256,9 +259,23 @@ function PromptController:Start()
 		end
 	end)
 	ProximityPromptService.PromptHidden:Connect(hide)
-	-- The hold fill.
+	-- The hold fill, and the size: Dev 2026-11-01, a prompt drawn in screen pixels looked
+	-- huge with the camera zoomed out, so it shrinks with distance (and on small screens).
 	RunService.RenderStepped:Connect(function()
+		local camera = Workspace.CurrentCamera
+		local screen = if camera then math.clamp(camera.ViewportSize.Y / 720, 0.75, 1) else 1
 		for prompt, entry in shown do
+			local size = screen
+			local target = entry.gui.Adornee
+			local at = if target and target:IsA("BasePart") then target.Position
+				elseif target and target:IsA("Model") then target:GetPivot().Position
+				elseif target and target:IsA("Attachment") then target.WorldPosition
+				else nil
+			if camera and at then
+				local distance = (camera.CFrame.Position - at).Magnitude
+				size *= math.clamp(22 / math.max(distance, 1), 0.55, 1)
+			end
+			entry.scale.Scale = SCALE * entry.pop.Value * size
 			if entry.holdStart and prompt.HoldDuration > 0 then
 				local t = math.clamp((os.clock() - entry.holdStart) / prompt.HoldDuration, 0, 1)
 				entry.fill.Size = UDim2.fromScale(1, t)

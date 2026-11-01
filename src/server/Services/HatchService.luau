@@ -290,6 +290,7 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 			Weight = weight,
 			EggUid = entry.Uid,
 			EggRarity = entry.Rarity,
+			EggZone = entry.Zone, -- the limited egg has its own look
 			EggMutation = entry.Mutation, -- the weather's upgrade on the egg itself (the show draws it)
 			EggWeight = entry.Weight,
 			X = entry.X,
@@ -307,6 +308,7 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 			Rarity = def.Rarity,
 			Weight = weight,
 			EggRarity = entry.Rarity,
+			EggZone = entry.Zone,
 			EggMutation = entry.Mutation,
 			EggWeight = entry.Weight,
 			X = entry.X,
@@ -435,7 +437,7 @@ function HatchService:Hold(player: Player, uid: string): (boolean, string?)
 	if not root or not character then
 		return true, nil
 	end
-	local model = AssetLibrary.egg(egg.Rarity)
+	local model = AssetLibrary.eggOf(egg)
 	model.Name = "HeldEgg"
 	model:ScaleTo(Weights.visualScale(Weights.eggMult(egg.Rarity, egg.Weight)) * 0.8)
 	local _, size = model:GetBoundingBox()

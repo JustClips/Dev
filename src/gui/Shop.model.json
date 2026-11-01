@@ -4658,7 +4658,7 @@
         "Size": [
          [
           1,
-          -30
+          -32
          ],
          [
           0,
@@ -4684,7 +4684,7 @@
         "Text": "1 EGG",
         "TextColor3": "#FFFFFF",
         "TextSize": 17,
-        "TextXAlignment": "Left",
+        "TextXAlignment": "Right",
         "TextYAlignment": "Center",
         "TextWrapped": true,
         "ZIndex": 5,

@@ -32,6 +32,7 @@ export type Entry = {
 	count: number, -- eggs in a stack, potions owned; 1 for pets / single eggs
 	rarity: string?,
 	mutation: string?, -- eggs: a weather mutation it got in the field (its own stack)
+	zone: string?, -- eggs: LimitedEgg.Id for the limited egg
 }
 
 local WHITE = Color3.new(1, 1, 1)
@@ -103,6 +104,7 @@ local function eggEntry(uid: string, egg): Entry
 		count = 1,
 		rarity = egg.Rarity,
 		mutation = egg.Mutation,
+		zone = egg.Zone,
 	}
 end
 
@@ -246,7 +248,7 @@ function BagItems.resolve(data, key: string): Entry?
 		if uid then
 			local egg = data.Eggs[uid]
 			local e = eggEntry(uid, egg)
-			e.name = `{mutationLabel(egg.Mutation)}{egg.Rarity} Egg`
+			e.name = if LimitedEgg.isEgg(egg) then LimitedEgg.Name else `{mutationLabel(egg.Mutation)}{egg.Rarity} Egg`
 			e.count = count
 			return e
 		end
@@ -302,10 +304,8 @@ function BagItems.show(viewport: ViewportFrame, icon: ImageLabel?, entry: Entry,
 		local pet = data.Pets[entry.id]
 		ModelView.show(viewport, AssetLibrary.alien(pet.Id, pet.Mutation), "Alien_" .. pet.Id)
 	elseif entry.kind == "Egg" then
-		local rarity = entry.rarity or "Common"
-		local model = AssetLibrary.egg(rarity)
-		AssetLibrary.applyMutation(model, entry.mutation)
-		ModelView.show(viewport, model, "Egg_" .. rarity)
+		local egg = { Rarity = entry.rarity or "Common", Mutation = entry.mutation, Zone = entry.zone }
+		ModelView.show(viewport, AssetLibrary.eggOf(egg), AssetLibrary.eggKey(egg))
 	elseif icon then
 		local def = Items.ById[entry.id]
 		icon.Image = if def then AssetLibrary.image(def.Icon) else ""

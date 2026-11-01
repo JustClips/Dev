@@ -509,37 +509,49 @@ local function styleBadge(badge: GuiObject)
 	-- One disc: glossy red fill with a thick white rim drawn by the stroke (a red disc
 	-- nested inside a white one rounded to different pixels on small screens and looked
 	-- off-centre, Dev 2026-11-01).
-	badge.BackgroundColor3 = Color3.new(1, 1, 1)
-	badge.BackgroundTransparency = 0
-	local corner = badge:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
+	-- The disc is its own child so the pulse can grow it while the number stays still
+	-- (Dev 2026-11-01: on phones the digits shifted left and right while the badge scaled).
+	badge.BackgroundTransparency = 1
+	for _, old in badge:GetChildren() do
+		if old:IsA("UIStroke") or old:IsA("UIGradient") or old:IsA("UIScale") or old.Name == "Red" then
+			old:Destroy()
+		end
+	end
+	local label = badge:FindFirstChild("Label") :: TextLabel?
+	local disc = badge:FindFirstChild("Disc") :: Frame? or Instance.new("Frame")
+	disc.Name = "Disc"
+	disc.AnchorPoint = Vector2.new(0.5, 0.5)
+	disc.Position = UDim2.fromScale(0.5, 0.5)
+	disc.Size = UDim2.fromScale(1, 1)
+	disc.BorderSizePixel = 0
+	disc.BackgroundColor3 = Color3.new(1, 1, 1)
+	disc.BackgroundTransparency = 0
+	disc.ZIndex = badge.ZIndex
+	disc.Parent = badge
+	local corner = disc:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0.5, 0)
-	corner.Parent = badge
-	local stroke = badge:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
+	corner.Parent = disc
+	local stroke = disc:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
 	stroke.Color = BADGE_RING
 	stroke.Thickness = math.max(2, math.floor(px / 10 + 0.5))
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.LineJoinMode = Enum.LineJoinMode.Round
-	stroke.Parent = badge
-	local gradient = badge:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
+	stroke.Parent = disc
+	local gradient = disc:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
 	gradient.Color = ColorSequence.new(BADGE_TOP, BADGE_BOTTOM)
 	gradient.Rotation = 90
-	gradient.Parent = badge
-	local oldRed = badge:FindFirstChild("Red")
-	if oldRed then
-		oldRed:Destroy()
-	end
-	local label = badge:FindFirstChild("Label") :: TextLabel?
-	local pop = badge:FindFirstChild("BadgePop") :: UIScale? or Instance.new("UIScale")
+	gradient.Parent = disc
+	local pop = disc:FindFirstChild("BadgePop") :: UIScale? or Instance.new("UIScale")
 	pop.Name = "BadgePop"
 	pop.Scale = 1
-	pop.Parent = badge
+	pop.Parent = disc
 	if label then
 		label.TextColor3 = Color3.new(1, 1, 1)
 		label.TextScaled = false
 		label.TextWrapped = false
 		label.Size = UDim2.fromScale(1, 1)
-		-- Montserrat digits sit low in their box: lift them to the optical centre.
-		label.Position = UDim2.new(0.5, 0, 0.5, -1)
+		label.Position = UDim2.fromScale(0.5, 0.5)
+		label.ZIndex = badge.ZIndex + 1
 		label.TextXAlignment = Enum.TextXAlignment.Center
 		label.TextYAlignment = Enum.TextYAlignment.Center
 		label.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -603,7 +615,8 @@ local function pulseOnce(badge: GuiObject)
 	if not (badge.Parent and badge.Visible) then
 		return
 	end
-	local pop = badge:FindFirstChild("BadgePop") :: UIScale?
+	local disc = badge:FindFirstChild("Disc")
+	local pop = disc and disc:FindFirstChild("BadgePop") :: UIScale?
 	if pop then
 		local half = PULSE_BUMP_TIME / 2
 		local up = TweenService:Create(pop, TweenInfo.new(half, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -705,10 +718,9 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?, ownBeat: bool
 	if label then
 		label.Text = shown
 		label.TextSize = math.floor(px * (if #shown >= 3 then 0.5 else 0.62) + 0.5)
-		-- Montserrat Heavy digits sit low and a lone "1" leans right of its box: nudge them
-		-- onto the optical centre so every badge looks the same (Dev, 2026-11-01).
-		local nudgeX = if shown == "1" then -math.floor(px * 0.06 + 0.5) else 0
-		label.Position = UDim2.new(0.5, nudgeX, 0.5, -math.max(1, math.floor(px * 0.05 + 0.5)))
+		-- Measured: Montserrat digits (the "1" too) are centred in their text box, so the
+		-- label sits dead centre with no nudges (the old nudges pushed them off-centre).
+		label.Position = UDim2.fromScale(0.5, 0.5)
 	end
 	-- Round for one digit, a pill for "12" or "99+".
 	local extra = if #shown >= 3 then 0.75 elseif #shown == 2 then 0.3 else 0

@@ -112,8 +112,7 @@ end
 
 local function makeGhost(egg)
 	clearGhost()
-	local model = AssetLibrary.egg(egg.Rarity)
-	AssetLibrary.applyMutation(model, egg.Mutation)
+	local model = AssetLibrary.eggOf(egg)
 	model:SetAttribute("Rarity", egg.Rarity)
 	local scale = Weights.visualScale(Weights.eggMult(egg.Rarity, egg.Weight))
 	model:ScaleTo(scale * 1.25)
@@ -352,9 +351,7 @@ function PlacementController:Hold(uid: string)
 	subLabel.TextColor3 = Eggs.ByName[egg.Rarity].Color
 	icon.Visible = false
 	modelView.Visible = true
-	local preview = AssetLibrary.egg(egg.Rarity)
-	AssetLibrary.applyMutation(preview, egg.Mutation)
-	ModelView.show(modelView, preview, "Egg_" .. egg.Rarity)
+	ModelView.show(modelView, AssetLibrary.eggOf(egg), AssetLibrary.eggKey(egg))
 	gui.Enabled = true
 	syncPlacing()
 	Ui.popIn(gui)
