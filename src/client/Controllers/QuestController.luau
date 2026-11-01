@@ -1,17 +1,21 @@
 --!strict
--- Quests (server: QuestService, config: Config/Quests). Replaced the 3-goal strip on
--- 2026-10-31.
---   Strip    under the World Cleaned bar: "JOB 3  Hatch 3 eggs  1/3" with a thin bar and a
---            red "!" when something can be claimed. Tap = the Quests window.
---   Window   screen "Quests" (tools/gen_ui.py quests()): Jobs tab (current job, reward, Go
---            to Quest Master) and Daily tab (3 quests with Claim, the all-3 bonus, timer).
+-- Quests (server: QuestService, config: Config/Quests). Overhauled 2026-11-01 (Dev: "the
+-- quests UI has a lot of useless stuff", "why does it say job and not quest", "put it on
+-- the right, like a list"). Everything is a "quest" to the player now.
+--   List     Hud.QuestList on the right edge (placed by HudController): a QUESTS header
+--            and a short row per open quest (icon, text, thin bar, 1/3). Finished rows go
+--            green and say CLAIM: tapping one claims it right there. Other taps open the
+--            window. HudController sets the MaxRows attribute so it fits the screen.
+--   Window   screen "Quests" (tools/gen_ui.py quests()): one scrolling list of the same
+--            rows (Quest Master quest, 3 dailies, daily bonus + reset timer, zone
+--            questlines), each with one Claim / Go button. No tabs.
 --   NPC      the Quest Master on the left of every base (prompt Opens = "Quests"): his
---            dialog hands over finished jobs. A bouncing "!" floats over your own one
+--            dialog hands over finished quests. A bouncing "!" floats over your own one
 --            while something is ready.
 --   Zones    each zone's quest giver (Config/ZoneQuests, prompt Opens = "ZoneQuest" with a
---            Zone attribute): their story dialog hands over finished steps. The Zones tab
---            lists every questline with a Go button, and a "!" floats over any zone NPC
---            with a finished step. GuideTarget() lets the arrow path lead to them.
+--            Zone attribute): their story dialog hands over finished steps. A "!" floats
+--            over any zone NPC with a finished step. GuideTarget() lets the arrow path
+--            lead to them.
 local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -36,14 +40,11 @@ local QuestController = {}
 local GREEN = Color3.fromRGB(61, 220, 90)
 local GREY = Color3.fromRGB(166, 174, 194)
 local BLUE = Color3.fromRGB(76, 141, 255)
-local DARK_BLUE = Color3.fromRGB(40, 90, 190)
 local ORANGE = Color3.fromRGB(230, 120, 40)
 local GOLD = Color3.fromRGB(255, 200, 60)
 
 local C: any
-local strip: GuiButton
 local gui: ScreenGui
-local tab = "Jobs"
 local busy = false
 local marker: BillboardGui? = nil
 local zoneMarkers: { [string]: BillboardGui } = {}
@@ -83,105 +84,31 @@ local function rewardIcon(kind: string?, item: string?): string
 	return AssetLibrary.image("Icon_Cash")
 end
 
-local function setReward(box: Instance, q)
-	local iconImage = box:FindFirstChild("Icon") :: ImageLabel
-	iconImage.Image = rewardIcon(q.RewardKind, q.RewardItem)
-	local label = box:FindFirstChild("Label") :: TextLabel
-	label.Text = q.Reward or ""
-end
-
 local function setBar(bar: Instance, fraction: number, label: string)
 	local fill = bar:FindFirstChild("Fill") :: Frame
 	fill.Size = UDim2.fromScale(math.clamp(fraction, 0, 1), 1)
 	;(bar:FindFirstChild("Label") :: TextLabel).Text = label
 end
 
--------------------------------------------------------------------------- strip
+-------------------------------------------------------------------------- quest entries
 
-local function renderStrip(quests)
-	-- The Quests tile in the More menu shows the same badge as the strip.
-	local ready = if quests and (quests.Ready or 0) > 0 then quests.Ready else nil
-	Ui.setBadge(Ui.find(Ui.screen("Hud"), "MoreMenu.Items.QuestsButton.Badge") :: GuiObject, ready)
-	local show = quests ~= nil and quests.Job ~= nil
-	if strip.Visible ~= show then
-		strip.Visible = show
-		C.HudController:Relayout()
-	end
-	if not show then
-		return
-	end
-	local job = quests.Job
-	;(strip:FindFirstChild("Count") :: TextLabel).Text = `JOB {job.Number}`
-	local nextLabel = strip:FindFirstChild("Next") :: TextLabel
-	local progress = strip:FindFirstChild("Progress") :: TextLabel
-	if job.Done then
-		nextLabel.Text = "Done! Claim it in Quests"
-		nextLabel.TextColor3 = GOLD
-		progress.Text = ""
-	else
-		nextLabel.Text = job.Text
-		nextLabel.TextColor3 = Color3.new(1, 1, 1)
-		progress.Text = job.Progress
-	end
-	local fill = Ui.find(strip, "Bar.Fill") :: Frame
-	fill.Size = UDim2.fromScale(math.clamp(job.Fraction or 0, 0, 1), 1)
-	Ui.setBadge(strip:FindFirstChild("Badge") :: GuiObject, if quests.Ready > 0 then quests.Ready else nil)
-end
-
--------------------------------------------------------------------------- window
-
-local function renderJob(job)
-	local page = Ui.find(gui, "Window.Job") :: Frame
-	local card = page:FindFirstChild("Card") :: Frame
-	;(card:FindFirstChild("Number") :: TextLabel).Text = `JOB {job.Number}`
-	;(card:FindFirstChild("Text") :: TextLabel).Text = job.Text
-	setBar(card:FindFirstChild("Bar") :: Frame, job.Fraction, if job.Done then "DONE!" else job.Progress)
-	setReward(card:FindFirstChild("Reward") :: Frame, job)
-	local hint = page:FindFirstChild("Hint") :: TextLabel
-	local go = page:FindFirstChild("Go") :: GuiButton
-	if job.Done then
-		hint.Text = "Job done! Claim your reward here."
-		paint(go, "Claim", GREEN)
-	else
-		hint.Text = "Finish the job, then talk to the Quest Master on your base."
-		paint(go, "Go to Quest Master", BLUE)
-	end
-end
-
-local function renderDaily(daily)
-	local page = Ui.find(gui, "Window.Daily") :: Frame
-	for i = 1, 3 do
-		local row = Ui.find(page, `List.Row{i}`) :: Frame
-		local q = daily.List[i]
-		row.Visible = q ~= nil
-		if q then
-			local textLabel = row:FindFirstChild("Text") :: TextLabel
-			textLabel.Text = q.Text
-			setBar(row:FindFirstChild("Bar") :: Frame, q.Fraction, if q.Done then "DONE!" else q.Progress)
-			setReward(row:FindFirstChild("Reward") :: Frame, q)
-			local claim = row:FindFirstChild("Claim") :: GuiButton
-			if q.Claimed then
-				paint(claim, "Claimed", GREY)
-			elseif q.Done then
-				paint(claim, "Claim", GREEN)
-			else
-				paint(claim, "Claim", GREY)
-			end
-		end
-	end
-	local bonus = page:FindFirstChild("Bonus") :: Frame
-	local claim = bonus:FindFirstChild("Claim") :: GuiButton
-	local text = bonus:FindFirstChild("Text") :: TextLabel
-	if daily.BonusClaimed then
-		text.Text = "Bonus claimed! New quests tomorrow."
-		paint(claim, "Claimed", GREY)
-	else
-		text.Text = `Claim all 3 for {daily.Bonus}!`
-		paint(claim, "Claim", if daily.BonusReady then GOLD else GREY)
-	end
-	local left = math.max(0, (daily.ResetsAt or 0) - State.now())
-	;(page:FindFirstChild("Timer") :: TextLabel).Text = `New quests in {Format.countdown(left)}`
-end
+-- One quest as both the HUD list and the window show it.
+type Entry = {
+	Key: string,
+	Order: number,
+	Icon: string,
+	Who: string,
+	Text: string,
+	Fraction: number,
+	Progress: string,
+	Done: boolean, -- can be claimed now
+	Claimed: boolean, -- finished and paid (window only)
+	Hud: boolean, -- shown in the HUD list
+	Reward: string?,
+	RewardKind: string?,
+	RewardItem: string?,
+	Go: string?, -- button text while not done ("Go"); nil = a grey Claim
+}
 
 local function zoneEntry(zoneId: string): any
 	local quests = State.data and State.data.Quests
@@ -193,43 +120,232 @@ local function zoneEntry(zoneId: string): any
 	return nil
 end
 
-local function renderZones(list)
-	local page = Ui.find(gui, "Window.Zones") :: Frame
-	for i = 1, 5 do
-		local row = Ui.find(page, `List.Row{i}`) :: Frame
-		local z = list[i]
-		row.Visible = z ~= nil
-		if not z then
+local function entries(quests): { Entry }
+	local list: { Entry } = {}
+	local job = quests.Job
+	if job then
+		table.insert(list, {
+			Key = "Main",
+			Order = 1,
+			Icon = "Icon_Quest",
+			Who = `QUEST MASTER · QUEST {job.Number}`,
+			Text = job.Text,
+			Fraction = job.Fraction or 0,
+			Progress = job.Progress or "",
+			Done = job.Done == true,
+			Claimed = false,
+			Hud = true,
+			Reward = job.Reward,
+			RewardKind = job.RewardKind,
+			RewardItem = job.RewardItem,
+			Go = "Go",
+		})
+	end
+	local daily = quests.Daily
+	if daily then
+		local claimed = 0
+		for i, q in daily.List do
+			if q.Claimed then
+				claimed += 1
+			end
+			table.insert(list, {
+				Key = `Daily{i}`,
+				Order = 10 + i,
+				Icon = "Icon_Daily",
+				Who = "DAILY",
+				Text = q.Text,
+				Fraction = q.Fraction or 0,
+				Progress = q.Progress or "",
+				Done = q.Done == true and not q.Claimed,
+				Claimed = q.Claimed == true,
+				Hud = not q.Claimed,
+				Reward = q.Reward,
+				RewardKind = q.RewardKind,
+				RewardItem = q.RewardItem,
+			})
+		end
+		local left = math.max(0, (daily.ResetsAt or 0) - State.now())
+		table.insert(list, {
+			Key = "Bonus",
+			Order = 20,
+			Icon = "Icon_Spin",
+			Who = `DAILY BONUS · NEW DAILIES IN {Format.countdown(left)}`,
+			Text = "Claim all 3 dailies",
+			Fraction = claimed / math.max(1, #daily.List),
+			Progress = `{claimed}/{#daily.List}`,
+			Done = daily.BonusReady == true and not daily.BonusClaimed,
+			Claimed = daily.BonusClaimed == true,
+			Hud = daily.BonusReady == true and not daily.BonusClaimed,
+			Reward = daily.Bonus,
+			RewardKind = "Spin",
+		})
+	end
+	for i, z in quests.Zones or {} do
+		-- Locked and finished questlines only cluttered the list.
+		if z.Open and not z.Finished then
+			table.insert(list, {
+				Key = `Zone_{z.Zone}`,
+				Order = 30 + i,
+				Icon = "Icon_Zones",
+				Who = string.upper(`{z.Npc} · {z.ZoneName} · {z.Step}/{z.Steps}`),
+				Text = z.Text,
+				Fraction = z.Fraction or 0,
+				Progress = z.Progress or "",
+				Done = z.Done == true,
+				Claimed = false,
+				Hud = true,
+				Reward = z.Reward,
+				RewardKind = z.RewardKind,
+				RewardItem = z.RewardItem,
+				Go = "Go",
+			})
+		end
+	end
+	return list
+end
+
+-------------------------------------------------------------------------- HUD list
+
+local list: Frame
+local listRows: { [string]: GuiButton } = {}
+local windowRows: { [string]: Frame } = {}
+local current: { [string]: Entry } = {}
+local act: (key: string, fromHud: boolean) -> ()
+
+local function setRewardChip(box: Instance, e: Entry)
+	(box :: GuiObject).Visible = e.Reward ~= nil and e.Reward ~= ""
+	;(box:FindFirstChild("Icon") :: ImageLabel).Image = rewardIcon(e.RewardKind, e.RewardItem)
+	;(box:FindFirstChild("Label") :: TextLabel).Text = e.Reward or ""
+end
+
+-- Keeps one clone of `template` per key, drops the ones whose quest is gone.
+local function pool<T>(rows: { [string]: T }, keep: { [string]: boolean }, make: (key: string) -> T)
+	for key, row in rows do
+		if not keep[key] then
+			(row :: any):Destroy()
+			rows[key] = nil
+		end
+	end
+	for key in keep do
+		if not rows[key] then
+			rows[key] = make(key)
+		end
+	end
+end
+
+local function renderList(quests)
+	local ready = if quests and (quests.Ready or 0) > 0 then quests.Ready else nil
+	Ui.setBadge(Ui.find(Ui.screen("Hud"), "MoreMenu.Items.QuestsButton.Badge") :: GuiObject, ready)
+	Ui.setBadge(Ui.find(list, "Header.Badge") :: GuiObject, ready)
+	local shown: { Entry } = {}
+	if quests then
+		for _, e in entries(quests) do
+			if e.Hud then
+				table.insert(shown, e)
+			end
+		end
+	end
+	-- Claimable first, then the Quest Master, dailies, zones.
+	table.sort(shown, function(a, b)
+		if a.Done ~= b.Done then
+			return a.Done
+		end
+		return a.Order < b.Order
+	end)
+	local maxRows = list:GetAttribute("MaxRows")
+	local limit = if type(maxRows) == "number" then maxRows else 4
+	local keep: { [string]: boolean } = {}
+	for i, e in shown do
+		if i <= limit then
+			keep[e.Key] = true
+		end
+	end
+	list.Visible = quests ~= nil and #shown > 0
+	local template = list:FindFirstChild("Row") :: GuiButton
+	pool(listRows, keep, function(key)
+		local row = template:Clone()
+		row.Name = "Row_" .. key
+		row.Visible = true
+		row.Parent = list
+		Ui.button(row, function()
+			act(key, true)
+		end)
+		return row
+	end)
+	for i, e in shown do
+		local row = listRows[e.Key]
+		if not row then
 			continue
 		end
-		;(row:FindFirstChild("Who") :: TextLabel).Text = string.upper(`{z.Npc} · {z.ZoneName}`)
-		local textLabel = row:FindFirstChild("Text") :: TextLabel
-		local bar = row:FindFirstChild("Bar") :: Frame
-		local reward = row:FindFirstChild("Reward") :: Frame
-		local go = row:FindFirstChild("Go") :: GuiButton
-		if not z.Open then
-			textLabel.Text = `Unlock the {z.ZoneName} to meet {z.Npc}`
-			setBar(bar, 0, "LOCKED")
-			reward.Visible = false
-			paint(go, "Locked", GREY)
-		elseif z.Finished then
-			textLabel.Text = "All quests done!"
-			setBar(bar, 1, `{z.Steps}/{z.Steps}`)
-			reward.Visible = false
-			paint(go, "Go", BLUE)
+		row.LayoutOrder = i
+		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.image(e.Icon)
+		;(row:FindFirstChild("Text") :: TextLabel).Text = e.Text
+		local fill = Ui.find(row, "Bar.Fill") :: Frame
+		fill.Size = UDim2.fromScale(if e.Done then 1 else math.clamp(e.Fraction, 0, 1), 1)
+		fill.BackgroundColor3 = if e.Done then GOLD else GREEN
+		local progress = row:FindFirstChild("Progress") :: TextLabel
+		progress.Text = if e.Done then "CLAIM!" else e.Progress
+		progress.TextColor3 = if e.Done then GOLD else Color3.fromRGB(201, 208, 222)
+		row.BackgroundColor3 = if e.Done then Color3.fromRGB(30, 120, 70) else Color3.fromRGB(23, 25, 30)
+	end
+end
+
+-------------------------------------------------------------------------- window
+
+local function renderWindow(quests)
+	local scroll = Ui.find(gui, "Window.List") :: ScrollingFrame
+	local template = scroll:FindFirstChild("Row") :: Frame
+	local all = entries(quests)
+	local keep: { [string]: boolean } = {}
+	for _, e in all do
+		keep[e.Key] = true
+	end
+	pool(windowRows, keep, function(key)
+		local row = template:Clone()
+		row.Name = "Row_" .. key
+		row.Visible = true
+		row.Parent = scroll
+		Ui.button(row:FindFirstChild("Action") :: GuiButton, function()
+			act(key, false)
+		end)
+		return row
+	end)
+	for _, e in all do
+		local row = windowRows[e.Key]
+		-- Claimed rows sink to the bottom of their group.
+		row.LayoutOrder = e.Order + (if e.Claimed then 100 else 0)
+		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.image(e.Icon)
+		;(row:FindFirstChild("Who") :: TextLabel).Text = e.Who
+		;(row:FindFirstChild("Text") :: TextLabel).Text = e.Text
+		setBar(row:FindFirstChild("Bar") :: Frame, if e.Done or e.Claimed then 1 else e.Fraction, if e.Claimed
+			then "DONE"
+			elseif e.Done then "DONE!"
+			else e.Progress)
+		setRewardChip(row:FindFirstChild("Reward") :: Frame, e)
+		local button = row:FindFirstChild("Action") :: GuiButton
+		if e.Claimed then
+			paint(button, "Done", GREY)
+		elseif e.Done then
+			paint(button, "Claim", if e.Key == "Bonus" then GOLD else GREEN)
+		elseif e.Go then
+			paint(button, e.Go, BLUE)
 		else
-			textLabel.Text = `{z.Step}/{z.Steps}  {z.Text}`
-			setBar(bar, z.Fraction, if z.Done then "DONE!" else z.Progress)
-			reward.Visible = true
-			setReward(reward, z)
-			paint(go, if z.Done then "Claim" else "Go", if z.Done then GREEN else BLUE)
+			paint(button, "Claim", GREY)
 		end
 	end
 end
 
 local function render()
 	local quests = State.data and State.data.Quests
-	renderStrip(quests)
+	for key in current do
+		current[key] = nil
+	end
+	if quests then
+		for _, e in entries(quests) do
+			current[e.Key] = e
+		end
+	end
+	renderList(quests)
 	if marker then
 		marker.Enabled = quests ~= nil and quests.Ready - (quests.ZoneReady or 0) > 0
 	end
@@ -240,59 +356,17 @@ local function render()
 		Ui.close("Quests")
 		return
 	end
-	local jobsTab = Ui.find(gui, "Window.JobsTab") :: GuiButton
-	local dailyTab = Ui.find(gui, "Window.DailyTab") :: GuiButton
-	local zonesTab = Ui.find(gui, "Window.ZonesTab") :: GuiButton
-	paint(jobsTab, "Jobs", if tab == "Jobs" then BLUE else DARK_BLUE)
-	paint(dailyTab, "Daily", if tab == "Daily" then BLUE else DARK_BLUE)
-	paint(zonesTab, "Zones", if tab == "Zones" then BLUE else DARK_BLUE)
-	local zonesReady = 0
-	for _, z in quests.Zones or {} do
-		if z.Done then
-			zonesReady += 1
-		end
-	end
-	Ui.setBadge(zonesTab:FindFirstChild("Badge") :: GuiObject, if zonesReady > 0 then zonesReady else nil)
-	local dailyReady = 0
-	if quests.Daily then
-		for _, q in quests.Daily.List do
-			if q.Done and not q.Claimed then
-				dailyReady += 1
-			end
-		end
-		if quests.Daily.BonusReady then
-			dailyReady += 1
-		end
-	end
-	Ui.setBadge(jobsTab:FindFirstChild("Badge") :: GuiObject, if quests.Job and quests.Job.Done then 1 else nil)
-	Ui.setBadge(dailyTab:FindFirstChild("Badge") :: GuiObject, if dailyReady > 0 then dailyReady else nil)
-	local jobPage = Ui.find(gui, "Window.Job") :: Frame
-	local dailyPage = Ui.find(gui, "Window.Daily") :: Frame
-	jobPage.Visible = tab == "Jobs" and quests.Job ~= nil
-	dailyPage.Visible = tab == "Daily" and quests.Daily ~= nil
-	local zonesPage = Ui.find(gui, "Window.Zones") :: Frame
-	zonesPage.Visible = tab == "Zones" and quests.Zones ~= nil
-	if quests.Zones then
-		renderZones(quests.Zones)
-	end
-	if quests.Job then
-		renderJob(quests.Job)
-	end
-	if quests.Daily then
-		renderDaily(quests.Daily)
-	end
+	renderWindow(quests)
 end
 
-function QuestController:Open(which: string?)
+function QuestController:Open(_which: string?)
 	if not (State.data and State.data.Quests) then
 		C.HudController:Toast("Finish the tutorial to unlock quests!", "Info")
 		return
 	end
-	if which then
-		tab = which
-	end
 	if not Ui.isOpen(gui) then
 		Ui.open("Quests")
+		;(Ui.find(gui, "Window.List") :: ScrollingFrame).CanvasPosition = Vector2.zero
 	end
 	render()
 end
@@ -357,7 +431,7 @@ end
 
 local function goToMaster()
 	Ui.close("Quests")
-	-- Already on your base: the 3D arrow path shows the way when a job is done.
+	-- Already on your base: the 3D arrow path shows the way when a quest is done.
 	task.spawn(function()
 		local data = State.data
 		local character = Players.LocalPlayer.Character
@@ -376,10 +450,9 @@ local function goToMaster()
 	end)
 end
 
--- Zones tab Go: teleport to that zone and let the arrow lead to its quest giver.
-local function goToZoneNpc(i: number)
-	local quests = State.data and State.data.Quests
-	local z = quests and quests.Zones and quests.Zones[i]
+-- Zone quest Go: teleport to that zone and let the arrow lead to its quest giver.
+local function goToZoneNpc(zoneId: string)
+	local z = zoneEntry(zoneId)
 	if not z then
 		return
 	end
@@ -434,6 +507,42 @@ function QuestController:GuideTarget(position: Vector3): Vector3?
 	return nil
 end
 
+-- A tap on a quest row. Finished quests are claimed right there (never moves you).
+-- Otherwise HUD rows open the window, and window buttons go to the quest giver.
+act = function(key: string, fromHud: boolean)
+	local e = current[key]
+	if not e then
+		return
+	end
+	local daily = tonumber(string.match(key, "^Daily(%d+)$"))
+	local zone = string.match(key, "^Zone_(.+)$")
+	if e.Done then
+		if key == "Main" then
+			claimFromWindow("ClaimJob", nil, "Quest reward")
+		elseif key == "Bonus" then
+			claimBonus()
+		elseif daily then
+			claimDaily(daily)
+		elseif zone then
+			claimFromWindow("ClaimZone", zone, "Quest reward")
+		end
+		return
+	end
+	if fromHud then
+		QuestController:Open(nil)
+	elseif e.Claimed then
+		return
+	elseif key == "Main" then
+		goToMaster()
+	elseif zone then
+		goToZoneNpc(zone)
+	elseif key == "Bonus" then
+		claimBonus()
+	elseif daily then
+		claimDaily(daily)
+	end
+end
+
 -------------------------------------------------------------------------- NPC dialog
 
 local talk: () -> ()
@@ -459,11 +568,11 @@ local function claimJob()
 		return
 	end
 	Ui.sound("Reveal")
-	C.HudController:Toast(`Job reward: {got}!`, "Good")
-	-- The next job arrives with the next snapshot.
+	C.HudController:Toast(`Quest reward: {got}!`, "Good")
+	-- The next quest arrives with the next snapshot.
 	task.wait(0.35)
 	local job = State.data and State.data.Quests and State.data.Quests.Job
-	local nextLine = if job and not job.Done then ` Your next job: {job.Text}.` else ""
+	local nextLine = if job and not job.Done then ` Your next quest: {job.Text}.` else ""
 	C.DialogController:Say(`Great work! Here's your reward: {got}!{nextLine}`, {
 		{ text = "On it!", color = GREEN, pick = bye },
 		{
@@ -471,7 +580,7 @@ local function claimJob()
 			color = BLUE,
 			pick = function()
 				C.DialogController:Close()
-				QuestController:Open("Jobs")
+				QuestController:Open(nil)
 			end,
 		},
 	})
@@ -492,7 +601,7 @@ local function acceptFirst()
 		return
 	end
 	Ui.sound("Reveal")
-	-- The first job arrives with the next snapshot.
+	-- The first quest arrives with the next snapshot.
 	local job = nil
 	for _ = 1, 10 do
 		task.wait(0.2)
@@ -502,8 +611,8 @@ local function acceptFirst()
 		end
 	end
 	local line = if job
-		then `Your first job: {job.Text}! Come back to me when it's done and I'll pay you {job.Reward}.`
-		else "You're all set! Check the Quests bar at the top for your first job."
+		then `Your first quest: {job.Text}! Come back to me when it's done and I'll pay you {job.Reward}.`
+		else "You're all set! Check the quest list on the right for your first quest."
 	C.DialogController:Say(line, {
 		{ text = "On it!", color = GREEN, pick = bye },
 	})
@@ -511,14 +620,14 @@ end
 
 talk = function()
 	if State.data and State.data.TutorialStep == "Quest" then
-		C.DialogController:Say("Hi! I'm the Quest Master. I hand out jobs with awesome rewards. Want your first one?", {
+		C.DialogController:Say("Hi! I'm the Quest Master. I hand out quests with awesome rewards. Want your first one?", {
 			{ text = "Accept quest!", color = GREEN, pick = acceptFirst },
 		})
 		return
 	end
 	local quests = State.data and State.data.Quests
 	if not quests or not quests.Job then
-		C.DialogController:Say("Hi there! Finish the tutorial first, then come see me for jobs and rewards.", {
+		C.DialogController:Say("Hi there! Finish the tutorial first, then come see me for quests and rewards.", {
 			{ text = "Okay!", color = GREEN, pick = bye },
 		})
 		return
@@ -529,7 +638,7 @@ talk = function()
 		color = ORANGE,
 		pick = function()
 			C.DialogController:Close()
-			QuestController:Open("Daily")
+			QuestController:Open(nil)
 		end,
 	}
 	if job.Done then
@@ -539,7 +648,7 @@ talk = function()
 		})
 		return
 	end
-	C.DialogController:Say(`Your job: {job.Text}. You're at {job.Progress}. Come back when it's done and I'll pay you {job.Reward}!`, {
+	C.DialogController:Say(`Your quest: {job.Text}. You're at {job.Progress}. Come back when it's done and I'll pay you {job.Reward}!`, {
 		{ text = "On it!", color = GREEN, pick = bye },
 		dailyOption,
 		{
@@ -547,7 +656,7 @@ talk = function()
 			color = BLUE,
 			pick = function()
 				C.DialogController:Close()
-				QuestController:Open("Jobs")
+				QuestController:Open(nil)
 			end,
 		},
 	})
@@ -629,7 +738,7 @@ talkZone = function(zoneId: string)
 			color = BLUE,
 			pick = function()
 				C.DialogController:Close()
-				QuestController:Open("Zones")
+				QuestController:Open(nil)
 			end,
 		},
 	})
@@ -730,14 +839,26 @@ end
 
 function QuestController:Init(controllers)
 	C = controllers
-	strip = Ui.find(Ui.screen("Hud"), "Quests")
+	local hud = Ui.screen("Hud")
+	list = Ui.find(hud, "QuestList")
 	gui = Ui.screen("Quests")
-	Ui.fitText(strip:FindFirstChild("Next") :: TextLabel, 16, 9)
-	Ui.fitText(strip:FindFirstChild("Progress") :: TextLabel, 15, 9)
+	-- LiveSync never deletes GUI children in Dev's Studio place: drop the old top JOB strip
+	-- and the old window's tabs and pages (overhauled 2026-11-01).
+	local old = hud:FindFirstChild("Quests")
+	if old then
+		old:Destroy()
+	end
+	local window = gui:FindFirstChild("Window")
+	for _, name in { "JobsTab", "DailyTab", "ZonesTab", "Job", "Daily", "Zones" } do
+		local stale = window and window:FindFirstChild(name)
+		if stale then
+			stale:Destroy()
+		end
+	end
 end
 
 function QuestController:Start()
-	Ui.button(strip, function()
+	Ui.button(Ui.find(list, "Header"), function()
 		QuestController:Open(nil)
 	end)
 	Ui.button(Ui.find(gui, "Window.Close"), function()
@@ -746,43 +867,7 @@ function QuestController:Start()
 	Ui.button(Ui.find(gui, "Dim"), function()
 		Ui.close("Quests")
 	end)
-	Ui.button(Ui.find(gui, "Window.JobsTab"), function()
-		tab = "Jobs"
-		render()
-	end)
-	Ui.button(Ui.find(gui, "Window.DailyTab"), function()
-		tab = "Daily"
-		render()
-	end)
-	Ui.button(Ui.find(gui, "Window.Job.Go"), function()
-		local job = State.data and State.data.Quests and State.data.Quests.Job
-		if job and job.Done then
-			claimFromWindow("ClaimJob", nil, "Job reward")
-		else
-			goToMaster()
-		end
-	end)
-	for i = 1, 3 do
-		Ui.button(Ui.find(gui, `Window.Daily.List.Row{i}.Claim`), function()
-			claimDaily(i)
-		end)
-	end
-	Ui.button(Ui.find(gui, "Window.Daily.Bonus.Claim"), claimBonus)
-	Ui.button(Ui.find(gui, "Window.ZonesTab"), function()
-		tab = "Zones"
-		render()
-	end)
-	for i = 1, 5 do
-		Ui.button(Ui.find(gui, `Window.Zones.List.Row{i}.Go`), function()
-			local quests = State.data and State.data.Quests
-			local z = quests and quests.Zones and quests.Zones[i]
-			if z and z.Open and z.Done and not z.Finished then
-				claimFromWindow("ClaimZone", z.Zone, "Quest reward")
-			else
-				goToZoneNpc(i)
-			end
-		end)
-	end
+	list:GetAttributeChangedSignal("MaxRows"):Connect(render)
 	ProximityPromptService.PromptTriggered:Connect(function(prompt)
 		if prompt:GetAttribute("Opens") == "ZoneQuest" then
 			local zoneId = prompt:GetAttribute("Zone")
@@ -804,13 +889,13 @@ function QuestController:Start()
 	Net.event("QuestReady").OnClientEvent:Connect(function(info)
 		Ui.sound("Tutorial")
 		if info.Npc then
-			C.HudController:Toast(`Quest done: {info.Text}! Claim it in Quests.`, "Good")
+			C.HudController:Toast(`Quest done: {info.Text}! Tap it in your quest list to claim.`, "Good")
 		elseif info.Job then
-			C.HudController:Toast(`Job done: {info.Text}! Claim it in Quests.`, "Good")
+			C.HudController:Toast(`Quest done: {info.Text}! Tap it in your quest list to claim.`, "Good")
 		else
-			C.HudController:Toast(`Daily quest done: {info.Text}! Claim it in Quests.`, "Good")
+			C.HudController:Toast(`Daily quest done: {info.Text}! Tap it in your quest list to claim.`, "Good")
 		end
-		Ui.popFrame(strip)
+		Ui.popFrame(Ui.find(list, "Header"))
 	end)
 	State.Changed:Connect(render)
 	render()

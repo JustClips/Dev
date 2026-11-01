@@ -723,9 +723,12 @@ local SPIN_W, SPIN_H, ADMIN_H = 104, 38, 34
 -- Phones, admins only: the Spin button sits under ADMIN, so the boost chips start this
 -- much lower (gui px, not scaled).
 HudController.RightDrop = 0
-local BAR_W = 360 -- World Cleaned bar and quest strip
+local BAR_W = 360 -- World Cleaned bar
+local lastCompact = false
+local placeRight: () -> ()
 
 layout = function(s: number, compact: boolean)
+	lastCompact = compact
 	local top = 6
 	local barH = math.ceil(46 * s)
 	-- The World Cleaned bar goes up into Roblox's top bar row when it fits between its
@@ -762,11 +765,7 @@ layout = function(s: number, compact: boolean)
 	HudController.barY = barY
 	el.MoonPanel.Size = UDim2.fromOffset(BAR_W + 24, el.MoonPanel.Size.Y.Offset)
 	el.MoonPanel.Position = UDim2.new(0.5, shift - math.floor(12 * s), 0, barY)
-	local goals = el.Quests :: GuiObject
-	local goalsY = if el.MoonPanel.Visible then barY + barH + math.ceil(4 * s) else math.max(6, barY)
-	goals.Size = UDim2.fromOffset(BAR_W, goals.Size.Y.Offset)
-	goals.Position = UDim2.new(0.5, shift, 0, goalsY)
-	local below = goalsY + (if goals.Visible then math.ceil(36 * s) else 0)
+	local below = if el.MoonPanel.Visible then barY + barH else math.max(6, barY)
 	el.Announcement.Position = UDim2.new(0.5, shift, 0, below + math.ceil(4 * s))
 	el.Toasts.Position = UDim2.new(0.5, shift, 0, below + math.ceil(6 * s) + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
 	local hotbarTop = 12 + math.ceil(88 * s)
@@ -805,11 +804,71 @@ layout = function(s: number, compact: boolean)
 		if boostLayout then
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
-		rightFrame.AnchorPoint = Vector2.new(1, 0.5)
-		rightFrame.Position = UDim2.new(1, -14, 0.5, RAIL_CENTRE)
+		-- Under the quest list (placeRight).
+		rightFrame.AnchorPoint = Vector2.new(1, 0)
 		if rightList then
-			rightList.VerticalAlignment = Enum.VerticalAlignment.Center
+			rightList.VerticalAlignment = Enum.VerticalAlignment.Top
 		end
+	end
+	placeRight()
+end
+
+-- Lowest / highest edge (gui px) of the visible buttons and chips in a frame.
+local function contentEdge(frame: Instance, bottom: boolean): number?
+	local edge: number? = nil
+	for _, child in frame:GetChildren() do
+		if child:IsA("GuiObject") and child.Visible then
+			local y = child.AbsolutePosition.Y + (if bottom then child.AbsoluteSize.Y else 0)
+			edge = if edge == nil then y elseif bottom then math.max(edge, y) else math.min(edge, y)
+		end
+	end
+	return edge
+end
+
+-- The right edge, top to bottom (2026-11-01, Dev: the freed right side holds the quest
+-- list): Spin button, (phones: boost chips,) the quest list, then the Auto toggles. The
+-- list gets as many rows as fit (MaxRows, read by QuestController).
+local ROW_H, HEADER_H, LIST_W = 51, 31, 236
+placeRight = function()
+	local list = el.QuestList :: Frame
+	local rightFrame = el.Right :: Frame
+	if not list or hud.AbsoluteSize.Y < 2 then
+		return
+	end
+	local _, right = Ui.edges(hud)
+	local margin = if lastCompact then right else 14
+	local originY = hud.AbsolutePosition.Y
+	local height = hud.AbsoluteSize.Y
+	local top = el.SpinButton.AbsolutePosition.Y + el.SpinButton.AbsoluteSize.Y + 8 - originY
+	local boosts = (el.BoostTemplate :: Instance).Parent :: Frame
+	local limit
+	if lastCompact then
+		local chips = contentEdge(boosts, true)
+		if chips then
+			top = math.max(top, chips + 6 - originY)
+		end
+		-- Down to the Auto toggles, or the jump button.
+		local toggles = contentEdge(rightFrame, false)
+		limit = if toggles then toggles - originY - 8 else height - (26 + 108 * Ui.scale()) - 8
+	else
+		local chips = contentEdge(boosts, false)
+		local toggles = rightFrame.AbsoluteSize.Y
+		limit = (if chips then chips - originY else height - 14) - 12
+		if contentEdge(rightFrame, true) then
+			limit -= toggles
+		end
+	end
+	top = math.max(6, math.floor(top))
+	list.AnchorPoint = Vector2.new(1, 0)
+	list.Position = UDim2.new(1, -margin, 0, top)
+	local k = math.max(0.1, list.AbsoluteSize.X / LIST_W)
+	local rows = math.clamp(math.floor((limit - top - HEADER_H * k) / (ROW_H * k)), 1, 5)
+	if list:GetAttribute("MaxRows") ~= rows then
+		list:SetAttribute("MaxRows", rows)
+	end
+	if not lastCompact then
+		local listBottom = if list.Visible then list.AbsolutePosition.Y + list.AbsoluteSize.Y - originY + 10 else top
+		rightFrame.Position = UDim2.new(1, -14, 0, math.floor(listBottom))
 	end
 end
 
@@ -868,7 +927,7 @@ function HudController:Init(controllers)
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
 	el.SpinButton = Ui.find(hud, "SpinButton")
 	el.MoonPanel = Ui.find(hud, "MoonPanel")
-	el.Quests = Ui.find(hud, "Quests")
+	el.QuestList = Ui.find(hud, "QuestList")
 	el.Toasts = Ui.find(hud, "Toasts")
 	el.Hint = Ui.find(hud, "Hint")
 	-- Studio places synced before the combo rework still hold the old frame: drop it.
@@ -1107,6 +1166,13 @@ end
 
 function HudController:Start()
 	Ui.onScale(layout)
+	-- The right edge restacks as boost chips, quest rows and toggles come and go.
+	task.spawn(function()
+		while true do
+			task.wait(0.3)
+			placeRight()
+		end
+	end)
 	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(function()
 		layout(Ui.scale(), Ui.compact())
 	end)

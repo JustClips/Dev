@@ -360,7 +360,7 @@ local function claimJob(player: Player): (boolean, string?)
 		return false, "Finish the tutorial first!"
 	end
 	if progress < Quests.target(job) then
-		return false, "That job isn't done yet!"
+		return false, "That quest isn't done yet!"
 	end
 	local n = data.Flags.QuestJob
 	local got = S.RewardService:Grant(player, job.Reward or { Kind = "Cash", Seconds = 300 }, "QuestJob" .. n)
@@ -587,7 +587,7 @@ local function build(index: number)
 	local root = Npc.build({
 		Name = "QuestMaster" .. index,
 		Title = Quests.NpcName,
-		Sub = "Jobs and rewards",
+		Sub = "Quests and rewards",
 		TitleColor = Color3.fromRGB(110, 190, 255),
 		Opens = "Quests",
 		Skin = Color3.fromRGB(234, 184, 146),
