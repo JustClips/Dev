@@ -99,15 +99,36 @@ local PASS_INFO: { [string]: { Icon: string, Hi: string, Lo: string, Tag: string
 
 local EGG_TIERS = { "Epic", "Legendary", "Mythic", "Cosmic" }
 
--- Small buys that go to your bag, cheapest first.
-local POTIONS = {
+-- Small buys that go to your bag, cheapest first. A `Choices` card has one Buy that opens
+-- a picker (Dev, 2026-11-01: "3x LUCK POTION" next to "3x LUCK 15 MIN" read as the same
+-- thing): the normal potion pack or the stronger one.
+type Choice = { Key: string, Count: string, Each: string, Icon: string, Tag: string? }
+local POTIONS: { { Key: string, Icon: string, Hi: string, Lo: string, Title: string?, Choices: { Choice }? } } = {
 	{ Key = "LeafBomb3", Icon = "Icon_LeafBomb", Hi = "3x", Lo = "LEAF BOMB" },
 	{ Key = "LuckyClover1", Icon = "Icon_LuckyClover", Hi = "", Lo = "LUCKY CLOVER" },
-	{ Key = "LuckPotion3", Icon = "Icon_PotionLuck", Hi = "3x", Lo = "LUCK POTION" },
-	{ Key = "CashPotion3", Icon = "Icon_PotionCash", Hi = "3x", Lo = "CASH POTION" },
+	{
+		Key = "LuckPotion3",
+		Icon = "Icon_PotionLuck",
+		Hi = "",
+		Lo = "LUCK POTION",
+		Title = "Which Luck Potion?",
+		Choices = {
+			{ Key = "LuckPotion3", Count = "x3", Each = "2x luck, 10 min each", Icon = "Icon_PotionLuck", Tag = "MOST POPULAR" },
+			{ Key = "SuperLuckPotion1", Count = "SUPER", Each = "3x luck for 15 min", Icon = "Icon_PotionSuperLuck", Tag = "STRONGEST" },
+		},
+	},
+	{
+		Key = "CashPotion3",
+		Icon = "Icon_PotionCash",
+		Hi = "",
+		Lo = "CASH POTION",
+		Title = "Which Cash Potion?",
+		Choices = {
+			{ Key = "CashPotion3", Count = "x3", Each = "2x cash, 10 min each", Icon = "Icon_PotionCash", Tag = "MOST POPULAR" },
+			{ Key = "MegaCashPotion1", Count = "MEGA", Each = "3x cash for 15 min", Icon = "Icon_PotionMegaCash", Tag = "STRONGEST" },
+		},
+	},
 	{ Key = "MutationSpray1", Icon = "Icon_MutationSpray", Hi = "", Lo = "MUTATION SPRAY" },
-	{ Key = "SuperLuckPotion1", Icon = "Icon_PotionSuperLuck", Hi = "3x", Lo = "LUCK 15 MIN" },
-	{ Key = "MegaCashPotion1", Icon = "Icon_PotionMegaCash", Hi = "3x", Lo = "CASH 15 MIN" },
 	{ Key = "HugeCharm1", Icon = "Icon_HugeCharm", Hi = "10x", Lo = "HUGE CHANCE" },
 }
 
@@ -299,9 +320,52 @@ local function openQtyPicker(rarity: string)
 			prompt(key)
 		end)
 		option.Parent = qtyOptions
+		local pic = option:FindFirstChild("Icon") :: GuiObject?
+		if pic then
+			pic.Visible = false
+		end
 		ModelView.show(Ui.find(option, "Model"), AssetLibrary.egg(rarity), "Egg_" .. rarity)
 	end
 	Ui.find(qtyPicker, "Header.Title").Text = `How many {rarity} Eggs?`
+	giftPicker.Visible = false
+	qtyPicker.Visible = true
+end
+
+-- The same picker for potion cards: one option per product, with its picture.
+local function openChoicePicker(title: string, choices: { Choice })
+	for _, child in qtyOptions:GetChildren() do
+		if child:GetAttribute("Built") then
+			child:Destroy()
+		end
+	end
+	for i, choice in choices do
+		local def = Products.ProductByKey[choice.Key]
+		if not def or def.Id == 0 then
+			continue
+		end
+		local option = clone("Option")
+		option.LayoutOrder = i
+		Ui.find(option, "Count").Text = choice.Count
+		Ui.find(option, "Each").Text = choice.Each
+		local tag = Ui.find(option, "Tag") :: Frame
+		tag.Visible = choice.Tag ~= nil
+		if choice.Tag then
+			Ui.find(tag, "Label").Text = choice.Tag
+		end
+		setPrice(Ui.find(option, "Buy"), robuxPrice(Prices.of(def)), ROBUX)
+		Ui.button(Ui.find(option, "Buy"), function()
+			qtyPicker.Visible = false
+			prompt(choice.Key)
+		end)
+		local pic = option:FindFirstChild("Icon") :: ImageLabel?
+		if pic then
+			pic.Image = AssetLibrary.image(choice.Icon)
+			pic.Visible = true
+		end
+		;(Ui.find(option, "Model") :: GuiObject).Visible = false
+		option.Parent = qtyOptions
+	end
+	Ui.find(qtyPicker, "Header.Title").Text = title
 	giftPicker.Visible = false
 	qtyPicker.Visible = true
 end
@@ -733,6 +797,13 @@ local function buildPotions(_data, color: Color3)
 	local tiles: { Tile } = {}
 	for _, entry in POTIONS do
 		local tile = productTile(entry.Key, entry.Hi, entry.Lo, entry.Icon)
+		local choices = entry.Choices
+		if tile and choices then
+			tile.Price = "Buy"
+			tile.OnBuy = function()
+				openChoicePicker(entry.Title or "Which one?", choices)
+			end
+		end
 		if tile then
 			table.insert(tiles, tile)
 		end

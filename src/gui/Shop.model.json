@@ -7586,6 +7586,42 @@
            }
           },
           {
+           "name": "Icon",
+           "className": "ImageLabel",
+           "properties": {
+            "Size": [
+             [
+              0,
+              96
+             ],
+             [
+              0,
+              96
+             ]
+            ],
+            "Position": [
+             [
+              0.5,
+              0
+             ],
+             [
+              0,
+              18
+             ]
+            ],
+            "AnchorPoint": [
+             0.5,
+             0
+            ],
+            "BorderSizePixel": 0,
+            "BackgroundTransparency": 1,
+            "Image": "rbxassetid://117153372879344",
+            "ScaleType": "Fit",
+            "ZIndex": 13,
+            "Visible": false
+           }
+          },
+          {
            "name": "Tag",
            "className": "Frame",
            "properties": {

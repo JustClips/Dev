@@ -953,6 +953,8 @@ def shop():
         node("Glow", "ImageLabel", base(U(0, 170, 0, 170), U(0.5, 0, 0, 66), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
                                         ImageColor3=WHITE, ImageTransparency=0.25, ZIndex=12)),
         node("Model", "ViewportFrame", base(U(0, 104, 0, 104), U(0.5, 0, 0, 14), (0.5, 0), BackgroundTransparency=1, ZIndex=13)),
+        # Potion choices show a picture instead of the 3D egg (ShopController).
+        icon("Icon", "Potion", 96, U(0.5, 0, 0, 18), (0.5, 0), ZIndex=13, Visible=False),
         plate("Tag", U(0, 150, 0, 26), U(0.5, 0, 0, -13), (0.5, 0), tint=BADGE_RED, stroke=2.5, Visible=False, ZIndex=15, children=[
             text("Label", "MOST POPULAR", U(1, -6, 1, 0), U(0, 3, 0, 0), ts=16, display=True, stroke=2, ZIndex=16,
                  TextScaled=True, children=[fit(16)]),
