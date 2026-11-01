@@ -477,12 +477,15 @@ local BADGE_RING = Color3.fromRGB(255, 255, 255)
 local BADGE_OUTLINE = Color3.fromRGB(40, 14, 22)
 -- Pulse (Dev, 2026-11-01, round 3: "pulse each 5 seconds, twice, a gap of 0.5s ... each
 -- pulse should increase by 0.2x with a tween in 0.4s", cartoony not harsh): the badge
--- circle itself bumps to 1.2x and back, twice (no rings: Dev meant the circle grows). Every badge
+-- circle itself bumps to 1.2x and back, twice, each bump sending out a thin ring. Every badge
 -- runs on the same 5 s beat but with its own offset, so they don't all go at once.
 local PULSE_EVERY = 5 -- seconds between one badge's double pulse
 local PULSE_GAP = 0.5 -- seconds between the two pulses
 local PULSE_BUMP = 1.2 -- the badge's size at the top of a pulse
 local PULSE_BUMP_TIME = 0.4 -- one grow-and-back
+local PULSE_TIME = 1.1 -- how long one ring takes to grow and fade
+local PULSE_GROW = 2.4 -- how big a ring gets, relative to the badge
+local BADGE_FILL = Color3.fromRGB(214, 22, 52)
 local nextPulse: { [GuiObject]: number } = setmetatable({}, { __mode = "k" }) :: any
 
 -- Turns a badge into the cartoony round badge (once per badge): a glossy red disc with a
@@ -556,7 +559,53 @@ local function styleBadge(badge: GuiObject)
 	end
 end
 
--- One pulse: the badge bumps to 1.2x and back in 0.4 s.
+-- One ring: a thin red-and-white outline circle behind the badge that grows and fades.
+-- It is a sibling of the badge one layer below it (with Sibling z-order a child would draw
+-- on top).
+local function waveFrom(badge: GuiObject)
+	local host = badge.Parent
+	if not (host and host:IsA("GuiObject")) then
+		return
+	end
+	local size = badge.Size
+	local h = size.Y.Offset
+	local pos, anchor = badge.Position, badge.AnchorPoint
+	local w = size.X.Offset
+	local ring = Instance.new("Frame")
+	ring.Name = "BadgeWave"
+	ring.BorderSizePixel = 0
+	ring.BackgroundTransparency = 1
+	ring.AnchorPoint = Vector2.new(0.5, 0.5)
+	ring.Size = UDim2.fromOffset(h, h)
+	ring.Position = UDim2.new(
+		pos.X.Scale + size.X.Scale * (0.5 - anchor.X),
+		pos.X.Offset + w * (0.5 - anchor.X),
+		pos.Y.Scale + size.Y.Scale * (0.5 - anchor.Y),
+		pos.Y.Offset + h * (0.5 - anchor.Y)
+	)
+	ring.ZIndex = badge.ZIndex - 1
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.5, 0)
+	corner.Parent = ring
+	local stroke = Instance.new("UIStroke")
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Color = BADGE_FILL
+	stroke.Thickness = math.max(2, math.floor(h / 9 + 0.5))
+	stroke.Transparency = 0.1
+	stroke.Parent = ring
+	ring.Parent = host
+	-- Grow the frame itself (a UIScale would also thicken the outline).
+	local info = TweenInfo.new(PULSE_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local big = math.floor(h * PULSE_GROW + 0.5)
+	TweenService:Create(ring, info, { Size = UDim2.fromOffset(big, big) }):Play()
+	local fade = TweenService:Create(stroke, info, { Transparency = 1, Thickness = 1 })
+	fade.Completed:Once(function()
+		ring:Destroy()
+	end)
+	fade:Play()
+end
+
+-- One pulse: the badge bumps to 1.2x and back in 0.4 s and sends out a ring.
 local function pulseOnce(badge: GuiObject)
 	if not (badge.Parent and badge.Visible) then
 		return
@@ -572,6 +621,7 @@ local function pulseOnce(badge: GuiObject)
 		end)
 		up:Play()
 	end
+	waveFrom(badge)
 end
 
 local function pulseTwice(badge: GuiObject)
