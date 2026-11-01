@@ -13289,6 +13289,7 @@ Assets.Images = {
 	BaseSkin_Autumn = "rbxassetid://83462786728330",
 	BaseSkin_Candy = "rbxassetid://137098554057298",
 	BaseSkin_Castle = "rbxassetid://95709317278734",
+	BaseSkin_Classic = "rbxassetid://130432230895332",
 	BaseSkin_Halloween = "rbxassetid://82285050542266",
 	BaseSkin_Tiki = "rbxassetid://125069349482373",
 	BaseSkin_Winter = "rbxassetid://81254928174997",

@@ -1504,6 +1504,288 @@ def halloween():
                      incubator=hal_incubator, lamp=hal_lamp, house=hal_house, stall=hal_stall, decor=hal_decor))
     return dict(ground="3A3348", sky=(0.32, 0.24, 0.48))
 
+# ============================================================ 7. CLASSIC (the free wooden base)
+# Same look as the default base the game builds (MapBuilder.buildBaseStructure + basedecor):
+# warm plank deck, log corner posts with lanterns, rail walls, cream picket park fence,
+# the red-roofed dog house, the duck pond and a green lawn.
+CLA = dict(floor="planks", deck=["C48E5C", "B9824F", "CF9A66"], trim="805434", park="58A33D", path="967656",
+           wood="C48E5C", dark="805434", light="E0B482", cream="FFF4DE", stone="A9A39A", sdark="857F78",
+           roof="E8574A", roof2="C2413A", band="4C8DFF", straw="E8C25A", straw2="C89A3A", straw3="F6DC8A",
+           leaf=["5DBB4A", "3F9A3A", "8BD85E"], flowers=["FF5A7A", "FFD23A", "FFFFFF", "B07CFF", "FF9A3C", "5AB8FF"],
+           water="5AB8E8", deep="3C8FCC", yellow="FFD23A", red="F0544A", blue="4A9BFF", pink="FF8CB4", glow="FFD68C")
+
+
+def cla_wall(c, L):
+    """The classic rail wall (two wood rails, a dark top rail, posts) with a row of
+    planks along the bottom so it reads as a cosy little wall from the camera."""
+    p = [box(c["dark"], loc=(x, 0, 1.6), size=(0.7, 0.7, 3.2), bevel=0.1) for x in (-L / 2, L / 2)]
+    p.append(box(c["dark"], loc=(0, 0, 1.5), size=(0.6, 0.6, 3.0)))
+    for z in (1.0, 2.4):
+        p.append(box(c["wood"], loc=(0, 0, z), size=(L, 0.5, 0.5), bevel=0.1))
+    p.append(box(c["dark"], loc=(0, 0, 3.2), size=(L + 0.2, 0.8, 0.4), bevel=0.1))
+    n = max(2, int(L // 1.1))
+    for i in range(n):
+        x = -L / 2 + (i + 0.5) * L / n
+        p.append(box(c["light"] if i % 2 else c["wood"], loc=(x, 0.1, 0.85), size=(L / n - 0.12, 0.2, 1.5)))
+    return p, []
+
+
+def cla_fence(c, L):
+    """Cream picket fence with wood posts, ball tops and dark rails (like Base_Fence)."""
+    p = []
+    for x in (-L / 2, L / 2):
+        p.append(box(c["wood"], loc=(x, 0, 1.4), size=(0.6, 0.6, 2.8)))
+        p.append(sphere(c["light"], loc=(x, 0, 3.0), scale=(0.42, 0.42, 0.36), seg=8, rings=5))
+    for z in (0.8, 2.15):
+        p.append(box(c["dark"], loc=(0, 0.05, z), size=(L, 0.22, 0.32)))
+    n = max(2, int(L // 1.32))
+    for k in range(n):
+        x = -L / 2 + 0.7 + k * (L - 1.4) / max(1, n - 1)
+        h = 2.5 + 0.18 * math.sin(k * 2.1)
+        p.append(box(c["cream"], loc=(x, -0.12, h / 2 + 0.1), size=(0.62, 0.16, h)))
+        p.append(cone(c["cream"], loc=(x, -0.12, h + 0.3), r=0.44, h=0.4, verts=4, rot=(90, 45, 0), smooth=False))
+    return p, []
+
+
+def cla_pillar(c):
+    p = [cyl(c["dark"], loc=(0, 0, 3.5), r=1.1, h=7, verts=12),
+         box(c["band"], loc=(0, 0, 1.2), size=(2.5, 2.5, 0.6)),
+         box(c["dark"], loc=(0, 0, 8.3), size=(2.2, 2.2, 0.4), bevel=0.08),
+         cone(c["roof"], loc=(0, 0, 9.0), r=1.5, h=1.0, verts=4, rot=(0, 0, 45), smooth=False)]
+    for x in (-0.6, 0.6):
+        for y in (-0.6, 0.6):
+            p.append(box(c["dark"], loc=(x, y, 7.5), size=(0.18, 0.18, 1.2)))
+    g = [box(c["glow"], loc=(0, 0, 7.5), size=(1.4, 1.4, 1.2))]
+    return p, g
+
+
+def cla_arch(c):
+    p, g = [], []
+    for x in (-7, 7):
+        p.append(cyl(c["stone"], loc=(x, 0, 0.45), r=1.2, r2=1.05, h=0.9, verts=10))
+        p.append(cyl(c["wood"], loc=(x, 0, 4.9), r=0.78, r2=0.72, h=8.2, verts=12))
+        for z in (2.2, 5.0, 7.6):
+            p.append(torus(c["dark"], loc=(x, 0, z), R=0.78, r=0.12, seg=12, mseg=4))
+        p.append(cyl(c["dark"], loc=(x * 0.86, -0.45, 6.75), r=0.08, h=0.9, rot=(90, 0, 0), verts=5))
+        g.append(sphere(c["glow"], loc=(x * 0.82, -0.9, 6.15), scale=(0.32, 0.32, 0.42), seg=8, rings=5))
+    p.append(box(c["wood"], loc=(0, 0, 9.5), size=(18.0, 1.6, 1.2), bevel=0.35))
+    p.append(box(c["dark"], loc=(0, 0, 10.25), size=(18.5, 1.9, 0.35), bevel=0.12))
+    # leafy crown with flowers
+    rnd = random.Random(30)
+    for i, x in enumerate((-8.0, -4.6, 4.6, 8.0)):
+        for k in range(3):
+            p.append(ico(c["leaf"][(i + k) % 3], loc=(x + rnd.uniform(-0.8, 0.8), rnd.uniform(-0.3, 0.3), 10.6 + rnd.uniform(0, 0.5)),
+                         scale=1.3 * rnd.uniform(0.7, 0.95), sub=2))
+        z = 11.0 + 0.3 * math.sin(i * 1.7)
+        p.append(sphere(c["flowers"][i], loc=(x * 0.95, -1.1, z), scale=0.42, seg=8, rings=5))
+        p.append(sphere(c["yellow"], loc=(x * 0.95, -1.4, z), scale=0.16, seg=6, rings=4))
+    # cream board with a pink paw (the game hangs the owner sign above it)
+    p.append(box(c["dark"], loc=(0, 0.05, 11.6), size=(9.0, 0.4, 2.9), bevel=0.2))
+    p.append(box(c["cream"], loc=(0, -0.15, 11.6), size=(8.5, 0.5, 2.4), bevel=0.2))
+    p.append(sphere(c["pink"], loc=(0, -0.45, 11.4), scale=(0.55, 0.12, 0.45), seg=10, rings=5))
+    for dx, dz in ((-0.55, 0.45), (-0.2, 0.7), (0.2, 0.7), (0.55, 0.45)):
+        p.append(sphere(c["pink"], loc=(dx, -0.45, 11.4 + dz), scale=(0.17, 0.08, 0.2), seg=8, rings=4))
+    # bunting under the beam: two swagged strings of triangle flags
+    cols = [c["red"], c["yellow"], c["blue"], c["pink"], c["leaf"][0], c["flowers"][3]]
+    for side in (-1, 1):
+        x0, x1 = side * 0.6, side * 6.2
+        for k in range(6):
+            u = (k + 0.5) / 6
+            x = x0 + (x1 - x0) * u
+            z = 8.65 - 0.7 * math.sin(u * math.pi)
+            p.append(cone(cols[(k + (side > 0) * 3) % 6], loc=(x, -0.85, z - 0.35), r=0.45, h=0.06, verts=3,
+                          rot=(90, 180, 0), smooth=False))  # tip pointing down
+        for k in range(8):
+            u0, u1 = k / 8, (k + 1) / 8
+            a = Vector((x0 + (x1 - x0) * u0, -0.85, 8.65 - 0.7 * math.sin(u0 * math.pi)))
+            b = Vector((x0 + (x1 - x0) * u1, -0.85, 8.65 - 0.7 * math.sin(u1 * math.pi)))
+            m, d = (a + b) / 2, b - a
+            p.append(box(c["dark"], loc=tuple(m), size=(d.length + 0.05, 0.06, 0.06), rot=(0, -math.degrees(math.atan2(d.z, d.x)), 0)))
+    return p, g
+
+
+def cla_hatchery(c):
+    p = [cyl(c["dark"], loc=(0, 0, 0.3), r=9, h=0.6, verts=32),
+         cyl(c["wood"], loc=(0, 0, 0.72), r=8.4, h=0.26, verts=32)]
+    # lighter plank wedges round the deck
+    for k in range(0, 16, 2):
+        t = (k + 0.5) * math.tau / 16
+        p.append(box(c["light"], loc=(math.cos(t) * 7.0, math.sin(t) * 7.0, 0.86), size=(2.6, 1.6, 0.04), rot=(0, 0, math.degrees(t))))
+    p += [torus(c["straw"], loc=(0, 0, 0.95), R=5.6, r=0.95, seg=40, mseg=8),
+          cyl(c["straw3"], loc=(0, 0, 0.92), r=2.2, h=0.12, verts=20)]
+    rnd = random.Random(9)
+    for k in range(20):
+        t = math.tau * k / 20 + rnd.uniform(-0.1, 0.1)
+        r = 5.6 + rnd.choice((-0.8, 0.8))
+        p.append(sphere((c["straw2"], c["straw3"])[k % 2], loc=(math.cos(t) * r, math.sin(t) * r, 1.15), scale=(0.45, 0.25, 0.18),
+                        rot=(0, 0, math.degrees(t) + rnd.uniform(-40, 40)), seg=6, rings=4))
+    for k in range(8):
+        t = math.tau * k / 8
+        p.append(sphere(c["yellow"], loc=(math.cos(t) * 2.7, math.sin(t) * 2.7, 0.9), scale=(0.55, 0.22, 0.05),
+                        rot=(0, 0, math.degrees(t)), seg=6, rings=3))
+    for i in range(8):
+        t = math.radians(i * 45 + 22.5)
+        x, y = math.cos(t) * 8.7, math.sin(t) * 8.7
+        p.append(cyl(c["dark"], loc=(x, y, 0.95), r=0.3, h=1.3, verts=8))
+        p.append(sphere(c["flowers"][i % 6], loc=(x, y, 1.75), scale=(0.4, 0.4, 0.32), seg=8, rings=5))
+    return p, []
+
+
+def cla_incubator(c):
+    p = [box(c["dark"], loc=(0, 0, 0.3), size=(2.4, 2.4, 0.6), bevel=0.25),
+         cyl(c["wood"], loc=(0, 0, 2.6), r=0.32, r2=0.28, h=4.0, verts=8),
+         box(c["dark"], loc=(0, 0, 4.75), size=(1.7, 1.7, 0.3), bevel=0.12),
+         cyl(c["roof"], loc=(0, 0, 5.62), r=1.2, h=0.15, verts=8),
+         cone(c["roof2"], loc=(0, 0, 6.0), r=1.05, h=0.6, verts=8),
+         sphere(c["cream"], loc=(0.9, -0.9, 0.95), scale=(0.3, 0.3, 0.38), seg=8, rings=6)]
+    for x in (-0.6, 0.6):
+        for y in (-0.6, 0.6):
+            p.append(box(c["dark"], loc=(x, y, 5.25), size=(0.14, 0.14, 0.7)))
+    g = [sphere(c["glow"], loc=(0, 0, 5.15), scale=(0.55, 0.55, 0.45), seg=10, rings=6)]
+    return p, g
+
+
+def cla_lamp(c):
+    p = [box(c["stone"], loc=(0, 0, 0.3), size=(1.5, 1.5, 0.6), bevel=0.25),
+         cyl(c["wood"], loc=(0, 0, 4.3), r=0.3, r2=0.24, h=7.4, verts=8),
+         sphere(c["light"], loc=(0, 0, 8.15), scale=0.3, seg=8, rings=5),
+         box(c["dark"], loc=(0, -0.65, 7.95), size=(0.22, 1.5, 0.22)),
+         cyl(c["dark"], loc=(0, -1.3, 7.7), r=0.06, h=0.5, verts=5),
+         cyl(c["roof"], loc=(0, -1.3, 7.45), r=0.6, r2=0.12, h=0.45, verts=8),
+         cyl(c["dark"], loc=(0, -1.3, 6.31), r=0.42, h=0.13, verts=8)]
+    g = [cyl(c["glow"], loc=(0, -1.3, 6.8), r=0.36, r2=0.44, h=0.87, verts=8)]
+    return p, g
+
+
+def cla_house(c):
+    """The dog house: log walls, red roof with a scalloped edge, round door, bone sign."""
+    W_, D_, H, ridge = 11.0, 9.0, 5.2, 3.6
+    p = gable(c["light"], c["roof"], c["roof2"], W_, D_, H, ridge, z0=0.6, over=1.2, thick=0.6, rows=4)
+    p.insert(0, box(c["stone"], loc=(0, 0, 0.3), size=(W_ + 1.4, D_ + 1.4, 0.6), bevel=0.25))
+    p.append(box(c["dark"], loc=(0, -D_ / 2 - 1.3, 0.35), size=(5.0, 2.2, 0.5), bevel=0.2))
+    g = []
+    # log rows sticking out at the corners
+    for k in range(4):
+        z = 0.6 + (k + 0.5) * H / 4
+        col = c["wood"] if k % 2 == 0 else c["light"]
+        for y in (-D_ / 2, D_ / 2):
+            p.append(box(col, loc=(0, y, z), size=(W_ + 0.8, 0.7, H / 4), bevel=0.25))
+        for x in (-W_ / 2, W_ / 2):
+            p.append(box(col, loc=(x, 0, z), size=(0.7, D_ - 0.6, H / 4), bevel=0.25))
+    top = 0.6 + H
+    for sgn in (-1, 1):
+        for k in range(7):
+            yk = -D_ / 2 - 0.6 + k * (D_ + 1.2) / 6
+            p.append(sphere(c["roof2"], loc=(sgn * (W_ / 2 + 1.05), yk, top - 0.15), scale=(0.5, 0.75, 0.32), seg=8, rings=5))
+    p.append(cyl(c["roof2"], loc=(0, 0, top + ridge + 0.75), r=0.5, h=D_ + 2.2, rot=(90, 0, 0), verts=10))
+    # chimney
+    p.append(box(c["sdark"], loc=(W_ / 4, D_ / 4, top + 3.2), size=(1.3, 1.3, 2.6), bevel=0.2))
+    p.append(box(c["stone"], loc=(W_ / 4, D_ / 4, top + 4.5), size=(1.7, 1.7, 0.45), bevel=0.15))
+    # round door with a frame
+    p.append(cyl("3A2618", loc=(0, -D_ / 2 - 0.4, 2.5), r=1.6, h=0.12, rot=(90, 0, 0), verts=16))
+    p.append(box("3A2618", loc=(0, -D_ / 2 - 0.4, 1.65), size=(3.2, 0.12, 1.7)))
+    p.append(lib.arc(c["dark"], loc=(0, -D_ / 2 - 0.5, 2.5), R=1.75, r=0.22, rot=(90, 0, 0), keep="above", seg=16))
+    for x in (-1.75, 1.75):
+        p.append(box(c["dark"], loc=(x, -D_ / 2 - 0.5, 1.6), size=(0.44, 0.44, 1.9), bevel=0.15))
+    # bone sign over the door
+    p.append(box("FFFFFF", loc=(0, -D_ / 2 - 0.55, 4.75), size=(2.0, 0.3, 0.45), bevel=0.15))
+    for x in (-1.05, 1.05):
+        for dz in (-0.22, 0.22):
+            p.append(sphere("FFFFFF", loc=(x, -D_ / 2 - 0.55, 4.75 + dz), scale=0.33, seg=8, rings=5))
+    # food bowl with kibble, and a ball by the porch
+    p.append(cyl(c["blue"], loc=(3.2, -D_ / 2 - 1.4, 0.25), r=0.6, r2=0.8, h=0.45, verts=12))
+    p.append(sphere("A8683A", loc=(3.2, -D_ / 2 - 1.4, 0.5), scale=(0.55, 0.55, 0.15), seg=8, rings=4))
+    p.append(sphere(c["red"], loc=(-3.4, -D_ / 2 - 1.7, 0.45), scale=0.45, seg=10, rings=6))
+    p.append(sphere("FFFFFF", loc=(-3.4, -D_ / 2 - 1.7, 0.45), scale=(0.47, 0.47, 0.12), rot=(30, 0, 0), seg=10, rings=4))
+    # round side windows with flower boxes
+    for sx in (-1, 1):
+        x = sx * (W_ / 2 + 0.55)
+        p.append(box(c["dark"], loc=(x, 0, 2.2), size=(0.6, 2.6, 0.5), bevel=0.12))
+        for k, dy in enumerate((-0.8, 0.0, 0.8)):
+            p.append(sphere(c["flowers"][(k + sx) % 6], loc=(x, dy, 2.65), scale=0.32, seg=8, rings=5))
+        p.append(torus(c["dark"], loc=(sx * (W_ / 2 + 0.45), 0, 3.8), R=0.95, r=0.16, rot=(0, 90, 0), seg=12, mseg=4))
+        g.append(cyl(c["glow"], loc=(sx * (W_ / 2 + 0.36), 0, 3.8), r=0.85, h=0.1, rot=(0, 90, 0), verts=12))
+    # pennant on the ridge
+    fx0 = -W_ / 4
+    p.append(cyl(c["dark"], loc=(fx0, -D_ / 2 + 1.0, top + ridge + 0.8), r=0.08, h=3.2, verts=5))
+    p.append(cone(c["yellow"], loc=(fx0 + 0.75, -D_ / 2 + 1.0, top + ridge + 2.0), r=0.6, h=1.5, verts=3, rot=(0, 90, 0), smooth=False))
+    return p, g
+
+
+def cla_stall(c):
+    # not exported (the game keeps its own Pet Trader stall); a wooden counter for the preview
+    p = [box(c["wood"], loc=(0, 0, 1.6), size=(7, 3.0, 3.2), bevel=0.2),
+         box(c["dark"], loc=(0, 0, 3.3), size=(7.4, 3.4, 0.3), bevel=0.08)]
+    for x in (-3.4, 3.4):
+        p.append(box(c["dark"], loc=(x, 1.3, 4.5), size=(0.3, 0.3, 3.0)))
+    for i in range(8):
+        p.append(box(c["red"] if i % 2 else c["cream"], loc=(-3.6 + (i + 0.5) * 0.9, 0.2, 6.1), size=(0.9, 4.0, 0.25), rot=(-10, 0, 0)))
+    return p, []
+
+
+def cla_decor(c):
+    # the park trees (Park_TreeRound/Tall/Autumn), Roblox X mirrored to Blender -X
+    put(lambda: (blob_tree("805434", c["leaf"], h=7, r=3.2, seed=2), []), -36, -6, 30, s=1.1)
+    put(lambda: (blob_tree("805434", c["leaf"], h=9, r=2.6, seed=4, n=4), []), 37, 2, 80, s=1.15)
+    put(lambda: (blob_tree("805434", ["F28C28", "E06A1F", "F5C342"], h=7, r=3.2, seed=6), []), -4, 37, 140, s=1.1)
+
+    def pond(c):
+        p = [oval(c["water"], 6.4, 4.4, 0.2, 0.3), oval(c["deep"], 3.2, 2.2, 0.36, 0.02)]
+        rnd = random.Random(5)
+        for k in range(18):
+            t = math.tau * k / 18
+            s = rnd.uniform(0.85, 1.2)
+            p.append(ico([c["stone"], c["sdark"], "D9CFBF"][k % 3], loc=(math.cos(t) * 6.95, math.sin(t) * 4.95, 0.3 * s),
+                         scale=(1.05 * s, 0.85 * s, 0.55 * s), sub=1))
+        for (x, y, s) in ((2.6, 2.0, 0.75), (-3.6, -1.6, 0.65), (0.5, -2.6, 0.55)):
+            p.append(cyl(c["leaf"][0], loc=(x, y, 0.4), r=s, h=0.05, verts=10))
+        # a duck and two ducklings
+        for (x, y, s) in ((-1.5, 0.8, 1.0), (0.2, 1.2, 0.6), (1.4, 1.5, 0.6)):
+            p.append(sphere(c["yellow"], loc=(x, y, 0.55 * s + 0.2), scale=(0.7 * s, 0.5 * s, 0.4 * s)))
+            p.append(sphere(c["yellow"], loc=(x - 0.45 * s, y, 1.0 * s + 0.2), scale=0.32 * s))
+            p.append(cone("FF9A3C", loc=(x - 0.85 * s, y, 0.98 * s + 0.2), r=0.12 * s, h=0.3 * s, rot=(0, -90, 0), verts=6))
+        return p, []
+    put(pond, -19, 22, c=c)
+
+    def bench(c):
+        p = [box(c["wood"], loc=(0, y, 1.3), size=(4.0, 0.5, 0.18)) for y in (-0.4, 0.2)]
+        p += [box(c["wood"], loc=(0, 0.7, 1.9 + z), size=(4.0, 0.15, 0.4), rot=(-10, 0, 0)) for z in (0, 0.55)]
+        p += [box(c["dark"], loc=(x, 0, 0.65), size=(0.25, 1.4, 1.3)) for x in (-1.6, 1.6)]
+        return p, []
+    put(bench, 12, 12, c=c)
+    put(lambda: ([ico(c["stone"], loc=(0, 0, 0.9), scale=(2.6, 2.2, 1.6), sub=2),
+                  ico(c["sdark"], loc=(1.8, 1.0, 0.6), scale=(1.3, 1.1, 0.9), sub=1)], []), -34, 35)
+    put(lambda: ([ico(c["stone"], loc=(0, 0, 0.7), scale=(1.8, 1.5, 1.2), sub=2)], []), -28, 8)
+
+    def flowerbed(c):
+        p = [box(c["dark"], loc=(0, 0, 0.35), size=(3.6, 2.4, 0.5), bevel=0.15), box("6B4A3A", loc=(0, 0, 0.6), size=(3.2, 2.0, 0.1))]
+        for i in range(6):
+            x, y = -1.1 + (i % 3) * 1.1, -0.5 + (i // 3) * 1.0
+            p.append(cyl(c["leaf"][1], loc=(x, y, 0.95), r=0.06, h=0.7, verts=4))
+            p.append(sphere(c["flowers"][i], loc=(x, y, 1.35), scale=0.35, seg=8, rings=5))
+        return p, []
+    put(flowerbed, 40, 38, 10, c=c)
+    # bushes along the walls and a few flowers in the lawn
+    rnd = random.Random(21)
+    for (x, y) in [(-25, -40), (25, -40), (-40, -22), (40, -22), (-20, 40), (20, 40), (40, 20)]:
+        put(lambda: ([ico(c["leaf"][k % 3], loc=(rnd.uniform(-0.8, 0.8), rnd.uniform(-0.8, 0.8), 0.9 + rnd.uniform(0, 0.4)),
+                          scale=rnd.uniform(0.9, 1.3), sub=2) for k in range(3)], []), x, y)
+    for i in range(14):
+        x, y = rnd.uniform(-38, 38), rnd.uniform(-10, 38)
+        put(lambda i=i: ([cyl(c["leaf"][1], loc=(0, 0, 0.5), r=0.05, h=0.6, verts=4),
+                          sphere(c["flowers"][i % 6], loc=(0, 0, 0.85), scale=0.28, seg=8, rings=5)], []), x, y)
+    # a bone and a ball in the park
+    put(lambda: ([box("FFFFFF", loc=(0, 0, 0.45), size=(1.6, 0.35, 0.35))] +
+                 [sphere("FFFFFF", loc=(x, y, 0.45), scale=0.28, seg=8, rings=5) for x in (-0.85, 0.85) for y in (-0.18, 0.18)], []), 6, 26, 25)
+    put(lambda: ([sphere(c["blue"], loc=(0, 0, 0.6), scale=0.55)], []), -6, 6)
+
+
+@theme("classic")
+def classic():
+    layout(CLA, dict(wall=cla_wall, fence=cla_fence, pillar=cla_pillar, arch=cla_arch, hatchery=cla_hatchery,
+                     incubator=cla_incubator, lamp=cla_lamp, house=cla_house, stall=cla_stall, decor=cla_decor))
+    return dict(ground="68C048", sky=(0.62, 0.78, 0.95))
+
 # =============================================================================== build + render
 def build(name):
     SOLID.clear()

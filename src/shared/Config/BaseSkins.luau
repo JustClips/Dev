@@ -35,6 +35,7 @@ local List: { SkinDef } = {
 		Desc = "The cosy wooden base every player starts with.",
 		Color = Color3.fromRGB(196, 142, 92),
 		SignLift = 0,
+		Image = "BaseSkin_Classic",
 		Requires = { Rebirths = 0, Pets = {}, IndexCount = 0 },
 	},
 	{
