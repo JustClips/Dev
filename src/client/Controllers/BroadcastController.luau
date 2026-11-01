@@ -4,14 +4,13 @@
 -- messages straight on the screen.
 --   * messages and admin events: one line per message in a feed under the top bar (the
 --     HUD places the feed, toasts go under it). Each line has the sender's avatar, their
---     name with an [ADMIN] / [ADMIN EVENT] tag, and the text typing itself out letter by
+--     name (gold; purple for events), and the text typing itself out letter by
 --     letter with soft ticks. Several messages in a row stack (newest at the bottom), each
 --     fades on its own. Tap one to clear it.
 --   * polls: the question in the same style, at the top of the feed, with solid answer
 --     buttons; everyone taps one and sees the votes come in.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TextService = game:GetService("TextService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -74,17 +73,9 @@ local function text(parent: Instance, props: { [string]: any }, outline: number?
 	return label
 end
 
--- Width a text needs (capped at maxW), so wrapped lines hug their words.
-local function widthOf(value: string, font: Font, size: number, maxW: number): number
-	local ok, bounds = pcall(function()
-		local params = Instance.new("GetTextBoundsParams")
-		params.Text = value
-		params.Font = font
-		params.Size = size
-		params.Width = maxW
-		return TextService:GetTextBoundsAsync(params)
-	end)
-	return if ok then math.min(maxW, math.ceil(bounds.X) + 4) else maxW
+-- Lines grow with their text and only wrap past MAX_W.
+local function maxWidth(label: TextLabel)
+	make("UISizeConstraint", { MaxSize = Vector2.new(MAX_W, math.huge) }, label)
 end
 
 -- Avatar headshots, cached per user.
@@ -234,13 +225,12 @@ local function addLine(info: any)
 	}, line)
 	make("UIListLayout", { Padding = UDim.new(0, 0), SortOrder = Enum.SortOrder.LayoutOrder }, column)
 
-	local tag = if type(info.Title) == "string" then info.Title else "ADMIN"
 	local from = if type(info.From) == "string" then info.From else "Admin"
-	local hex = color:ToHex()
 	text(column, {
 		Name = "From",
 		RichText = true,
-		Text = `<font color="#{hex}">[{tag}]</font> {from}{if info.Global
+		TextColor3 = color,
+		Text = `{from}{if info.Global
 			then ` <font color="#{SERVERS:ToHex()}">· all servers</font>`
 			else ""}`,
 		TextSize = 17,
@@ -250,30 +240,31 @@ local function addLine(info: any)
 	}, 2.5)
 
 	local size = if isEvent then 28 else 25
-	local bodyW = widthOf(info.Text, DISPLAY, size, MAX_W)
 	local body = text(column, {
 		Name = "Body",
 		Text = info.Text,
 		TextColor3 = if isEvent then GOLD else WHITE,
 		TextSize = size,
 		TextWrapped = true,
-		Size = UDim2.fromOffset(bodyW, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
+		Size = UDim2.fromOffset(0, 0),
+		AutomaticSize = Enum.AutomaticSize.XY,
 		LayoutOrder = 2,
 	}, 3)
+	maxWidth(body)
 	body.MaxVisibleGraphemes = 0
 	local blurb = if type(info.Blurb) == "string" then info.Blurb else ""
 	if blurb ~= "" then
-		text(column, {
+		local small = text(column, {
 			Name = "Blurb",
 			Text = blurb,
 			FontFace = BODY,
 			TextSize = 16,
 			TextWrapped = true,
-			Size = UDim2.fromOffset(widthOf(blurb, BODY, 16, MAX_W), 0),
-			AutomaticSize = Enum.AutomaticSize.Y,
+			Size = UDim2.fromOffset(0, 0),
+			AutomaticSize = Enum.AutomaticSize.XY,
 			LayoutOrder = 3,
 		}, 2.5)
+		maxWidth(small)
 	end
 
 	table.insert(lines, line)
@@ -402,7 +393,8 @@ local function renderPoll()
 			pollAvatar:Destroy()
 		end
 		pollAvatar = avatarBox(pollHead, AVATAR, SKY, tonumber(poll.FromId), 1)
-		pollFrom.Text = `<font color="#{SKY:ToHex()}">[POLL]</font> {if type(poll.From) == "string" then poll.From else "Admin"}{if poll.Global
+		pollFrom.TextColor3 = SKY
+		pollFrom.Text = `{if type(poll.From) == "string" then poll.From else "Admin"}{if poll.Global
 			then ` <font color="#{SERVERS:ToHex()}">· all servers</font>`
 			else ""}`
 		questionLabel.Text = poll.Question
