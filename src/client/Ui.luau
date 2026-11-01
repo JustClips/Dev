@@ -826,6 +826,22 @@ end
 -- How far below a ScreenGui's bottom edge the real screen goes (the safe-area band along
 -- the bottom of phones), in px. HUD pieces at the bottom can move down into most of it
 -- (Dev, 2026-11-01: the wallet and hotbar floated high on mobile).
+function Ui.rightGap(gui: ScreenGui): number
+	local full = fullScreen()
+	return math.max(0, (full.AbsolutePosition.X + full.AbsoluteSize.X) - (gui.AbsolutePosition.X + gui.AbsoluteSize.X))
+end
+
+-- Roblox's touch jump button: how far its left edge and top edge sit from the screen's
+-- right and bottom edges (px). Small screens use a 70 px button, bigger ones 120 px.
+function Ui.jumpButtonArea(): (number, number)
+	local camera = workspace.CurrentCamera
+	local view = if camera then camera.ViewportSize else Vector2.new(1000, 600)
+	if math.min(view.X, view.Y) <= 500 then
+		return 95, 90
+	end
+	return 170, 210
+end
+
 function Ui.bottomGap(gui: ScreenGui): number
 	local full = fullScreen()
 	local fullBottom = full.AbsolutePosition.Y + full.AbsoluteSize.Y

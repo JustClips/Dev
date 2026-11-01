@@ -848,11 +848,15 @@ placeRight = function()
 		-- Boost chips stack above the Auto toggles (or the jump button); the list stops
 		-- above the chips.
 		local toggles = contentEdge(rightFrame, false)
-		-- Right down in the corner like on PC (Dev, 2026-11-01: "move them down as much").
-		local chipsBottom = if toggles then toggles - originY - 6 else height - 6 + math.max(0, Ui.bottomGap(hud) - 4)
-		boosts.Position = UDim2.new(1, -margin, 0, math.floor(chipsBottom))
-		local chips = contentEdge(boosts, false)
-		limit = (if chips then chips - originY else chipsBottom) - 8
+		-- Down at the bottom like on PC (Dev, 2026-11-01), but just left of Roblox's jump
+		-- button so they never sit on it.
+		local jumpLeft, jumpTop = Ui.jumpButtonArea()
+		local fromRight = math.max(margin, jumpLeft - Ui.rightGap(hud) + 6)
+		local chipsBottom = height - 6 + math.max(0, Ui.bottomGap(hud) - 4)
+		boosts.Position = UDim2.new(1, -math.floor(fromRight), 0, math.floor(chipsBottom))
+		-- The quest list stops above the Auto toggles or the jump button.
+		local jumpY = height + Ui.bottomGap(hud) - jumpTop
+		limit = (if toggles then toggles - originY else jumpY) - 8
 	else
 		local chips = contentEdge(boosts, false)
 		local toggles = rightFrame.AbsoluteSize.Y
@@ -868,13 +872,25 @@ placeRight = function()
 	local offers = el.Offers :: Frame
 	local offersH = if offers.Visible then offers.AbsoluteSize.Y + 8 else 0
 	local k = math.max(0.1, list.AbsoluteSize.X / LIST_W)
-	local rows = math.clamp(math.floor((limit - offersH - top - HEADER_H * k) / (ROW_H * k)), 1, 5)
+	-- At least 3 rows (Dev, 2026-11-01); offers then sit beside the list instead of under it.
+	local fit = math.floor((limit - offersH - top - HEADER_H * k) / (ROW_H * k))
+	local besideOffers = fit < 3 and offers.Visible
+	if besideOffers then
+		fit = math.floor((limit - top - HEADER_H * k) / (ROW_H * k))
+	end
+	local rows = math.clamp(fit, 3, 5)
 	if list:GetAttribute("MaxRows") ~= rows then
 		list:SetAttribute("MaxRows", rows)
 	end
 	local listBottom = if list.Visible then list.AbsolutePosition.Y + list.AbsoluteSize.Y - originY + 8 else top
-	offers.AnchorPoint = Vector2.new(1, 0)
-	offers.Position = UDim2.new(1, -margin, 0, math.floor(listBottom))
+	if besideOffers then
+		-- A column of round buttons just left of the list.
+		offers.AnchorPoint = Vector2.new(1, 0)
+		offers.Position = UDim2.new(1, -(margin + math.ceil(list.AbsoluteSize.X) + 8), 0, top)
+	else
+		offers.AnchorPoint = Vector2.new(1, 0)
+		offers.Position = UDim2.new(1, -margin, 0, math.floor(listBottom))
+	end
 	if not lastCompact then
 		rightFrame.Position = UDim2.new(1, -14, 0, math.floor(listBottom + offersH + 2))
 	end
