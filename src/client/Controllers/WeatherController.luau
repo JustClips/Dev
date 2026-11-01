@@ -2437,7 +2437,9 @@ function WeatherController:Start()
 	-- Camera shake on top of whatever the camera scripts did this frame.
 	RunService:BindToRenderStep("WeatherShake", Enum.RenderPriority.Camera.Value + 1, function()
 		local cam = camera()
-		if cam and os.clock() < shakeUntil then
+		-- Only the normal follow camera shakes: on a scripted camera (base try-on, cutscenes)
+		-- the offset stacks frame after frame and drags the view away (Dev 2026-11-01).
+		if cam and os.clock() < shakeUntil and cam.CameraType == Enum.CameraType.Custom then
 			local left = shakeUntil - os.clock()
 			local p = shakePower * math.min(1, left * 4)
 			cam.CFrame *= CFrame.Angles(rng:NextNumber(-p, p) * 0.03, rng:NextNumber(-p, p) * 0.03, 0)
