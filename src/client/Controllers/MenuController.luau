@@ -137,7 +137,7 @@ local function render()
 	-- Core buttons carry their menu's badges.
 	for name, menu in menus do
 		local n = anyBadge(menu)
-		Ui.setBadge(cores[name]:FindFirstChild("Badge") :: GuiObject?, if n > 0 then n else nil)
+		Ui.setBadge(cores[name]:FindFirstChild("Badge") :: GuiObject?, if n > 0 then n else nil, true)
 	end
 end
 

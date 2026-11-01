@@ -680,7 +680,10 @@ local function liftHost(badge: GuiObject, lifted: boolean)
 	host.ZIndex = if lifted then (baseZ :: number) + 1 + rank else baseZ :: number
 end
 
-function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
+-- `ownBeat`: the badge only pulses on its own 10 s beat, never because its count went up
+-- (core buttons that add up their menu's badges; Dev, 2026-11-01: a category pulsed every
+-- time something inside it did).
+function Ui.setBadge(badge: GuiObject?, count: (number | string)?, ownBeat: boolean?)
 	if not badge then
 		return
 	end
@@ -715,7 +718,7 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	badge.Visible = true
 	liftHost(badge, true)
 	-- A new or bigger count pulses right away and restarts that badge's 10 s beat.
-	if before ~= shown and (before == nil or (tonumber(shown) or 0) > (tonumber(before) or 0)) and not Ui.reducedMotion() then
+	if not ownBeat and before ~= shown and (before == nil or (tonumber(shown) or 0) > (tonumber(before) or 0)) and not Ui.reducedMotion() then
 		nextPulse[badge] = os.clock() + PULSE_EVERY
 		task.defer(pulseTwice, badge)
 	end
