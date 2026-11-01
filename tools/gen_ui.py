@@ -1900,18 +1900,21 @@ def base_picker():
     write("BasePicker", screen([dim(), window(WIN_W, WIN_H, "Change Base", "Base", [hint, lst], header="#F28C28")],
                                order=10, enabled=False))
 
-    bar_ = plate("Bar", U(0, 680, 0, 184), U(0.5, 0, 1, -112), (0.5, 1), BG, stud=0.5, children=[
+    # Dev 2026-11-01: the try-on bar took half the screen. Now one slim strip above the
+    # hotbar: arrows on the ends, name + progress + checks on the left, the needed pets as
+    # small 3D tiles (tap one for its name), the action button, and a small X over ">".
+    bar_ = plate("Bar", U(0, 650, 0, 88), U(0.5, 0, 1, -112), (0.5, 1), BG, stud=0.5, children=[
         autoscale(),
-        button("Prev", U(0, 46, 0, 110), U(0, 8, 0.5, 0), (0, 0.5), color="#4C8DFF", label="<", ts=30),
-        button("Next", U(0, 46, 0, 110), U(1, -8, 0.5, 0), (1, 0.5), color="#4C8DFF", label=">", ts=30),
-        text("Title", "Base", U(1, -300, 0, 32), U(0, 64, 0, 8), ts=26, display=True, stroke=2.5, xa="Left",
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 26, "MinTextSize": 12})]),
-        text("Status", "", U(1, -300, 0, 22), U(0, 64, 0, 40), ts=17, color=ACCENT, heavy=True, stroke=2, xa="Left",
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 8})]),
-        frame("Checks", U(1, -300, 0, 26), U(0, 64, 0, 66), children=[hlist(12, "Left", "Center")]),
-        frame("Pets", U(1, -300, 0, 82), U(0, 64, 0, 96), children=[hlist(8, "Left", "Center")]),
-        button("Close", U(0, 44, 0, 44), U(1, -62, 0, 8), (1, 0), color=DANGER, label="X", ts=24),
-        button("Main", U(0, 168, 0, 60), U(1, -62, 1, -10), (1, 1), color=SUCCESS, label="Unlock", ts=22),
+        button("Prev", U(0, 36, 0, 72), U(0, 8, 0.5, 0), (0, 0.5), color="#4C8DFF", label="<", ts=24),
+        button("Close", U(0, 36, 0, 30), U(1, -8, 0, 8), (1, 0), color=DANGER, label="X", ts=18, stroke=2),
+        button("Next", U(0, 36, 0, 38), U(1, -8, 1, -8), (1, 1), color="#4C8DFF", label=">", ts=22),
+        text("Title", "Base", U(0, 200, 0, 24), U(0, 52, 0, 6), ts=22, display=True, stroke=2.5, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 22, "MinTextSize": 10})]),
+        text("Status", "", U(0, 200, 0, 18), U(0, 52, 0, 31), ts=15, color=ACCENT, heavy=True, stroke=2, xa="Left",
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 8})]),
+        frame("Checks", U(0, 200, 0, 22), U(0, 52, 0, 56), children=[hlist(10, "Left", "Center")]),
+        frame("Pets", U(0, 234, 0, 64), U(0, 258, 0.5, 0), (0, 0.5), children=[hlist(6, "Left", "Center")]),
+        button("Main", U(0, 96, 0, 50), U(1, -52, 0.5, 0), (1, 0.5), color=SUCCESS, label="Unlock", ts=19),
     ])
     write("BasePreview", screen([bar_], order=8, enabled=False))
 

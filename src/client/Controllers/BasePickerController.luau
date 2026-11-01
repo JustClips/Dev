@@ -196,7 +196,7 @@ local function addCheck(holder: Instance, order: number, ok: boolean, text: stri
 	cell:SetAttribute("Built", true)
 	cell.BackgroundTransparency = 1
 	cell.AutomaticSize = Enum.AutomaticSize.X
-	cell.Size = UDim2.fromOffset(0, 24)
+	cell.Size = UDim2.fromOffset(0, 20)
 	cell.LayoutOrder = order
 	local layout = Instance.new("UIListLayout")
 	layout.FillDirection = Enum.FillDirection.Horizontal
@@ -204,17 +204,17 @@ local function addCheck(holder: Instance, order: number, ok: boolean, text: stri
 	layout.Padding = UDim.new(0, 6)
 	layout.SortOrder = Enum.SortOrder.LayoutOrder
 	layout.Parent = cell
-	local box = checkBox(ok, 22)
+	local box = checkBox(ok, 16)
 	box.LayoutOrder = 1
 	box.Parent = cell
-	local text_ = label(text, 18, if ok then WHITE else Color3.fromRGB(255, 215, 120))
+	local text_ = label(text, 14, if ok then WHITE else Color3.fromRGB(255, 215, 120))
 	text_.LayoutOrder = 2
 	text_.Parent = cell
 	cell.Parent = holder
 end
 
--- A pet the base needs: the pet in 3D, its name, and a tick once it's in your Index. Tap it
--- to hear where to find it.
+-- A pet the base needs: the pet in 3D and a tick once it's in your Index. Tap it for its
+-- name and where to find it.
 local function addPetTile(holder: Instance, order: number, found: boolean, petId: string?)
 	local tile = Instance.new("TextButton")
 	tile:SetAttribute("Built", true)
@@ -222,7 +222,7 @@ local function addPetTile(holder: Instance, order: number, found: boolean, petId
 	tile.Text = ""
 	tile.AutoButtonColor = false
 	tile.LayoutOrder = order
-	tile.Size = UDim2.fromOffset(74, 80)
+	tile.Size = UDim2.fromOffset(54, 60)
 	tile.BackgroundColor3 = if found then TILE_FOUND else TILE_MISSING
 	tile.ZIndex = 3
 	local stroke = Instance.new("UIStroke")
@@ -235,7 +235,7 @@ local function addPetTile(holder: Instance, order: number, found: boolean, petId
 	if def then
 		local view = Instance.new("ViewportFrame")
 		view.BackgroundTransparency = 1
-		view.Size = UDim2.new(1, -4, 0, 56)
+		view.Size = UDim2.new(1, -4, 1, -4)
 		view.Position = UDim2.fromOffset(2, 2)
 		view.Ambient = Color3.fromRGB(200, 208, 232)
 		view.LightColor = WHITE
@@ -250,35 +250,16 @@ local function addPetTile(holder: Instance, order: number, found: boolean, petId
 	else
 		local img = Instance.new("ImageLabel")
 		img.BackgroundTransparency = 1
-		img.Size = UDim2.fromOffset(50, 50)
-		img.Position = UDim2.new(0.5, 0, 0, 4)
-		img.AnchorPoint = Vector2.new(0.5, 0)
+		img.Size = UDim2.fromOffset(40, 40)
+		img.Position = UDim2.fromScale(0.5, 0.5)
+		img.AnchorPoint = Vector2.new(0.5, 0.5)
 		img.Image = AssetLibrary.image("Icon_Egg")
 		img.ScaleType = Enum.ScaleType.Fit
 		img.ZIndex = 4
 		img.Parent = tile
 	end
-	local nameLabel = Instance.new("TextLabel")
-	nameLabel.BackgroundTransparency = 1
-	nameLabel.Size = UDim2.new(1, -4, 0, 20)
-	nameLabel.Position = UDim2.new(0.5, 0, 1, -2)
-	nameLabel.AnchorPoint = Vector2.new(0.5, 1)
-	nameLabel.FontFace = FONT
-	nameLabel.Text = name
-	nameLabel.TextScaled = true
-	nameLabel.TextColor3 = WHITE
-	nameLabel.ZIndex = 5
-	local fit = Instance.new("UITextSizeConstraint")
-	fit.MaxTextSize = 16
-	fit.MinTextSize = 8
-	fit.Parent = nameLabel
-	local nameStroke = Instance.new("UIStroke")
-	nameStroke.Color = INK
-	nameStroke.Thickness = 2
-	nameStroke.Parent = nameLabel
-	nameLabel.Parent = tile
-	local box = checkBox(found, 20)
-	box.Position = UDim2.new(1, -3, 0, 3)
+	local box = checkBox(found, 15)
+	box.Position = UDim2.new(1, -2, 0, 2)
 	box.AnchorPoint = Vector2.new(1, 0)
 	box.Parent = tile
 	Ui.button(tile, function()
