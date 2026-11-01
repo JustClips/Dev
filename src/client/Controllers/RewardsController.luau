@@ -356,6 +356,21 @@ local function renderLeave()
 		earn.Text = `STAY AND HATCH PETS THAT EARN {gold}CASH</font> EVERY SECOND!`
 		offline.Visible = false
 	end
+	-- What the next daily reward is (retention pass 2026-11-01: a reason to come back).
+	local tomorrow = leaveGui:FindFirstChild("Tomorrow", true) :: TextLabel?
+	local info = data.Rewards
+	if tomorrow and info then
+		local day = if info.DailyReady then info.DailyIndex else (info.DailyIndex % #Rewards.Daily) + 1
+		local reward = Rewards.Daily[day]
+		local _, label = describeAll(reward)
+		if reward and reward.Kind == "Pet" then
+			local def = info.DailyPet and Aliens.ById[info.DailyPet]
+			label = (if def then `exclusive {def.Name}` else "an exclusive pet") .. (if reward.Bonus then " + " .. select(2, describe(reward.Bonus)) else "")
+		end
+		local when = if info.DailyReady then "DON'T FORGET" else "COME BACK TOMORROW FOR"
+		tomorrow.Text = `{when} {gold}DAY {day}: {string.upper(label)}</font>!`
+		tomorrow.Visible = reward ~= nil
+	end
 	local left = stayEndsAt and stayEndsAt - os.clock()
 	potion.Visible = left ~= nil and left > 0
 	if left and left > 0 then

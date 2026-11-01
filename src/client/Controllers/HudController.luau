@@ -763,6 +763,12 @@ layout = function(s: number, compact: boolean)
 	el.MoonPanel.Size = UDim2.fromOffset(BAR_W + 24, el.MoonPanel.Size.Y.Offset)
 	el.MoonPanel.Position = UDim2.new(0.5, shift - math.floor(12 * s), 0, barY)
 	local below = if el.MoonPanel.Visible then barY + barH else math.max(6, barY)
+	-- Next goal chip (NextGoalController) right under the bar; news and toasts go below it.
+	local nextGoal = el.NextGoal :: GuiObject
+	nextGoal.Position = UDim2.new(0.5, shift, 0, below + math.ceil(4 * s))
+	if nextGoal.Visible then
+		below += math.ceil(4 * s) + nextGoal.AbsoluteSize.Y
+	end
 	el.Announcement.Position = UDim2.new(0.5, shift, 0, below + math.ceil(4 * s))
 	el.Toasts.Position = UDim2.new(0.5, shift, 0, below + math.ceil(6 * s) + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
 	local hotbarTop = 12 + math.ceil(88 * s) - (if compact then math.max(0, Ui.bottomGap(hud) - 4) else 0)
@@ -953,6 +959,7 @@ function HudController:Init(controllers)
 	el.SpinButton = Ui.find(hud, "SpinButton")
 	el.MoonPanel = Ui.find(hud, "MoonPanel")
 	el.QuestList = Ui.find(hud, "QuestList")
+	el.NextGoal = Ui.find(hud, "NextGoal")
 	el.Offers = Ui.find(hud, "Offers")
 	el.Toasts = Ui.find(hud, "Toasts")
 	el.Hint = Ui.find(hud, "Hint")

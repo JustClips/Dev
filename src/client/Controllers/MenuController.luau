@@ -139,7 +139,7 @@ local function render()
 	local nextTool = Tools.get(data.ToolTier + 1)
 	Ui.setBadge(
 		Ui.find(menus.UpgradeMenu, "Items.ToolsButton.Badge"),
-		if data.ToolTier < Tools.MaxTier and BigNum.gte(data.Cash, nextTool.Price) then 1 else nil
+		if data.ToolTier < Tools.MaxTier and (nextTool.Tier == Tools.FreeTier or BigNum.gte(data.Cash, nextTool.Price)) then 1 else nil
 	)
 	-- Core buttons carry their menu's badges.
 	for name, menu in menus do

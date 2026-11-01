@@ -93,7 +93,7 @@ SPEC = [
     ('Pets', 'PetParty', 'PetTreats', 'PetIncome', 'Pets in your park earn a lot more', 5, 0.4, 4000000000, 5.3, 1, 'Icon_UpBone'),
     ('Pets', 'PetParadise', 'PetParty', 'PetIncome', 'Pets in your park earn way more', 5, 0.5, 60000000000, 5.3, 2, 'Icon_UpHeart'),
     ('Pets', 'SleepPay', 'Offline', 'Offline', "Earn even more while you're away", 5, 0.25, 3000000000, 5.7, 1, 'Icon_UpMoon'),
-    ('Pets', 'LongNap', 'Offline', 'OfflineCap', 'Earn offline for longer', 4, 0.5, 2000000000, 5.7, 1, 'Icon_UpMoon'),
+    ('Pets', 'LongNap', 'Offline', 'OfflineCap', 'Earn offline for longer', 4, 1, 2000000000, 5.7, 1, 'Icon_UpMoon'),
     ('Pets', 'BattleTraining', 'SharpClaws', 'PetDamage', 'Your pets hit way harder', 5, 0.3, 3000000000, 5.7, 1, 'Icon_Sword'),
     ('Pets', 'PetArmor', 'ThickFur', 'PetHealth', 'Your pets can take way more hits', 5, 0.3, 3000000000, 5.7, 1, 'Icon_UpShield'),
 ]

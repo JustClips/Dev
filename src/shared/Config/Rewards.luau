@@ -39,16 +39,21 @@ export type EventDef = {
 local Rewards = {}
 
 -- Dev (2026-10-31): daily rewards should be worth coming back for, so they give things
--- playtime gifts don't: a Super Luck Potion on day 2, a Huge Charm on day 5 and an
--- exclusive pet on day 7 (a new one each finished week, Aliens.Exclusives.Daily).
+-- playtime gifts don't: a Huge Charm on day 5 and an exclusive pet on day 7 (a new one each
+-- finished week, Aliens.Exclusives.Daily; after all of them, Huge versions).
+-- Retention pass 2026-11-01: most players who come back once never come back twice, so the
+-- best early rewards moved forward: day 2 is an egg to hatch (the thing kids care about
+-- most) plus the Super Luck Potion, day 3 adds a wheel spin, day 5 is an Epic egg, and the
+-- week ends with the exclusive pet and a Legendary egg. The leave screen announces the next
+-- day's reward.
 Rewards.Daily = {
 	{ Kind = "Cash", Seconds = 300, Floor = 0.3 },
-	{ Kind = "Item", Item = "SuperLuckPotion", Amount = 1 },
-	{ Kind = "Cash", Seconds = 600, Floor = 0.5 },
+	{ Kind = "Egg", Rarity = "Rare", Bonus = { Kind = "Item", Item = "SuperLuckPotion", Amount = 1 } },
+	{ Kind = "Cash", Seconds = 600, Floor = 0.5, Bonus = { Kind = "Spin", Amount = 1 } },
 	{ Kind = "Item", Item = "CashPotion", Amount = 2 },
-	{ Kind = "Egg", Rarity = "Rare", Bonus = { Kind = "Item", Item = "HugeCharm", Amount = 1 } },
+	{ Kind = "Egg", Rarity = "Epic", Bonus = { Kind = "Item", Item = "HugeCharm", Amount = 1 } },
 	{ Kind = "Item", Item = "HatchPotion", Amount = 2 },
-	{ Kind = "Pet", Pet = "Daily", Bonus = { Kind = "Egg", Rarity = "Epic" } },
+	{ Kind = "Pet", Pet = "Daily", Bonus = { Kind = "Egg", Rarity = "Legendary" } },
 } :: { Reward }
 
 -- Minutes of play in one session -> gift. Claimed ones reset when the player rejoins.

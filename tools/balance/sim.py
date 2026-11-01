@@ -37,6 +37,13 @@ SELL_TRIP_PASS = 1.5  # Sell Anywhere: one tap
 COMBO_RUN = 20.0  # seconds of steady sweeping before a kid breaks the combo (wanders, opens a menu)
 GOLDEN = 1.12  # golden piles and dust bunnies on top
 EFFICIENCY = 0.5  # kids on phones wander, chat, open menus (tuned for mobile, PC players go faster)
+# New players are much slower than that. Calibrated 2026-11-01 on 351 real v100+ saves
+# (Stats.TilesCleared per playtime): ~230 piles by 3.5 min, ~720 by 7 min, ~1,100 by 14 min,
+# i.e. about 0.2 while they learn the map, the tutorial and the egg lesson. Efficiency ramps
+# from LEARN_EFF at the start to EFFICIENCY after LEARN_MINUTES of total play.
+LEARN_EFF = 0.2
+LEARN_MINUTES = 40
+FREE_TIERS = (2,)  # tool tiers that cost nothing (Tools.tutorialPrice: the Broom)
 FIELD_SHARE = 0.5  # share of a zone's regrowth one player gets (others sweep too)
 SESSION_HOURS = 1.5  # one session a day
 STEP = 2.0  # sim step, seconds
@@ -44,6 +51,12 @@ WEATHER_GROW = 1.12  # average egg growth bonus from rain / storms
 WEIGHT_MULT = 1.22
 CAR_BOOST = (6, 0.15)  # Config/Tools CarBoost: FromTier, PerTier
 ON_FOOT = (1.0, 1.0)  # on-foot golden / egg bonus (none in the game right now)  # average pet weight multiplier (Config/Weights size classes)
+
+
+def efficiency(t: float) -> float:
+    """Share of the ideal sweep rate a kid reaches after `t` seconds of total play."""
+    k = min(1.0, t / (LEARN_MINUTES * 60))
+    return LEARN_EFF + (EFFICIENCY - LEARN_EFF) * k
 
 
 # ---------------------------------------------------------------- tiny Luau readers
@@ -78,8 +91,11 @@ def _top_pairs(body: str) -> dict:
             continue
         flat.append(" ")
     flat = "".join(flat)
-    for k, v in re.findall(r"(\w+)\s*=\s*(\"[^\"]*\"|-?[\d_.]+(?:\s*/\s*[\d_.]+)?|true|false)", flat):
-        if "/" in v:
+    for k, v in re.findall(r"(\w+)\s*=\s*(\"[^\"]*\"|-?[\d_.]+(?:\s*[/*]\s*[\d_.]+)?|true|false)", flat):
+        if "*" in v:
+            a, b = v.split("*")
+            out[k] = _num(a.strip()) * _num(b.strip())
+        elif "/" in v:
             num, den = v.split("/")
             out[k] = _num(num.strip()) / _num(den.strip())
         elif v.startswith('"'):
@@ -321,6 +337,8 @@ class Player:
         self.c, self.sp, self.rng = cfg, sp, rng
         self.t = 0.0  # play seconds
         self.cash = 0.0
+        self.earned = 0.0  # cash made by sweeping, pets and drops (compare with Stats.CashEarned)
+        self.tiles = 0.0  # piles cleared (compare with Stats.TilesCleared)
         self.tier = 1
         self.cars: set = set()
         self.zones = {"Landing"}
@@ -452,7 +470,7 @@ class Player:
             if car["Id"] in self.cars:
                 gear.append((car["Radius"], car["Power"] * boost, max(car["Capacity"], tool["Capacity"]), car["Speed"]))
         trip = SELL_TRIP_PASS if "SellAnywhere" in self.passes else SELL_TRIP
-        eff = EFFICIENCY + (0.15 if "AutoSweep" in self.passes else 0)
+        eff = efficiency(self.t) + (0.15 if "AutoSweep" in self.passes else 0)
         best = (0.0, 0.0, trip, "Landing")
         self.on_foot = True
         for gi, (r, p, cap, spd) in enumerate(gear):
@@ -579,7 +597,8 @@ class Player:
         c, eco = self.c, self.c.eco
         out = []
         if self.tier < len(c.tools):
-            out.append((c.tools[self.tier]["Price"], "tool", None))
+            nxt = c.tools[self.tier]
+            out.append((0 if nxt["Tier"] in FREE_TIERS else nxt["Price"], "tool", None))
         for z in c.zones:
             if z["Id"] not in self.zones and z["RequiredRebirths"] <= self.rebirths:
                 out.append((z["UnlockCost"], "zone", z["Id"]))
@@ -717,6 +736,8 @@ class Player:
             self._last_cps = cps
             pets = self.pet_income()
             self.cash += (cps + pets) * STEP
+            self.earned += (cps + pets) * STEP
+            self.tiles += tiles * STEP
             # eggs found while sweeping
             zdef = next(z for z in self.c.zones if z["Id"] == zone)
             lam = tiles * STEP * zdef["EggChance"] * self.luck() * (1 + self.stat("EggFind")) * (ON_FOOT[1] if self.on_foot else 1)

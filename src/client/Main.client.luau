@@ -54,6 +54,7 @@ local ORDER = {
 	"PetController",
 	"EnemyController",
 	"GarageController",
+	"NextGoalController",
 	"BasePickerController",
 	"UpgradeController",
 	"WeatherController",

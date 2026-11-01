@@ -231,6 +231,18 @@ function ZoneService:Start()
 	Net.onInvoke("Teleport", function(player, target)
 		return ZoneService:Teleport(player, target)
 	end)
+	-- The Next goal chip (NextGoalController): open the next zone from anywhere, then go
+	-- straight there so the new area is the reward you see.
+	Net.onInvoke("UnlockZone", function(player, zoneId)
+		if type(zoneId) ~= "string" then
+			return false, "Unknown zone"
+		end
+		local ok, message = ZoneService:Unlock(player, zoneId)
+		if ok then
+			ZoneService:Teleport(player, zoneId)
+		end
+		return ok, message
+	end)
 	for _, zone in Zones.List do
 		if zone.UnlockCost > 0 or zone.RequiredRebirths > 0 then
 			setupGate(zone)

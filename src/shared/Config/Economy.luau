@@ -5,16 +5,16 @@ local Economy = {
 	-- rebirth costs RebirthCostGrowth x the one before. Use Economy.rebirthCost(rebirths).
 	-- Fitted with tools/balance/fit.py (targets there; check with tools/balance/sim.py).
 	RebirthCosts = {
-		60_000_000_000,
-		1_600_000_000_000,
-		8_800_000_000_000,
-		340_000_000_000_000,
-		6_100_000_000_000_000,
-		22_000_000_000_000_000,
-		36_000_000_000_000_000,
-		59_000_000_000_000_000,
-		93_000_000_000_000_000,
-		140_000_000_000_000_000,
+		41_000_000_000,
+		15_000_000_000_000,
+		140_000_000_000_000,
+		3_700_000_000_000_000,
+		23_000_000_000_000_000,
+		51_000_000_000_000_000,
+		99_000_000_000_000_000,
+		160_000_000_000_000_000,
+		240_000_000_000_000_000,
+		530_000_000_000_000_000,
 	},
 	-- Robux shortcuts that speed you up without skipping the game:
 	SkipRebirthMinShare = 0.3, -- Skip Rebirth needs 30% of the rebirth cost saved up
@@ -39,10 +39,12 @@ local Economy = {
 	RebirthsPerIncubator = 2, -- one more every 2 rebirths
 	MaxIncubators = 8,
 
-	-- Offline income
+	-- Offline income. Retention pass 2026-11-01: the cap covers a night's sleep (8 h, was 2 h),
+	-- so a kid who plays after school finds a real pile of cash from their pets next morning
+	-- (the day-1 return hook). VIP 12 h, Long Nap hexes +1 h each.
 	OfflineIncomeRate = 0.5,
-	OfflineCapSeconds = 2 * 3600,
-	OfflineCapSecondsVIP = 4 * 3600,
+	OfflineCapSeconds = 8 * 3600,
+	OfflineCapSecondsVIP = 12 * 3600,
 	OfflineMinSeconds = 60, -- below this, no welcome back screen
 
 	-- Cash multipliers

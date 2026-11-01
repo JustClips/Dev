@@ -58,6 +58,7 @@ local FUNCTIONS: { [string]: number } = {
 	GetDust = 2, -- () -> your cleared tile ids, golden tile ids (packed u16 buffers)
 	SellNow = 2, -- () -> ok, message: sell the whole bag here (Sell Anywhere pass)
 	BuyNextTool = 4,
+	UnlockZone = 2, -- Next goal chip: open the next zone from anywhere (ZoneService)
 	Rebirth = 2,
 	PromptPurchase = 4, -- (productKey, giftToUserId?) -> ok, message
 	ToggleVehicle = 3,

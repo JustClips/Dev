@@ -62,8 +62,13 @@ end
 
 local function givePet(player: Player, data, reward: Rewards.Reward): string
 	local id = reward.Pet
+	local huge = reward.Huge == true
 	if id == "Daily" then
 		id = RewardService:NextDailyPet(data)
+		-- Retention pass 2026-11-01 (day-30 hook): once all the daily exclusives are
+		-- collected (4 weeks), each next round gives them again as Huge pets.
+		local list = Aliens.Exclusives.Daily
+		huge = huge or (list ~= nil and (data.Daily.Weeks or 0) >= #list)
 		data.Daily.Weeks = (data.Daily.Weeks or 0) + 1
 	end
 	local def = id and Aliens.ById[id]
@@ -71,10 +76,10 @@ local function givePet(player: Player, data, reward: Rewards.Reward): string
 		return ""
 	end
 	local uid = S.DataService:NewUid(data, "p")
-	data.Pets[uid] = { Id = def.Id, Weight = Weights.rollPet(rng, def.Rarity, def.Rarity), Huge = if reward.Huge then true else nil }
+	data.Pets[uid] = { Id = def.Id, Weight = Weights.rollPet(rng, def.Rarity, def.Rarity), Huge = if huge then true else nil }
 	data.Index[def.Id] = true
 	S.InventoryService:Touch(player)
-	return if reward.Huge then `Huge {def.Name}` else def.Name
+	return if huge then `Huge {def.Name}` else def.Name
 end
 
 local function grantOne(player: Player, data, reward: Rewards.Reward, sku: string): string

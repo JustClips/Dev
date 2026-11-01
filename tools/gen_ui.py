@@ -495,6 +495,29 @@ def hud():
         # Kept for older code paths that set one line of text.
         text("Label", "", U(1, -58, 0, 16), U(0, 52, 0, 4), ts=13, display=True, Visible=False),
     ])
+    # Next goal (retention pass 2026-11-01): saves showed most new players sitting on enough
+    # cash for the next tool or the Park and never buying it. One slim chip under World
+    # Cleaned names the next thing (cheapest of next tool / next zone), fills a bar with your
+    # cash, and turns into a green BUY! when you can afford it. Tap = buy (NextGoalController).
+    # Hidden during the tutorial and once every tool and zone is bought.
+    next_goal = node("NextGoal", "TextButton", base(U(0, 330, 0, 50), U(0.5, 0, 0, 116), (0.5, 0), BackgroundColor3=BG,
+                                                    BackgroundTransparency=0.15, Text="", AutoButtonColor=False,
+                                                    Visible=False, ZIndex=2), [
+        autoscale(compact=0.85),
+        border(INK, 3),
+        icon("Icon", "Tools", 42, U(0, 6, 0.5, 0), (0, 0.5), ZIndex=4),
+        text("Title", "NEXT: Rake", U(1, -146, 0, 20), U(0, 54, 0, 3), ts=17, color=PREMIUM, display=True, stroke=2.5,
+             xa="Left", TextWrapped=False, ZIndex=4),
+        frame("Bar", U(1, -146, 0, 20), U(0, 54, 0, 25), bg="#14171D", ZIndex=3, children=[
+            border(INK, 2),
+            frame("Fill", U(0.3, 0, 1, 0), bg=ACCENT, ZIndex=3),
+            text("Value", "$0 / $0", U(1, 0, 1, 0), ts=15, display=True, stroke=2, TextWrapped=False, ZIndex=5),
+        ]),
+        button("Buy", U(0, 80, 0, 38), U(1, -6, 0.5, 0), (1, 0.5), color=SUCCESS, label="BUY!", ts=22, stroke=3, ZIndex=4,
+               Visible=False),
+        text("Percent", "0%", U(0, 80, 0, 38), U(1, -6, 0.5, 0), (1, 0.5), ts=22, color=WHITE, display=True, stroke=2.5,
+             ZIndex=4),
+    ])
     # Active boosts (server luck, 2x cash): chips stacked in the bottom-right corner.
     # Phones move them to the top right (HudController), clear of the jump button.
     # Boost chips: no box, just a small icon and "2x 14:52". Hover (or tap) shows what the
@@ -725,7 +748,7 @@ def hud():
     offers = frame("Offers", U(0, 300, 0, 78), U(1, -14, 0, 300), (1, 0), Visible=False, children=[
         autoscale(compact=0.8), hlist(12, "Right", "Center"), bubble,
     ])
-    write("Hud", screen([rail, menu_away, upgrade_menu, more_menu, spin, moon, quests, offers, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, burst, picker,
+    write("Hud", screen([rail, menu_away, upgrade_menu, more_menu, spin, moon, next_goal, quests, offers, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, burst, picker,
                          spot, pointer, hold], order=1))
 
 
@@ -1297,6 +1320,9 @@ def rewards():
         big("Title2", "WAIT! DON'T LEAVE!", U(0.5, 0, 0.75, 0), 0.1, "#FF3B3B", 5, 0.62),
         big("Offline", "OFFLINE YOU ONLY EARN <font color=\"#FFD23C\">+$0 COINS</font> A DAY", U(0.5, 0, 0.86, 0), 0.055, "#E8E0B0",
             3.5),
+        # Retention pass 2026-11-01: if they leave anyway, tell them what tomorrow brings
+        # (the next daily streak reward), so day 2 already has a reason (RewardsController).
+        big("Tomorrow", "COME BACK TOMORROW FOR <font color=\"#FFD23C\">DAY 2: RARE EGG</font>!", U(0.5, 0, 0.925, 0), 0.04, WHITE, 3),
         gift("GiftA", U(0.9, 0, 0.22, 0), 12),
         gift("GiftB", U(0.95, 0, 0.5, 0), -10),
         gift("GiftC", U(0.9, 0, 0.78, 0), 8),

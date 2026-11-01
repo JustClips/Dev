@@ -18,46 +18,52 @@ import sim
 
 # milestone -> target play time in hours (free player, 1.5 h sessions a day)
 TARGETS = {
-    # 16 hand tools (2026-10-31): a new tool every few minutes, the whole ladder done just
-    # before the first rebirth.
-    "Broom": 0.5 / 60,
-    "Rake": 1.5 / 60,
-    "Mop": 3 / 60,
+    # 2026-11-01 retention pass. Times are for a free kid on a phone, with the learning ramp
+    # in sim.efficiency (calibrated on real saves). Psychology behind the spacing:
+    #   0-5 min   something new every 1-1.5 min, and a new area (Park) before the 5-minute
+    #             mark, where 79% of players used to leave.
+    #   5-30 min  a new tool every 3-5 min, the Beach as the first-session "big goal".
+    #   30-80 min the slower rest of the ladder and the cars; Rebirth 1 lands near the end of
+    #             a long first day or early on day 2, so day 2 starts with a reset + x1.5 cash.
+    #   later     a rebirth or a zone every 1-3 play hours (one or two per daily session).
+    # The Broom is free (tutorial), so it is not fitted.
+    "Rake": 2.5 / 60,
+    "Mop": 3.5 / 60,
     "zone Park": 5 / 60,
-    "Push Broom": 7.5 / 60,
-    "Leaf Blower": 11 / 60,
-    "Leaf Vacuum": 15 / 60,
-    "Shop Vac": 19 / 60,
-    "Pressure Washer": 24 / 60,
-    "zone Beach": 29 / 60,
-    "Turbo Vacuum": 34 / 60,
-    "Golden Broom": 40 / 60,
-    "Storm Blower": 46 / 60,
-    "car Sweeper Cart": 52 / 60,
-    "Tornado Vac": 58 / 60,
-    "car Golf Cart": 64 / 60,
-    "Diamond Mop": 70 / 60,
-    "Rainbow Duster": 77 / 60,
-    "Galaxy Vacuum": 84 / 60,
-    "Rebirth 1": 1.5,
-    "zone City": 2.5,
-    "car Garbage Truck": 3.1,
-    "Rebirth 2": 4.0,
-    "car Street Sweeper": 5.0,
-    "Rebirth 3": 6.5,
-    "zone Snowy Peaks": 8.0,
-    "car Lawn Tractor": 8.5,
-    "Rebirth 4": 10.0,
-    "car Snow Plow": 11.5,
-    "Rebirth 5": 14.0,
-    "car Mega Sweeper": 16.0,
-    "Rebirth 6": 19.0,
-    "Rebirth 7": 25.0,
-    "Rebirth 8": 32.0,
-    "Rebirth 9": 40.0,
-    "Rebirth 10": 50.0,
+    "Push Broom": 6.5 / 60,
+    "Leaf Blower": 8.5 / 60,
+    "Leaf Vacuum": 11 / 60,
+    "Shop Vac": 14 / 60,
+    "Pressure Washer": 18 / 60,
+    "zone Beach": 22 / 60,
+    "Turbo Vacuum": 27 / 60,
+    "Golden Broom": 32 / 60,
+    "Storm Blower": 37 / 60,
+    "car Sweeper Cart": 42 / 60,
+    "Tornado Vac": 47 / 60,
+    "car Golf Cart": 52 / 60,
+    "Diamond Mop": 57 / 60,
+    "Rainbow Duster": 63 / 60,
+    "Galaxy Vacuum": 70 / 60,
+    "Rebirth 1": 1.25,
+    "zone City": 2.0,
+    "car Garbage Truck": 2.6,
+    "Rebirth 2": 3.2,
+    "car Street Sweeper": 4.2,
+    "Rebirth 3": 5.5,
+    "zone Snowy Peaks": 7.0,
+    "car Lawn Tractor": 7.5,
+    "Rebirth 4": 9.0,
+    "car Snow Plow": 10.5,
+    "Rebirth 5": 12.5,
+    "car Mega Sweeper": 14.5,
+    "Rebirth 6": 17.0,
+    "Rebirth 7": 22.0,
+    "Rebirth 8": 28.0,
+    "Rebirth 9": 35.0,
+    "Rebirth 10": 44.0,
 }
-HOURS = 56
+HOURS = 50
 SEEDS = 6
 ROUNDS = 8
 
