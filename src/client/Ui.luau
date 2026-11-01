@@ -823,6 +823,16 @@ local function deviceSafe(): ScreenGui
 	return deviceProbe :: ScreenGui
 end
 
+-- How far below a ScreenGui's bottom edge the real screen goes (the safe-area band along
+-- the bottom of phones), in px. HUD pieces at the bottom can move down into most of it
+-- (Dev, 2026-11-01: the wallet and hotbar floated high on mobile).
+function Ui.bottomGap(gui: ScreenGui): number
+	local full = fullScreen()
+	local fullBottom = full.AbsolutePosition.Y + full.AbsoluteSize.Y
+	local bottom = gui.AbsolutePosition.Y + gui.AbsoluteSize.Y
+	return math.max(0, fullBottom - bottom)
+end
+
 -- How far from the left / right screen edge HUD pieces sit, as offsets inside a ScreenGui
 -- that keeps out of the Roblox UI safe-area insets (negative = out into the inset). Dev
 -- wanted the HUD hugging the edges (2026-10-30), so pieces move out into that inset and a

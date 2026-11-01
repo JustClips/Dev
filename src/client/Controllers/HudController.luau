@@ -768,7 +768,7 @@ layout = function(s: number, compact: boolean)
 	local below = if el.MoonPanel.Visible then barY + barH else math.max(6, barY)
 	el.Announcement.Position = UDim2.new(0.5, shift, 0, below + math.ceil(4 * s))
 	el.Toasts.Position = UDim2.new(0.5, shift, 0, below + math.ceil(6 * s) + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
-	local hotbarTop = 12 + math.ceil(88 * s)
+	local hotbarTop = 12 + math.ceil(88 * s) - (if compact then math.max(0, Ui.bottomGap(hud) - 4) else 0)
 	el.Hint.Position = UDim2.new(0.5, 0, 1, -(hotbarTop + math.ceil(12 * s)))
 	local walletLayout = el.Wallet:FindFirstChildOfClass("UIListLayout")
 	if walletLayout then
@@ -781,8 +781,11 @@ layout = function(s: number, compact: boolean)
 	el.Wallet.AnchorPoint = Vector2.new(0, 1)
 	local rightFrame = el.Right :: Frame
 	local rightList = rightFrame:FindFirstChildOfClass("UIListLayout")
+	-- Phones: the bottom pieces move down into the safe-area band (keeping 4 px).
+	local drop = if compact then math.max(0, Ui.bottomGap(hud) - 4) else 0
+	el.Hotbar.Position = UDim2.new(0.5, 0, 1, -12 + math.floor(drop))
 	if compact then
-		el.Wallet.Position = UDim2.new(0, left, 1, -6)
+		el.Wallet.Position = UDim2.new(0, left, 1, -6 + math.floor(drop))
 		-- Mid-left, a little above the middle so it clears the wallet.
 		el.Rail.Position = UDim2.new(0, left, 0.5, -20)
 		boosts.AnchorPoint = Vector2.new(1, 0)
@@ -902,6 +905,7 @@ function HudController:Init(controllers)
 	el.Rail = Ui.find(hud, "Rail")
 	el.Right = Ui.find(hud, "Right")
 	el.Wallet = Ui.find(hud, "Wallet")
+	el.Hotbar = Ui.find(hud, "Hotbar")
 	el.Cash = Ui.find(hud, "Wallet.CashPanel.Cash")
 	el.Income = Ui.find(hud, "Wallet.CashPanel.Income")
 	el.PlusButton = Ui.find(hud, "Wallet.CashPanel.PlusButton")
@@ -1172,6 +1176,10 @@ end
 
 function HudController:Start()
 	Ui.onScale(layout)
+	-- The safe-area probe measures a frame after it's made: lay out again once it has.
+	task.delay(1, function()
+		layout(Ui.scale(), Ui.compact())
+	end)
 	-- The right edge restacks as boost chips, quest rows and toggles come and go.
 	task.spawn(function()
 		while true do
