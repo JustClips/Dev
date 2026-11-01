@@ -487,13 +487,10 @@ local function renderTip()
 	if top == math.huge then
 		return
 	end
-	if UserInputService.TouchEnabled then
-		tip.AnchorPoint = Vector2.new(1, 0)
-		tip.Position = UDim2.fromOffset(right, bottom + 6)
-	else
-		tip.AnchorPoint = Vector2.new(1, 1)
-		tip.Position = UDim2.fromOffset(right, top - 6)
-	end
+	-- Chips sit bottom right on every device now, so the tip goes above them.
+	local _ = bottom
+	tip.AnchorPoint = Vector2.new(1, 1)
+	tip.Position = UDim2.fromOffset(right, top - 6)
 end
 
 -- Roblox's invite friends prompt (each friend here adds egg luck), from the Friend chip.
@@ -788,10 +785,12 @@ layout = function(s: number, compact: boolean)
 		el.Wallet.Position = UDim2.new(0, left, 1, -6 + math.floor(drop))
 		-- Mid-left, a little above the middle so it clears the wallet.
 		el.Rail.Position = UDim2.new(0, left, 0.5, -20)
-		boosts.AnchorPoint = Vector2.new(1, 0)
-		boosts.Position = UDim2.new(1, -right, 0, 8 + HudController.RightDrop)
+		-- Bottom right like on PC (Dev, 2026-11-01), above the jump button; placeRight
+		-- lifts them over the Auto toggles when those show.
+		boosts.AnchorPoint = Vector2.new(1, 1)
+		boosts.Position = UDim2.new(1, -right, 1, -(26 + math.ceil(108 * s)))
 		if boostLayout then
-			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
 		-- Above the jump button.
 		rightFrame.AnchorPoint = Vector2.new(1, 1)
@@ -846,13 +845,13 @@ placeRight = function()
 	local boosts = (el.BoostTemplate :: Instance).Parent :: Frame
 	local limit
 	if lastCompact then
-		local chips = contentEdge(boosts, true)
-		if chips then
-			top = math.max(top, chips + 6 - originY)
-		end
-		-- Down to the Auto toggles, or the jump button.
+		-- Boost chips stack above the Auto toggles (or the jump button); the list stops
+		-- above the chips.
 		local toggles = contentEdge(rightFrame, false)
-		limit = if toggles then toggles - originY - 8 else height - (26 + 108 * Ui.scale()) - 8
+		local chipsBottom = if toggles then toggles - originY - 6 else height - (26 + 108 * Ui.scale())
+		boosts.Position = UDim2.new(1, -margin, 0, math.floor(chipsBottom))
+		local chips = contentEdge(boosts, false)
+		limit = (if chips then chips - originY else chipsBottom) - 8
 	else
 		local chips = contentEdge(boosts, false)
 		local toggles = rightFrame.AbsoluteSize.Y
@@ -1176,6 +1175,22 @@ end
 
 function HudController:Start()
 	Ui.onScale(layout)
+	-- A tap anywhere but a boost chip closes the boost tip (phones; it used to stay until
+	-- its timer ran out).
+	UserInputService.InputBegan:Connect(function(input)
+		if not tipKey or input.UserInputType ~= Enum.UserInputType.Touch and input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+		local at = Vector2.new(input.Position.X, input.Position.Y)
+		for _, chip in boostChips do
+			local p, size = chip.AbsolutePosition, chip.AbsoluteSize
+			if at.X >= p.X and at.X <= p.X + size.X and at.Y >= p.Y and at.Y <= p.Y + size.Y then
+				return
+			end
+		end
+		tipKey = nil
+		renderTip()
+	end)
 	-- The safe-area probe measures a frame after it's made: lay out again once it has.
 	task.delay(1, function()
 		layout(Ui.scale(), Ui.compact())
