@@ -1878,14 +1878,16 @@ def garage():
             node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 4, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
         ]),
     ])
-    tabs = frame("Tabs", U(0, 350, 0, 50), U(0, 14, 0, 76), children=[
+    # Tabs live in the header instead of the "Gear" title (Dev, 2026-11-01), with the hint
+    # beside them; the grid and panel move up into the freed row.
+    tabs = frame("Tabs", U(0, 350, 0, 50), U(0, 10, 0.5, 0), (0, 0.5), children=[
         hlist(10, "Left", "Center"),
         button("TabTools", U(0, 170, 0, 46), color="#4C8DFF", label="Tools", ts=22, ico="Tool", ico_px=34, LayoutOrder=1),
         button("TabCars", U(0, 170, 0, 46), color="#FF9A3C", label="Cars", ts=22, ico="Vehicle", ico_px=34, LayoutOrder=2),
     ])
-    hint = text("Hint", "", U(0, 436, 0, 48), U(1, -14, 0, 77), (1, 0), ts=15, color=SUB, heavy=True, xa="Left",
+    hint = text("Hint", "", U(1, -430, 1, -10), U(0, 368, 0.5, 0), (0, 0.5), ts=15, color=WHITE, heavy=True, stroke=2, xa="Left",
                 TextScaled=True, TextWrapped=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 7})])
-    lst = scroller("List", U(0, 468, 1, -146), U(0, 10, 0, 134), [
+    lst = scroller("List", U(0, 468, 1, -88), U(0, 10, 0, 76), [
         node("Layout", "UIGridLayout", {"CellSize": U(0, 106, 0, 106), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
                                         "HorizontalAlignment": "Left"}),
         padding(6, 6, 6, 8), tile])
@@ -1901,24 +1903,26 @@ def garage():
                 frame("Now", U(0, 0, 1, 0), bg="#4C8DFF", ZIndex=3),
             ]),
         ])
-    detail = plate("Detail", U(0, 322, 1, -146), U(1, -12, 0, 134), (1, 0), tint=WHITE, children=[
+    detail = plate("Detail", U(0, 322, 1, -88), U(1, -12, 0, 76), (1, 0), tint=WHITE, children=[
         frame("Status", U(0, 104, 0, 24), U(0, 10, 0, 10), bg=PREMIUM, ZIndex=4, children=[
             border(INK, 2),
             text("Label", "NEXT", U(1, -6, 1, 0), U(0.5, 0, 0, 0), (0.5, 0), ts=16, display=True, stroke=2, ZIndex=5,
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
         ]),
-        icon("Icon", "Tool", 96, U(0.5, 0, 0, 16), (0.5, 0)),
-        text("Name", "", U(1, -20, 0, 28), U(0.5, 0, 0, 114), (0.5, 0), ts=26, color=INK, display=True,
+        icon("Icon", "Tool", 124, U(0.5, 0, 0, 14), (0.5, 0)),
+        text("Name", "", U(1, -20, 0, 30), U(0.5, 0, 0, 140), (0.5, 0), ts=28, color=INK, display=True,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 26, "MinTextSize": 10})]),
-        stat("Width", "Width", 146),
-        stat("Leaves", "Leaves", 182),
-        stat("Holds", "Holds", 218),
+        stat("Width", "Width", 180),
+        stat("Leaves", "Leaves", 222),
+        stat("Holds", "Holds", 264),
         button("Main", U(1, -20, 0, 50), U(0.5, 0, 1, -54), (0.5, 1), color=SUCCESS, label="Buy", ts=24),
         button("Robux", U(1, -20, 0, 38), U(0.5, 0, 1, -10), (0.5, 1), color=PREMIUM, label="", ts=18, label_color=INK,
                Visible=False),
     ])
-    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Gear", "Tools", [tabs, hint, lst, detail], header="#4C8DFF")],
-                           order=10, enabled=False))
+    win = window(WIN_W, WIN_H, "Gear", "Tools", [lst, detail], header="#4C8DFF")
+    header = next(c for c in win["children"] if c and c.get("name") == "Header")
+    header["children"] = [c for c in header["children"] if not (c and c.get("name") in ("Icon", "Title"))] + [tabs, hint]
+    write("Garage", screen([dim(), win], order=10, enabled=False))
 
 
 # ---------------------------------------------------------------- Base picker

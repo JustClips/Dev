@@ -459,9 +459,18 @@ function GarageController:Init(controllers)
 	end
 	template = Ui.find(gui, "Window.List.Template")
 	detail = Ui.find(gui, "Window.Detail")
-	tabTools = Ui.find(gui, "Window.Tabs.TabTools")
-	tabCars = Ui.find(gui, "Window.Tabs.TabCars")
-	hint = Ui.find(gui, "Window.Hint")
+	-- Tabs + hint moved into the header (Dev, 2026-11-01); drop the old copies and the
+	-- "Gear" title that LiveSync keeps in Studio.
+	local window = Ui.find(gui, "Window")
+	for _, path in { "Tabs", "Hint", "Header.Title", "Header.Icon" } do
+		local old = window:FindFirstChild(path) or (path:find("Header.") and Ui.find(window, "Header"):FindFirstChild(path:sub(8)))
+		if old then
+			old:Destroy()
+		end
+	end
+	tabTools = Ui.find(gui, "Window.Header.Tabs.TabTools")
+	tabCars = Ui.find(gui, "Window.Header.Tabs.TabCars")
+	hint = Ui.find(gui, "Window.Header.Hint")
 end
 
 function GarageController:Start()
