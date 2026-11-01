@@ -1040,70 +1040,16 @@ function Ui.initScaling()
 	task.delay(2, relayout)
 end
 
--- One-line labels that shrink to fit their width. TextScaled with TextWrapped off let
--- long names ("Starlit Autumn Stag", "+1x Lucky Payout") run out of their tiles (Dev,
--- 2026-10-30), so this measures the text and sets TextSize itself. Call it once per
--- label; it refits whenever the text or the label's size changes.
-local fitting: { [TextLabel]: { max: number, min: number } } = setmetatable({}, { __mode = "k" }) :: any
-local widthAt100: { [string]: number } = {}
-
-local function chainScale(obj: Instance): number
-	local k = 1
-	local node: Instance? = obj
-	while node and not node:IsA("LayerCollector") do
-		local scale = node:FindFirstChildOfClass("UIScale")
-		if scale then
-			k *= scale.Scale
-		end
-		node = node.Parent
-	end
-	return k
-end
-
-local function refit(label: TextLabel)
-	local spec = fitting[label]
-	if not spec then
-		return
-	end
-	local text = label.Text
-	if text == "" or label.AbsoluteSize.X < 1 then
-		return
-	end
-	local font = label.FontFace
-	local cacheKey = `{font.Family}|{font.Weight.Name}|{text}`
-	local w = widthAt100[cacheKey]
-	if not w then
-		local params = Instance.new("GetTextBoundsParams")
-		params.Text = text
-		params.Font = font
-		params.Size = 100
-		params.Width = 1e6
-		local ok, bounds = pcall(TextService.GetTextBoundsAsync, TextService, params)
-		if not ok or label.Text ~= text then
-			return
-		end
-		w = math.max((bounds :: Vector2).X, 1)
-		widthAt100[cacheKey] = w
-	end
-	local stroke = label:FindFirstChildOfClass("UIStroke")
-	local room = label.AbsoluteSize.X / math.max(chainScale(label), 0.01) - 2 - (if stroke then stroke.Thickness * 2 else 0)
-	label.TextSize = math.clamp(math.floor(100 * room / (w :: number)), spec.min, spec.max)
-end
-
 function Ui.fitText(label: TextLabel, maxSize: number, minSize: number?)
-	label.TextScaled = false
+	-- Roblox's own fit (TextScaled, capped by a size constraint). Setting TextSize by hand
+	-- from a measured width drew small text under the HUD's UIScale with broken letter
+	-- spacing on phones ("Leaf Vac uum", "No c ar", Dev 2026-11-01).
 	label.TextWrapped = false
-	label.TextSize = maxSize
-	local first = fitting[label] == nil
-	fitting[label] = { max = maxSize, min = minSize or 6 }
-	if first then
-		local function again()
-			task.spawn(refit, label)
-		end
-		label:GetPropertyChangedSignal("Text"):Connect(again)
-		label:GetPropertyChangedSignal("AbsoluteSize"):Connect(again)
-	end
-	task.spawn(refit, label)
+	label.TextScaled = true
+	local limit = label:FindFirstChildOfClass("UITextSizeConstraint") or Instance.new("UITextSizeConstraint")
+	limit.MaxTextSize = maxSize
+	limit.MinTextSize = minSize or 6
+	limit.Parent = label
 end
 
 return Ui
