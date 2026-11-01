@@ -617,7 +617,17 @@ local function pulseOnce(badge: GuiObject)
 	waveFrom(badge)
 end
 
+-- When each badge last pulsed. Kept while a badge hides, so a badge that flickers off and
+-- on (or whose count keeps changing) can't pulse more than once per beat (Dev, 2026-11-01:
+-- one badge sometimes pulsed nonstop).
+local lastPulse: { [GuiObject]: number } = setmetatable({}, { __mode = "k" }) :: any
+
 local function pulseTwice(badge: GuiObject)
+	local now = os.clock()
+	if now - (lastPulse[badge] or -math.huge) < PULSE_EVERY - 0.2 then
+		return
+	end
+	lastPulse[badge] = now
 	pulseOnce(badge)
 	task.delay(PULSE_GAP, pulseOnce, badge)
 end
