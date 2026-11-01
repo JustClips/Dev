@@ -9812,8 +9812,8 @@
         ],
         "Position": [
          [
-          0.5,
-          0
+          0,
+          8
          ],
          [
           0.5,
@@ -9821,7 +9821,7 @@
          ]
         ],
         "AnchorPoint": [
-         0.5,
+         0,
          0.5
         ],
         "BorderSizePixel": 0,
@@ -9995,6 +9995,78 @@
            }
           }
          ]
+        }
+       ]
+      },
+      {
+       "name": "Locked",
+       "className": "Frame",
+       "properties": {
+        "Size": [
+         [
+          1,
+          0
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 0.45,
+        "Visible": false,
+        "ZIndex": 6,
+        "BackgroundColor3": "#0B0E1E"
+       },
+       "children": [
+        {
+         "name": "Lock",
+         "className": "ImageLabel",
+         "properties": {
+          "Size": [
+           [
+            0,
+            30
+           ],
+           [
+            0,
+            30
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Image": "rbxassetid://121878216910277",
+          "ScaleType": "Fit",
+          "ZIndex": 7
+         }
         }
        ]
       }
@@ -10180,8 +10252,8 @@
         ],
         "Position": [
          [
-          0.5,
-          0
+          0,
+          8
          ],
          [
           0.5,
@@ -10189,7 +10261,7 @@
          ]
         ],
         "AnchorPoint": [
-         0.5,
+         0,
          0.5
         ],
         "BorderSizePixel": 0,
@@ -10363,6 +10435,78 @@
            }
           }
          ]
+        }
+       ]
+      },
+      {
+       "name": "Locked",
+       "className": "Frame",
+       "properties": {
+        "Size": [
+         [
+          1,
+          0
+         ],
+         [
+          1,
+          0
+         ]
+        ],
+        "Position": [
+         [
+          0,
+          0
+         ],
+         [
+          0,
+          0
+         ]
+        ],
+        "AnchorPoint": [
+         0,
+         0
+        ],
+        "BorderSizePixel": 0,
+        "BackgroundTransparency": 0.45,
+        "Visible": false,
+        "ZIndex": 6,
+        "BackgroundColor3": "#0B0E1E"
+       },
+       "children": [
+        {
+         "name": "Lock",
+         "className": "ImageLabel",
+         "properties": {
+          "Size": [
+           [
+            0,
+            30
+           ],
+           [
+            0,
+            30
+           ]
+          ],
+          "Position": [
+           [
+            0.5,
+            0
+           ],
+           [
+            0.5,
+            0
+           ]
+          ],
+          "AnchorPoint": [
+           0.5,
+           0.5
+          ],
+          "BorderSizePixel": 0,
+          "BackgroundTransparency": 1,
+          "Image": "rbxassetid://121878216910277",
+          "ScaleType": "Fit",
+          "ZIndex": 7
+         }
         }
        ]
       }

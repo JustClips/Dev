@@ -987,6 +987,11 @@ end
 
 -- Opens the shop at a section ("Featured", "Eggs", "Passes", "Boosts", "Potions", "Money",
 -- "Codes").
+-- Starts a Robux purchase of a pass or product by its Products key (Settings switches).
+function ShopController:Prompt(key: string)
+	prompt(key)
+end
+
 function ShopController:Open(section: string?)
 	Ui.open("Shop")
 	open(section)

@@ -330,19 +330,16 @@ local function setToggle(button: GuiButton, owned: boolean, on: boolean)
 	button.BackgroundColor3 = if on then Color3.fromRGB(30, 120, 70) else NAVY
 end
 
--- Settings switches: ON / OFF for pass owners, GET (opens the pass in the Shop) otherwise.
+-- Settings switches: ON / OFF for pass owners; without the pass it reads OFF under a dark
+-- veil with a lock, and a tap prompts the pass (Dev 2026-11-01).
 local function setSettingsToggle(button: GuiButton?, owned: boolean, on: boolean)
 	if not button then
 		return
 	end
 	setToggle(button, true, owned and on)
-	if not owned then
-		local state = button:FindFirstChild("State") :: Frame?
-		local label = state and state:FindFirstChild("Label") :: TextLabel?
-		if state and label then
-			state.BackgroundColor3 = Color3.fromRGB(255, 196, 46)
-			label.Text = "GET"
-		end
+	local locked = button:FindFirstChild("Locked") :: GuiObject?
+	if locked then
+		locked.Visible = not owned
 	end
 	button:SetAttribute("Owned", owned)
 end
@@ -1298,8 +1295,8 @@ function HudController:Start()
 			Net.event("SetAutoSell"):FireServer(not data.AutoSell)
 		end
 	end)
-	for _, pair in { { el.SetAutoSweep, "SetAutoSweep", "AutoSweep" }, { el.SetAutoSell, "SetAutoSell", "AutoSell" } } do
-		local button, remote, field = pair[1], pair[2], pair[3]
+	for _, pair in { { el.SetAutoSweep, "SetAutoSweep", "AutoSweep", "AutoSweep" }, { el.SetAutoSell, "SetAutoSell", "AutoSell", "SellAnywhere" } } do
+		local button, remote, field, pass = pair[1], pair[2], pair[3], pair[4]
 		if button then
 			Ui.button(button, function()
 				local data = State.data
@@ -1309,8 +1306,7 @@ function HudController:Start()
 				if button:GetAttribute("Owned") then
 					Net.event(remote):FireServer(not data[field])
 				else
-					Ui.close("Settings")
-					C.ShopController:Open("Passes")
+					C.ShopController:Prompt(pass)
 				end
 			end)
 		end

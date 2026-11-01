@@ -209,7 +209,8 @@ def button(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), color=SUCCESS, label=No
             node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2, "Transparency": 0.55, "ApplyStrokeMode": "Border",
                                         "LineJoinMode": "Miter"}),
         ]))
-    if ico and label is None:
+    has_label = any(c and c.get("name") == "Label" for c in (children or []))
+    if ico and label is None and not has_label:
         # Icon-only buttons (gift, sell...) keep the icon in the middle.
         kids.append(icon("Icon", ico, ico_px, U(0.5, 0, 0.5, 0), (0.5, 0.5)))
     elif ico:
@@ -405,6 +406,10 @@ def auto_toggle(name, label, ico, order):
         frame("State", U(0, 52, 0, 30), U(1, -8, 0.5, 0), (1, 0.5), bg=MUTED, ZIndex=3, children=[
             border(INK, 2),
             text("Label", "OFF", U(1, 0, 1, 0), ts=17, display=True, stroke=2, ZIndex=4),
+        ]),
+        # Without the pass: dark veil + a lock over the switch (tap buys the pass).
+        frame("Locked", U(1, 0, 1, 0), bg="#0B0E1E", BackgroundTransparency=0.45, Visible=False, ZIndex=6, children=[
+            icon("Lock", "Lock", 30, U(0.5, 0, 0.5, 0), (0.5, 0.5), ZIndex=7),
         ]),
     ])
 
