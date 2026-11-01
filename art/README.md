@@ -23,3 +23,9 @@ Conventions:
 - Aliens use the part names Body, Head, LegFL/FR/BL/BR, LegL/R, ArmL/R, EarL/R, Tail, WingL/R and Tent1-4. Joints are stored in the meta and rigged at runtime with Motor6Ds (`AssetLibrary.prepare`), so the shared pet animations fit every alien.
 - Parts named `*_Glow` turn Neon. `*_Glass` parts turn Glass.
 - Logo and shop banners were made with ForgeUI (`art/out/ui/Logo.png`, `Banner*.png`).
+
+## UI icon pack
+48 HUD/shop icons (2026-11-01) come from "Free Icon Pack v3.1 (Basic)" by @gvesster
+(https://linktr.ee/gvesster), the "1st Outline 256px" variants. Its license allows use in
+commercial games but not reselling the icons or using them in other icon packs. Potion icons
+combine the pack's flask with a small pack icon (clover, coin, shoe...) and a crown for Super/Mega.

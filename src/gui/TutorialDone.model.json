@@ -206,7 +206,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://140422400197629",
+        "Image": "rbxassetid://72981091691934",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -816,7 +816,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://106520216272455",
+          "Image": "rbxassetid://103355935515385",
           "ScaleType": "Fit",
           "ZIndex": 3
          }
@@ -1208,7 +1208,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://106520216272455",
+          "Image": "rbxassetid://103355935515385",
           "ScaleType": "Fit",
           "ZIndex": 3
          }
@@ -1600,7 +1600,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Image": "rbxassetid://106520216272455",
+          "Image": "rbxassetid://103355935515385",
           "ScaleType": "Fit",
           "ZIndex": 3
          }
