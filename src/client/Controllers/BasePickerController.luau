@@ -316,10 +316,9 @@ local function addPetTile(holder: Instance, order: number, found: boolean, petId
 			toast(true, `{name}: found! It's in your Index.`)
 		elseif def then
 			local zone = Zones.ById[def.Zone or "Landing"]
-			local article = if string.match(def.Rarity, "^[AEIOU]") then "an" else "a"
-			toast(false, `Missing {def.Name}: {article} {def.Rarity} pet. Hatch it from {if zone then zone.Name else "zone"} eggs.`)
+			toast(false, `{def.Name} can be found in {def.Rarity} Eggs from {if zone then zone.Name else "the Backyard"}`)
 		else
-			toast(false, "Missing: any Cosmic pet. Hatch one to tick this off.")
+			toast(false, "Any Cosmic pet can be found in Cosmic Eggs")
 		end
 	end)
 	tile.Parent = holder
