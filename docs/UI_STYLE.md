@@ -36,25 +36,28 @@ ALWAYS:          icon + label on HUD buttons, red X top-right on modals,
                  green = spend cash, gold = spend Robux
 ```
 
-## HUD (edge-rail dialect, like Steal an Egg / Grow a Garden)
+## HUD (4 core buttons, the rest indicators; Dev, 2026-11-01)
 
-- **Left rail**: Shop (gold), Index (blue), Rebirth (purple) stud tiles with
-  icon + label.
-- **Top centre pills** teleport you:
-  - Base (green) goes to your own spawn.
-  - Sell (orange) goes to the Rocket.
-  - Zones (blue) opens a picker. It shows the unlock price or "Rebirth N".
-    A locked zone sends you to its gate.
-- **Under the pills**: the Moon Clean bar (meteor countdown during events),
-  boost chips and toasts.
-- **Wallet, bottom-left**: the cash chip with a `+` (opens Shop > Cash) and the
-  dust backpack meter with a FULL tag. On phones the wallet moves top-left,
-  away from the thumbstick.
-- **Right side**:
-  - The upgrade card: next tool, what it does, and a green Buy button. It turns
-    grey when you can't afford it.
-  - The Drive and Auto buttons (shown only when you own those).
-  - A round SWEEP button on phones, next to the jump button.
+Kids on phones get lost in a wall of buttons, so the HUD has four core buttons and
+everything else is an indicator or lives in a small menu.
+
+- **Core column, mid-left** (`Hud.Rail`, MenuController):
+  - Shop (gold) opens the Shop.
+  - Upgrade (orange) opens a small menu beside it: Gear, Upgrades (tree), Rebirth (with
+    the % to the next rebirth).
+  - Base (green) teleports you onto your base's own leaf dump ("Home"), which sells your
+    bag. There is no Sell button; Sell Anywhere owners get a small orange Sell button at
+    the end of the bag bar.
+  - More (purple) opens a small menu: Quests, Daily, Gifts, Teleport (zones), Index, and
+    Free (group reward, until claimed).
+  - A core button shows a red badge while something in its menu has one.
+- **Indicators**: cash + income and the bag bar (wallet, bottom-left), the World Cleaned
+  bar and the current quest job (top middle, tap the job for Quests), boost chips, Spin
+  (top right). An "Open eggs" chip shows only while eggs at your base are ready.
+- **Inventory** (hotbar Bag button) has the pets bar: pets on base, Equip Best, +1 slot
+  (cash), +3 slots (Robux). There are no separate Eggs or Pets panels.
+- New HUD pieces must fit this: add to a menu, or show as an indicator only while it
+  matters. Don't add a new always-on button.
 
 ## Screens
 

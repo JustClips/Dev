@@ -1,5 +1,5 @@
 --!strict
--- Free reward window (screen "GroupReward"), opened from the Free pill at the top: the
+-- Free reward window (screen "GroupReward"), opened from the Free tile in the More menu: the
 -- reward and a Claim button (Dev, 2026-10-31). Claim gives 2 Luck Potions + cash once; when
 -- you're not in the group yet it brings up Roblox's join prompt first and claims after.
 -- Only group membership is rewarded (Roblox doesn't allow rewards for likes/favorites).
@@ -74,7 +74,7 @@ function GroupRewardController:Init(controllers)
 end
 
 function GroupRewardController:Start()
-	pill = Ui.find(Ui.screen("Hud"), "Pills.FreeButton")
+	pill = Ui.find(Ui.screen("Hud"), "MoreMenu.Items.FreeButton")
 	Ui.button(pill, function()
 		if Ui.isOpen(gui) then
 			Ui.close("GroupReward")

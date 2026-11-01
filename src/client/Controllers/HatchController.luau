@@ -85,7 +85,7 @@ local function cleanUp()
 end
 
 -- Windows that would hide the show (the Eggs panel's Open button opens eggs from inside one).
-local CLOSE_ON_HATCH = { "EggsPanel", "PetsPanel", "Inventory", "Index", "Shop", "Upgrades", "Garage", "Rebirth", "Daily", "Playtime", "Events", "Settings" }
+local CLOSE_ON_HATCH = { "Inventory", "Index", "Shop", "Upgrades", "Garage", "Rebirth", "Daily", "Playtime", "Events", "Settings" }
 
 ------------------------------------------------------------------ small helpers
 

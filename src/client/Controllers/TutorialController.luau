@@ -4,7 +4,7 @@
 --     step flashes it green ("Nice!") with a chime before the next one shows.
 --   * Spotlight: for button steps the screen dims except a cut-out around the button, which
 --     gets a pulsing ring and a bouncing arrow (Place for me while you hold your first egg,
---     the hotbar slot your new pet went to, Gear for the first tool). For world steps the target glows with an outline you can see
+--     the hotbar slot your new pet went to, Upgrade > Gear for the first tool). For world steps the target glows with an outline you can see
 --     through walls (the egg, your pad, your growing egg, the Rocket's sell pad), and
 --     ArrowController draws the guide path to it.
 --   * Planting the first egg: walk into your pet park and the egg is already in your
@@ -52,14 +52,14 @@ local STEPS: { Step } = {
 	},
 	{
 		key = "Sell",
-		text = "Leaves are money! Click SELL to cash them in!",
-		touch = "Leaves are money! Tap SELL to cash them in!",
+		text = "Leaves are money! Click BASE to sell them at your dump!",
+		touch = "Leaves are money! Tap BASE to sell them at your dump!",
 		pad = "Leaves are money! Walk to the leaf dump to cash them in!",
 		icon = "Icon_Sell",
 	},
 	{
 		key = "Upgrade",
-		text = "Upgrade your tool! Open Gear and grab a FREE Broom!",
+		text = "Upgrade your tool! Open Upgrade, then Gear, and grab a FREE Broom!",
 		pad = "Upgrade your tool! Press d-pad right, open Gear, grab a FREE Broom!",
 		icon = "Icon_Tools",
 	},
@@ -288,7 +288,7 @@ local function worldTarget(data): Instance?
 		-- The nearest leaf dump.
 		local character = Players.LocalPlayer.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-		local index = World.nearestDump(if root then root.Position else World.RocketPosition)
+		local index = World.nearestDump(if root then root.Position else World.RocketPosition, data.BaseIndex)
 		local structures = Workspace:FindFirstChild("Structures")
 		return structures and structures:FindFirstChild("LeafDump" .. index)
 	end
@@ -382,9 +382,9 @@ local function jobPointer(data): GuiObject?
 		return nil
 	end
 	if job.Kind == "Tool" and not Ui.isOpen(Ui.screen("Garage")) then
-		return Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton")
+		return C.MenuController:PointerFor("UpgradeMenu", "ToolsButton")
 	elseif job.Kind == "Power" and not C.UpgradeController:IsOpen() then
-		return Ui.find(hud, "Rail.UpgradesButton")
+		return C.MenuController:PointerFor("UpgradeMenu", "TreeButton")
 	elseif job.Kind == "FreeSpin" then
 		if not Ui.isOpen(Ui.screen("Wheel")) then
 			return Ui.find(hud, "SpinButton")
@@ -472,10 +472,11 @@ local function update()
 		elseif key == "Place" and C.PlacementController:IsHolding() and autoPlace.Visible then
 			pointAt(autoPlace, false)
 		elseif key == "Sell" and data.Backpack > 0 and not Ui.gamepad() then
-			-- Spotlight on SELL: the rest of the screen dims (Dev, 2026-10-31).
-			pointAt(Ui.find(hud, "Pills.SellButton"))
+			-- Spotlight on BASE (it lands you on your base's leaf dump): the rest of the
+			-- screen dims (Dev, 2026-10-31).
+			pointAt(Ui.find(hud, "Rail.BaseButton"))
 		elseif key == "Upgrade" and not Ui.isOpen(Ui.screen("Garage")) then
-			pointAt(Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton"))
+			pointAt(C.MenuController:PointerFor("UpgradeMenu", "ToolsButton"))
 		else
 			pointAt(nil)
 		end
@@ -483,7 +484,7 @@ local function update()
 		-- window when it's open.
 		local lift = cardLift(onHotbar)
 		if inventoryOpen then
-			lift = math.ceil((112 + 316) * Ui.scale()) + 10
+			lift = math.ceil((112 + 370) * Ui.scale()) + 10
 		end
 		card.Position = UDim2.new(0.5, 0, 1, -lift)
 		return

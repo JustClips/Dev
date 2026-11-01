@@ -18,7 +18,7 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui") :: PlayerGui
 
 -- Modal screens: only one is open at a time.
-local MODALS = { "Shop", "Index", "Rebirth", "Garage", "Upgrades", "Inventory", "Daily", "Playtime", "Events", "Settings", "PetsPanel", "EggsPanel", "Dialog", "GroupReward", "BasePicker", "Quests" }
+local MODALS = { "Shop", "Index", "Rebirth", "Garage", "Upgrades", "Inventory", "Daily", "Playtime", "Events", "Settings", "Dialog", "GroupReward", "BasePicker", "Quests" }
 local POP = TweenInfo.new(0.24, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PRESS = TweenInfo.new(0.07, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local HOVER = TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)

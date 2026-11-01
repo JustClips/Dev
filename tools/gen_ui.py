@@ -407,35 +407,58 @@ def auto_toggle(name, label, ico, order):
 
 
 def hud():
-    # Rebirth tile shows how close the next rebirth is ("60%", RebirthController), like
-    # Dev's reference.
-    rebirth_tile = rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 4)
+    # HUD overhaul (Dev, 2026-11-01: "3-4 core buttons, the rest indicators, core buttons
+    # open a small menu"): four core tiles down the left edge. Shop opens the Shop, Base
+    # takes you home onto your base's leaf dump (sells the bag), Upgrade and More open a
+    # small menu beside the column (HudController). Everything else is an indicator.
+    rail = frame("Rail", U(0, 84, 0, 372), U(0, 14, 0.5, -30), (0, 0.5), children=[
+        autoscale(compact=0.74),
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 12), "SortOrder": "LayoutOrder"}),
+        rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
+        rail_tile("UpgradesButton", "Upgrade", "Upgrade", "#FF9A3C", 2),
+        rail_tile("BaseButton", "Base", "Base", PILL_BASE, 3),
+        rail_tile("MoreButton", "More", "More", REBIRTH, 4),
+    ])
+
+    def menu(name, title, tiles):
+        """A small dark strip of tiles that opens beside a core button. A tap outside
+        (ClickAway) or on the core button again closes it."""
+        return plate(name, U(0, 0, 0, 108), U(0, 120, 0.5, 0), (0, 0.5), BG, stud=None, stroke=3, AutomaticSize="X",
+                     Visible=False, ZIndex=12, children=[
+            autoscale(compact=0.74),
+            text("Title", title, U(0, 200, 0, 20), U(0, 4, 0, -22), ts=17, color=PREMIUM, display=True, stroke=2.5, xa="Left",
+                 ZIndex=13),
+            frame("Items", U(0, 0, 1, 0), AutomaticSize="X", ZIndex=12, children=[
+                padding(10, 10, 12, 12), hlist(10, "Left", "Center"),
+            ] + tiles),
+        ])
+
+    rebirth_tile = rail_tile("RebirthButton", "Rebirth", "Rebirth", REBIRTH, 3)
+    # How close the next rebirth is ("60%", "READY!"), like Dev's reference.
     rebirth_tile["children"].append(
         text("Progress", "0%", U(1, -4, 0, 24), U(0.5, 0, 0, 1), (0.5, 0), ts=21, color=WHITE, display=True, stroke=3, ZIndex=5,
              Visible=False))
-    # Phones: tiles 26% smaller (Dev, 2026-10-31: the left side was too full to see where
-    # you walk), same spot.
-    rail = frame("Rail", U(0, 180, 0, 304), U(0, 14, 0.5, -30), (0, 0.5), children=[
-        autoscale(compact=0.74),
-        node("Layout", "UIGridLayout", {"CellSize": U(0, 84, 0, 84), "CellPadding": U(0, 12, 0, 26), "SortOrder": "LayoutOrder"}),
-        rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
-        rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 2),
-        rail_tile("UpgradesButton", "Upgrades", "Upgrade", "#FF9A3C", 3),
+    upgrade_menu = menu("UpgradeMenu", "UPGRADE", [
+        rail_tile("ToolsButton", "Gear", "Tools", "#4C8DFF", 1),
+        rail_tile("TreeButton", "Upgrades", "Upgrade", "#FF9A3C", 2),
         rebirth_tile,
-        rail_tile("RewardsButton", "Daily", "Daily", "#FF5FA2", 5),
-        rail_tile("GiftsButton", "Gifts", "Gift", "#3DDC5A", 6),
     ])
-    pills = frame("Pills", U(0, 432, 0, 52), U(0.5, 0, 0, 6), (0.5, 0), children=[
-        autoscale(), hlist(12),
-        pill("BaseButton", "Base", "Base", PILL_BASE, 1),
-        pill("SellButton", "Sell", "Sell", PILL_SELL, 2),
-        pill("ZonesButton", "Zones", "Zones", PILL_ZONES, 3),
+    free_tile = rail_tile("FreeButton", "Free", "Gift", "#FFB020", 6)
+    free_tile["properties"]["Visible"] = False
+    more_menu = menu("MoreMenu", "MORE", [
+        rail_tile("QuestsButton", "Quests", "Quest", "#9B6BFF", 1),
+        rail_tile("RewardsButton", "Daily", "Daily", "#FF5FA2", 2),
+        rail_tile("GiftsButton", "Gifts", "Gift", "#3DDC5A", 3),
+        rail_tile("ZonesButton", "Teleport", "Zones", PILL_ZONES, 4),
+        rail_tile("IndexButton", "Index", "Index", "#4CC3FF", 5),
         # Free group reward (GroupRewardController shows it until it's claimed).
-        button("FreeButton", U(0, 136, 0, 52), color="#FFB020", label="Free", ts=21, ico="Gift", ico_px=40, LayoutOrder=4,
-               Visible=False, children=[badge()]),
+        free_tile,
     ])
+    menu_away = node("MenuAway", "TextButton", base(U(1, 400, 1, 400), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
+                                                    Text="", AutoButtonColor=False, Visible=False, ZIndex=11))
     # Fixed height: a UIListLayout directly in a plate would also stack the Studs image.
-    picker = plate("ZonePicker", U(0, 330, 0, 348), U(0.5, 0, 0, 66), (0.5, 0), SURFACE, Visible=False, ZIndex=6,
+    # Opened from More > Teleport, above the menu click-away (ZIndex 13).
+    picker = plate("ZonePicker", U(0, 330, 0, 348), U(0.5, 0, 0.5, 0), (0.5, 0.5), SURFACE, Visible=False, ZIndex=13,
                    children=[
                        autoscale(),
                        frame("List", U(1, -20, 1, -20), U(0, 10, 0, 10), children=[
@@ -527,21 +550,18 @@ def hud():
         return button(name, U(0, 34, 0, 34), U(1, -8, 0.5, 0), (1, 0.5), color=color, label="+", ts=28, stroke=3)
 
     # The Friend Boost moved to the boost chips at the bottom right (Dev, 2026-10-31).
-    wallet = plate("Wallet", U(0, 264, 0, 130), U(0, 14, 1, -14), (0, 1), tint=BG, stroke=3, children=[
+    # The rebirth count moved into the Rebirth window (2026-11-01 HUD overhaul). The bag row
+    # gets an orange Sell button only for Sell Anywhere owners (HudController shows it).
+    wallet = plate("Wallet", U(0, 264, 0, 96), U(0, 14, 1, -14), (0, 1), tint=BG, stroke=3, children=[
         autoscale(compact=0.85),
-        row("RebirthRow", 4, 34, [
-            icon("Icon", "Rebirth", 30, U(0, 26, 0.5, 0), (0.5, 0.5)),
-            text("Value", "0 Rebirths", U(1, -60, 1, 0), U(0, 50, 0, 0), ts=19, color="#E2B6FF", display=True, xa="Left",
-                 stroke=2.5),
-        ], line=False),
-        row("CashPanel", 38, 52, [
+        row("CashPanel", 2, 52, [
             icon("Icon", "Cash", 42, U(0, 26, 0.5, 0), (0.5, 0.5)),
             text("Cash", "$0", U(1, -100, 0, 28), U(0, 50, 0, 5), ts=28, color=WHITE, display=True, xa="Left", stroke=2.5,
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 28, "MinTextSize": 12})]),
             text("Income", "+$0/s", U(1, -100, 0, 16), U(0, 50, 0, 32), ts=16, color=ACCENT, display=True, xa="Left", stroke=2),
             plus("PlusButton"),
-        ]),
-        row("BackpackPanel", 90, 38, [
+        ], line=False),
+        row("BackpackPanel", 54, 40, [
             icon("Icon", "Backpack", 32, U(0, 26, 0.5, 0), (0.5, 0.5), ZIndex=4),
             frame("Bar", U(1, -58, 0, 24), U(0, 50, 0.5, 0), (0, 0.5), bg="#14171D", children=[
                 border(INK, 2),
@@ -549,14 +569,19 @@ def hud():
                     node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#C8CEDA"]]}, "Rotation": 90}),
                 ]),
                 text("Amount", "0 / 50", U(1, -12, 1, 0), U(0, 6, 0, 0), ts=16, display=True, stroke=2.5, xa="Left", ZIndex=3),
+                frame("Full", U(0, 50, 1, 0), U(1, -4, 0.5, 0), (1, 0.5), Visible=False, ZIndex=4, children=[
+                    text("Label", "FULL", U(1, 0, 1, 0), ts=16, display=True, stroke=2.5, ZIndex=5),
+                ]),
             ]),
-            frame("Full", U(0, 50, 0, 24), U(1, -10, 0.5, 0), (1, 0.5), Visible=False, ZIndex=4, children=[
-                text("Label", "FULL", U(1, 0, 1, 0), ts=16, display=True, stroke=2.5, ZIndex=5),
-            ]),
+            button("SellButton", U(0, 34, 0, 34), U(1, -8, 0.5, 0), (1, 0.5), color=PILL_SELL, ico="Sell", ico_px=28, stroke=3,
+                   Visible=False, children=[]),
         ]),
     ])
     right = frame("Right", U(0, 230, 0, 240), U(1, -14, 0.5, 0), (1, 0.5), children=[
         autoscale(), vlist(10, "Right", "Center"),
+        # Shows only while eggs at your base are ready to open (MenuController): opens them all.
+        button("EggsReady", U(0, 230, 0, 50), color=SUCCESS, label="Open eggs", ts=20, ico="Egg", ico_px=40, LayoutOrder=1,
+               Visible=False, dark="#9AA3B8", children=[badge(px=24)]),
         auto_toggle("AutoButton", "Auto Sweep", "Auto", 3),
         auto_toggle("AutoSellButton", "Auto Sell", "Sell", 4),
     ])
@@ -679,7 +704,7 @@ def hud():
         ]),
         badge(px=22),
     ])
-    write("Hud", screen([rail, spin, pills, moon, quests, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, burst, picker,
+    write("Hud", screen([rail, menu_away, upgrade_menu, more_menu, spin, moon, quests, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, burst, picker,
                          spot, pointer, hold], order=1))
 
 
@@ -1000,7 +1025,7 @@ def inventory():
     egg, its name, a count for stacks, a pet's passive). Tap a tile to use it (hold a pet or
     an egg, use a potion after a confirm). Drag tiles onto hotbar slots, and hotbar slots
     back onto the panel. Things in the hotbar aren't listed here."""
-    W, H = 760, 330
+    W, H = 760, 384
     tile = button("Template", U(0, 0, 0, 0), color=SEE, stroke=3, BackgroundTransparency=0.35, Visible=False, children=[
         node("Viewport", "ViewportFrame", base(U(1, -8, 1, -26), U(0.5, 0, 0, 4), (0.5, 0), BackgroundTransparency=1,
                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
@@ -1018,7 +1043,7 @@ def inventory():
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
         ]),
     ])
-    grid = scroller("Grid", U(1, -20, 1, -64), U(0, 10, 0, 56), [
+    grid = scroller("Grid", U(1, -20, 1, -118), U(0, 10, 0, 56), [
         node("Layout", "UIGridLayout", {"CellSize": U(0, 96, 0, 96), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
                                         "HorizontalAlignment": "Left"}),
         padding(4, 12, 4, 4), tile,
@@ -1044,101 +1069,22 @@ def inventory():
         text("Info", "", U(0, 304, 0, 36), U(0, 150, 0, 10), ts=16, color="#C8D0E8", display=True, stroke=1.5, xa="Left",
              Visible=False, TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
         search, close, grid,
+        # Pets on your base (2026-11-01: replaces the Pets panel): how many are out, Equip
+        # Best, and more slots for cash or Robux (InventoryController).
+        frame("PetsBar", U(1, -20, 0, 46), U(0, 10, 1, -8), (0, 1), children=[
+            icon("Icon", "Alien", 36, U(0, 0, 0.5, 0), (0, 0.5)),
+            text("Count", "0/4 on base", U(0, 160, 1, 0), U(0, 42, 0, 0), ts=18, display=True, stroke=2, xa="Left",
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 9})]),
+            frame("Buttons", U(1, -206, 1, 0), U(1, 0, 0, 0), (1, 0), children=[
+                hlist(8, "Right", "Center"),
+                button("BuySlot", U(0, 150, 0, 42), color=SUCCESS, label="+1 Slot", ts=16, stroke=3, LayoutOrder=1),
+                button("AddSlot", U(0, 140, 0, 42), color=PREMIUM, label="+3 Slots", ts=16, label_color=INK, stroke=3, LayoutOrder=2),
+                button("EquipBest", U(0, 160, 0, 42), color="#4C8DFF", label="Equip Best", ts=19, stroke=3, LayoutOrder=3),
+            ]),
+        ]),
         text("Empty", "", U(1, -40, 0, 60), U(0.5, 0, 0.55, 0), (0.5, 0.5), ts=19, color="#C8D0E8", heavy=True, Visible=False),
     ])
     write("Inventory", screen([win], order=6, enabled=False))
-
-
-# ---------------------------------------------------------------- Base panels (Active pets / Growing eggs)
-SAND = "#E9D3B0"
-
-
-def side_button(name, label, ico, color, order):
-    return button(name, U(0, 80, 0, 80), color=color, LayoutOrder=order, children=[
-        icon("Icon", ico, 56, U(0.5, 0, 0, 4), (0.5, 0)),
-        text("Label", label, U(1, -4, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=17, display=True, stroke=2.5,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 7})]),
-        badge(),
-    ])
-
-
-POPUP_W, POPUP_H = 440, 460  # Pets / Growing Eggs side popups
-
-
-def popup_list(screen_name, title, ico, header_color, head_button, row_children, footer, row_h=74):
-    """Pets / Eggs: a small popup beside the Eggs / Pets buttons (BasePanelsController places
-    it) with a one-column list. No dim: the game stays visible; a click outside closes it."""
-    row = plate("Template", U(0, 0, 0, 0), tint="#2E3340", stroke=3, Visible=False, children=[
-        node("Viewport", "ViewportFrame", base(U(0, 62, 0, 62), U(0, 4, 0.5, 0), (0, 0.5), BackgroundTransparency=1,
-                                               Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1], ZIndex=2)),
-        text("Name", "", U(1, -190, 0, 26), U(0, 72, 0, 8), ts=20, display=True, stroke=2.5, xa="Left",
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 20, "MinTextSize": 10})]),
-        text("Sub", "", U(1, -190, 0, 22), U(0, 72, 0, 36), ts=17, color="#7CFF8C", display=True, stroke=2, xa="Left"),
-        # The whole row is a button (the Pets panel opens the pet's info). It must stay under
-        # Action (lower ZIndex): at the same ZIndex it can take Action's clicks.
-        node("Select", "TextButton", base(U(1, 0, 1, 0), BackgroundTransparency=1, Text="", ZIndex=0)),
-    ] + row_children)
-    list_bottom = 8 if not footer else 72 if len(footer) == 1 else 128
-    title_room = 258 if head_button else 110  # the title stops before Open All / Close
-    win = plate("Window", U(0, POPUP_W, 0, POPUP_H), U(1, -110, 0.5, -30), (1, 0.5), SURFACE, children=[
-        autoscale(),
-        plate("Header", U(1, 0, 0, 56), tint=header_color, children=[
-            icon("Icon", ico, 42, U(0, 8, 0.5, 0), (0, 0.5)),
-            text("Title", title, U(1, -title_room, 1, -8), U(0, 58, 0.5, 0), (0, 0.5), ts=26, display=True, stroke=3, xa="Left",
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 26, "MinTextSize": 12})]),
-        ]),
-        button("Close", U(0, 42, 0, 42), U(1, -4, 0, 4), (0.5, 0.5), color=DANGER, label="X", ts=24, ZIndex=6),
-        head_button,
-        scroller("List", U(1, -16, 1, -(64 + list_bottom)), U(0, 8, 0, 64), [
-            node("Layout", "UIGridLayout", {"CellSize": U(1, -14, 0, row_h), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
-                                            "HorizontalAlignment": "Left"}),
-            padding(2, 12, 2, 2), row,
-        ]),
-        text("Empty", "", U(1, -50, 0, 80), U(0.5, 0, 0.45, 0), (0.5, 0.5), ts=20, color=SUB, heavy=True, Visible=False),
-    ] + (footer or []))
-    away = node("ClickAway", "TextButton", base(U(1, 400, 1, 400), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1,
-                                                Text="", AutoButtonColor=False, ZIndex=0))
-    write(screen_name, screen([away, win], order=10, enabled=False))
-
-
-def base_panels():
-    # Eggs / Pets / Gear / Quests buttons on the right edge (BasePanelsController lays them
-    # out: stacked on PC, a column from the top right on phones).
-    buttons = frame("Buttons", U(0, 80, 0, 432), U(1, -14, 0.5, -130), (1, 1), children=[
-        autoscale(compact=0.88),
-        side_button("EggsButton", "Eggs", "Egg", DANGER, 1),
-        side_button("PetsButton", "Pets", "Alien", "#FF9A3C", 2),
-        side_button("ToolsButton", "Gear", "Tools", "#4C8DFF", 3),
-        side_button("QuestsButton", "Quests", "Quest", "#9B6BFF", 4),
-    ])
-    write("BasePanels", screen([buttons], order=4))
-    head = dict(size=U(0, 132, 0, 40), pos=U(1, -50, 0, 28), anchor=(1, 0.5))
-    popup_list(
-        "PetsPanel", "0/4 Active", "Alien", "#FF9A3C", None,
-        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=DANGER, label="Unequip", ts=18, ZIndex=3),
-         # Fight stats under the cash line (2026-10-31): sword + damage per hit, bolt + seconds per hit.
-         frame("Stats", U(1, -190, 0, 22), U(0, 72, 0, 62), children=[
-             hlist(5, "Left"),
-             icon("DamageIcon", "Sword", 22, LayoutOrder=1),
-             text("Damage", "", U(0, 0, 1, 0), ts=17, color="#FF9A7A", display=True, stroke=2, xa="Left",
-                  TextWrapped=False, AutomaticSize="X", LayoutOrder=2),
-             frame("Gap", U(0, 6, 1, 0), LayoutOrder=3),
-             icon("RateIcon", "Boost", 22, LayoutOrder=4),
-             text("Rate", "", U(0, 0, 1, 0), ts=17, color="#8FD3FF", display=True, stroke=2, xa="Left",
-                  TextWrapped=False, AutomaticSize="X", LayoutOrder=5),
-         ])],
-        [
-            # Two ways to more slots: one for cash, three for Robux (the pass).
-            button("BuySlot", U(0.5, -14, 0, 46), U(0, 10, 1, -66), (0, 1), color=SUCCESS, label="+1 Slot", ts=18),
-            button("AddSlot", U(0.5, -14, 0, 46), U(1, -10, 1, -66), (1, 1), color=PREMIUM, label="+3 Slots", ts=18,
-                   label_color=INK),
-            button("EquipBest", U(1, -20, 0, 46), U(0.5, 0, 1, -10), (0.5, 1), color="#4C8DFF", label="Equip Best", ts=22),
-        ], row_h=92)
-    popup_list(
-        "EggsPanel", "Growing Eggs", "Egg", DANGER,
-        button("OpenAll", head["size"], head["pos"], head["anchor"], color=PREMIUM, label="Open All", ts=18, label_color=INK, ZIndex=5),
-        [button("Action", U(0, 104, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=SUCCESS, label="Open", ts=18, ZIndex=3)],
-        None)
 
 
 # ---------------------------------------------------------------- Hover card (pets and eggs in parks)
@@ -2083,7 +2029,6 @@ def main():
     shop()
     index()
     inventory()
-    base_panels()
     placing()
     dialog()
     confirm()

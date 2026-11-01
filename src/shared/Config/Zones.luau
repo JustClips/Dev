@@ -17,7 +17,7 @@ local landingExclusions: { Types.Exclusion } = {
 for i, dump in World.Dumps do
 	local spot = World.dumpSpot(i)
 	table.insert(landingExclusions, { Center = Vector2.new(dump.Position.X, dump.Position.Z), Radius = 6 })
-	table.insert(landingExclusions, { Center = Vector2.new(spot.X, spot.Z), Radius = World.DumpRadius + 1 })
+	table.insert(landingExclusions, { Center = Vector2.new(spot.X, spot.Z), Radius = World.dumpRadius(i) + 1 })
 end
 
 -- The Traveling Merchant's cart and the path under it (no leaves grow through them).

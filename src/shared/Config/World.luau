@@ -33,16 +33,35 @@ World.Dumps = {
 }
 World.DumpFront = 6.5 -- studs from a dump's centre to the middle of its standing spot
 World.DumpRadius = 8 -- standing spot radius (cars count by their driver)
+-- Every base also has a dump by its entrance (added below, after the base layout), so the
+-- HUD's Base button takes you home and sells your bag in one tap (Dev, 2026-11-01). Its
+-- standing spot is smaller so it fits between the arch and the Pet Trader.
+World.BaseDumpRadius = 6
+World.HubDumps = #World.Dumps -- dumps 1..HubDumps are the market hall's; the rest one per base
+
+-- Standing spot radius of dump i.
+function World.dumpRadius(i: number): number
+	return if i > World.HubDumps then World.BaseDumpRadius else World.DumpRadius
+end
 
 -- Middle of dump i's standing spot.
 function World.dumpSpot(i: number): Vector3
 	return (World.Dumps[i] * CFrame.new(0, 0, -World.DumpFront)).Position
 end
 
--- The dump closest to a position: index and standing spot.
-function World.nearestDump(position: Vector3): (number, Vector3)
+-- Index of base b's own dump in World.Dumps.
+function World.baseDump(b: number): number
+	return World.HubDumps + b
+end
+
+-- The dump closest to a position: index and standing spot. Only the market hall's dumps
+-- and (with `baseIndex`) your own base's, never other players' bases.
+function World.nearestDump(position: Vector3, baseIndex: number?): (number, Vector3)
 	local best, bestSpot, bestD = 1, World.dumpSpot(1), math.huge
 	for i in World.Dumps do
+		if i > World.HubDumps and i ~= (if baseIndex and baseIndex > 0 then World.baseDump(baseIndex) else -1) then
+			continue
+		end
 		local spot = World.dumpSpot(i)
 		local d = (Vector3.new(spot.X, position.Y, spot.Z) - position).Magnitude
 		if d < bestD then
@@ -147,6 +166,9 @@ World.Base = {
 	Trader = Vector3.new(31, 0, -28),
 	-- The Quest Master's stall (QuestService), mirrored on the left side, facing +X.
 	Quest = Vector3.new(-31, 0, -28),
+	-- The base's leaf dump: right of the arch, in front of the Pet Trader, facing the path
+	-- (-X). Its standing spot (World.BaseDumpRadius) ends at the front edge.
+	Dump = Vector3.new(28, 0, -37.5),
 	-- The fenced pet park. Pets wander inside it.
 	ParkMin = Vector2.new(-42, -14),
 	ParkMax = Vector2.new(42, 42),
@@ -165,6 +187,10 @@ World.Base = {
 		{ Asset = "Park_Rock2", Position = Vector3.new(28, 0, 8), Yaw = 0, Radius = 2.5, Size = Vector2.new(5, 4.7), Scale = 2.2 },
 	},
 }
+
+for b = 1, World.BaseCount do
+	table.insert(World.Dumps, World.baseCFrame(b) * CFrame.new(World.Base.Dump) * CFrame.Angles(0, math.rad(90), 0))
+end
 
 -- Incubator spots on the hatchery pad (local to the hatchery centre): a ring of 8,
 -- starting at the front (facing the field) and going round.

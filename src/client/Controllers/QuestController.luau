@@ -99,9 +99,9 @@ end
 -------------------------------------------------------------------------- strip
 
 local function renderStrip(quests)
-	-- The Quests button under Gear (BasePanels) shows the same "!" as the strip.
+	-- The Quests tile in the More menu shows the same badge as the strip.
 	local ready = if quests and (quests.Ready or 0) > 0 then quests.Ready else nil
-	Ui.setBadge(Ui.find(Ui.screen("BasePanels"), "Buttons.QuestsButton.Badge") :: GuiObject, ready)
+	Ui.setBadge(Ui.find(Ui.screen("Hud"), "MoreMenu.Items.QuestsButton.Badge") :: GuiObject, ready)
 	local show = quests ~= nil and quests.Job ~= nil
 	if strip.Visible ~= show then
 		strip.Visible = show

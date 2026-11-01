@@ -283,7 +283,7 @@ function HudController:Highlight(name: string?)
 		pulseTween:Cancel()
 		pulseTween = nil
 	end
-	local button = Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton") :: GuiButton
+	local button = Ui.find(hud, "Rail.UpgradesButton") :: GuiButton
 	button.Rotation = 0
 	if name == "Tools" and not Ui.reducedMotion() then
 		pulseTween = TweenService:Create(button, TweenInfo.new(0.45, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), { Rotation = 3 })
@@ -333,9 +333,9 @@ end
 -- During the tutorial the screen is almost empty (Dev, 2026-10-31: "hide everything, only
 -- show stuff needed by the tutorial and only when it's needed"). The cash/bag panel and
 -- the hotbar stay; every other button shows up at the step that uses it, alone:
--- SELL from the Sell step on, Gear at the Upgrade step. Everything comes back once the
--- tutorial is done (or after a rebirth); Sweep Power and SPIN are then taught by the
--- Quest Master's first jobs.
+-- Base from the Sell step on (it takes you to your base's dump), Upgrade at the Upgrade
+-- step (Gear is in its menu). Everything comes back once the tutorial is done (or after a
+-- rebirth); Sweep Power and SPIN are then taught by the Quest Master's first jobs.
 local STEP_ORDER = { Sweep = 1, Sell = 2, Upgrade = 3, Goal = 4 }
 local function revealRail(data)
 	local key = data.TutorialStep
@@ -348,29 +348,16 @@ local function revealRail(data)
 			changed = true
 		end
 	end
-	-- Left rail: hidden until the tutorial is done.
-	set(el.Rail, done)
-	for _, name in { "ShopButton", "IndexButton", "RebirthButton", "RewardsButton", "GiftsButton" } do
-		set(el.Rail:FindFirstChild(name) :: GuiObject?, done)
-	end
-	set(el.Rail:FindFirstChild("UpgradesButton") :: GuiObject?, done)
-	-- Top pills: only SELL at its step (GroupRewardController keeps the Free pill hidden
-	-- during the tutorial).
-	set(el.Pills, done or step >= STEP_ORDER.Sell)
-	set(el.Pills:FindFirstChild("BaseButton") :: GuiObject?, done)
-	set(el.Pills:FindFirstChild("ZonesButton") :: GuiObject?, done)
+	-- Core column: Base from the Sell step, Upgrade at the Upgrade step, the rest after.
+	set(el.Rail, done or step >= STEP_ORDER.Sell)
+	set(el.Rail:FindFirstChild("ShopButton") :: GuiObject?, done)
+	set(el.Rail:FindFirstChild("MoreButton") :: GuiObject?, done)
+	set(el.Rail:FindFirstChild("BaseButton") :: GuiObject?, done or step >= STEP_ORDER.Sell)
+	set(el.Rail:FindFirstChild("UpgradesButton") :: GuiObject?, done or key == "Upgrade")
 	set(el.SpinButton, done)
 	set(el.MoonPanel, done)
 	set(el.Right, done)
 	set((el.BoostTemplate :: Instance).Parent :: GuiObject, done)
-	-- Right column (Eggs / Pets / Gear / Quests): only Gear at the Upgrade step.
-	local buttons = Ui.screen("BasePanels"):FindFirstChild("Buttons") :: GuiObject?
-	if buttons then
-		set(buttons, done or key == "Upgrade")
-		set(buttons:FindFirstChild("EggsButton") :: GuiObject?, done)
-		set(buttons:FindFirstChild("PetsButton") :: GuiObject?, done)
-		set(buttons:FindFirstChild("QuestsButton") :: GuiObject?, done)
-	end
 	if changed then
 		task.defer(function()
 			layout(Ui.scale(), Ui.compact())
@@ -389,12 +376,15 @@ local function render(data)
 	el.BackpackAmount.Text = `{Format.number(data.Backpack)} / {Format.number(data.Capacity)}`
 	el.BackpackFull.Visible = fraction >= 1
 	-- Leave room for the FULL tag on the right end of the bar.
-	el.BackpackAmount.Size = if fraction >= 1 then UDim2.new(1, -70, 1, 0) else UDim2.new(1, -12, 1, 0)
+	el.BackpackAmount.Size = if fraction >= 1 then UDim2.new(1, -60, 1, 0) else UDim2.new(1, -12, 1, 0)
+	-- Sell Anywhere: an orange Sell button at the end of the bag bar (there's no Sell pill
+	-- any more; everyone else sells at a dump, the Base button lands on their own).
+	local sellAnywhere = data.Gamepasses.SellAnywhere == true
+	el.SellButton.Visible = sellAnywhere
+	el.BackpackBar.Size = UDim2.new(1, if sellAnywhere then -100 else -58, 0, 24)
 	el.BackpackFill.BackgroundColor3 = if fraction >= 1 then DANGER else LEAF
 
-	-- Rebirth count, Friend Boost and the % to the next rebirth on the Rebirth tile (Dev,
-	-- 2026-10-31).
-	el.RebirthCount.Text = `{Format.number(data.Rebirths)} Rebirth{if data.Rebirths == 1 then "" else "s"}`
+	-- The % to the next rebirth on the Rebirth tile in the Upgrade menu (Dev, 2026-10-31).
 	local progress = el.RebirthProgress :: TextLabel
 	local cost = data.RebirthCost
 	if cost and BigNum.gte(cost, 1) then
@@ -675,167 +665,150 @@ local function renderBoosts()
 end
 
 local function teleport(target: string)
-	el.ZonePicker.Visible = false
+	HudController:CloseZones()
 	local ok, message = Net.func("Teleport"):InvokeServer(target)
 	if message and message ~= "" then
 		HudController:Toast(message, if ok then "Info" else "Bad")
 	end
 end
 
+-- The Base core button: home, onto your own leaf dump (sells the bag; MenuController).
+function HudController:GoHome()
+	teleport("Home")
+end
+
+-- Teleport picker (More > Teleport), in the middle of the screen.
+function HudController:OpenZones()
+	el.ZonePicker.Visible = true
+	Ui.popFrame(el.ZonePicker)
+	C.MenuController:SetAway(true)
+	if State.data then
+		renderZones(State.data)
+	end
+end
+
+function HudController:CloseZones()
+	if el.ZonePicker.Visible then
+		el.ZonePicker.Visible = false
+		C.MenuController:SetAway(false)
+	end
+end
+
+-- Sell Anywhere: sells the whole bag right here.
+local function sellHere()
+	local data = State.data
+	if not data or not data.Gamepasses.SellAnywhere then
+		return
+	end
+	if data.Backpack <= 0 then
+		HudController:Toast("Your bag is empty", "Info")
+		return
+	end
+	local ok, message = Net.func("SellNow"):InvokeServer()
+	if ok then
+		C.DumpController:SellBurst()
+	elseif message and message ~= "" then
+		HudController:Toast(message, "Bad")
+	end
+end
+
 -- Places the HUD clusters for the current scale. Offsets are not scaled by UIScale, so
--- stacked pieces (pills -> clean bar -> toasts) are spaced by scale here.
+-- stacked pieces (clean bar -> quest strip -> toasts) are spaced by scale here.
 -- Phones (Ui.compact): the thumbstick owns the bottom-left corner and the jump button the
--- bottom-right, so the wallet goes top-left with the rail under it, the Eggs/Pets
--- buttons go top-right (BasePanelsController) with the boost chips under them.
--- The left rail and the right-hand stack (Eggs/Pets buttons, then Next Tool + Auto) are
--- centred on the same line, RAIL_CENTRE px from the screen's middle.
+-- bottom-right, so the wallet sits in the bottom-left corner (the thumbstick still works
+-- under it), the core column mid-left, and the boost chips top right under Spin.
 local RAIL_CENTRE = -30
--- Phones: how far the side button columns sit below their top spot (gui px before scale).
-HudController.SIDE_DROP = 44
-local SIDE_DROP = HudController.SIDE_DROP
-local STACK_BUTTONS, STACK_GAP, STACK_RIGHT = 432, 16, 50
 -- The Lucky Wheel button (top right, fixed size like the ADMIN button).
 local SPIN_W, SPIN_H, ADMIN_H = 104, 38, 34
--- Phones, admins only: the Spin button sits under ADMIN, so the right-hand columns start
--- this much lower (gui px, not scaled). BasePanelsController reads it.
+-- Phones, admins only: the Spin button sits under ADMIN, so the boost chips start this
+-- much lower (gui px, not scaled).
 HudController.RightDrop = 0
-
-function HudController.rightStackTop(s: number): number
-	return RAIL_CENTRE - math.ceil((STACK_BUTTONS + STACK_GAP + STACK_RIGHT) * s / 2)
-end
+local BAR_W = 360 -- World Cleaned bar and quest strip
 
 layout = function(s: number, compact: boolean)
 	local top = 6
-	-- The pills row is as wide as the pills showing (the Free pill comes and goes).
-	local shown = 0
-	for _, child in el.Pills:GetChildren() do
-		if child:IsA("GuiButton") and child.Visible then
-			shown += 1
-		end
-	end
-	el.Pills.Size = UDim2.fromOffset(math.max(1, shown) * 136 + math.max(0, shown - 1) * 12, el.Pills.Size.Y.Offset)
-	local pillsH = math.ceil(52 * s)
-	-- Pills go up into Roblox's top bar row when they fit between its buttons and the
-	-- ADMIN button. Centred if they can be (Dev, 2026-10-30), otherwise moved right just
-	-- past Roblox's buttons and our settings gear.
+	local barH = math.ceil(46 * s)
+	-- The World Cleaned bar goes up into Roblox's top bar row when it fits between its
+	-- buttons (and our settings gear) and the ADMIN / Spin button. Centred if it can be,
+	-- otherwise moved right just past Roblox's buttons.
 	local inset = GuiService.TopbarInset
 	local shift = 0
-	-- Dev, 2026-10-31 ("move this entire thing higher"): the pills go up into the bar row
-	-- even when they're a bit taller than it, so the whole top block sits higher.
+	local isAdmin = Admin.isAdmin(Players.LocalPlayer.UserId)
 	if inset.Height > 0 and hud.AbsoluteSize.X > 2 then
-		local w = math.ceil(el.Pills.Size.X.Offset * s)
+		local w = math.ceil((BAR_W + 24) * s)
 		local guiMid = hud.AbsolutePosition.X + hud.AbsoluteSize.X / 2
-		-- Past Roblox's buttons and our settings gear next to them (AudioController
-		-- placeGear: same spot and size), so the pills never cover it (Dev, 2026-10-30).
 		local gearSize = math.floor(math.clamp(inset.Height - 14, 32, 48))
 		local freeLeft = math.max(inset.Min.X, 104) + 4 + gearSize + 8
-		-- Room for the ADMIN button or (for everyone else) the Spin button in that spot.
-		local freeRight = inset.Max.X - 8 - (if Admin.isAdmin(Players.LocalPlayer.UserId) then 100 else SPIN_W + 14)
+		local freeRight = inset.Max.X - 8 - (if isAdmin then 100 else SPIN_W + 14)
 		local x0 = math.max(guiMid - w / 2, freeLeft)
 		if x0 + w <= freeRight then
-			top = -math.floor(inset.Height) + math.max(4, math.floor((inset.Height - pillsH) / 2))
+			top = -math.floor(inset.Height) + math.max(2, math.floor((inset.Height - barH) / 2))
 			shift = math.floor(x0 + w / 2 - guiMid)
 		end
 	end
-	el.Pills.Position = UDim2.new(0.5, shift, 0, top)
 	-- Spin button: in the top bar row where ADMIN sits, or under ADMIN for admins.
-	local barH = math.floor(inset.Height)
-	local isAdmin = Admin.isAdmin(Players.LocalPlayer.UserId)
+	local rowH = math.floor(inset.Height)
 	local spinY = 6
 	if isAdmin then
-		local adminTop = if barH >= ADMIN_H then -barH + math.floor((barH - ADMIN_H) / 2) else 6
+		local adminTop = if rowH >= ADMIN_H then -rowH + math.floor((rowH - ADMIN_H) / 2) else 6
 		spinY = adminTop + ADMIN_H + 6
-	elseif barH >= SPIN_H then
-		spinY = -barH + math.floor((barH - SPIN_H) / 2)
+	elseif rowH >= SPIN_H then
+		spinY = -rowH + math.floor((rowH - SPIN_H) / 2)
 	end
 	el.SpinButton.Position = UDim2.new(1, -10, 0, spinY)
-	-- Anything at the top right below that line moves down under the Spin button.
 	HudController.RightDrop = math.max(0, spinY + SPIN_H + 6 - 8)
-	local barY = top + pillsH + math.ceil(5 * s)
+	-- The bar (when shown) then the quest strip under it, both centred on the same line.
+	local barY = top
 	HudController.barY = barY
-	-- The World Cleaned bar and the Quests strip line up with the pills row (Dev,
-	-- 2026-10-31: "why this not centered"): same centre (the pills can be shifted right of
-	-- Roblox's buttons) and the same width. The bar's star sticks out on the left, so the
-	-- panel is 24 px wider and moved left by half of that.
-	local rowW = math.max(360, el.Pills.Size.X.Offset)
-	el.MoonPanel.Size = UDim2.fromOffset(rowW + 24, el.MoonPanel.Size.Y.Offset)
+	el.MoonPanel.Size = UDim2.fromOffset(BAR_W + 24, el.MoonPanel.Size.Y.Offset)
 	el.MoonPanel.Position = UDim2.new(0.5, shift - math.floor(12 * s), 0, barY)
-	el.ZonePicker.Position = UDim2.new(0.5, shift, 0, barY)
-	-- The quests strip (QuestController) sits right under the World Cleaned bar; the
-	-- announcement and toasts go under it.
 	local goals = el.Quests :: GuiObject
-	goals.Size = UDim2.fromOffset(rowW, goals.Size.Y.Offset)
-	goals.Position = UDim2.new(0.5, shift, 0, barY + math.ceil(48 * s))
-	local goalsH = if goals.Visible then math.ceil(36 * s) else 0
-	el.Announcement.Position = UDim2.new(0.5, shift, 0, barY + math.ceil(52 * s) + goalsH)
-	el.Toasts.Position = UDim2.new(0.5, shift, 0, barY + math.ceil(54 * s) + goalsH + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
+	local goalsY = if el.MoonPanel.Visible then barY + barH + math.ceil(4 * s) else math.max(6, barY)
+	goals.Size = UDim2.fromOffset(BAR_W, goals.Size.Y.Offset)
+	goals.Position = UDim2.new(0.5, shift, 0, goalsY)
+	local below = goalsY + (if goals.Visible then math.ceil(36 * s) else 0)
+	el.Announcement.Position = UDim2.new(0.5, shift, 0, below + math.ceil(4 * s))
+	el.Toasts.Position = UDim2.new(0.5, shift, 0, below + math.ceil(6 * s) + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
 	local hotbarTop = 12 + math.ceil(88 * s)
 	el.Hint.Position = UDim2.new(0.5, 0, 1, -(hotbarTop + math.ceil(12 * s)))
 	local walletLayout = el.Wallet:FindFirstChildOfClass("UIListLayout")
+	if walletLayout then
+		walletLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+	end
 	local boosts = (el.BoostTemplate :: Instance).Parent :: Frame
 	local boostLayout = boosts:FindFirstChildOfClass("UIListLayout")
-	local railGrid = el.Rail:FindFirstChildOfClass("UIGridLayout")
-	-- Phones: pieces hug the screen edges (Ui.edges pulls them out of most of the safe
-	-- area), the Eggs/Pets/Tools column is the right edge (BasePanelsController) and the
-	-- boost chips and Auto switches sit in a second column left of it.
 	local left, right = Ui.edges(hud)
-	local column = right + math.ceil(80 * s) + 10
+	el.Rail.AnchorPoint = Vector2.new(0, 0.5)
+	el.Wallet.AnchorPoint = Vector2.new(0, 1)
+	local rightFrame = el.Right :: Frame
+	local rightList = rightFrame:FindFirstChildOfClass("UIListLayout")
 	if compact then
-		-- Phones: the wallet sits in the bottom-left corner (the thumbstick still works
-		-- under it) and the rail hugs the left edge right under Roblox's top bar.
-		el.Wallet.AnchorPoint = Vector2.new(0, 1)
 		el.Wallet.Position = UDim2.new(0, left, 1, -6)
-		if walletLayout then
-			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-		end
-		el.Rail.AnchorPoint = Vector2.new(0, 0)
-		-- A bit lower than right under the top bar (Dev, 2026-10-30).
-		el.Rail.Position = UDim2.new(0, left, 0, 6 + math.ceil(SIDE_DROP * s))
-		el.Rail.Size = UDim2.fromOffset(180, 280)
-		if railGrid then
-			railGrid.CellPadding = UDim2.fromOffset(12, 14)
-		end
+		-- Mid-left, a little above the middle so it clears the wallet.
+		el.Rail.Position = UDim2.new(0, left, 0.5, -20)
 		boosts.AnchorPoint = Vector2.new(1, 0)
-		boosts.Position = UDim2.new(1, -column, 0, 8 + HudController.RightDrop)
+		boosts.Position = UDim2.new(1, -right, 0, 8 + HudController.RightDrop)
 		if boostLayout then
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Top
 		end
+		-- Above the jump button.
+		rightFrame.AnchorPoint = Vector2.new(1, 1)
+		rightFrame.Position = UDim2.new(1, -right, 1, -(26 + math.ceil(108 * s)))
+		if rightList then
+			rightList.VerticalAlignment = Enum.VerticalAlignment.Bottom
+		end
 	else
-		el.Rail.Size = UDim2.fromOffset(180, 304)
-		if railGrid then
-			railGrid.CellPadding = UDim2.fromOffset(12, 26)
-		end
-		el.Wallet.AnchorPoint = Vector2.new(0, 1)
 		el.Wallet.Position = UDim2.new(0, 14, 1, -14)
-		if walletLayout then
-			walletLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-		end
-		el.Rail.AnchorPoint = Vector2.new(0, 0.5)
 		el.Rail.Position = UDim2.new(0, 14, 0.5, RAIL_CENTRE)
 		boosts.AnchorPoint = Vector2.new(1, 1)
 		boosts.Position = UDim2.new(1, -14, 1, -14)
 		if boostLayout then
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
-	end
-	-- The Eggs/Pets/Tools column starts level with the clean bar (BasePanelsController).
-	if C.BasePanelsController and C.BasePanelsController.Relayout then
-		task.defer(C.BasePanelsController.Relayout, C.BasePanelsController)
-	end
-	local rightFrame = el.Right :: Frame
-	local rightList = rightFrame:FindFirstChildOfClass("UIListLayout")
-	if compact then
-		-- Second column, above the jump button.
-		rightFrame.AnchorPoint = Vector2.new(1, 1)
-		rightFrame.Position = UDim2.new(1, -column, 1, -(26 + math.ceil(108 * s)))
+		rightFrame.AnchorPoint = Vector2.new(1, 0.5)
+		rightFrame.Position = UDim2.new(1, -14, 0.5, RAIL_CENTRE)
 		if rightList then
-			rightList.VerticalAlignment = Enum.VerticalAlignment.Bottom
-		end
-	else
-		rightFrame.AnchorPoint = Vector2.new(1, 0)
-		rightFrame.Position = UDim2.new(1, -14, 0.5, HudController.rightStackTop(s) + math.ceil((STACK_BUTTONS + STACK_GAP) * s))
-		if rightList then
-			rightList.VerticalAlignment = Enum.VerticalAlignment.Top
+			rightList.VerticalAlignment = Enum.VerticalAlignment.Center
 		end
 	end
 end
@@ -843,22 +816,42 @@ end
 function HudController:Init(controllers)
 	C = controllers
 	hud = Ui.screen("Hud")
+	-- HUD overhaul (2026-11-01): LiveSync never deletes GUI children in Dev's Studio place,
+	-- so drop what the new layout no longer has: the top pills, the rebirth wallet row, the
+	-- old FULL tag spot and the rail tiles that moved into the Upgrade / More menus.
+	for _, path in { "Pills", "Wallet.RebirthRow", "Wallet.BackpackPanel.Full" } do
+		local current: Instance? = hud
+		for part in string.gmatch(path, "[^%.]+") do
+			current = current and current:FindFirstChild(part)
+		end
+		if current then
+			current:Destroy()
+		end
+	end
+	local railFrame = hud:WaitForChild("Rail")
+	local CORE = { ShopButton = true, UpgradesButton = true, BaseButton = true, MoreButton = true }
+	for _, child in railFrame:GetChildren() do
+		if child:IsA("GuiButton") and not CORE[child.Name] then
+			child:Destroy()
+		end
+	end
 	el.Rail = Ui.find(hud, "Rail")
 	el.Right = Ui.find(hud, "Right")
 	el.Wallet = Ui.find(hud, "Wallet")
 	el.Cash = Ui.find(hud, "Wallet.CashPanel.Cash")
 	el.Income = Ui.find(hud, "Wallet.CashPanel.Income")
 	el.PlusButton = Ui.find(hud, "Wallet.CashPanel.PlusButton")
-	el.RebirthCount = Ui.find(hud, "Wallet.RebirthRow.Value")
 	-- Studio places synced before 2026-10-31 still hold the old Friend Boost wallet row.
 	local staleFriend = hud:FindFirstChild("FriendRow", true)
 	if staleFriend then
 		staleFriend:Destroy()
 	end
-	el.RebirthProgress = Ui.find(hud, "Rail.RebirthButton.Progress")
+	el.RebirthProgress = Ui.find(hud, "UpgradeMenu.Items.RebirthButton.Progress")
 	el.BackpackFill = Ui.find(hud, "Wallet.BackpackPanel.Bar.Fill")
 	el.BackpackAmount = Ui.find(hud, "Wallet.BackpackPanel.Bar.Amount")
-	el.BackpackFull = Ui.find(hud, "Wallet.BackpackPanel.Full")
+	el.BackpackFull = Ui.find(hud, "Wallet.BackpackPanel.Bar.Full")
+	el.BackpackBar = Ui.find(hud, "Wallet.BackpackPanel.Bar")
+	el.SellButton = Ui.find(hud, "Wallet.BackpackPanel.SellButton")
 	el.MoonTitle = Ui.find(hud, "MoonPanel.Title")
 	el.MoonValue = Ui.find(hud, "MoonPanel.Value")
 	el.MoonScale = Ui.find(hud, "MoonPanel.AutoScale")
@@ -873,7 +866,6 @@ function HudController:Init(controllers)
 	el.AutoSellButton = Ui.find(hud, "Right.AutoSellButton")
 	el.ToastTemplate = Ui.find(hud, "Toasts.Template")
 	el.ZonePicker = Ui.find(hud, "ZonePicker")
-	el.Pills = Ui.find(hud, "Pills")
 	el.SpinButton = Ui.find(hud, "SpinButton")
 	el.MoonPanel = Ui.find(hud, "MoonPanel")
 	el.Quests = Ui.find(hud, "Quests")
@@ -1142,52 +1134,11 @@ function HudController:Start()
 		end
 	end)
 
-	Ui.button(Ui.find(hud, "Rail.ShopButton"), function()
-		C.ShopController:Toggle()
-	end)
-	Ui.button(Ui.find(hud, "Rail.IndexButton"), function()
-		C.IndexController:Toggle()
-	end)
-	Ui.button(Ui.find(hud, "Rail.UpgradesButton"), function()
-		C.UpgradeController:Toggle()
-	end)
-	Ui.button(Ui.find(hud, "Rail.RebirthButton"), function()
-		C.RebirthController:Toggle()
-	end)
+	-- Shop / Upgrade / Base / More are wired by MenuController.
 	Ui.button(el.PlusButton, function()
 		C.ShopController:Open("Cash")
 	end)
-	Ui.button(Ui.find(hud, "Pills.BaseButton"), function()
-		teleport("Base")
-	end)
-	-- Sell: with Sell Anywhere it sells the whole bag right here, otherwise it takes you to a
-	-- leaf dump.
-	Ui.button(Ui.find(hud, "Pills.SellButton"), function()
-		local data = State.data
-		if data and data.Gamepasses.SellAnywhere then
-			if data.Backpack <= 0 then
-				HudController:Toast("Your bag is empty", "Info")
-				return
-			end
-			local ok, message = Net.func("SellNow"):InvokeServer()
-			if ok then
-				C.DumpController:SellBurst()
-			elseif message and message ~= "" then
-				HudController:Toast(message, "Bad")
-			end
-			return
-		end
-		teleport("Rocket")
-	end)
-	Ui.button(Ui.find(hud, "Pills.ZonesButton"), function()
-		el.ZonePicker.Visible = not el.ZonePicker.Visible
-		if el.ZonePicker.Visible then
-			Ui.popFrame(el.ZonePicker)
-		end
-		if el.ZonePicker.Visible and State.data then
-			renderZones(State.data)
-		end
-	end)
+	Ui.button(el.SellButton, sellHere)
 	for zoneId, row in el.ZoneRows do
 		Ui.button(row, function()
 			teleport(if zoneId == "Landing" then "Rocket" else zoneId)

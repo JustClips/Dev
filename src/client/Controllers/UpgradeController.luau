@@ -1137,7 +1137,7 @@ function UpgradeController:Start()
 		end)
 	end)
 	task.spawn(function()
-		railBadge = Ui.find(Ui.screen("Hud"), "Rail.UpgradesButton"):FindFirstChild("Badge") :: GuiObject?
+		railBadge = Ui.find(Ui.screen("Hud"), "UpgradeMenu.Items.TreeButton"):FindFirstChild("Badge") :: GuiObject?
 		if State.data then
 			updateBadge(State.data)
 		end

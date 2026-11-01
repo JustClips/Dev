@@ -395,7 +395,7 @@ local function leafDump(index: number, cf: CFrame)
 	sign(model, "DumpSign", cf * CFrame.new(0, 8.6, 4.3), 9, 2.4, DUMP_YELLOW, "DUMP TRASH", "Stand on the circle")
 	-- Standing spot: a ring with a lighter floor, flush with the ground (cars drive over it).
 	local spot = World.dumpSpot(index)
-	local r = World.DumpRadius
+	local r = World.dumpRadius(index)
 	glow(model, "SpotRing", Vector3.new(0.14, r * 2 + 1, r * 2 + 1), CFrame.new(spot + Vector3.new(0, 0.08, 0)) * up, DUMP_YELLOW)
 	block(model, "Spot", Vector3.new(0.16, r * 2 - 0.4, r * 2 - 0.4), CFrame.new(spot + Vector3.new(0, 0.1, 0)) * up, Color3.fromRGB(236, 226, 196), M.Concrete, deco)
 	floorText(model, CFrame.lookAt(spot, Vector3.new(cf.Position.X, spot.Y, cf.Position.Z)) * CFrame.new(0, 0.2, 0) * CFrame.Angles(0, math.rad(90), 0), r * 1.3, 3.2, "DUMP", DUMP_DARK)

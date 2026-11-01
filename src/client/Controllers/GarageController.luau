@@ -1,6 +1,6 @@
 --!strict
--- Gear window (screen "Garage"; Dev renamed it from Tools), opened from the Gear button on
--- the right (the plaza Garage stall was removed on 2026-10-30):
+-- Gear window (screen "Garage"; Dev renamed it from Tools), opened from Gear in the HUD's Upgrade menu
+-- (the plaza Garage stall was removed on 2026-10-30):
 --   Tools tab: the tool ladder. Buy the next tool with cash or skip to it with Robux.
 --   Cars tab: every car with its stats, buy with cash, spawn it at your feet, unlock/rent
 --   with Robux.

@@ -8,8 +8,10 @@
 --   Drag a tile onto a hotbar slot to put it there (what was there comes back to the bag),
 --   drag a hotbar slot onto the panel to put it back in the bag, or onto another slot to
 --   swap. Hover a tile (PC) to see its rarity, weight and passive at the top.
--- Pets on your base aren't in the bag (the Pets button manages those). Sell pets at the
--- Pet Trader on your base (TraderController).
+-- Pets on your base aren't in the bag. The bar along the bottom (2026-11-01, it replaced
+-- the Pets panel) shows how many are out, Equip Best, and more slots for cash (+1) or
+-- Robux (+3, the pass). Tap a pet in your park to pick it up or see its card. Sell pets
+-- at the Pet Trader on your base (TraderController).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
@@ -20,6 +22,12 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local BigNum = require(Shared.BigNum)
+local Economy = require(Shared.Config.Economy)
+local Format = require(Shared.Format)
+local Net = require(Shared.Net)
+local Products = require(Shared.Config.Products)
+local Prices = require(Client.Prices)
 local Aliens = require(Shared.Config.Aliens)
 local PetPassives = require(Shared.PetPassives)
 local Weights = require(Shared.Config.Weights)
@@ -185,11 +193,57 @@ local function signature(data): string
 	return table.concat({ filter, searchBox.Text, data.InvVersion or 0, table.concat(hot, ","), tostring(Ui.compact()) }, "|")
 end
 
+------------------------------------------------------------------ pets on base bar
+
+local GREEN = Color3.fromRGB(61, 220, 90)
+local GOLD = Color3.fromRGB(255, 200, 60)
+local GREY = Color3.fromRGB(166, 174, 194)
+local WHITE = Color3.new(1, 1, 1)
+local petsBar: Frame
+
+local function setButton(button: TextButton, text: string, color: Color3, labelColor: Color3?)
+	Ui.setText(button, text)
+	button.BackgroundColor3 = color
+	local label = button:FindFirstChild("Label") :: TextLabel?
+	if label then
+		label.TextColor3 = labelColor or WHITE
+		local stroke = label:FindFirstChildOfClass("UIStroke")
+		if stroke then
+			stroke.Enabled = (labelColor or WHITE) == WHITE
+		end
+	end
+end
+
+local function renderPetsBar(data)
+	Ui.setText(Ui.find(petsBar, "Count"), `{data.PlacedCount}/{data.Slots} on base`)
+	local buySlot = Ui.find(petsBar, "Buttons.BuySlot") :: TextButton
+	local price = data.SlotCashPrice
+	if price then
+		setButton(buySlot, `+1 Slot {Format.cash(price)}`, if BigNum.gte(data.Cash, price) then GREEN else GREY)
+	else
+		setButton(buySlot, "More: Rebirth", GREY)
+	end
+	local addSlot = Ui.find(petsBar, "Buttons.AddSlot") :: TextButton
+	local pass = Products.PassByKey.ExtraSlots
+	addSlot.Visible = not data.Gamepasses.ExtraSlots and pass ~= nil
+	if addSlot.Visible then
+		setButton(addSlot, `+{Economy.GamepassSlots} {Ui.ROBUX}{Prices.of(pass)}`, GOLD, Color3.fromRGB(23, 25, 30))
+	end
+end
+
+local function slotAction(action: string)
+	local ok, message = Net.func("Inventory"):InvokeServer(action)
+	if message and message ~= "" then
+		C.HudController:Toast(message, if ok then "Good" else "Bad")
+	end
+end
+
 local function render(force: boolean?)
 	local data = State.data
 	if not data or not gui.Enabled then
 		return
 	end
+	renderPetsBar(data)
 	local sig = signature(data)
 	if sig == lastSignature and not force then
 		markHeld()
@@ -425,6 +479,7 @@ function InventoryController:Init(controllers)
 	tabsFrame = Ui.find(gui, "Window.Tabs")
 	Ui.fitText(infoLabel, 16, 7) -- one line that shrinks (it wrapped into the search box)
 	searchBox = Ui.find(gui, "Window.Search")
+	petsBar = Ui.find(gui, "Window.PetsBar")
 end
 
 function InventoryController:Start()
@@ -444,6 +499,24 @@ function InventoryController:Start()
 			render(true)
 		end)
 	end
+	Ui.button(Ui.find(petsBar, "Buttons.EquipBest"), function()
+		slotAction("EquipBest")
+	end)
+	Ui.button(Ui.find(petsBar, "Buttons.BuySlot"), function()
+		local data = State.data
+		if data and not data.SlotCashPrice then
+			C.HudController:Toast("Rebirth for more pet slots!", "Info")
+			C.RebirthController:Toggle()
+			return
+		end
+		slotAction("BuySlot")
+	end)
+	Ui.button(Ui.find(petsBar, "Buttons.AddSlot"), function()
+		local data = State.data
+		if data and not data.Gamepasses.ExtraSlots then
+			Net.func("PromptPurchase"):InvokeServer("ExtraSlots")
+		end
+	end)
 	searchBox:GetPropertyChangedSignal("Text"):Connect(function()
 		render(false)
 	end)

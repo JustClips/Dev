@@ -142,6 +142,18 @@ local function teleportCFrame(player: Player, target: string): (CFrame?, string?
 		local index = S.BaseService:GetBaseIndex(player)
 		return if index then S.WorldService:GetSpawnCFrame(index) else nil, nil
 	end
+	-- "Home" (the HUD's Base button): onto your base's own leaf dump, facing it, so going
+	-- home also sells your bag.
+	if target == "Home" then
+		local index = S.BaseService:GetBaseIndex(player)
+		if not index then
+			return nil, nil
+		end
+		local dump = World.baseDump(index)
+		local spot = World.dumpSpot(dump) + Vector3.new(0, 3, 0)
+		local bin = World.Dumps[dump].Position
+		return CFrame.lookAt(spot, Vector3.new(bin.X, spot.Y, bin.Z)), nil
+	end
 	if target == "Rocket" then
 		return World.Teleports.Rocket, nil
 	end

@@ -1,9 +1,9 @@
 --!strict
 -- Backpack (leaves carried) and selling. The backpack stores units plus their base cash
 -- value, so leaves from rich zones keep their zone multiplier until sold. Selling:
---   * Leaf dumps beside the market hall (World.Dumps): stand or drive on the circle and the
+--   * Leaf dumps beside the market hall and one on every base (World.Dumps): stand or drive on the circle and the
 --     bag pours in bit by bit, cash ticking up (like making honey in Bee Swarm).
---   * Sell Anywhere pass: the HUD Sell button sells the whole bag on the spot, and Auto Sell
+--   * Sell Anywhere pass: the Sell button on the HUD bag bar sells the whole bag on the spot, and Auto Sell
 --     does it whenever the bag fills up.
 -- Every character wears the voxel leaf backpack ("Backpack" model, welded to the torso as
 -- "LeafBag"). Player attribute BagFill (0..1 in 5% steps) says how full it is, and
@@ -196,7 +196,7 @@ local function dumpAt(player: Player): number?
 	end
 	for i in World.Dumps do
 		local d = root.Position - World.dumpSpot(i)
-		if Vector2.new(d.X, d.Z).Magnitude <= World.DumpRadius + 1 and math.abs(d.Y) <= SPOT_HEIGHT then
+		if Vector2.new(d.X, d.Z).Magnitude <= World.dumpRadius(i) + 1 and math.abs(d.Y) <= SPOT_HEIGHT then
 			return i
 		end
 	end

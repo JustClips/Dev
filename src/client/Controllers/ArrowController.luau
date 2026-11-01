@@ -75,7 +75,7 @@ local function targetFor(data): Vector3?
 	local pad = if hasBase then basePad(data.BaseIndex) else nil
 	-- The nearest leaf dump's standing spot.
 	local me = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
-	local _, dumpSpot = World.nearestDump(if me then me.Position else World.RocketPosition)
+	local _, dumpSpot = World.nearestDump(if me then me.Position else World.RocketPosition, data.BaseIndex)
 	if step == "Sweep" then
 		-- The nearest spot a little way into the leaf field.
 		local character = player.Character

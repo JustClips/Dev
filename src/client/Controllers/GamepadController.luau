@@ -23,12 +23,11 @@ local C: any
 local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui") :: PlayerGui
 
 -- Never selected: they cover the whole screen behind a window.
-local CATCHERS = { Dim = true, ClickAway = true, Backdrop = true }
+local CATCHERS = { Dim = true, ClickAway = true, Backdrop = true, MenuAway = true }
 -- Screens that are part of the HUD, not popups (no auto selection when they show).
 local NOT_POPUPS = {
 	Hud = true,
 	Topbar = true,
-	BasePanels = true,
 	Hover = true,
 	Gained = true,
 	Hatch = true,
@@ -286,10 +285,16 @@ local function leftMenu(): { GuiButton }
 	return list
 end
 
+-- D-pad right: the Upgrade menu (Gear, Upgrades, Rebirth), opened beside the core column.
 local function rightMenu(): { GuiButton }
-	local panels = playerGui:FindFirstChild("BasePanels")
-	local buttons = panels and panels:FindFirstChild("Buttons")
-	return if buttons then candidates(buttons) else {}
+	if C.MenuController:IsOpen("UpgradeMenu") then
+		C.MenuController:Close()
+		return {}
+	end
+	C.MenuController:Open("UpgradeMenu")
+	local hud = playerGui:FindFirstChild("Hud")
+	local items = hud and hud:FindFirstChild("UpgradeMenu") and (hud :: any).UpgradeMenu:FindFirstChild("Items")
+	return if items then candidates(items) else {}
 end
 
 -- B: close the window the selection is in (or the newest one), or leave a HUD menu.
