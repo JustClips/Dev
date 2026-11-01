@@ -944,8 +944,8 @@ def shop():
         ]),
         button("Close", U(0, 44, 0, 44), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=26, ZIndex=12),
         scroller("List", U(1, -24, 1, -72), U(0, 12, 0, 62), [vlist(8), padding(2), gift_row]),
-        text("Empty", "No one else is here yet.", U(1, -24, 0, 40), U(0, 12, 0.5, 0), ts=18, color=SHOP_LIGHT, heavy=True,
-             Visible=False, ZIndex=11),
+        text("Empty", "Nobody else is in this server yet", U(1, -24, 0, 40), U(0.5, 0, 0.5, 0), (0.5, 0.5), ts=20,
+             color=WHITE, display=True, stroke=2, TextWrapped=True, Visible=False, ZIndex=11),
     ])
     # "How many?" picker for eggs: three big choices, x3 marked MOST POPULAR (Dev asked).
     option = frame("Option", U(0, 170, 0, 238), bg="#FF5FA2", Visible=False, ZIndex=12, children=[
@@ -960,8 +960,8 @@ def shop():
                  TextScaled=True, children=[fit(16)]),
         ]),
         text("Count", "x1", U(1, 0, 0, 44), U(0.5, 0, 0, 112), (0.5, 0), ts=40, display=True, stroke=3, ZIndex=14),
-        text("Each", "", U(1, -10, 0, 22), U(0.5, 0, 0, 154), (0.5, 0), ts=16, color="#FFF6C8", display=True, stroke=2, ZIndex=14,
-             TextScaled=True, children=[fit(16)]),
+        text("Each", "", U(1, -10, 0, 34), U(0.5, 0, 0, 152), (0.5, 0), ts=18, color=WHITE, display=True, stroke=2.5, ZIndex=14,
+             TextScaled=True, children=[fit(18, 13)]),
         button("Buy", U(1, -16, 0, 50), U(0.5, 0, 1, -8), (0.5, 1), color=SHOP_GREEN, label="", ts=26, stroke=3, ZIndex=14),
     ])
     qty = frame("QtyPicker", U(0, 600, 0, 380), U(0, W / 2, 0.5, 20), (0.5, 0.5), bg=SHOP_BODY, Visible=False, ZIndex=11, children=[

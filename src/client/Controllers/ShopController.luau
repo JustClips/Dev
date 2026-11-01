@@ -327,6 +327,8 @@ local function openQtyPicker(rarity: string)
 		ModelView.show(Ui.find(option, "Model"), AssetLibrary.egg(rarity), "Egg_" .. rarity)
 	end
 	Ui.find(qtyPicker, "Header.Title").Text = `How many {rarity} Eggs?`
+	Ui.find(qtyPicker, "Note").Text = "Bought eggs always hatch their own rarity!"
+	;(Ui.find(qtyPicker, "Header.Icon") :: ImageLabel).Image = AssetLibrary.image("Icon_Egg")
 	giftPicker.Visible = false
 	qtyPicker.Visible = true
 end
@@ -366,6 +368,8 @@ local function openChoicePicker(title: string, choices: { Choice })
 		option.Parent = qtyOptions
 	end
 	Ui.find(qtyPicker, "Header.Title").Text = title
+	Ui.find(qtyPicker, "Note").Text = "Potions go to your bag. Use them when you want!"
+	;(Ui.find(qtyPicker, "Header.Icon") :: ImageLabel).Image = AssetLibrary.image(choices[1].Icon)
 	giftPicker.Visible = false
 	qtyPicker.Visible = true
 end
@@ -856,9 +860,22 @@ local function jumpTo(key: string)
 	if not heading or not heading.Parent then
 		return
 	end
-	local k = if scale.Scale > 0 then scale.Scale else 1
-	local y = (heading.AbsolutePosition.Y - list.AbsolutePosition.Y) / k + list.CanvasPosition.Y
-	list.CanvasPosition = Vector2.new(0, math.max(0, y - 4))
+	-- Measure how far the heading moves per canvas unit instead of trusting the window's
+	-- UIScale: on phones other scales stack on top and the old maths overshot to the end
+	-- of the list (Dev, 2026-11-01).
+	local function offset(): number
+		return heading.AbsolutePosition.Y - list.AbsolutePosition.Y
+	end
+	local c0 = list.CanvasPosition.Y
+	local d0 = offset()
+	local probe = if c0 > 20 then -20 else 20
+	list.CanvasPosition = Vector2.new(0, c0 + probe)
+	local d1 = offset()
+	local k = (d0 - d1) / probe
+	if k < 0.05 or k > 5 then
+		k = if scale.Scale > 0 then scale.Scale else 1
+	end
+	list.CanvasPosition = Vector2.new(0, math.max(0, c0 + d0 / k - 4))
 end
 
 local function buildNav()

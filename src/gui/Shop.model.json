@@ -6899,8 +6899,8 @@
         ],
         "Position": [
          [
-          0,
-          12
+          0.5,
+          0
          ],
          [
           0.5,
@@ -6908,25 +6908,37 @@
          ]
         ],
         "AnchorPoint": [
-         0,
-         0
+         0.5,
+         0.5
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Text": "No one else is here yet.",
-        "TextColor3": "#C8D0E8",
-        "TextSize": 18,
+        "Text": "Nobody else is in this server yet",
+        "TextColor3": "#FFFFFF",
+        "TextSize": 20,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
         "ZIndex": 11,
         "FontFace": {
          "family": "rbxasset://fonts/families/Montserrat.json",
-         "weight": "ExtraBold",
+         "weight": "Heavy",
          "style": "Normal"
         },
         "Visible": false
-       }
+       },
+       "children": [
+        {
+         "name": "TextStroke",
+         "className": "UIStroke",
+         "properties": {
+          "Color": "#17191E",
+          "Thickness": 2,
+          "ApplyStrokeMode": "Contextual",
+          "LineJoinMode": "Round"
+         }
+        }
+       ]
       }
      ]
     },
@@ -7819,7 +7831,7 @@
              ],
              [
               0,
-              22
+              34
              ]
             ],
             "Position": [
@@ -7829,7 +7841,7 @@
              ],
              [
               0,
-              154
+              152
              ]
             ],
             "AnchorPoint": [
@@ -7839,8 +7851,8 @@
             "BorderSizePixel": 0,
             "BackgroundTransparency": 1,
             "Text": "",
-            "TextColor3": "#FFF6C8",
-            "TextSize": 16,
+            "TextColor3": "#FFFFFF",
+            "TextSize": 18,
             "TextXAlignment": "Center",
             "TextYAlignment": "Center",
             "TextWrapped": true,
@@ -7858,7 +7870,7 @@
              "className": "UIStroke",
              "properties": {
               "Color": "#17191E",
-              "Thickness": 2,
+              "Thickness": 2.5,
               "ApplyStrokeMode": "Contextual",
               "LineJoinMode": "Round"
              }
@@ -7867,7 +7879,7 @@
              "name": "Fit",
              "className": "UITextSizeConstraint",
              "properties": {
-              "MaxTextSize": 16,
+              "MaxTextSize": 18,
               "MinTextSize": 7
              }
             }
