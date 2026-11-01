@@ -1,15 +1,17 @@
 --!strict
--- What admins send to the whole server (AdminService), drawn like the popular admin
--- systems (HD Admin / Adonis style message banners), in our game style:
---   * announcements and admin events: a compact banner at the top middle with the sender's
---     avatar, an ADMIN / ADMIN EVENT tag and their name. The message types itself out
---     letter by letter with soft ticks, stays a few seconds (a bar runs down), then slides
---     away. Tap it to close early. Several queue up.
---   * polls: a card in the same style under the banner, where everyone taps an answer and
---     sees the votes come in.
--- Square plates, Montserrat, solid fills (docs/UI_STYLE.md). Shown to every player.
+-- What admins send to the whole server (AdminService), in the style of the HUD toasts: no
+-- box, big Montserrat text with a thick dark outline, the way admin-abuse games put admin
+-- messages straight on the screen.
+--   * messages and admin events: one line per message in a feed under the top bar (the
+--     HUD places the feed, toasts go under it). Each line has the sender's avatar, their
+--     name with an [ADMIN] / [ADMIN EVENT] tag, and the text typing itself out letter by
+--     letter with soft ticks. Several messages in a row stack (newest at the bottom), each
+--     fades on its own. Tap one to clear it.
+--   * polls: the question in the same style, at the top of the feed, with solid answer
+--     buttons; everyone taps one and sees the votes come in.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextService = game:GetService("TextService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -23,26 +25,26 @@ local Net = require(Shared.Net)
 
 local BroadcastController = {}
 
-local FONT = "rbxasset://fonts/families/Montserrat.json"
-local BG = Color3.fromRGB(20, 26, 51) -- night navy plate
-local PLATE = Color3.fromRGB(34, 42, 78) -- avatar backing, option rows
-local INK = Color3.fromRGB(27, 31, 58)
-local FILL = Color3.fromRGB(76, 141, 255)
-local PICKED = Color3.fromRGB(61, 220, 90)
-local GOLD = Color3.fromRGB(255, 200, 60)
-local PURPLE = Color3.fromRGB(170, 110, 255)
-local BLUE = Color3.fromRGB(59, 79, 168)
+local C: any
+local MONTSERRAT = "rbxasset://fonts/families/Montserrat.json"
+local DISPLAY = Font.new(MONTSERRAT, Enum.FontWeight.Heavy)
+local BODY = Font.new(MONTSERRAT, Enum.FontWeight.ExtraBold)
+local INK = Color3.fromRGB(23, 25, 30)
 local WHITE = Color3.new(1, 1, 1)
-local SUB = Color3.fromRGB(175, 185, 215)
+local GOLD = Color3.fromRGB(255, 200, 60)
+local PURPLE = Color3.fromRGB(190, 130, 255)
+local SKY = Color3.fromRGB(47, 155, 255)
+local GREEN = Color3.fromRGB(61, 220, 90)
+local SERVERS = Color3.fromRGB(140, 215, 255)
 
-local WIDTH = 500 -- banner width on a big screen (UI units, before the HUD scale)
-local AVATAR = 64
+local MAX_W = 520 -- widest a message line gets (HUD units)
+local AVATAR = 50
+local MAX_LINES = 4 -- messages on screen at once; older ones make room
 local TYPE_RATE = 45 -- letters a second while a message types out
 local TYPE_MAX = 1.8 -- seconds; long messages type faster
 
-local gui: ScreenGui
-local stack: Frame -- top-middle column: banner, then the poll card
-local stackScale: UIScale
+local feed: Frame
+local order = 0
 
 local function make(class: string, props: { [string]: any }, parent: Instance?): any
 	local obj = Instance.new(class)
@@ -55,57 +57,41 @@ local function make(class: string, props: { [string]: any }, parent: Instance?):
 	return obj
 end
 
-local function stroke(parent: Instance, thickness: number, color: Color3)
-	return make("UIStroke", {
-		Thickness = thickness,
-		Color = color,
-		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		LineJoinMode = Enum.LineJoinMode.Miter,
-	}, parent)
-end
-
-local function textStroke(label: TextLabel)
-	make("UIStroke", { Thickness = 1.5, Color = INK, LineJoinMode = Enum.LineJoinMode.Round }, label)
-end
-
-local function text(parent: Instance, props: { [string]: any }): TextLabel
+-- Outlined text, like the toasts and boost chips.
+local function text(parent: Instance, props: { [string]: any }, outline: number?): TextLabel
 	local label = make("TextLabel", {
 		BackgroundTransparency = 1,
 		TextColor3 = WHITE,
-		FontFace = Font.new(FONT, Enum.FontWeight.Heavy),
-		TextSize = 16,
+		FontFace = DISPLAY,
+		TextSize = 24,
 		TextXAlignment = Enum.TextXAlignment.Left,
+		TextWrapped = false,
 	}, parent)
 	for k, v in props do
 		(label :: any)[k] = v
 	end
+	make("UIStroke", { Thickness = outline or 3, Color = INK, LineJoinMode = Enum.LineJoinMode.Round }, label)
 	return label
 end
 
--- A solid tag block like "ADMIN" (auto width).
-local function tag(parent: Instance, value: string, color: Color3, order: number): TextLabel
-	local t = text(parent, {
-		Text = value,
-		Size = UDim2.fromOffset(0, 20),
-		AutomaticSize = Enum.AutomaticSize.X,
-		BackgroundTransparency = 0,
-		BackgroundColor3 = color,
-		BorderSizePixel = 0,
-		TextColor3 = INK,
-		TextSize = 12,
-		TextXAlignment = Enum.TextXAlignment.Center,
-		LayoutOrder = order,
-	})
-	make("UIPadding", { PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6) }, t)
-	stroke(t, 2, INK)
-	return t
+-- Width a text needs (capped at maxW), so wrapped lines hug their words.
+local function widthOf(value: string, font: Font, size: number, maxW: number): number
+	local ok, bounds = pcall(function()
+		local params = Instance.new("GetTextBoundsParams")
+		params.Text = value
+		params.Font = font
+		params.Size = size
+		params.Width = maxW
+		return TextService:GetTextBoundsAsync(params)
+	end)
+	return if ok then math.min(maxW, math.ceil(bounds.X) + 4) else maxW
 end
 
--- Avatar headshots, cached per user (the fetch can yield, so it fills in when ready).
+-- Avatar headshots, cached per user.
 local headshots: { [number]: string } = {}
 local function setAvatar(image: ImageLabel, userId: number?)
-	image.Image = AssetLibrary.image("Icon_Event")
 	if not userId or userId <= 0 then
+		image.Image = AssetLibrary.image("Icon_Event")
 		return
 	end
 	if headshots[userId] then
@@ -123,11 +109,27 @@ local function setAvatar(image: ImageLabel, userId: number?)
 	end)
 end
 
--- Types `label`'s text out letter by letter. Returns the seconds it takes.
-local typingToken = 0
+-- Square avatar: solid colour block with the dark outline (like the HUD buttons).
+local function avatarBox(parent: Instance, px: number, color: Color3, userId: number?, order_: number): Frame
+	local box = make("Frame", {
+		Name = "Avatar",
+		Size = UDim2.fromOffset(px, px),
+		BackgroundColor3 = color,
+		BorderSizePixel = 0,
+		LayoutOrder = order_,
+	}, parent)
+	make("UIStroke", { Thickness = 3, Color = INK, LineJoinMode = Enum.LineJoinMode.Miter }, box)
+	make("UIGradient", {
+		Rotation = 90,
+		Color = ColorSequence.new(WHITE, Color3.fromRGB(200, 200, 210)),
+	}, box)
+	local image = make("ImageLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Crop }, box)
+	setAvatar(image, userId)
+	return box
+end
+
+-- Types a label's text out letter by letter. Returns the seconds it takes.
 local function typeOut(label: TextLabel): number
-	typingToken += 1
-	local token = typingToken
 	local total = utf8.len(label.ContentText) or #label.ContentText
 	if Ui.reducedMotion() or total == 0 then
 		label.MaxVisibleGraphemes = -1
@@ -138,16 +140,12 @@ local function typeOut(label: TextLabel): number
 	task.spawn(function()
 		local shown = 0
 		local start = os.clock()
-		while shown < total and token == typingToken and label.Parent do
+		while shown < total and label.Parent do
 			task.wait()
 			local now = math.min(total, math.floor((os.clock() - start) * rate))
 			if now ~= shown then
-				-- A soft tick every few letters (not on spaces).
-				if math.floor(now / 3) ~= math.floor(shown / 3) then
-					local ch = string.sub(label.ContentText, now, now)
-					if ch ~= " " then
-						Ui.sound("Click", 1.5 + math.random() * 0.2)
-					end
+				if math.floor(now / 3) ~= math.floor(shown / 3) and string.sub(label.ContentText, now, now) ~= " " then
+					Ui.sound("Click", 1.5 + math.random() * 0.2)
 				end
 				shown = now
 				label.MaxVisibleGraphemes = shown
@@ -158,331 +156,239 @@ local function typeOut(label: TextLabel): number
 	return total / rate
 end
 
--------------------------------------------------------------------------- banner
+local function fadeOut(root: GuiObject, seconds: number)
+	local info = TweenInfo.new(seconds)
+	for _, d in root:GetDescendants() do
+		if d:IsA("TextLabel") then
+			TweenService:Create(d, info, { TextTransparency = 1 }):Play()
+		elseif d:IsA("ImageLabel") then
+			TweenService:Create(d, info, { ImageTransparency = 1 }):Play()
+		elseif d:IsA("UIStroke") then
+			TweenService:Create(d, info, { Transparency = 1 }):Play()
+		elseif d:IsA("Frame") and d.BackgroundTransparency < 1 then
+			TweenService:Create(d, info, { BackgroundTransparency = 1 }):Play()
+		end
+	end
+	task.wait(seconds)
+end
 
-type Banner = {
-	frame: TextButton,
-	accent: Frame,
-	avatar: ImageLabel,
-	avatarStroke: UIStroke,
-	icon: ImageLabel,
-	tags: Frame,
-	kindTag: TextLabel,
-	globalTag: TextLabel,
-	name: TextLabel,
-	timer: TextLabel,
-	body: TextLabel,
-	blurb: TextLabel,
-	bar: Frame,
-	pop: UIScale,
-}
-local banner: Banner
+local function relayout()
+	if C and C.HudController and C.HudController.Relayout then
+		C.HudController:Relayout()
+	end
+end
 
-local queue: { any } = {}
-local showing = false
-local closeNow: (() -> ())? = nil
-local eventEndsAt = 0
+---------------------------------------------------------------------------- messages
 
-local function buildBanner(): Banner
-	local frame = make("TextButton", {
-		Name = "Announcement",
+local lines: { GuiObject } = {}
+
+local function removeLine(line: GuiObject)
+	local i = table.find(lines, line)
+	if i then
+		table.remove(lines, i)
+	end
+	line:Destroy()
+end
+
+local function addLine(info: any)
+	local isEvent = info.Kind == "Event"
+	local color = if isEvent then PURPLE else GOLD
+	order += 1
+
+	local line = make("TextButton", {
+		Name = "Message",
 		Text = "",
 		AutoButtonColor = false,
-		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
-		BackgroundColor3 = BG,
-		BorderSizePixel = 0,
-		Visible = false,
-		LayoutOrder = 1,
-		ClipsDescendants = false,
-	}, stack)
-	stroke(frame, 3, INK)
-	local pop = make("UIScale", { Name = "Pop" }, frame)
-	-- Coloured strip down the left edge (gold = message, purple = event).
-	local accent = make("Frame", {
-		Name = "Accent",
-		-- offsets undo the card's padding (padding moves every child)
-		Size = UDim2.new(0, 6, 1, 24),
-		Position = UDim2.fromOffset(-16, -10),
-		BackgroundColor3 = GOLD,
-		BorderSizePixel = 0,
-	}, frame)
-	make("UIPadding", {
-		PaddingTop = UDim.new(0, 10),
-		PaddingBottom = UDim.new(0, 14),
-		PaddingLeft = UDim.new(0, 16),
-		PaddingRight = UDim.new(0, 12),
-	}, frame)
-
-	local avatarBox = make("Frame", {
-		Name = "Avatar",
-		Size = UDim2.fromOffset(AVATAR, AVATAR),
-		BackgroundColor3 = PLATE,
-		BorderSizePixel = 0,
-	}, frame)
-	local avatarStroke = stroke(avatarBox, 3, GOLD)
-	local avatar = make("ImageLabel", {
-		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
-		ScaleType = Enum.ScaleType.Crop,
-	}, avatarBox)
-	-- Event icon, sitting on the avatar's bottom-right corner.
-	local icon = make("ImageLabel", {
-		Name = "EventIcon",
-		Size = UDim2.fromOffset(30, 30),
-		Position = UDim2.new(1, 8, 1, 8),
-		AnchorPoint = Vector2.new(1, 1),
-		BackgroundColor3 = PURPLE,
-		BorderSizePixel = 0,
-		Visible = false,
-		ZIndex = 3,
-	}, avatarBox)
-	stroke(icon, 2, INK)
-
-	local right = make("Frame", {
-		Name = "Content",
-		Size = UDim2.new(1, -(AVATAR + 12), 0, 0),
-		Position = UDim2.fromOffset(AVATAR + 12, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
-		BackgroundTransparency = 1,
-	}, frame)
-	make("UIListLayout", { Padding = UDim.new(0, 3), SortOrder = Enum.SortOrder.LayoutOrder }, right)
-
-	local tags = make("Frame", {
-		Name = "Header",
-		Size = UDim2.new(1, 0, 0, 22),
-		BackgroundTransparency = 1,
-		LayoutOrder = 1,
-	}, right)
+		Size = UDim2.fromOffset(0, 0),
+		AutomaticSize = Enum.AutomaticSize.XY,
+		LayoutOrder = 10 + order,
+	}, feed)
 	make("UIListLayout", {
 		FillDirection = Enum.FillDirection.Horizontal,
 		VerticalAlignment = Enum.VerticalAlignment.Center,
-		Padding = UDim.new(0, 6),
+		Padding = UDim.new(0, 10),
 		SortOrder = Enum.SortOrder.LayoutOrder,
-	}, tags)
-	local kindTag = tag(tags, "ADMIN", GOLD, 1)
-	local globalTag = tag(tags, "ALL SERVERS", Color3.fromRGB(120, 200, 255), 2)
-	local name = text(tags, {
-		Name = "Name",
+	}, line)
+	local pop = make("UIScale", { Scale = if Ui.reducedMotion() then 1 else 0.5 }, line)
+
+	local box = avatarBox(line, AVATAR, color, tonumber(info.FromId), 1)
+	-- Event: its icon on the avatar's corner.
+	local iconName = if type(info.Icon) == "string" then AssetLibrary.image(info.Icon) else ""
+	if isEvent and iconName ~= "" then
+		make("ImageLabel", {
+			Size = UDim2.fromOffset(30, 30),
+			Position = UDim2.new(1, 10, 1, 10),
+			AnchorPoint = Vector2.new(1, 1),
+			BackgroundTransparency = 1,
+			Image = iconName,
+			ZIndex = 3,
+		}, box)
+	end
+
+	local column = make("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(0, 0),
+		AutomaticSize = Enum.AutomaticSize.XY,
+		LayoutOrder = 2,
+	}, line)
+	make("UIListLayout", { Padding = UDim.new(0, 0), SortOrder = Enum.SortOrder.LayoutOrder }, column)
+
+	local tag = if type(info.Title) == "string" then info.Title else "ADMIN"
+	local from = if type(info.From) == "string" then info.From else "Admin"
+	local hex = color:ToHex()
+	text(column, {
+		Name = "From",
+		RichText = true,
+		Text = `<font color="#{hex}">[{tag}]</font> {from}{if info.Global
+			then ` <font color="#{SERVERS:ToHex()}">· all servers</font>`
+			else ""}`,
+		TextSize = 17,
 		Size = UDim2.fromOffset(0, 22),
 		AutomaticSize = Enum.AutomaticSize.X,
-		TextSize = 16,
-		TextColor3 = SUB,
-		LayoutOrder = 3,
-	})
-	local timer = text(tags, {
-		Name = "Timer",
-		Size = UDim2.fromOffset(0, 20),
-		AutomaticSize = Enum.AutomaticSize.X,
-		BackgroundTransparency = 0,
-		BackgroundColor3 = BLUE,
-		BorderSizePixel = 0,
-		TextSize = 13,
-		TextXAlignment = Enum.TextXAlignment.Center,
-		LayoutOrder = 4,
-		Visible = false,
-	})
-	make("UIPadding", { PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6) }, timer)
-	stroke(timer, 2, INK)
+		LayoutOrder = 1,
+	}, 2.5)
 
-	local body = text(right, {
+	local size = if isEvent then 28 else 25
+	local bodyW = widthOf(info.Text, DISPLAY, size, MAX_W)
+	local body = text(column, {
 		Name = "Body",
-		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
-		TextSize = 20,
+		Text = info.Text,
+		TextColor3 = if isEvent then GOLD else WHITE,
+		TextSize = size,
 		TextWrapped = true,
+		Size = UDim2.fromOffset(bodyW, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
 		LayoutOrder = 2,
-	})
-	textStroke(body)
-	local blurb = text(right, {
-		Name = "Blurb",
-		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
-		FontFace = Font.new(FONT, Enum.FontWeight.Bold),
-		TextSize = 14,
-		TextColor3 = SUB,
-		TextWrapped = true,
-		LayoutOrder = 3,
-	})
+	}, 3)
+	body.MaxVisibleGraphemes = 0
+	local blurb = if type(info.Blurb) == "string" then info.Blurb else ""
+	if blurb ~= "" then
+		text(column, {
+			Name = "Blurb",
+			Text = blurb,
+			FontFace = BODY,
+			TextSize = 16,
+			TextWrapped = true,
+			Size = UDim2.fromOffset(widthOf(blurb, BODY, 16, MAX_W), 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = 3,
+		}, 2.5)
+	end
 
-	-- Time left on screen, along the top edge.
-	local barBack = make("Frame", {
-		Name = "Bar",
-		Size = UDim2.new(1, 22, 0, 4),
-		Position = UDim2.fromOffset(-10, -10),
-		BackgroundColor3 = INK,
-		BorderSizePixel = 0,
-	}, frame)
-	local bar = make("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = GOLD, BorderSizePixel = 0 }, barBack)
+	table.insert(lines, line)
+	while #lines > MAX_LINES do
+		removeLine(lines[1])
+	end
 
-	frame.Activated:Connect(function()
-		if closeNow then
-			closeNow()
+	Ui.sound(if isEvent then "Attention" else "Announce")
+	TweenService:Create(pop, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+
+	local gone = false
+	line.Activated:Connect(function()
+		if not gone then
+			gone = true
+			removeLine(line)
 		end
 	end)
-
-	return {
-		frame = frame,
-		accent = accent,
-		avatar = avatar,
-		avatarStroke = avatarStroke,
-		icon = icon,
-		tags = tags,
-		kindTag = kindTag,
-		globalTag = globalTag,
-		name = name,
-		timer = timer,
-		body = body,
-		blurb = blurb,
-		bar = bar,
-		pop = pop,
-	}
-end
-
-local function showNext()
-	if showing then
-		return
-	end
-	local info = table.remove(queue, 1)
-	if not info then
-		return
-	end
-	showing = true
-	local isEvent = info.Kind == "Event"
-	local color = if isEvent then PURPLE else GOLD
-	local b = banner
-
-	b.accent.BackgroundColor3 = color
-	b.avatarStroke.Color = color
-	b.bar.BackgroundColor3 = color
-	b.kindTag.Text = if type(info.Title) == "string" then info.Title else "ADMIN"
-	b.kindTag.BackgroundColor3 = color
-	b.globalTag.Visible = info.Global == true
-	b.name.Text = if type(info.From) == "string" then info.From else "Admin"
-	setAvatar(b.avatar, tonumber(info.FromId))
-
-	local icon = if type(info.Icon) == "string" then AssetLibrary.image(info.Icon) else ""
-	b.icon.Image = icon
-	b.icon.Visible = icon ~= ""
-	eventEndsAt = if isEvent then tonumber(info.EndsAt) or 0 else 0
-	b.timer.Visible = eventEndsAt > 0
-
-	b.body.Text = info.Text
-	b.body.TextSize = if isEvent then 22 else 20
-	b.body.TextColor3 = if isEvent then GOLD else WHITE
-	b.blurb.Text = if type(info.Blurb) == "string" then info.Blurb else ""
-	b.blurb.Visible = b.blurb.Text ~= ""
-	b.body.MaxVisibleGraphemes = 0
-
-	-- Slide down and pop in.
-	b.frame.Visible = true
-	b.bar.Size = UDim2.fromScale(1, 1)
-	Ui.sound(if isEvent then "Attention" else "Announce")
-	if Ui.reducedMotion() then
-		b.pop.Scale = 1
-	else
-		b.pop.Scale = 0.7
-		TweenService:Create(b.pop, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-	end
 	task.wait(0.15)
-	local typing = typeOut(b.body)
+	local typing = typeOut(body)
 	local stay = math.clamp(tonumber(info.Seconds) or 8, 3, 60)
-	TweenService:Create(b.bar, TweenInfo.new(typing + stay, Enum.EasingStyle.Linear), { Size = UDim2.fromScale(0, 1) }):Play()
-
-	local done = false
-	local function close()
-		if done then
+	task.delay(typing + stay, function()
+		if gone or not line.Parent then
 			return
 		end
-		done = true
-		closeNow = nil
-		typingToken += 1
-		if not Ui.reducedMotion() then
-			local out = TweenService:Create(b.pop, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 0.05 })
-			out:Play()
-			out.Completed:Wait()
-		end
-		b.frame.Visible = false
-		showing = false
-		showNext()
-	end
-	closeNow = close
-	task.delay(typing + stay, close)
+		gone = true
+		fadeOut(line, 0.35)
+		removeLine(line)
+	end)
 end
 
 ------------------------------------------------------------------------------ polls
 
-local pollCard: Frame
-local pollAvatar: ImageLabel
-local pollName: TextLabel
-local pollGlobal: TextLabel
+local pollFrame: Frame
+local pollFrom: TextLabel
+local pollAvatar: Frame?
+local pollHead: Frame
+local questionLabel: TextLabel
+local optionsFrame: Frame
+local timerLabel: TextLabel
 local current: any = nil
 local myVote: number? = nil
 local pollId = -1
 local optionRows: { TextButton } = {}
-local questionLabel: TextLabel
-local timerLabel: TextLabel
 
 local function buildPoll()
-	pollCard = make("Frame", {
+	pollFrame = make("Frame", {
 		Name = "Poll",
-		Size = UDim2.new(1, -60, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
-		BackgroundColor3 = BG,
-		BorderSizePixel = 0,
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(0, 0),
+		AutomaticSize = Enum.AutomaticSize.XY,
 		Visible = false,
-		LayoutOrder = 2,
-	}, stack)
-	stroke(pollCard, 3, FILL)
-	make("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder }, pollCard)
-	make("UIPadding", {
-		PaddingTop = UDim.new(0, 8),
-		PaddingBottom = UDim.new(0, 10),
-		PaddingLeft = UDim.new(0, 10),
-		PaddingRight = UDim.new(0, 10),
-	}, pollCard)
+		LayoutOrder = 0,
+	}, feed)
+	make("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder }, pollFrame)
 
-	local head = make("Frame", { Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1, LayoutOrder = 1 }, pollCard)
+	local head = make("Frame", {
+		Name = "Head",
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(0, 0),
+		AutomaticSize = Enum.AutomaticSize.XY,
+		LayoutOrder = 1,
+	}, pollFrame)
 	make("UIListLayout", {
 		FillDirection = Enum.FillDirection.Horizontal,
 		VerticalAlignment = Enum.VerticalAlignment.Center,
-		Padding = UDim.new(0, 6),
+		Padding = UDim.new(0, 10),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	}, head)
-	local box = make("Frame", { Size = UDim2.fromOffset(30, 30), BackgroundColor3 = PLATE, BorderSizePixel = 0, LayoutOrder = 0 }, head)
-	stroke(box, 2, FILL)
-	pollAvatar = make("ImageLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Crop }, box)
-	tag(head, "POLL", FILL, 1)
-	pollGlobal = tag(head, "ALL SERVERS", Color3.fromRGB(120, 200, 255), 2)
-	pollName = text(head, {
+	pollHead = head
+	local column = make("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(0, 0),
+		AutomaticSize = Enum.AutomaticSize.XY,
+		LayoutOrder = 2,
+	}, head)
+	make("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }, column)
+	pollFrom = text(column, {
+		RichText = true,
+		TextSize = 17,
 		Size = UDim2.fromOffset(0, 22),
 		AutomaticSize = Enum.AutomaticSize.X,
-		TextSize = 15,
-		TextColor3 = SUB,
-		LayoutOrder = 3,
-	})
-
-	questionLabel = text(pollCard, {
-		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
-		TextSize = 18,
+		LayoutOrder = 1,
+	}, 2.5)
+	questionLabel = text(column, {
+		TextSize = 24,
 		TextWrapped = true,
+		Size = UDim2.fromOffset(MAX_W - AVATAR - 10, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
 		LayoutOrder = 2,
-	})
-	textStroke(questionLabel)
-	timerLabel = text(pollCard, {
-		Size = UDim2.new(1, 0, 0, 16),
-		FontFace = Font.new(FONT, Enum.FontWeight.Bold),
-		TextSize = 12,
-		TextColor3 = SUB,
-		LayoutOrder = 50,
-	})
+	}, 3)
+
+	optionsFrame = make("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(MAX_W - 40, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		LayoutOrder = 2,
+	}, pollFrame)
+	make("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, optionsFrame)
+	make("UIPadding", { PaddingLeft = UDim.new(0, AVATAR + 10), PaddingTop = UDim.new(0, 4) }, optionsFrame)
+
+	timerLabel = text(pollFrame, {
+		FontFace = BODY,
+		TextSize = 15,
+		Size = UDim2.fromOffset(0, 20),
+		AutomaticSize = Enum.AutomaticSize.X,
+		LayoutOrder = 3,
+	}, 2)
+	make("UIPadding", { PaddingLeft = UDim.new(0, AVATAR + 10) }, timerLabel)
 end
 
 local function renderPoll()
 	local poll = current
 	if not poll then
-		pollCard.Visible = false
+		pollFrame.Visible = false
+		relayout()
 		return
 	end
 	if poll.Id ~= pollId then
@@ -492,39 +398,55 @@ local function renderPoll()
 			b:Destroy()
 		end
 		table.clear(optionRows)
+		if pollAvatar then
+			pollAvatar:Destroy()
+		end
+		pollAvatar = avatarBox(pollHead, AVATAR, SKY, tonumber(poll.FromId), 1)
+		pollFrom.Text = `<font color="#{SKY:ToHex()}">[POLL]</font> {if type(poll.From) == "string" then poll.From else "Admin"}{if poll.Global
+			then ` <font color="#{SERVERS:ToHex()}">· all servers</font>`
+			else ""}`
+		questionLabel.Text = poll.Question
 		for i, option in poll.Options do
+			-- Solid answer buttons with the HUD outline; the fill shows the vote share.
 			local b = make("TextButton", {
-				Size = UDim2.new(1, 0, 0, 32),
-				BackgroundColor3 = PLATE,
+				Size = UDim2.new(1, 0, 0, 36),
+				BackgroundColor3 = SKY,
 				BorderSizePixel = 0,
 				AutoButtonColor = true,
 				Text = "",
-				LayoutOrder = 10 + i,
+				LayoutOrder = i,
 				ClipsDescendants = true,
-			}, pollCard)
-			stroke(b, 2, INK)
-			make("Frame", { Name = "Fill", Size = UDim2.fromScale(0, 1), BackgroundColor3 = FILL, BorderSizePixel = 0 }, b)
-			local t = text(b, {
-				Name = "Text",
-				Size = UDim2.new(1, -70, 1, 0),
+			}, optionsFrame)
+			make("UIStroke", {
+				Thickness = 3,
+				Color = INK,
+				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+				LineJoinMode = Enum.LineJoinMode.Miter,
+			}, b)
+			make("Frame", {
+				Name = "Fill",
+				Size = UDim2.fromScale(0, 1),
+				BackgroundColor3 = Color3.fromRGB(20, 95, 190),
+				BorderSizePixel = 0,
+			}, b)
+			text(b, {
+				Size = UDim2.new(1, -80, 1, 0),
 				Position = UDim2.fromOffset(10, 0),
 				Text = option,
-				TextSize = 15,
+				TextSize = 18,
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				ZIndex = 2,
-			})
-			textStroke(t)
-			local pct = text(b, {
+			}, 2.5)
+			text(b, {
 				Name = "Pct",
-				Size = UDim2.new(0, 60, 1, 0),
+				Size = UDim2.new(0, 64, 1, 0),
 				Position = UDim2.new(1, -8, 0, 0),
 				AnchorPoint = Vector2.new(1, 0),
 				Text = "",
-				TextSize = 15,
+				TextSize = 18,
 				TextXAlignment = Enum.TextXAlignment.Right,
 				ZIndex = 2,
-			})
-			textStroke(pct)
+			}, 2.5)
 			b.Activated:Connect(function()
 				if current and not current.Ended then
 					myVote = i
@@ -535,16 +457,11 @@ local function renderPoll()
 			end)
 			table.insert(optionRows, b)
 		end
-		pollName.Text = if type(poll.From) == "string" then poll.From else "Admin"
-		pollGlobal.Visible = poll.Global == true
-		setAvatar(pollAvatar, tonumber(poll.FromId))
-		questionLabel.Text = poll.Question
-		pollCard.Visible = true
+		pollFrame.Visible = true
 		Ui.sound("Notify")
 		typeOut(questionLabel)
 	end
-	local total = 0
-	local best = 0
+	local total, best = 0, 0
 	for _, v in poll.Votes do
 		total += v
 		best = math.max(best, v)
@@ -555,21 +472,16 @@ local function renderPoll()
 		local fill = b:FindFirstChild("Fill") :: Frame
 		TweenService:Create(fill, TweenInfo.new(0.3), { Size = UDim2.fromScale(share, 1) }):Play()
 		local winner = poll.Ended and votes == best and best > 0
-		fill.BackgroundColor3 = if winner then GOLD:Lerp(Color3.new(0, 0, 0), 0.2) elseif myVote == i then PICKED else FILL
+		b.BackgroundColor3 = if winner then GOLD elseif myVote == i then GREEN else SKY
+		fill.BackgroundColor3 = b.BackgroundColor3:Lerp(INK, 0.35)
 		local pct = b:FindFirstChild("Pct") :: TextLabel
 		pct.Text = `{math.floor(share * 100 + 0.5)}%`
-		local s = b:FindFirstChildOfClass("UIStroke")
-		if s then
-			s.Color = if myVote == i then WHITE else INK
-		end
 	end
-	pollCard.Visible = true
+	pollFrame.Visible = true
+	relayout()
 end
 
-local function tick()
-	if banner.timer.Visible then
-		banner.timer.Text = Format.time(math.max(0, math.ceil(eventEndsAt - os.time())))
-	end
+local function tickPoll()
 	local poll = current
 	if not poll then
 		return
@@ -586,60 +498,59 @@ end
 
 ------------------------------------------------------------------------------ setup
 
-function BroadcastController:Init() end
+function BroadcastController:Init(controllers)
+	C = controllers
+end
 
 function BroadcastController:Start()
-	gui = make("ScreenGui", {
-		Name = "Broadcast",
-		ResetOnSpawn = false,
-		DisplayOrder = 45,
-		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-	}, Players.LocalPlayer:WaitForChild("PlayerGui"))
-
-	-- Top middle, just under the Roblox top bar.
-	stack = make("Frame", {
-		Name = "Stack",
-		Size = UDim2.fromOffset(WIDTH, 0),
+	local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+	-- Old card-style GUI from earlier builds (LiveSync'd Studio places).
+	local old = playerGui:FindFirstChild("Broadcast")
+	if old then
+		old:Destroy()
+	end
+	-- The feed rides in the toast layer (same insets as the HUD, above windows); the HUD
+	-- places it under the top bar and pushes the toasts below it (HudController layout).
+	local layer = playerGui:WaitForChild("ToastLayer", 30) :: ScreenGui?
+	if not layer then
+		layer = make("ScreenGui", { Name = "ToastLayer", ResetOnSpawn = false, DisplayOrder = 20 }, playerGui)
+	end
+	feed = make("Frame", {
+		Name = "AdminFeed",
+		Size = UDim2.fromOffset(MAX_W + 80, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
-		Position = UDim2.new(0.5, 0, 0, 6),
+		Position = UDim2.new(0.5, 0, 0, 140),
 		AnchorPoint = Vector2.new(0.5, 0),
 		BackgroundTransparency = 1,
-	}, gui)
+	}, layer)
 	make("UIListLayout", {
 		Padding = UDim.new(0, 8),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		HorizontalAlignment = Enum.HorizontalAlignment.Center,
-	}, stack)
-	stackScale = make("UIScale", {}, stack)
+	}, feed)
+	local scale = make("UIScale", {}, feed)
+	Ui.onScale(function(s: number)
+		scale.Scale = s
+		relayout()
+	end)
+	feed:GetPropertyChangedSignal("AbsoluteSize"):Connect(relayout)
 
-	banner = buildBanner()
 	buildPoll()
-
-	-- Follow the HUD scale and never run past the screen edges (phones).
-	local function fit()
-		local s = math.max(0.6, Ui.scale())
-		stackScale.Scale = s
-		local camera = Workspace.CurrentCamera
-		local screen = if camera then camera.ViewportSize.X else 1000
-		stack.Size = UDim2.fromOffset(math.floor(math.min(WIDTH, (screen - 32) / s)), 0)
-	end
-	Ui.onScale(fit)
 
 	Net.event("Broadcast").OnClientEvent:Connect(function(info)
 		if type(info) == "table" and type(info.Text) == "string" then
-			table.insert(queue, info)
-			task.spawn(showNext)
+			task.spawn(addLine, info)
 		end
 	end)
 	Net.event("Poll").OnClientEvent:Connect(function(poll)
 		current = poll
 		renderPoll()
-		tick()
+		tickPoll()
 	end)
 	task.spawn(function()
 		while true do
 			task.wait(0.5)
-			tick()
+			tickPoll()
 		end
 	end)
 end

@@ -787,7 +787,18 @@ layout = function(s: number, compact: boolean)
 		below += math.ceil(4 * s) + nextGoal.AbsoluteSize.Y
 	end
 	el.Announcement.Position = UDim2.new(0.5, shift, 0, below + math.ceil(4 * s))
-	el.Toasts.Position = UDim2.new(0.5, shift, 0, below + math.ceil(6 * s) + (if el.Announcement.Visible then math.ceil(50 * s) else 0))
+	if el.Announcement.Visible then
+		below += math.ceil(50 * s)
+	end
+	-- Admin messages and polls (BroadcastController) next, then the toasts.
+	local adminFeed = el.Toasts.Parent and el.Toasts.Parent:FindFirstChild("AdminFeed") :: GuiObject?
+	if adminFeed then
+		adminFeed.Position = UDim2.new(0.5, shift, 0, below + math.ceil(6 * s))
+		if adminFeed.AbsoluteSize.Y > 1 then
+			below += math.ceil(6 * s) + adminFeed.AbsoluteSize.Y
+		end
+	end
+	el.Toasts.Position = UDim2.new(0.5, shift, 0, below + math.ceil(6 * s))
 	local hotbarTop = 12 + math.ceil(88 * s) - (if compact then math.max(0, Ui.bottomGap(hud) - 4) else 0)
 	el.Hint.Position = UDim2.new(0.5, 0, 1, -(hotbarTop + math.ceil(12 * s)))
 	local walletLayout = el.Wallet:FindFirstChildOfClass("UIListLayout")
