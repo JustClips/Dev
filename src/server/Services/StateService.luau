@@ -8,8 +8,10 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Economy = require(Shared.Config.Economy)
 local Net = require(Shared.Net)
 local Rewards = require(Shared.Config.Rewards)
+local Tools = require(Shared.Config.Tools)
 local Types = require(Shared.Types)
 local Upgrades = require(Shared.Config.Upgrades)
+local World = require(Shared.Config.World)
 
 local StateService = {}
 
@@ -18,6 +20,7 @@ local dirty: { [Player]: boolean } = {}
 local sentInventory: { [Player]: number } = {}
 -- Last tutorial step sent to each player (analytics logs each new one).
 local lastStep: { [Player]: string } = {}
+local lastLesson: { [Player]: string } = {}
 local TUTORIAL_STEP_CASH = 25
 local serverState: Folder
 
@@ -39,55 +42,69 @@ local function rewardTutorial(player: Player)
 	S.StateService:Mark(player)
 end
 
+-- The tutorial (Dev, 2026-11-01): it answers "why am I here, what do I do?" and nothing
+-- else. Sweep leaves until your bag has some, sell them, upgrade your tool (free Broom),
+-- then see your next goal: the gate to the next area. Eggs come after, taught by the egg
+-- lesson the first time you find one (eggLesson below).
+local SWEEP_GOAL = 30 -- leaves in the bag before the Sell step
+local GOAL_REACH = 22 -- studs from the next area's gate that count as "seen it"
+local GOAL_SPOT = (function()
+	local c = World.Corridors[1]
+	return Vector3.new((c.Min.X + c.Max.X) / 2, 0, c.Max.Y - 4)
+end)()
+
 local function tutorialStep(player: Player, session: any): string
 	local data = session.Data
 	if data.Flags.TutorialDone then
 		return "Done"
 	end
-	local runtime = session.Runtime
-	-- The egg steps only matter until the first hatch: picking up an egg later mustn't
-	-- send you back to "carry it home".
-	if data.Stats.Hatches == 0 then
-		-- The furthest egg step wins: an egg growing, then one in the bag, then one on your
-		-- head, then one on the ground. A second egg found later never sends you back.
-		if #data.Hatching > 0 then
-			for _, entry in data.Hatching do
-				if entry.EndsAt <= os.time() then
-					return "Open"
-				end
-			end
-			return "Hatching"
-		end
-		if next(data.Eggs) ~= nil then
-			return "Place"
-		end
-		if runtime.Carried and #runtime.Carried > 0 then
-			return "Base"
-		end
-		if runtime.TutorialEggPosition then
-			return "Egg"
-		end
-		return "Sweep"
-	end
-	-- No "place your pet" step: the first hatched pet goes on your base by itself
-	-- (HatchService, 3 s after the hatch).
 	if data.Stats.Sells == 0 then
-		return "Sell"
+		local goal = math.min(SWEEP_GOAL, S.ToolService:GetCapacity(player))
+		return if data.Backpack >= goal then "Sell" else "Sweep"
 	end
-	-- Shorter tutorial (Dev, 2026-10-31): it teaches only the core loop. The free Broom,
-	-- free Sweep Power and free spin are now the Quest Master's first 3 jobs
-	-- (Config/Quests StarterJobs); players still do them themselves.
-	-- Very last (Dev, 2026-10-31): "Go accept a quest". The arrow path leads to your Quest
-	-- Master; talking to him and accepting (QuestService "Accept") sets QuestMet.
-	if data.Flags.QuestMet ~= true then
-		return "Quest"
+	if data.ToolTier < Tools.FreeTier then
+		return "Upgrade"
+	end
+	if data.Flags.SawNextArea ~= true then
+		return "Goal"
 	end
 	data.Flags.TutorialDone = true
+	-- The guaranteed first egg comes a few leaves after the tutorial (EggService).
+	data.Flags.EggLessonFrom = data.Stats.TilesCleared
 	if not data.Flags.TutorialRewarded then
 		data.Flags.TutorialRewarded = true
 		task.defer(rewardTutorial, player)
 	end
 	return "Done"
+end
+
+-- The egg lesson: after the tutorial, until the first hatch. The furthest egg step wins:
+-- an egg growing, then one in the bag, then one in your hands, then one on the ground.
+-- nil when there's nothing to teach right now (no egg found yet, or already hatched one).
+local function eggLesson(session: any): string?
+	local data = session.Data
+	if not data.Flags.TutorialDone or data.Stats.Hatches > 0 then
+		return nil
+	end
+	local runtime = session.Runtime
+	if #data.Hatching > 0 then
+		for _, entry in data.Hatching do
+			if entry.EndsAt <= os.time() then
+				return "Open"
+			end
+		end
+		return "Hatching"
+	end
+	if next(data.Eggs) ~= nil then
+		return "Place"
+	end
+	if runtime.Carried and #runtime.Carried > 0 then
+		return "Base"
+	end
+	if runtime.TutorialEggPosition then
+		return "Egg"
+	end
+	return nil
 end
 
 -- The tutorial step this player was last shown ("Done" once finished).
@@ -120,6 +137,15 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		end
 		lastStep[player] = step
 		S.AnalyticsService:TutorialStep(player, step)
+	end
+	local lesson = eggLesson(session)
+	if (lastLesson[player] or "") ~= (lesson or "") then
+		if lesson then
+			S.AnalyticsService:TutorialStep(player, "Lesson" .. lesson)
+		elseif lastLesson[player] and data.Stats.Hatches > 0 then
+			S.AnalyticsService:TutorialStep(player, "LessonDone")
+		end
+		lastLesson[player] = lesson
 	end
 	local carried = {}
 	for _, entry in runtime.Carried or {} do
@@ -168,6 +194,7 @@ function StateService:Build(player: Player, full: boolean?): Types.PlayerSnapsho
 		CarryLimit = S.EggService:GetCarryLimit(player),
 		BaseIndex = runtime.BaseIndex or 0,
 		TutorialStep = step,
+		EggLesson = lesson,
 		Quests = S.QuestService:Snapshot(player),
 		TutorialTarget = runtime.TutorialEggPosition,
 		AutoSweep = data.Settings.AutoSweep == true,
@@ -202,11 +229,32 @@ function StateService:Init(services)
 		-- After AnalyticsService has read it for the "left during step" event.
 		task.defer(function()
 			lastStep[player] = nil
+			lastLesson[player] = nil
 		end)
 	end)
 end
 
 function StateService:Start()
+	-- Tutorial "Goal" step: done once you walk up to the next area's gate.
+	task.spawn(function()
+		while true do
+			task.wait(0.5)
+			for player, step in lastStep do
+				if step == "Goal" then
+					local session = S.DataService:GetSession(player)
+					local character = player.Character
+					local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+					if session and root then
+						local flat = Vector3.new(root.Position.X, 0, root.Position.Z)
+						if (flat - GOAL_SPOT).Magnitude <= GOAL_REACH then
+							session.Data.Flags.SawNextArea = true
+							StateService:Mark(player)
+						end
+					end
+				end
+			end
+		end
+	end)
 	task.spawn(function()
 		while true do
 			task.wait(Economy.StateFlushInterval)

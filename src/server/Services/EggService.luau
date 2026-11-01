@@ -422,8 +422,13 @@ function EggService:OnTileCleared(player: Player, zone, position: Vector3)
 	local stats = session.Data.Stats
 	stats.TilesCleared += 1
 	S.QuestService:ZoneCount(player, zone.Id, "Leaves", 1)
-	-- Tutorial: the first egg is guaranteed early (GAME_PLAN §4).
-	if stats.EggsFound == 0 and not session.Runtime.TutorialEggSpawned and stats.TilesCleared >= Economy.TutorialEggTile then
+	-- No eggs during the tutorial (Dev, 2026-11-01: learn sweep, sell, upgrade first).
+	local flags = session.Data.Flags
+	if not flags.TutorialDone then
+		return
+	end
+	-- Then the first egg is guaranteed a few leaves later, and the egg lesson starts.
+	if stats.EggsFound == 0 and not session.Runtime.TutorialEggSpawned and stats.TilesCleared >= (flags.EggLessonFrom or 0) + Economy.TutorialEggTile then
 		foundEgg(player, position, "Common", zone.Id)
 		return
 	end

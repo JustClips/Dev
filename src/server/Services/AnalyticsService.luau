@@ -26,17 +26,18 @@ local ONBOARDING: { { key: string, name: string } } = {
 	{ key = "Loaded", name = "Loading screen done" },
 	{ key = "ToolEquipped", name = "Tool in hand" },
 	{ key = "FirstSweep", name = "First sweep" },
-	{ key = "Egg", name = "Tutorial egg appeared" },
-	{ key = "Base", name = "Picked up egg" },
-	{ key = "Place", name = "Brought egg home" },
-	{ key = "Hatching", name = "Placed egg" },
-	{ key = "Open", name = "Egg ready to open" },
-	{ key = "PlacePet", name = "Hatched egg" },
-	{ key = "Sell", name = "Pet placed (auto)" },
-	-- Since 2026-10-31 (shorter tutorial) steps 12-13 mean this; before, 12-16 were
-	-- First sell / Got free Broom / Got free Sweep Power / Spun wheel / Done.
-	{ key = "Quest", name = "First sell" },
-	{ key = "Done", name = "Accepted first quest / tutorial done" },
+	-- Since 2026-11-01 (tutorial = sweep, sell, upgrade, next area; eggs after) steps 5-14
+	-- mean this. Before, 5-13 were the egg steps, First sell and tutorial done.
+	{ key = "Sell", name = "Filled bag" },
+	{ key = "Upgrade", name = "First sell" },
+	{ key = "Goal", name = "Got free Broom" },
+	{ key = "Done", name = "Saw next area / tutorial done" },
+	{ key = "LessonEgg", name = "Found first egg" },
+	{ key = "LessonBase", name = "Picked up egg" },
+	{ key = "LessonPlace", name = "Brought egg home" },
+	{ key = "LessonHatching", name = "Placed egg" },
+	{ key = "LessonOpen", name = "Egg ready to open" },
+	{ key = "LessonDone", name = "Hatched first egg" },
 }
 local ONBOARDING_INDEX: { [string]: number } = {}
 for i, step in ONBOARDING do

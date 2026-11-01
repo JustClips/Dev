@@ -333,9 +333,10 @@ end
 -- During the tutorial the screen is almost empty (Dev, 2026-10-31: "hide everything, only
 -- show stuff needed by the tutorial and only when it's needed"). The cash/bag panel and
 -- the hotbar stay; every other button shows up at the step that uses it, alone:
--- SELL at the Sell step. Everything comes back once the tutorial is done (or after a
--- rebirth); Gear, Upgrades and SPIN are then taught by the Quest Master's first jobs.
-local STEP_ORDER = { Sweep = 1, Egg = 2, Base = 3, Place = 4, Hatching = 5, Open = 6, PlacePet = 7, Sell = 8, Quest = 9 }
+-- SELL from the Sell step on, Gear at the Upgrade step. Everything comes back once the
+-- tutorial is done (or after a rebirth); Sweep Power and SPIN are then taught by the
+-- Quest Master's first jobs.
+local STEP_ORDER = { Sweep = 1, Sell = 2, Upgrade = 3, Goal = 4 }
 local function revealRail(data)
 	local key = data.TutorialStep
 	local step = STEP_ORDER[key] or 99
@@ -355,17 +356,17 @@ local function revealRail(data)
 	set(el.Rail:FindFirstChild("UpgradesButton") :: GuiObject?, done)
 	-- Top pills: only SELL at its step (GroupRewardController keeps the Free pill hidden
 	-- during the tutorial).
-	set(el.Pills, done or key == "Sell")
+	set(el.Pills, done or step >= STEP_ORDER.Sell)
 	set(el.Pills:FindFirstChild("BaseButton") :: GuiObject?, done)
 	set(el.Pills:FindFirstChild("ZonesButton") :: GuiObject?, done)
 	set(el.SpinButton, done)
 	set(el.MoonPanel, done)
 	set(el.Right, done)
 	set((el.BoostTemplate :: Instance).Parent :: GuiObject, done)
-	-- Right column (Eggs / Pets / Gear / Quests): after the tutorial.
+	-- Right column (Eggs / Pets / Gear / Quests): only Gear at the Upgrade step.
 	local buttons = Ui.screen("BasePanels"):FindFirstChild("Buttons") :: GuiObject?
 	if buttons then
-		set(buttons, done)
+		set(buttons, done or key == "Upgrade")
 		set(buttons:FindFirstChild("EggsButton") :: GuiObject?, done)
 		set(buttons:FindFirstChild("PetsButton") :: GuiObject?, done)
 		set(buttons:FindFirstChild("QuestsButton") :: GuiObject?, done)

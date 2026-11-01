@@ -22,8 +22,13 @@ end
 
 -- The tutorial step, with "Hatching" turned into "Open" as soon as an egg is ready
 -- (the server only sends the step when something else changes).
+-- After the tutorial the egg lesson uses the same steps (Egg, Base, Place, Hatching,
+-- Open) until the first hatch.
 function State.tutorialStep(data): string
 	local step = data.TutorialStep
+	if step == "Done" and data.EggLesson then
+		step = data.EggLesson
+	end
 	if step == "Hatching" then
 		for _, entry in data.Hatching do
 			if entry.EndsAt <= State.now() then

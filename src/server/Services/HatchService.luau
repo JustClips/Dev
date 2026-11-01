@@ -266,8 +266,8 @@ function HatchService:Open(player: Player, uid: string, quiet: boolean?): (boole
 	data.Pets[petUid] = pet
 	data.Stats.Hatches += 1
 	S.QuestService:ZoneCount(player, if limited then "Landing" else entry.Zone or "Landing", "Hatches", 1)
-	-- Tutorial: the first pet goes on your base by itself once the hatch show has played.
-	if data.Stats.Hatches == 1 and not data.Flags.TutorialDone then
+	-- Egg lesson: the first pet goes on your base by itself once the hatch show has played.
+	if data.Stats.Hatches == 1 then
 		task.delay(3, function()
 			if player.Parent and data.Pets[petUid] and not data.Pets[petUid].Placed then
 				S.InventoryService:PlacePet(player, petUid)

@@ -109,8 +109,10 @@ local function targetFor(data): Vector3?
 		return eggSpot(data, true)
 	elseif step == "Sell" then
 		return if data.Backpack > 0 then dumpSpot else nil
-	elseif step == "Quest" and hasBase then
-		return (World.questCFrame(data.BaseIndex) * CFrame.new(0, 0, -4.5)).Position
+	elseif step == "Goal" then
+		-- The next area's gate (the Park).
+		local c = World.Corridors[1]
+		return Vector3.new((c.Min.X + c.Max.X) / 2, 0, c.Max.Y - 4)
 	end
 	if step ~= "Done" then
 		return nil
@@ -143,9 +145,8 @@ local function update()
 		current = nil
 		return
 	end
-	-- Quest Master job 1 (free Broom, was the tutorial's Shop step): outline Gear.
-	local job = data.Quests and data.Quests.Job
-	C.HudController:Highlight(if job and job.Kind == "Tool" and job.Number == 1 and not job.Done then "Tools" else nil)
+	-- Tutorial Upgrade step (free Broom): outline Gear.
+	C.HudController:Highlight(if data.TutorialStep == "Upgrade" then "Tools" else nil)
 	local target = targetFor(data)
 	if not target or (target - root.Position).Magnitude < REACHED then
 		board.Enabled = false

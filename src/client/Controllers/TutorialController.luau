@@ -34,13 +34,15 @@ local World = require(Shared.Config.World)
 local NEAR_PARK = 75 -- studs from the park centre to put the egg in your hands
 local NUDGE_SECONDS = 5
 
-type Step = { key: string, text: string, touch: string?, pad: string?, icon: string }
+type Step = { key: string, text: string, touch: string?, pad: string?, icon: string, lesson: boolean? }
 
 -- Written for kids (Dev, 2026-10-31): one short action line per step, the button or key
 -- right in it, "FREE" where something is free. Kids skim, so the arrow, glow and
 -- spotlight do the explaining, and every finished step pays a little cash (StateService)
 -- with a different cheer.
 local STEPS: { Step } = {
+	-- The tutorial (Dev, 2026-11-01): why you're here and what to aim for. Sweep, sell,
+	-- upgrade, then see the next area. No eggs until it's done.
 	{
 		key = "Sweep",
 		text = "Hold the mouse and WALK to sweep leaves!",
@@ -49,50 +51,55 @@ local STEPS: { Step } = {
 		icon = "Icon_Dust",
 	},
 	{
-		key = "Egg",
-		text = "An egg! Walk to it and press E!",
-		touch = "An egg! Walk to it and tap the button!",
-		pad = "An egg! Walk to it and press X!",
-		icon = "Icon_Egg",
+		key = "Sell",
+		text = "Leaves are money! Click SELL to cash them in!",
+		touch = "Leaves are money! Tap SELL to cash them in!",
+		pad = "Leaves are money! Walk to the leaf dump to cash them in!",
+		icon = "Icon_Sell",
 	},
-	{ key = "Base", text = "Take it home! Follow the arrow.", icon = "Icon_Base" },
+	{
+		key = "Upgrade",
+		text = "Upgrade your tool! Open Gear and grab a FREE Broom!",
+		pad = "Upgrade your tool! Press d-pad right, open Gear, grab a FREE Broom!",
+		icon = "Icon_Tools",
+	},
+	{
+		key = "Goal",
+		text = "Your goal: open the Park! Follow the arrow to its gate.",
+		icon = "Icon_Zones",
+	},
+	-- The egg lesson (after the tutorial, the first time you find an egg; server
+	-- StateService eggLesson). Numbered on its own: "EGGS 1/4".
+	{
+		key = "Egg",
+		text = "You found an egg! Walk to it and press E!",
+		touch = "You found an egg! Walk to it and tap the button!",
+		pad = "You found an egg! Walk to it and press X!",
+		icon = "Icon_Egg",
+		lesson = true,
+	},
+	{ key = "Base", text = "Take it home! Pets there make money. Follow the arrow.", icon = "Icon_Base", lesson = true },
 	{
 		key = "Place",
 		text = "Click a green spot, or Place for me!",
 		touch = "Tap a green spot, or Place for me!",
 		pad = "Face a green spot and press R2, or Place for me!",
 		icon = "Icon_Egg",
+		lesson = true,
 	},
-	{ key = "Hatching", text = "It's hatching... watch it grow!", icon = "Icon_Timer" },
+	{ key = "Hatching", text = "It's hatching... watch it grow!", icon = "Icon_Timer", lesson = true },
 	{
 		key = "Open",
 		text = "It's ready! Walk to it and press E!",
 		touch = "It's ready! Walk to it and tap Open!",
 		pad = "It's ready! Walk to it and press X!",
 		icon = "Icon_Egg",
-	},
-	-- No "place your pet" step: the first pet goes on your base by itself after the hatch.
-	{
-		key = "Sell",
-		text = "Your pet makes money! Click SELL to cash in your leaves!",
-		touch = "Your pet makes money! Tap SELL to cash in your leaves!",
-		pad = "Your pet makes money! Walk to the market to sell your leaves!",
-		icon = "Icon_Sell",
-	},
-	-- The free Broom, Sweep Power and spin are the Quest Master's first jobs now (Dev,
-	-- 2026-10-31: shorter tutorial). After the tutorial this controller still points at
-	-- their buttons (jobPointer).
-	-- Last (Dev, 2026-10-31): hand off into quests. The arrow path leads to your Quest Master.
-	{
-		key = "Quest",
-		text = "Go accept a quest! Follow the arrow to the Quest Master.",
-		icon = "Icon_Quest",
+		lesson = true,
 	},
 }
--- The number on the card ("STEP 3/6"): planting is part of bringing it home, opening is
--- part of hatching.
-local SHOWN_NUMBER: { [string]: number } = { Sweep = 1, Egg = 2, Base = 3, Place = 3, Hatching = 4, Open = 4, Sell = 5, Quest = 6 }
-local SHOWN_TOTAL = 6
+-- The number on the card ("STEP 2/4", "EGGS 1/4"): planting is part of bringing it home.
+local SHOWN_NUMBER: { [string]: number } = { Sweep = 1, Sell = 2, Upgrade = 3, Goal = 4, Egg = 1, Base = 2, Place = 2, Hatching = 3, Open = 4 }
+local SHOWN_TOTAL = 4
 -- A different cheer each time a step is done.
 local CHEERS = { "Nice!", "Awesome!", "Great job!", "WOW!", "You rock!", "Super!", "Amazing!", "Pro move!" }
 local cheerIndex = 0
@@ -171,7 +178,7 @@ end
 local function showStep(step: Step)
 	local index = SHOWN_NUMBER[step.key] or 1
 	stepLabel.Visible = true
-	stepLabel.Text = `STEP {index}/{SHOWN_TOTAL}`
+	stepLabel.Text = `{if step.lesson then "EGGS" else "STEP"} {index}/{SHOWN_TOTAL}`
 	textLabel.Text = stepText(step)
 	cardIcon.Image = AssetLibrary.image(step.icon)
 	barFill.Parent.Visible = true
@@ -284,10 +291,8 @@ local function worldTarget(data): Instance?
 		local index = World.nearestDump(if root then root.Position else World.RocketPosition)
 		local structures = Workspace:FindFirstChild("Structures")
 		return structures and structures:FindFirstChild("LeafDump" .. index)
-	elseif key == "Quest" and data.BaseIndex then
-		local masters = Workspace:FindFirstChild("QuestMasters")
-		return masters and masters:FindFirstChild("QuestMaster" .. data.BaseIndex)
 	end
+	-- Goal: no outline, the arrow path leads to the Park gate.
 	return nil
 end
 
@@ -323,7 +328,7 @@ local function checkReadyEggs(data)
 	for _, entry in data.Hatching do
 		if entry.EndsAt <= now and not readySeen[entry.Uid] then
 			readySeen[entry.Uid] = true
-			if readyPrimed and data.TutorialStep == "Done" then
+			if readyPrimed and data.TutorialStep == "Done" and not data.EggLesson then
 				nudgeText = `Your {entry.Rarity} egg is ready! Open it in your pet park.`
 				nudgeUntil = os.clock() + NUDGE_SECONDS
 				Ui.sound("Notify")
@@ -469,6 +474,8 @@ local function update()
 		elseif key == "Sell" and data.Backpack > 0 and not Ui.gamepad() then
 			-- Spotlight on SELL: the rest of the screen dims (Dev, 2026-10-31).
 			pointAt(Ui.find(hud, "Pills.SellButton"))
+		elseif key == "Upgrade" and not Ui.isOpen(Ui.screen("Garage")) then
+			pointAt(Ui.find(Ui.screen("BasePanels"), "Buttons.ToolsButton"))
 		else
 			pointAt(nil)
 		end
