@@ -1900,10 +1900,11 @@ def base_picker():
     write("BasePicker", screen([dim(), window(WIN_W, WIN_H, "Change Base", "Base", [hint, lst], header="#F28C28")],
                                order=10, enabled=False))
 
-    # Dev 2026-11-01: the try-on bar took half the screen. Now one slim strip above the
-    # hotbar: arrows on the ends, name + progress + checks on the left, the needed pets as
-    # small 3D tiles (tap one for its name), the action button, and a small X over ">".
-    bar_ = plate("Bar", U(0, 650, 0, 88), U(0.5, 0, 1, -112), (0.5, 1), BG, stud=0.5, children=[
+    # Dev 2026-11-01: the try-on bar took half the screen. Now one slim strip at the bottom
+    # (BasePickerController hides the HUD while it's up): arrows on the ends, name +
+    # progress + checks on the left, the needed pets as small 3D tiles (tap one for its
+    # name), the action button, and a small X over ">".
+    bar_ = plate("Bar", U(0, 650, 0, 88), U(0.5, 0, 1, -10), (0.5, 1), BG, stud=0.5, children=[
         autoscale(),
         button("Prev", U(0, 36, 0, 72), U(0, 8, 0.5, 0), (0, 0.5), color="#4C8DFF", label="<", ts=24),
         button("Close", U(0, 36, 0, 30), U(1, -8, 0, 8), (1, 0), color=DANGER, label="X", ts=18, stroke=2),

@@ -54,9 +54,55 @@ local function rarityOf(id: string): string?
 	return if def then def.Rarity else nil
 end
 
+local renderBar: () -> ()
+local noteUntil = 0
+
+-- While trying a base on, the HUD is hidden, so messages show on the bar's status line.
 local function toast(ok: boolean, message: string?)
-	if message and message ~= "" then
-		C.HudController:Toast(message, if ok then "Good" else "Bad")
+	if not message or message == "" then
+		return
+	end
+	if previewing and bar then
+		local status = bar:FindFirstChild("Status") :: TextLabel?
+		if status then
+			status.Text = message
+			status.TextColor3 = if ok then Color3.fromRGB(124, 255, 140) else Color3.fromRGB(255, 120, 120)
+			noteUntil = os.clock() + 3
+			task.delay(3.05, function()
+				if previewing and os.clock() >= noteUntil then
+					renderBar()
+				end
+			end)
+			return
+		end
+	end
+	C.HudController:Toast(message, if ok then "Good" else "Bad")
+end
+
+-- Dev 2026-11-01: on phones the HUD covered the base being tried on. Every other screen is
+-- hidden while the try-on bar is up and comes back as it was afterwards.
+local hiddenScreens: { ScreenGui } = {}
+local function hideOtherScreens(on: boolean)
+	if on then
+		local gui = Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")
+		if not gui then
+			return
+		end
+		for _, screen in gui:GetChildren() do
+			if screen:IsA("ScreenGui") and screen.Enabled and screen ~= preview and screen.Name ~= "TouchGui"
+				and screen.Name ~= "BasePicker" -- closing already (its tween ends it)
+			then
+				screen.Enabled = false
+				table.insert(hiddenScreens, screen)
+			end
+		end
+	else
+		for _, screen in hiddenScreens do
+			if screen.Parent then
+				screen.Enabled = true
+			end
+		end
+		table.clear(hiddenScreens)
 	end
 end
 
@@ -275,7 +321,7 @@ local function addPetTile(holder: Instance, order: number, found: boolean, petId
 	tile.Parent = holder
 end
 
-local function renderBar()
+renderBar = function()
 	local data = State.data
 	local def = BaseSkins.List[selected]
 	if not data or not def then
@@ -285,14 +331,18 @@ local function renderBar()
 	local req = def.Requires
 	Ui.find(bar, "Title").Text = def.Name
 	local statusLabel = Ui.find(bar, "Status") :: TextLabel
-	if status == "Equipped" then
-		statusLabel.Text = "This is your base"
-	elseif status == "Owned" then
-		statusLabel.Text = "You own this one"
-	elseif status == "Ready" then
-		statusLabel.Text = "Everything done. Unlock it!"
-	else
-		statusLabel.Text = `{done} of {total} done`
+	-- A message from a tap stays for its 3 seconds.
+	if os.clock() >= noteUntil then
+		statusLabel.TextColor3 = Color3.fromRGB(139, 224, 78)
+		if status == "Equipped" then
+			statusLabel.Text = "This is your base"
+		elseif status == "Owned" then
+			statusLabel.Text = "You own this one"
+		elseif status == "Ready" then
+			statusLabel.Text = "Everything done. Unlock it!"
+		else
+			statusLabel.Text = `{done} of {total} done`
+		end
 	end
 	local checks = Ui.find(bar, "Checks")
 	local pets = Ui.find(bar, "Pets")
@@ -345,6 +395,7 @@ local function tryOn(i: number)
 	skinAction("Preview", def.Id)
 	if not previewing then
 		previewing = true
+		hideOtherScreens(true)
 		preview.Enabled = true
 		Ui.popFrame(bar)
 	end
@@ -357,7 +408,9 @@ local function stopPreview()
 		return
 	end
 	previewing = false
+	noteUntil = 0
 	preview.Enabled = false
+	hideOtherScreens(false)
 	cameraOff()
 	skinAction("EndPreview", BaseSkins.Default)
 end
