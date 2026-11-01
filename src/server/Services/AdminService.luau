@@ -288,6 +288,7 @@ type Event = {
 	Value: any,
 	EndsAt: number,
 	From: string,
+	FromId: number?, -- sender's UserId (avatar on the announcement)
 	Global: boolean,
 	Rarity: string?,
 	Rate: number?,
@@ -384,10 +385,18 @@ local function addEvent(e: Event)
 	active[e.Id] = e
 	runEvent(e)
 	publishEvents()
+	local def = EVENT_TYPES[e.Type]
+	local weather = if e.Type == "Weather" then Weather.ById[e.Value] else nil
 	Net.fireAll("Broadcast", {
-		Text = `{eventLabel(e)} for {Format.time(math.max(0, e.EndsAt - os.time()))}{if e.Global then " in EVERY server" else ""}!`,
+		Kind = "Event",
+		Text = `{eventLabel(e)}!`,
+		Blurb = if weather then weather.Blurb elseif def then def.Blurb else nil,
+		Icon = if weather then "Icon_Weather_" .. weather.Id elseif def then def.Icon else nil,
+		EndsAt = e.EndsAt,
 		From = e.From,
-		Seconds = 6,
+		FromId = e.FromId,
+		Global = e.Global,
+		Seconds = 7,
 		Title = "ADMIN EVENT",
 	})
 end
@@ -519,6 +528,7 @@ local function startEvent(caller: Player, p: any): (boolean, string)
 		Value = nil,
 		EndsAt = os.time() + math.floor(minutes * 60),
 		From = caller.DisplayName,
+		FromId = caller.UserId,
 		Global = p.Global == true,
 	}
 	if def.Unit == "x" or def.Unit == "+" then
@@ -573,6 +583,7 @@ type Poll = {
 	Votes: { number },
 	EndsAt: number,
 	From: string,
+	FromId: number?,
 	Global: boolean,
 	Ended: boolean?,
 }
@@ -656,6 +667,7 @@ local function startPoll(caller: Player, p: any): (boolean, string)
 		Votes = table.create(#options, 0),
 		EndsAt = os.time() + seconds,
 		From = caller.DisplayName,
+		FromId = caller.UserId,
 		Global = p.Global == true,
 	}
 	if newPoll.Global then
@@ -709,7 +721,13 @@ function onGlobal(raw: any)
 	elseif kind == "Stop" and type(message.Id) == "string" then
 		removeEvent(message.Id)
 	elseif kind == "Announce" and type(message.Text) == "string" then
-		Net.fireAll("Broadcast", { Text = message.Text, From = message.From, Seconds = message.Seconds, Global = true })
+		Net.fireAll("Broadcast", {
+			Text = message.Text,
+			From = message.From,
+			FromId = tonumber(message.FromId),
+			Seconds = message.Seconds,
+			Global = true,
+		})
 	elseif kind == "Poll" and type(message.Poll) == "table" then
 		beginPoll(message.Poll)
 	elseif kind == "PollEnd" and type(message.Id) == "string" then
@@ -747,9 +765,9 @@ local ACTIONS: { [string]: (Player, any) -> (boolean, string) } = {
 		end
 		local seconds = whole(p.Seconds, 3, 60, 8)
 		if p.Global then
-			broadcast({ Kind = "Announce", Text = text, From = caller.DisplayName, Seconds = seconds })
+			broadcast({ Kind = "Announce", Text = text, From = caller.DisplayName, FromId = caller.UserId, Seconds = seconds })
 		else
-			Net.fireAll("Broadcast", { Text = text, From = caller.DisplayName, Seconds = seconds })
+			Net.fireAll("Broadcast", { Text = text, From = caller.DisplayName, FromId = caller.UserId, Seconds = seconds })
 		end
 		log(caller.Name, `announced "{text}"`)
 		return true, if p.Global then "Sent to every server" else "Sent to this server"
