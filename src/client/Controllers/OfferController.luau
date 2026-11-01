@@ -79,13 +79,27 @@ local LINE_TEXT = { StarterPack = "Leaving soon! Huge value!" }
 local CARD_W, CARD_H = 340, 244 + 30 -- with the sticker sticking out on top
 local function placeCard(window: GuiObject)
 	local view = offerGui.AbsoluteSize
-	local s = math.min(Ui.scale(), (view.Y - 16) / CARD_H, (view.X * 0.6) / CARD_W)
+	local origin = offerGui.AbsolutePosition
+	local hud = Ui.screen("Hud")
+	local leftEdge, rightEdge = Ui.edges(hud)
+	-- The free space between the left buttons and the quest list on the right (Dev
+	-- 2026-11-01: on phones the card covered the quests and Spin).
+	local left = origin.X + math.max(leftEdge, 14)
+	local rail = hud:FindFirstChild("Rail") :: GuiObject?
+	if rail and rail.Visible then
+		left = math.max(left, rail.AbsolutePosition.X + rail.AbsoluteSize.X + 10)
+	end
+	local right = origin.X + view.X - (math.max(rightEdge, 14) + 4)
+	local quests = hud:FindFirstChild("QuestList") :: GuiObject?
+	if quests and quests.Visible and quests.AbsoluteSize.X > 0 then
+		right = math.min(right, quests.AbsolutePosition.X - 10)
+	end
+	local room = math.max(right - left, 120)
+	local s = math.min(Ui.scale(), (view.Y - 24) / CARD_H, room / (CARD_W + 10))
 	local autoScale = window:FindFirstChild("AutoScale") :: UIScale
 	autoScale.Scale = s
-	local hud = Ui.screen("Hud")
-	local _, right = Ui.edges(hud)
 	window.AnchorPoint = Vector2.new(1, 0.5)
-	window.Position = UDim2.new(1, -(math.max(right, 14) + 4), 0.5, math.floor(14 * s))
+	window.Position = UDim2.new(0, math.floor(right - origin.X), 0.5, math.floor(14 * s))
 end
 
 local cardMotion = 0

@@ -285,26 +285,26 @@
       "Size": [
        [
         0,
-        38
+        32
        ],
        [
         0,
-        38
+        32
        ]
       ],
       "Position": [
        [
         1,
-        -4
+        -5
        ],
        [
         0,
-        4
+        5
        ]
       ],
       "AnchorPoint": [
-       0.5,
-       0.5
+       1,
+       0
       ],
       "BorderSizePixel": 0,
       "BackgroundColor3": "#FF4D5E",
@@ -472,7 +472,7 @@
         "BackgroundTransparency": 1,
         "Text": "X",
         "TextColor3": "#FFFFFF",
-        "TextSize": 22,
+        "TextSize": 20,
         "TextXAlignment": "Center",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -515,11 +515,11 @@
       "Position": [
        [
         0,
-        -10
+        -4
        ],
        [
         0,
-        -27
+        -24
        ]
       ],
       "AnchorPoint": [
@@ -617,7 +617,7 @@
       "Size": [
        [
         1,
-        -12
+        -16
        ],
        [
         0,
@@ -649,7 +649,7 @@
        "properties": {
         "Padding": [
          0,
-         6
+         4
         ],
         "FillDirection": "Horizontal",
         "HorizontalAlignment": "Center",
@@ -664,7 +664,7 @@
         "Size": [
          [
           0,
-          100
+          74
          ],
          [
           0,
@@ -697,11 +697,11 @@
           "Size": [
            [
             0,
-            64
+            58
            ],
            [
             0,
-            64
+            58
            ]
           ],
           "Position": [
@@ -711,7 +711,7 @@
            ],
            [
             0,
-            0
+            2
            ]
           ],
           "AnchorPoint": [
@@ -757,7 +757,7 @@
           "BackgroundTransparency": 1,
           "Text": "",
           "TextColor3": "#FFFFFF",
-          "TextSize": 18,
+          "TextSize": 16,
           "TextXAlignment": "Center",
           "TextYAlignment": "Center",
           "TextWrapped": true,
@@ -784,7 +784,7 @@
            "name": "Fit",
            "className": "UITextSizeConstraint",
            "properties": {
-            "MaxTextSize": 18,
+            "MaxTextSize": 16,
             "MinTextSize": 7
            }
           }

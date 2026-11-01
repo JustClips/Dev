@@ -1477,10 +1477,12 @@ def pet_info():
 def offer():
     # Offer card: slides in next to the left rail (OfferController places it), with what you
     # get as big icons on spinning rays, a tilted sticker and a green Robux button.
-    item = frame("Template", U(0, 100, 0, 106), Visible=False, children=[
-        icon("Icon", "Star", 64, U(0.5, 0, 0, 0), (0.5, 0)),
-        text("Caption", "", U(1, 0, 0, 40), U(0.5, 0, 1, 0), (0.5, 1), ts=18, display=True, stroke=2.5, ZIndex=4,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 18, "MinTextSize": 12})]),
+    # 74 wide so four items fit inside the card (at 100 the Starter Pack's cash and potion
+    # hung off both sides, Dev 2026-11-01).
+    item = frame("Template", U(0, 74, 0, 106), Visible=False, children=[
+        icon("Icon", "Star", 58, U(0.5, 0, 0, 2), (0.5, 0)),
+        text("Caption", "", U(1, 0, 0, 40), U(0.5, 0, 1, 0), (0.5, 1), ts=16, display=True, stroke=2.5, ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 9})]),
     ])
     win = plate("Window", U(0, 340, 0, 244), U(0, 210, 0.5, -30), (0, 0.5), SURFACE, children=[
         autoscale(),
@@ -1491,13 +1493,13 @@ def offer():
             text("Title", "Offer", U(1, -96, 1, -6), U(0, 46, 0.5, 0), (0, 0.5), ts=24, display=True, stroke=3, xa="Left",
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 24, "MinTextSize": 12})]),
         ]),
-        button("Close", U(0, 38, 0, 38), U(1, -4, 0, 4), (0.5, 0.5), color=DANGER, label="X", ts=22, ZIndex=6),
-        frame("Tag", U(0, 112, 0, 28), U(0, -10, 0, -27), bg=DANGER, Rotation=-6, ZIndex=6, children=[
+        button("Close", U(0, 32, 0, 32), U(1, -5, 0, 5), (1, 0), color=DANGER, label="X", ts=20, ZIndex=6),
+        frame("Tag", U(0, 112, 0, 28), U(0, -4, 0, -24), bg=DANGER, Rotation=-6, ZIndex=6, children=[
             border(INK, 3),
             text("Label", "BEST DEAL!", U(1, -6, 1, 0), U(0, 3, 0, 0), ts=16, display=True, stroke=2, ZIndex=7,
                  TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 8})]),
         ]),
-        frame("Items", U(1, -12, 0, 106), U(0.5, 0, 0, 48), (0.5, 0), ZIndex=3, children=[hlist(6, "Center", "Center"), item]),
+        frame("Items", U(1, -16, 0, 106), U(0.5, 0, 0, 48), (0.5, 0), ZIndex=3, children=[hlist(4, "Center", "Center"), item]),
         text("Text", "", U(1, -24, 0, 24), U(0.5, 0, 0, 156), (0.5, 0), ts=17, color=INK, heavy=True, ZIndex=3,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 12})]),
         button("Buy", U(1, -28, 0, 48), U(0.5, 0, 1, -10), (0.5, 1), color=SUCCESS, label="", ts=26, ZIndex=3),
