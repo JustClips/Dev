@@ -54,27 +54,28 @@ local function rarityOf(id: string): string?
 	return if def then def.Rarity else nil
 end
 
-local renderBar: () -> ()
-local noteUntil = 0
-
--- While trying a base on, the HUD is hidden, so messages show on the bar's status line.
+-- While trying a base on, the HUD (and its toasts) is hidden, so messages show on a card
+-- just above the bar (Dev 2026-11-01: the status line was too small to read).
+local noteSerial = 0
 local function toast(ok: boolean, message: string?)
 	if not message or message == "" then
 		return
 	end
-	if previewing and bar then
-		local status = bar:FindFirstChild("Status") :: TextLabel?
-		if status then
-			status.Text = message
-			status.TextColor3 = if ok then Color3.fromRGB(124, 255, 140) else Color3.fromRGB(255, 120, 120)
-			noteUntil = os.clock() + 3
-			task.delay(3.05, function()
-				if previewing and os.clock() >= noteUntil then
-					renderBar()
-				end
-			end)
-			return
-		end
+	local note = previewing and preview and preview:FindFirstChild("Note") :: Frame?
+	if note then
+		local label = note:FindFirstChild("Label") :: TextLabel
+		label.Text = message
+		label.TextColor3 = if ok then Color3.fromRGB(124, 255, 140) else Color3.fromRGB(255, 214, 90)
+		note.Visible = true
+		Ui.popFrame(note)
+		noteSerial += 1
+		local serial = noteSerial
+		task.delay(3.5, function()
+			if serial == noteSerial then
+				note.Visible = false
+			end
+		end)
+		return
 	end
 	C.HudController:Toast(message, if ok then "Good" else "Bad")
 end
@@ -310,18 +311,19 @@ local function addPetTile(holder: Instance, order: number, found: boolean, petId
 	box.Parent = tile
 	Ui.button(tile, function()
 		if found then
-			toast(true, `{name}: found!`)
+			toast(true, `{name}: found! It's in your Index.`)
 		elseif def then
 			local zone = Zones.ById[def.Zone or "Landing"]
-			toast(false, `{def.Name}: a {def.Rarity} pet from {if zone then zone.Name else "the"} eggs`)
+			local article = if string.match(def.Rarity, "^[AEIOU]") then "an" else "a"
+			toast(false, `Missing {def.Name}: {article} {def.Rarity} pet. Hatch it from {if zone then zone.Name else "zone"} eggs.`)
 		else
-			toast(false, "Hatch any Cosmic pet")
+			toast(false, "Missing: any Cosmic pet. Hatch one to tick this off.")
 		end
 	end)
 	tile.Parent = holder
 end
 
-renderBar = function()
+local function renderBar()
 	local data = State.data
 	local def = BaseSkins.List[selected]
 	if not data or not def then
@@ -331,18 +333,14 @@ renderBar = function()
 	local req = def.Requires
 	Ui.find(bar, "Title").Text = def.Name
 	local statusLabel = Ui.find(bar, "Status") :: TextLabel
-	-- A message from a tap stays for its 3 seconds.
-	if os.clock() >= noteUntil then
-		statusLabel.TextColor3 = Color3.fromRGB(139, 224, 78)
-		if status == "Equipped" then
-			statusLabel.Text = "This is your base"
-		elseif status == "Owned" then
-			statusLabel.Text = "You own this one"
-		elseif status == "Ready" then
-			statusLabel.Text = "Everything done. Unlock it!"
-		else
-			statusLabel.Text = `{done} of {total} done`
-		end
+	if status == "Equipped" then
+		statusLabel.Text = "This is your base"
+	elseif status == "Owned" then
+		statusLabel.Text = "You own this one"
+	elseif status == "Ready" then
+		statusLabel.Text = "Everything done. Unlock it!"
+	else
+		statusLabel.Text = `{done} of {total} done`
 	end
 	local checks = Ui.find(bar, "Checks")
 	local pets = Ui.find(bar, "Pets")
@@ -408,7 +406,11 @@ local function stopPreview()
 		return
 	end
 	previewing = false
-	noteUntil = 0
+	noteSerial += 1
+	local note = preview:FindFirstChild("Note") :: Frame?
+	if note then
+		note.Visible = false
+	end
 	preview.Enabled = false
 	hideOtherScreens(false)
 	cameraOff()

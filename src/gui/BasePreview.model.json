@@ -1185,6 +1185,159 @@
      ]
     }
    ]
+  },
+  {
+   "name": "Note",
+   "className": "Frame",
+   "properties": {
+    "Size": [
+     [
+      0,
+      460
+     ],
+     [
+      0,
+      0
+     ]
+    ],
+    "Position": [
+     [
+      0.5,
+      0
+     ],
+     [
+      1,
+      -108
+     ]
+    ],
+    "AnchorPoint": [
+     0.5,
+     1
+    ],
+    "BorderSizePixel": 0,
+    "AutomaticSize": "Y",
+    "Visible": false,
+    "ZIndex": 5,
+    "BackgroundTransparency": 0,
+    "BackgroundColor3": "#272B34"
+   },
+   "children": [
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": "#17191E",
+      "Thickness": 3,
+      "ApplyStrokeMode": "Border",
+      "LineJoinMode": "Round"
+     }
+    },
+    {
+     "name": "Shade",
+     "className": "UIGradient",
+     "properties": {
+      "Color": {
+       "keypoints": [
+        [
+         0,
+         "#FFFFFF"
+        ],
+        [
+         1,
+         "#DCE0E7"
+        ]
+       ]
+      },
+      "Rotation": 90
+     }
+    },
+    {
+     "name": "AutoScale",
+     "className": "UIScale",
+     "properties": {
+      "Scale": 1
+     }
+    },
+    {
+     "name": "Padding",
+     "className": "UIPadding",
+     "properties": {
+      "PaddingLeft": [
+       0,
+       14
+      ],
+      "PaddingRight": [
+       0,
+       14
+      ],
+      "PaddingTop": [
+       0,
+       10
+      ],
+      "PaddingBottom": [
+       0,
+       10
+      ]
+     }
+    },
+    {
+     "name": "Label",
+     "className": "TextLabel",
+     "properties": {
+      "Size": [
+       [
+        1,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "Position": [
+       [
+        0,
+        0
+       ],
+       [
+        0,
+        0
+       ]
+      ],
+      "AnchorPoint": [
+       0,
+       0
+      ],
+      "BorderSizePixel": 0,
+      "BackgroundTransparency": 1,
+      "Text": "",
+      "TextColor3": "#FFFFFF",
+      "TextSize": 20,
+      "TextXAlignment": "Center",
+      "TextYAlignment": "Center",
+      "TextWrapped": true,
+      "ZIndex": 6,
+      "FontFace": {
+       "family": "rbxasset://fonts/families/Montserrat.json",
+       "weight": "Heavy",
+       "style": "Normal"
+      },
+      "AutomaticSize": "Y"
+     },
+     "children": [
+      {
+       "name": "TextStroke",
+       "className": "UIStroke",
+       "properties": {
+        "Color": "#17191E",
+        "Thickness": 2,
+        "ApplyStrokeMode": "Contextual",
+        "LineJoinMode": "Round"
+       }
+      }
+     ]
+    }
+   ]
   }
  ]
 }

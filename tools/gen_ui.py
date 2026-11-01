@@ -1917,7 +1917,15 @@ def base_picker():
         frame("Pets", U(0, 234, 0, 64), U(0, 258, 0.5, 0), (0, 0.5), children=[hlist(6, "Left", "Center")]),
         button("Main", U(0, 96, 0, 50), U(1, -52, 0.5, 0), (1, 0.5), color=SUCCESS, label="Unlock", ts=19),
     ])
-    write("BasePreview", screen([bar_], order=8, enabled=False))
+    # Messages while trying a base on (the HUD and its toasts are hidden then): a readable
+    # card just above the bar, e.g. "Raccoon: an Uncommon pet from the Park eggs".
+    note = plate("Note", U(0, 460, 0, 0), U(0.5, 0, 1, -108), (0.5, 1), BG, stroke=3, AutomaticSize="Y", Visible=False,
+                 ZIndex=5, children=[
+                     autoscale(), padding(14, 14, 10, 10),
+                     text("Label", "", U(1, 0, 0, 0), ts=20, color=WHITE, display=True, stroke=2, AutomaticSize="Y",
+                          TextWrapped=True, ZIndex=6),
+                 ])
+    write("BasePreview", screen([bar_, note], order=8, enabled=False))
 
 
 # ---------------------------------------------------------------- Upgrades
