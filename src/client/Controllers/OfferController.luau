@@ -1,5 +1,9 @@
 --!strict
 -- Shows the server's contextual offers and the "welcome back" offline income screen.
+-- Offers (Dev, 2026-11-01): the Starter Pack still slides in as a card, from the right
+-- edge, sized to fit the screen. Every other offer pops up as a round button on the right
+-- (Hud.Offers, under the quest list): its icon, "SALE" and the time left. A tap opens the
+-- Robux prompt.
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -19,6 +23,8 @@ local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 
 local AUTO_HIDE_SECONDS = 15
+-- How long a round offer button stays on the right.
+local BUBBLE_SECONDS = 90
 -- After the popup, an offer stays in the shop's special offers for this long.
 local KEEP_IN_SHOP_SECONDS = 10 * 60
 
@@ -27,7 +33,7 @@ local OfferController = {}
 local C: any
 local offerGui: ScreenGui
 local welcomeGui: ScreenGui
-local current: { Key: string, Product: string }? = nil
+local current: { Key: string, Product: string, Target: any? }? = nil
 local showToken = 0
 local specials: { [string]: any } = {}
 
@@ -68,22 +74,18 @@ local TAG_TEXT = { StarterPack = "BEST DEAL!" }
 -- A short line under the icons (the icons already say what's inside).
 local LINE_TEXT = { StarterPack = "Leaving soon! Huge value!" }
 
--- The card slides in next to the left rail (on phones the rail sits under the wallet).
+-- The card slides in at the right edge, vertically centred, shrunk to fit small screens
+-- (Dev, 2026-11-01: on phones it didn't fit and covered the left buttons).
+local CARD_W, CARD_H = 340, 244 + 30 -- with the sticker sticking out on top
 local function placeCard(window: GuiObject)
-	local hud = Ui.screen("Hud")
-	local rail = hud:FindFirstChild("Rail") :: GuiObject?
-	local s = Ui.scale()
-	local height = 244 * s
 	local view = offerGui.AbsoluteSize
-	local x, y = 210 * s, view.Y / 2
-	if rail then
-		local at = rail.AbsolutePosition - hud.AbsolutePosition
-		x = at.X + rail.AbsoluteSize.X + math.ceil(12 * s)
-		y = at.Y + rail.AbsoluteSize.Y / 2
-	end
-	y = math.clamp(y, height / 2 + 8, math.max(height / 2 + 8, view.Y - height / 2 - 8))
-	window.AnchorPoint = Vector2.new(0, 0.5)
-	window.Position = UDim2.fromOffset(x, y)
+	local s = math.min(Ui.scale(), (view.Y - 16) / CARD_H, (view.X * 0.6) / CARD_W)
+	local autoScale = window:FindFirstChild("AutoScale") :: UIScale
+	autoScale.Scale = s
+	local hud = Ui.screen("Hud")
+	local _, right = Ui.edges(hud)
+	window.AnchorPoint = Vector2.new(1, 0.5)
+	window.Position = UDim2.new(1, -(math.max(right, 14) + 4), 0.5, math.floor(14 * s))
 end
 
 local cardMotion = 0
@@ -95,9 +97,9 @@ local function showCard()
 	placeCard(window)
 	local home = window.Position
 	offerGui.Enabled = true
-	scale.Scale = Ui.scale()
-	-- Slide in from the left with a little bounce.
-	window.Position = home - UDim2.fromOffset(window.AbsolutePosition.X + window.AbsoluteSize.X + 20, 0)
+	local _ = scale
+	-- Slide in from the right with a little bounce.
+	window.Position = home + UDim2.fromOffset(window.AbsoluteSize.X + 40, 0)
 	TweenService:Create(window, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Position = home }):Play()
 	Ui.sound("Notify")
 end
@@ -109,7 +111,7 @@ local function hideCard()
 	cardMotion += 1
 	local token = cardMotion
 	local window = Ui.find(offerGui, "Window") :: GuiObject
-	local away = window.Position - UDim2.fromOffset(window.AbsolutePosition.X + window.AbsoluteSize.X + 20, 0)
+	local away = window.Position + UDim2.fromOffset(window.AbsoluteSize.X + 40, 0)
 	TweenService:Create(window, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Position = away }):Play()
 	task.delay(0.26, function()
 		if token == cardMotion then
@@ -150,6 +152,79 @@ end
 local pendingOffer: any = nil
 local welcomeAmount: any = nil
 
+-------------------------------------------------------------------------- round offers
+
+local bubbles: { [string]: { Button: GuiButton, Offer: any, Ends: number } } = {}
+local offersFrame: Frame
+
+local function dropBubble(key: string, clicked: boolean)
+	local b = bubbles[key]
+	if not b then
+		return
+	end
+	bubbles[key] = nil
+	Net.event("OfferResponse"):FireServer(key, clicked)
+	local button = b.Button
+	local pop = button:FindFirstChild("Pop") :: UIScale?
+	if pop then
+		local shrink = TweenService:Create(pop, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Scale = 0 })
+		shrink.Completed:Once(function()
+			button:Destroy()
+		end)
+		shrink:Play()
+	else
+		button:Destroy()
+	end
+end
+
+local buyOffer: (offer: any) -> ()
+
+local function addBubble(offer)
+	if bubbles[offer.Key] then
+		bubbles[offer.Key].Ends = os.clock() + BUBBLE_SECONDS
+		return
+	end
+	local template = offersFrame:FindFirstChild("Template") :: GuiButton
+	local button = template:Clone()
+	button.Name = "Offer_" .. offer.Key
+	button.Visible = true
+	local items = itemsFor(offer.Product)
+	;(button:FindFirstChild("Icon") :: ImageLabel).Image = if items[1] then items[1].icon else AssetLibrary.image("Icon_Star")
+	local pop = Instance.new("UIScale")
+	pop.Name = "Pop"
+	pop.Scale = 0
+	pop.Parent = button
+	button.Parent = offersFrame
+	bubbles[offer.Key] = { Button = button, Offer = offer, Ends = os.clock() + BUBBLE_SECONDS }
+	Ui.button(button, function()
+		local b = bubbles[offer.Key]
+		if b then
+			dropBubble(offer.Key, true)
+			buyOffer(b.Offer)
+		end
+	end)
+	TweenService:Create(pop, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	Ui.sound("Notify")
+end
+
+local function tickBubbles()
+	local now = os.clock()
+	local any = false
+	for key, b in bubbles do
+		local left = b.Ends - now
+		if left <= 0 then
+			dropBubble(key, false)
+		else
+			any = true
+			;(b.Button:FindFirstChild("Timer") :: TextLabel).Text = Format.countdown(left)
+			-- A little wiggle every 5 s so it gets noticed.
+			local phase = (now % 5)
+			b.Button.Rotation = if phase < 0.5 and not Ui.reducedMotion() then math.sin(phase * math.pi * 6) * 10 else 0
+		end
+	end
+	offersFrame.Visible = any
+end
+
 local function showOffer(offer)
 	specials[offer.Key] = {
 		Key = offer.Key,
@@ -166,7 +241,12 @@ local function showOffer(offer)
 		return
 	end
 	pendingOffer = nil
-	current = { Key = offer.Key, Product = offer.Product }
+	-- Everything but the Starter Pack is a round button on the right.
+	if offer.Product ~= "StarterPack" then
+		addBubble(offer)
+		return
+	end
+	current = { Key = offer.Key, Product = offer.Product, Target = offer.Target }
 	showToken += 1
 	local token = showToken
 	Ui.find(offerGui, "Window.Header.Title").Text = offer.Title
@@ -267,20 +347,37 @@ function OfferController:Specials(): { any }
 	return out
 end
 
+buyOffer = function(offer)
+	if offer.Target and string.find(offer.Product, "^SkipHatch") then
+		-- Skip the egg this offer was shown for (not just any egg of that rarity).
+		local ok, message = Net.func("Inventory"):InvokeServer("SkipHatch", offer.Target)
+		if not ok and message then
+			C.HudController:Toast(message, "Bad")
+		end
+	else
+		prompt(offer.Product)
+	end
+end
+
 function OfferController:Init(controllers)
 	C = controllers
 	offerGui = Ui.screen("Offer")
+	offersFrame = Ui.find(Ui.screen("Hud"), "Offers")
 	welcomeGui = Ui.screen("WelcomeBack")
 end
 
 function OfferController:Start()
-	-- The card lives next to the left rail; keep it there when the screen changes size.
+	-- The card lives at the right edge; keep it there when the screen changes size.
 	local window = Ui.find(offerGui, "Window") :: GuiObject
-	Ui.onScale(function(s: number)
+	Ui.onScale(function()
 		if offerGui.Enabled then
 			placeCard(window)
-			local autoScale = window:FindFirstChild("AutoScale") :: UIScale
-			autoScale.Scale = s
+		end
+	end)
+	task.spawn(function()
+		while true do
+			task.wait(0.1)
+			tickBubbles()
 		end
 	end)
 	-- Spinning rays behind the prize and a breathing Buy button.
@@ -302,14 +399,8 @@ function OfferController:Start()
 	Ui.button(Ui.find(offerGui, "Window.Buy"), function()
 		local offer = current
 		hideOffer(true)
-		if offer and offer.Target and string.find(offer.Product, "^SkipHatch") then
-			-- Skip the egg this offer was shown for (not just any egg of that rarity).
-			local ok, message = Net.func("Inventory"):InvokeServer("SkipHatch", offer.Target)
-			if not ok and message then
-				C.HudController:Toast(message, "Bad")
-			end
-		elseif offer then
-			prompt(offer.Product)
+		if offer then
+			buyOffer(offer)
 		end
 	end)
 	-- The welcome-back window only closes from its own buttons (Dev: a stray click shouldn't

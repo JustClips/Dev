@@ -707,7 +707,25 @@ def hud():
         ]),
         qrow,
     ])
-    write("Hud", screen([rail, menu_away, upgrade_menu, more_menu, spin, moon, quests, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, burst, picker,
+    # Offers (2026-11-01, Dev: "make offers pop from the right ... just a circle button like
+    # most games"): round buttons under the quest list (HudController places them). Each
+    # shows what's on sale and the time left; a tap opens the Robux prompt. OfferController
+    # clones Template. Only the Starter Pack still gets the full card (screen "Offer").
+    bubble = node("Template", "TextButton", base(U(0, 64, 0, 64), BackgroundColor3=PREMIUM, Text="", AutoButtonColor=False,
+                                                 Visible=False, ZIndex=2), [
+        node("Corner", "UICorner", {"CornerRadius": [0.5, 0]}),  # round on purpose (Dev asked for circles)
+        node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 3, "ApplyStrokeMode": "Border"}),
+        node("Shade", "UIGradient", {"Color": {"keypoints": [[0, WHITE], [1, "#C9B27A"]]}, "Rotation": 90}),
+        icon("Icon", "Star", 46, U(0.5, 0, 0.5, -3), (0.5, 0.5), ZIndex=3),
+        text("Timer", "", U(0, 60, 0, 18), U(0.5, 0, 1, 6), (0.5, 1), ts=15, display=True, stroke=2.5, ZIndex=4,
+             TextWrapped=False),
+        text("Tag", "SALE", U(0, 46, 0, 16), U(0.5, 0, 0, -6), (0.5, 0), ts=13, color=WHITE, display=True, stroke=2,
+             ZIndex=4, TextWrapped=False, BackgroundTransparency=0, BackgroundColor3=DANGER, Rotation=-8),
+    ])
+    offers = frame("Offers", U(0, 300, 0, 78), U(1, -14, 0, 300), (1, 0), Visible=False, children=[
+        autoscale(compact=0.8), hlist(12, "Right", "Center"), bubble,
+    ])
+    write("Hud", screen([rail, menu_away, upgrade_menu, more_menu, spin, moon, quests, offers, boosts, boost_tip, toasts, announcement, wallet, right, hotbar, hint, combo, burst, picker,
                          spot, pointer, hold], order=1))
 
 

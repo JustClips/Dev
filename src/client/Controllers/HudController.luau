@@ -861,14 +861,19 @@ placeRight = function()
 	top = math.max(6, math.floor(top))
 	list.AnchorPoint = Vector2.new(1, 0)
 	list.Position = UDim2.new(1, -margin, 0, top)
+	-- Round offer buttons (OfferController) go under the list and take room from it.
+	local offers = el.Offers :: Frame
+	local offersH = if offers.Visible then offers.AbsoluteSize.Y + 8 else 0
 	local k = math.max(0.1, list.AbsoluteSize.X / LIST_W)
-	local rows = math.clamp(math.floor((limit - top - HEADER_H * k) / (ROW_H * k)), 1, 5)
+	local rows = math.clamp(math.floor((limit - offersH - top - HEADER_H * k) / (ROW_H * k)), 1, 5)
 	if list:GetAttribute("MaxRows") ~= rows then
 		list:SetAttribute("MaxRows", rows)
 	end
+	local listBottom = if list.Visible then list.AbsolutePosition.Y + list.AbsoluteSize.Y - originY + 8 else top
+	offers.AnchorPoint = Vector2.new(1, 0)
+	offers.Position = UDim2.new(1, -margin, 0, math.floor(listBottom))
 	if not lastCompact then
-		local listBottom = if list.Visible then list.AbsolutePosition.Y + list.AbsoluteSize.Y - originY + 10 else top
-		rightFrame.Position = UDim2.new(1, -14, 0, math.floor(listBottom))
+		rightFrame.Position = UDim2.new(1, -14, 0, math.floor(listBottom + offersH + 2))
 	end
 end
 
@@ -928,6 +933,7 @@ function HudController:Init(controllers)
 	el.SpinButton = Ui.find(hud, "SpinButton")
 	el.MoonPanel = Ui.find(hud, "MoonPanel")
 	el.QuestList = Ui.find(hud, "QuestList")
+	el.Offers = Ui.find(hud, "Offers")
 	el.Toasts = Ui.find(hud, "Toasts")
 	el.Hint = Ui.find(hud, "Hint")
 	-- Studio places synced before the combo rework still hold the old frame: drop it.
