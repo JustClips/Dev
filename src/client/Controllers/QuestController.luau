@@ -108,6 +108,7 @@ type Entry = {
 	RewardKind: string?,
 	RewardItem: string?,
 	Go: string?, -- button text while not done ("Go"); nil = a grey Claim
+	Section: string, -- window frame: "Main", "Daily" or "Zones"
 }
 
 local function zoneEntry(zoneId: string): any
@@ -128,7 +129,8 @@ local function entries(quests): { Entry }
 			Key = "Main",
 			Order = 1,
 			Icon = "Icon_Quest",
-			Who = `QUEST MASTER · QUEST {job.Number}`,
+			Who = `QUEST {job.Number}`,
+			Section = "Main",
 			Text = job.Text,
 			Fraction = job.Fraction or 0,
 			Progress = job.Progress or "",
@@ -138,7 +140,6 @@ local function entries(quests): { Entry }
 			Reward = job.Reward,
 			RewardKind = job.RewardKind,
 			RewardItem = job.RewardItem,
-			Go = "Go",
 		})
 	end
 	local daily = quests.Daily
@@ -152,7 +153,8 @@ local function entries(quests): { Entry }
 				Key = `Daily{i}`,
 				Order = 10 + i,
 				Icon = "Icon_Daily",
-				Who = "DAILY",
+				Who = "",
+				Section = "Daily",
 				Text = q.Text,
 				Fraction = q.Fraction or 0,
 				Progress = q.Progress or "",
@@ -169,7 +171,8 @@ local function entries(quests): { Entry }
 			Key = "Bonus",
 			Order = 20,
 			Icon = "Icon_Spin",
-			Who = `DAILY BONUS · NEW DAILIES IN {Format.countdown(left)}`,
+			Who = "BONUS",
+			Section = "Daily",
 			Text = "Claim all 3 dailies",
 			Fraction = claimed / math.max(1, #daily.List),
 			Progress = `{claimed}/{#daily.List}`,
@@ -187,7 +190,8 @@ local function entries(quests): { Entry }
 				Key = `Zone_{z.Zone}`,
 				Order = 30 + i,
 				Icon = "Icon_Zones",
-				Who = string.upper(`{z.Npc} · {z.ZoneName} · {z.Step}/{z.Steps}`),
+				Who = string.upper(`{z.Npc} · STEP {z.Step}/{z.Steps}`),
+				Section = "Zones",
 				Text = z.Text,
 				Fraction = z.Fraction or 0,
 				Progress = z.Progress or "",
@@ -304,7 +308,7 @@ local function renderWindow(quests)
 		local row = template:Clone()
 		row.Name = "Row_" .. key
 		row.Visible = true
-		row.Parent = scroll
+		row.Parent = Ui.find(scroll, `{current[key].Section}.Rows`)
 		Ui.button(row:FindFirstChild("Action") :: GuiButton, function()
 			act(key, false)
 		end)
@@ -315,8 +319,16 @@ local function renderWindow(quests)
 		-- Claimed rows sink to the bottom of their group.
 		row.LayoutOrder = e.Order + (if e.Claimed then 100 else 0)
 		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.image(e.Icon)
-		;(row:FindFirstChild("Who") :: TextLabel).Text = e.Who
-		;(row:FindFirstChild("Text") :: TextLabel).Text = e.Text
+		local who = row:FindFirstChild("Who") :: TextLabel
+		who.Text = e.Who
+		who.Visible = e.Who ~= ""
+		local textLabel = row:FindFirstChild("Text") :: TextLabel
+		textLabel.Text = e.Text
+		-- No small title (dailies): the text and bar sit centred in the row.
+		local shift = if e.Who == "" then -8 else 0
+		textLabel.Position = UDim2.new(textLabel.Position.X.Scale, textLabel.Position.X.Offset, 0, 22 + shift)
+		local bar = row:FindFirstChild("Bar") :: Frame
+		bar.Position = UDim2.new(bar.Position.X.Scale, bar.Position.X.Offset, 0, 50 + shift)
 		setBar(row:FindFirstChild("Bar") :: Frame, if e.Done or e.Claimed then 1 else e.Fraction, if e.Claimed
 			then "DONE"
 			elseif e.Done then "DONE!"
@@ -333,6 +345,26 @@ local function renderWindow(quests)
 			paint(button, "Claim", GREY)
 		end
 	end
+end
+
+-- Sections with nothing in them hide; the daily frame shows when new dailies come.
+local function renderSections(quests)
+	local scroll = Ui.find(gui, "Window.List") :: ScrollingFrame
+	for _, name in { "Main", "Daily", "Zones" } do
+		local section = scroll:FindFirstChild(name) :: Frame
+		local rows = section:FindFirstChild("Rows") :: Frame
+		local any = false
+		for _, child in rows:GetChildren() do
+			if child:IsA("GuiObject") then
+				any = true
+			end
+		end
+		section.Visible = any
+	end
+	local daily = quests.Daily
+	local timer = Ui.find(scroll, "Daily.Header.Timer") :: TextLabel
+	local left = math.max(0, ((daily and daily.ResetsAt) or 0) - State.now())
+	timer.Text = `New dailies in {Format.countdown(left)}`
 end
 
 local function render()
@@ -357,6 +389,7 @@ local function render()
 		return
 	end
 	renderWindow(quests)
+	renderSections(quests)
 end
 
 function QuestController:Open(_which: string?)

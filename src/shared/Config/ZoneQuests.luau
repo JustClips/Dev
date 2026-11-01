@@ -188,24 +188,27 @@ for _, line in ZoneQuests.Lines do
 	ZoneQuests.ByZone[line.Zone] = line
 end
 
-function ZoneQuests.text(step: Step): string
+-- `where` is the zone's name (Dev, 2026-11-01: "clean 250 leaves here" - here where?).
+function ZoneQuests.text(step: Step, where: string?): string
 	local n = step.Goal
 	local num = Format.number(n)
 	local k = step.Kind
+	local inZone = if where then `in the {where}` else "here"
+	local fromZone = if where then `from the {where}` else "from here"
 	if k == "Leaves" then
-		return `Clean {num} leaves here`
+		return `Clean {num} leaves {inZone}`
 	elseif k == "Eggs" then
-		return if n == 1 then "Find an egg here" else `Find {num} eggs here`
+		return if n == 1 then `Find an egg {inZone}` else `Find {num} eggs {inZone}`
 	elseif k == "Golden" then
-		return if n == 1 then "Sweep a golden pile here" else `Sweep {num} golden piles here`
+		return if n == 1 then `Sweep a golden pile {inZone}` else `Sweep {num} golden piles {inZone}`
 	elseif k == "Bunnies" then
-		return if n == 1 then "Beat a dust bunny here" else `Beat {num} dust bunnies here`
+		return if n == 1 then `Beat a dust bunny {inZone}` else `Beat {num} dust bunnies {inZone}`
 	elseif k == "Trash" then
-		return `Pick up {num} trash here`
+		return `Pick up {num} trash {inZone}`
 	elseif k == "Hatches" then
-		return `Hatch {num} eggs from here`
+		return `Hatch {num} eggs {fromZone}`
 	elseif k == "Pets" then
-		return `Discover {num} pets from here`
+		return `Discover {num} pets {fromZone}`
 	end
 	return "?"
 end

@@ -337,7 +337,7 @@ function QuestService:Update(player: Player)
 	for _, line in ZoneQuests.Lines do
 		local n, step, p = zoneState(data, line)
 		if n and step and p >= step.Goal then
-			notifyReady(player, `Z{line.Zone}_{n}`, ZoneQuests.text(step), false, line.Npc)
+			notifyReady(player, `Z{line.Zone}_{n}`, ZoneQuests.text(step, Zones.ById[line.Zone].Name), false, line.Npc)
 		end
 	end
 	local session = S.DataService:GetSession(player)
@@ -560,7 +560,7 @@ function QuestService:Snapshot(player: Player): any
 			Finished = n ~= nil and step == nil,
 		}
 		if step then
-			entry.Text = ZoneQuests.text(step)
+			entry.Text = ZoneQuests.text(step, Zones.ById[line.Zone].Name)
 			entry.Say = step.Say
 			entry.Progress = zoneProgressText(step, p)
 			entry.Fraction = p / step.Goal

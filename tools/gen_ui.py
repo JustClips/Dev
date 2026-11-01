@@ -1745,8 +1745,26 @@ def quests():
         ]),
         button("Action", U(0, BTN_W, 0, 44), U(1, -PAD, 0.5, 0), (1, 0.5), color=SUCCESS, label="Claim", ts=20),
     ])
+    # Grouped (Dev, 2026-11-01: "organize it, dailies in their own frame that shows when
+    # they reset"): a framed section per kind with a coloured title strip. QuestController
+    # clones Row into each section's Rows and hides empty sections.
+    def section(name, title, color, order, timer=False):
+        kids = [
+            padding(8, 8, 6, 8), vlist(6),
+            frame("Header", U(1, 0, 0, 24), LayoutOrder=0, children=[
+                text("Title", title, U(0.6, 0, 1, 0), ts=18, color=color, display=True, xa="Left"),
+            ] + ([text("Timer", "", U(0.4, 0, 1, 0), U(1, 0, 0, 0), (1, 0), ts=15, color=SUB, display=True, xa="Right",
+                       TextScaled=True, children=fit(15, 8))] if timer else [])),
+            frame("Rows", U(1, 0, 0, 0), AutomaticSize="Y", LayoutOrder=1, children=[vlist(6)]),
+        ]
+        return plate(name, U(1, 0, 0, 0), tint="#DCE3F0", stroke=3, AutomaticSize="Y", LayoutOrder=order, children=kids)
     body = [
-        scroller("List", U(1, -24, 1, -80), U(0, 12, 0, 72), [vlist(6), padding(4, 16, 4, 4), row]),
+        scroller("List", U(1, -24, 1, -80), U(0, 12, 0, 72), [
+            vlist(10), padding(4, 16, 4, 4), row,
+            section("Main", "QUEST MASTER", "#4C8DFF", 1),
+            section("Daily", "DAILY QUESTS", "#E8641E", 2, timer=True),
+            section("Zones", "ZONE QUESTS", "#2FA84F", 3),
+        ]),
     ]
     write("Quests", screen([dim(), window(W, H, "Quests", "Quest", body, header="#4C8DFF", size=(W, H))],
                           order=10, enabled=False))
