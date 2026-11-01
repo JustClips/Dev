@@ -249,10 +249,13 @@ local function renderList(quests)
 			end
 		end
 	end
-	-- Claimable first, then the Quest Master, dailies, zones.
+	-- Claimable first, then the ones closest to done (Dev, 2026-11-01).
 	table.sort(shown, function(a, b)
 		if a.Done ~= b.Done then
 			return a.Done
+		end
+		if math.abs(a.Fraction - b.Fraction) > 0.001 then
+			return a.Fraction > b.Fraction
 		end
 		return a.Order < b.Order
 	end)
