@@ -808,18 +808,23 @@ def shop():
     ])
     # Codes box at the very end, no heading (Dev, 2026-10-31: moved here from Settings, styled
     # after his reference). Built once, not rebuilt with the list; CodesController wires it.
-    codes_box = frame("CodesBox", U(1, 0, 0, 150), bg="#2F5BFF", LayoutOrder=100001, children=[
-        border(INK, 4),
-        node("Shine", "UIGradient", {"Color": {"keypoints": [[0, "#1A3CFF"], [0.5, "#B8C8FF"], [1, "#1A3CFF"]]}, "Rotation": 0}),
-        text("Title", "Follow socials for codes!", U(1, -24, 0, 26), U(0.5, 0, 0, 10), (0.5, 0), ts=22, display=True, stroke=2.5,
-             ZIndex=3),
-        node("Input", "TextBox", base(U(1, -236, 0, 56), U(0, 22, 0, 52), BackgroundColor3="#13248A", BackgroundTransparency=0.35,
-                                      Text="", PlaceholderText="Enter code here...", PlaceholderColor3="#B8C4F0", TextColor3=WHITE,
-                                      TextSize=26, FontFace=DISPLAY, ClearTextOnFocus=False, TextXAlignment="Center", ZIndex=3,
-                                      TextScaled=False), [padding(12, 12, 0), border("#0B1660", 2)]),
-        button("Redeem", U(0, 180, 0, 56), U(1, -18, 0, 52), (1, 0), color=SHOP_GREEN, label="Redeem", ts=30, stroke=3, ZIndex=3),
-        text("Status", "", U(1, -24, 0, 22), U(0.5, 0, 1, -8), (0.5, 1), ts=18, display=True, stroke=2, ZIndex=3,
-             TextScaled=True, children=[fit(18)]),
+    # Remade 2026-11-01 (Dev: the flat blue box "looks bad"): a purple stud card like the
+    # rest of the shop, the pack's golden ticket on the left, a big CODES title, and a white
+    # field with a green Redeem button underneath.
+    codes_box = frame("CodesBox", U(1, 0, 0, 172), bg="#6B3DF0", LayoutOrder=100001, children=[
+        border(INK, 4), studs("#6B3DF0", 0, 40),
+        icon("Ticket", "Event", 108, U(0, 12, 0.5, 0), (0, 0.5), Rotation=-10),
+        text("Title", "CODES", U(1, -150, 0, 40), U(0, 132, 0, 10), ts=38, color=PREMIUM, display=True, stroke=3.5,
+             xa="Left", ZIndex=3),
+        text("Sub", "Follow our socials for free rewards!", U(1, -150, 0, 22), U(0, 132, 0, 52), ts=18, display=True,
+             stroke=2, xa="Left", ZIndex=3, TextScaled=True, children=[fit(18)]),
+        node("Input", "TextBox", base(U(1, -318, 0, 54), U(0, 132, 0, 84), BackgroundColor3=WHITE, BackgroundTransparency=0,
+                                      Text="", PlaceholderText="Enter code...", PlaceholderColor3="#8A90A0", TextColor3=INK,
+                                      TextSize=24, FontFace=DISPLAY, ClearTextOnFocus=False, TextXAlignment="Left", ZIndex=3,
+                                      TextScaled=False), [padding(14, 10, 0), border(INK, 3)]),
+        button("Redeem", U(0, 156, 0, 54), U(1, -14, 0, 84), (1, 0), color=SHOP_GREEN, label="Redeem", ts=28, stroke=3, ZIndex=3),
+        text("Status", "", U(1, -150, 0, 20), U(0, 132, 1, -8), (0, 1), ts=17, display=True, stroke=2, xa="Left", ZIndex=3,
+             TextScaled=True, children=[fit(17)]),
     ])
     lst = scroller("List", U(1, -12, 1, -80), U(0, 6, 0, 74), [vlist(12), padding(6, 10, 8, 14), codes_box])
     lst["properties"].update(ScrollBarThickness=8, ScrollBarImageColor3="#9AA3B8", VerticalScrollBarInset="ScrollBar")

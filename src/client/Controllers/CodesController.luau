@@ -70,6 +70,11 @@ end
 function CodesController:Init(controllers)
 	C = controllers
 	local box = Ui.find(Ui.screen("Shop"), "Window.Panel.List.CodesBox")
+	-- The old blue box's sheen (LiveSync keeps removed children in Studio).
+	local oldShine = box:FindFirstChild("Shine")
+	if oldShine then
+		oldShine:Destroy()
+	end
 	input = Ui.find(box, "Input") :: TextBox
 	status = Ui.find(box, "Status") :: TextLabel
 	redeemButton = Ui.find(box, "Redeem") :: GuiButton

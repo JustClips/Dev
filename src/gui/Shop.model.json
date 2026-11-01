@@ -662,7 +662,7 @@
            ],
            [
             0,
-            150
+            172
            ]
           ],
           "Position": [
@@ -682,7 +682,7 @@
           "BorderSizePixel": 0,
           "LayoutOrder": 100001,
           "BackgroundTransparency": 0,
-          "BackgroundColor3": "#2F5BFF"
+          "BackgroundColor3": "#6B3DF0"
          },
          "children": [
           {
@@ -696,26 +696,87 @@
            }
           },
           {
-           "name": "Shine",
-           "className": "UIGradient",
+           "name": "Studs",
+           "className": "ImageLabel",
            "properties": {
-            "Color": {
-             "keypoints": [
-              [
-               0,
-               "#1A3CFF"
-              ],
-              [
-               0.5,
-               "#B8C8FF"
-              ],
-              [
-               1,
-               "#1A3CFF"
-              ]
+            "Size": [
+             [
+              1,
+              0
+             ],
+             [
+              1,
+              0
              ]
-            },
-            "Rotation": 0
+            ],
+            "Position": [
+             [
+              0,
+              0
+             ],
+             [
+              0,
+              0
+             ]
+            ],
+            "AnchorPoint": [
+             0,
+             0
+            ],
+            "BorderSizePixel": 0,
+            "BackgroundTransparency": 1,
+            "Image": "rbxassetid://117181516497135",
+            "ScaleType": "Tile",
+            "TileSize": [
+             [
+              0,
+              40
+             ],
+             [
+              0,
+              40
+             ]
+            ],
+            "ImageColor3": "#6B3DF0",
+            "ImageTransparency": 0,
+            "ZIndex": 0
+           },
+           "children": []
+          },
+          {
+           "name": "Ticket",
+           "className": "ImageLabel",
+           "properties": {
+            "Size": [
+             [
+              0,
+              108
+             ],
+             [
+              0,
+              108
+             ]
+            ],
+            "Position": [
+             [
+              0,
+              12
+             ],
+             [
+              0.5,
+              0
+             ]
+            ],
+            "AnchorPoint": [
+             0,
+             0.5
+            ],
+            "BorderSizePixel": 0,
+            "BackgroundTransparency": 1,
+            "Image": "rbxassetid://118550140119827",
+            "ScaleType": "Fit",
+            "Rotation": -10,
+            "ZIndex": 3
            }
           },
           {
@@ -725,17 +786,17 @@
             "Size": [
              [
               1,
-              -24
+              -150
              ],
              [
               0,
-              26
+              40
              ]
             ],
             "Position": [
              [
-              0.5,
-              0
+              0,
+              132
              ],
              [
               0,
@@ -743,15 +804,15 @@
              ]
             ],
             "AnchorPoint": [
-             0.5,
+             0,
              0
             ],
             "BorderSizePixel": 0,
             "BackgroundTransparency": 1,
-            "Text": "Follow socials for codes!",
-            "TextColor3": "#FFFFFF",
-            "TextSize": 22,
-            "TextXAlignment": "Center",
+            "Text": "CODES",
+            "TextColor3": "#FFC83C",
+            "TextSize": 38,
+            "TextXAlignment": "Left",
             "TextYAlignment": "Center",
             "TextWrapped": true,
             "ZIndex": 3,
@@ -767,7 +828,7 @@
              "className": "UIStroke",
              "properties": {
               "Color": "#17191E",
-              "Thickness": 2.5,
+              "Thickness": 3.5,
               "ApplyStrokeMode": "Contextual",
               "LineJoinMode": "Round"
              }
@@ -775,23 +836,23 @@
            ]
           },
           {
-           "name": "Input",
-           "className": "TextBox",
+           "name": "Sub",
+           "className": "TextLabel",
            "properties": {
             "Size": [
              [
               1,
-              -236
+              -150
              ],
              [
               0,
-              56
+              22
              ]
             ],
             "Position": [
              [
               0,
-              22
+              132
              ],
              [
               0,
@@ -803,20 +864,85 @@
              0
             ],
             "BorderSizePixel": 0,
-            "BackgroundColor3": "#13248A",
-            "BackgroundTransparency": 0.35,
-            "Text": "",
-            "PlaceholderText": "Enter code here...",
-            "PlaceholderColor3": "#B8C4F0",
+            "BackgroundTransparency": 1,
+            "Text": "Follow our socials for free rewards!",
             "TextColor3": "#FFFFFF",
-            "TextSize": 26,
+            "TextSize": 18,
+            "TextXAlignment": "Left",
+            "TextYAlignment": "Center",
+            "TextWrapped": true,
+            "ZIndex": 3,
+            "FontFace": {
+             "family": "rbxasset://fonts/families/Montserrat.json",
+             "weight": "Heavy",
+             "style": "Normal"
+            },
+            "TextScaled": true
+           },
+           "children": [
+            {
+             "name": "TextStroke",
+             "className": "UIStroke",
+             "properties": {
+              "Color": "#17191E",
+              "Thickness": 2,
+              "ApplyStrokeMode": "Contextual",
+              "LineJoinMode": "Round"
+             }
+            },
+            {
+             "name": "Fit",
+             "className": "UITextSizeConstraint",
+             "properties": {
+              "MaxTextSize": 18,
+              "MinTextSize": 7
+             }
+            }
+           ]
+          },
+          {
+           "name": "Input",
+           "className": "TextBox",
+           "properties": {
+            "Size": [
+             [
+              1,
+              -318
+             ],
+             [
+              0,
+              54
+             ]
+            ],
+            "Position": [
+             [
+              0,
+              132
+             ],
+             [
+              0,
+              84
+             ]
+            ],
+            "AnchorPoint": [
+             0,
+             0
+            ],
+            "BorderSizePixel": 0,
+            "BackgroundColor3": "#FFFFFF",
+            "BackgroundTransparency": 0,
+            "Text": "",
+            "PlaceholderText": "Enter code...",
+            "PlaceholderColor3": "#8A90A0",
+            "TextColor3": "#17191E",
+            "TextSize": 24,
             "FontFace": {
              "family": "rbxasset://fonts/families/Montserrat.json",
              "weight": "Heavy",
              "style": "Normal"
             },
             "ClearTextOnFocus": false,
-            "TextXAlignment": "Center",
+            "TextXAlignment": "Left",
             "ZIndex": 3,
             "TextScaled": false
            },
@@ -827,11 +953,11 @@
              "properties": {
               "PaddingLeft": [
                0,
-               12
+               14
               ],
               "PaddingRight": [
                0,
-               12
+               10
               ],
               "PaddingTop": [
                0,
@@ -847,8 +973,8 @@
              "name": "Stroke",
              "className": "UIStroke",
              "properties": {
-              "Color": "#0B1660",
-              "Thickness": 2,
+              "Color": "#17191E",
+              "Thickness": 3,
               "ApplyStrokeMode": "Border",
               "LineJoinMode": "Round"
              }
@@ -862,21 +988,21 @@
             "Size": [
              [
               0,
-              180
+              156
              ],
              [
               0,
-              56
+              54
              ]
             ],
             "Position": [
              [
               1,
-              -18
+              -14
              ],
              [
               0,
-              52
+              84
              ]
             ],
             "AnchorPoint": [
@@ -1049,7 +1175,7 @@
               "BackgroundTransparency": 1,
               "Text": "Redeem",
               "TextColor3": "#FFFFFF",
-              "TextSize": 30,
+              "TextSize": 28,
               "TextXAlignment": "Center",
               "TextYAlignment": "Center",
               "TextWrapped": true,
@@ -1082,17 +1208,17 @@
             "Size": [
              [
               1,
-              -24
+              -150
              ],
              [
               0,
-              22
+              20
              ]
             ],
             "Position": [
              [
-              0.5,
-              0
+              0,
+              132
              ],
              [
               1,
@@ -1100,15 +1226,15 @@
              ]
             ],
             "AnchorPoint": [
-             0.5,
+             0,
              1
             ],
             "BorderSizePixel": 0,
             "BackgroundTransparency": 1,
             "Text": "",
             "TextColor3": "#FFFFFF",
-            "TextSize": 18,
-            "TextXAlignment": "Center",
+            "TextSize": 17,
+            "TextXAlignment": "Left",
             "TextYAlignment": "Center",
             "TextWrapped": true,
             "ZIndex": 3,
@@ -1134,7 +1260,7 @@
              "name": "Fit",
              "className": "UITextSizeConstraint",
              "properties": {
-              "MaxTextSize": 18,
+              "MaxTextSize": 17,
               "MinTextSize": 7
              }
             }
