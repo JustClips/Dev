@@ -286,7 +286,11 @@ local function renderList(quests)
 		end
 		row.LayoutOrder = i
 		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.image(e.Icon)
-		;(row:FindFirstChild("Text") :: TextLabel).Text = e.Text
+		local textLabel = row:FindFirstChild("Text") :: TextLabel
+		textLabel.Text = e.Text
+		-- Long quests ("Beat a dust bunny in the Backyard") shrink to fit the row (Dev,
+		-- 2026-11-01: the text ran past the edge). Set here too so an old synced row fits.
+		Ui.fitText(textLabel, 16, 7)
 		local fill = Ui.find(row, "Bar.Fill") :: Frame
 		fill.Size = UDim2.fromScale(if e.Done then 1 else math.clamp(e.Fraction, 0, 1), 1)
 		fill.BackgroundColor3 = if e.Done then GOLD else GREEN
