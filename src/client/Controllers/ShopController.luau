@@ -17,7 +17,9 @@
 -- Free / cash things (tools, cars) are in the Gear window and base skins in the base picker.
 -- Robux items whose ID is still 0 are hidden. The rail Shop button and the Featured button
 -- show a badge while a special offer is up.
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Client = script.Parent.Parent
@@ -163,6 +165,161 @@ local function prompt(key: string, giftTo: number?)
 	if not ok then
 		toast(false, message)
 	end
+	return ok
+end
+
+-------------------------------------------------------------------------- processing
+
+-- Buying from the Shop works like the big games (Dev, 2026-11-01): the Shop steps aside
+-- and a "Processing..." spinner shows while Roblox's buy box is up; once it closes (and the
+-- PURCHASED! show has played) the Shop opens again where you were.
+local processing: ScreenGui? = nil
+local spinning: RBXScriptConnection? = nil
+local buying = false
+
+local function processingGui(): ScreenGui
+	if processing then
+		return processing
+	end
+	local screen = Instance.new("ScreenGui")
+	screen.Name = "Processing"
+	screen.IgnoreGuiInset = true
+	screen.ResetOnSpawn = false
+	screen.DisplayOrder = 30
+	screen.Enabled = false
+	local dim = Instance.new("TextButton") -- swallows taps so nothing behind gets clicked
+	dim.Name = "Dim"
+	dim.Text = ""
+	dim.AutoButtonColor = false
+	dim.Size = UDim2.fromScale(1, 1)
+	dim.BackgroundColor3 = Color3.new(0, 0, 0)
+	dim.BackgroundTransparency = 0.45
+	dim.BorderSizePixel = 0
+	dim.Parent = screen
+	local ring = Instance.new("Frame")
+	ring.Name = "Ring"
+	ring.AnchorPoint = Vector2.new(0.5, 0.5)
+	ring.Position = UDim2.new(0.5, 0, 0.5, -18)
+	ring.Size = UDim2.fromOffset(64, 64)
+	ring.BackgroundTransparency = 1
+	ring.Parent = dim
+	local corner = Instance.new("UICorner") -- a spinner is round on purpose
+	corner.CornerRadius = UDim.new(0.5, 0)
+	corner.Parent = ring
+	local stroke = Instance.new("UIStroke")
+	stroke.Thickness = 7
+	stroke.Color = Color3.new(1, 1, 1)
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = ring
+	local sweep = Instance.new("UIGradient")
+	sweep.Name = "Sweep"
+	sweep.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(0.5, 0.15),
+		NumberSequenceKeypoint.new(0.51, 1),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	sweep.Parent = stroke
+	local text = Instance.new("TextLabel")
+	text.Name = "Label"
+	text.AnchorPoint = Vector2.new(0.5, 0)
+	text.Position = UDim2.new(0.5, 0, 0.5, 28)
+	text.Size = UDim2.fromOffset(300, 30)
+	text.BackgroundTransparency = 1
+	text.Text = "Processing..."
+	text.TextSize = 24
+	text.TextColor3 = Color3.new(1, 1, 1)
+	text.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
+	text.Parent = dim
+	local edge = Instance.new("UIStroke")
+	edge.Thickness = 2.5
+	edge.Color = Color3.fromRGB(23, 25, 30)
+	edge.Parent = text
+	screen.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+	processing = screen
+	return screen
+end
+
+local function showProcessing(on: boolean)
+	local screen = processingGui()
+	screen.Enabled = on
+	if spinning then
+		spinning:Disconnect()
+		spinning = nil
+	end
+	if on then
+		local sweep = (screen :: any).Dim.Ring.UIStroke.Sweep :: UIGradient
+		spinning = RunService.RenderStepped:Connect(function(dt)
+			sweep.Rotation = (sweep.Rotation + dt * 360) % 360
+		end)
+	end
+end
+
+local reopenShop: (Vector2) -> () -- set further down (needs open())
+
+-- Waits for Roblox's buy box to close: true when something was bought.
+local function waitForPrompt(timeout: number): boolean
+	local done = Instance.new("BindableEvent")
+	local result = false
+	local finished = false
+	local function finish(bought: boolean)
+		if not finished then
+			finished = true
+			result = bought
+			done:Fire()
+		end
+	end
+	local me = Players.LocalPlayer
+	local a = MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId, _, bought)
+		if userId == me.UserId then
+			finish(bought)
+		end
+	end)
+	local b = MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, _, bought)
+		if player == me then
+			finish(bought)
+		end
+	end)
+	task.delay(timeout, finish, false)
+	if not finished then
+		done.Event:Wait()
+	end
+	a:Disconnect()
+	b:Disconnect()
+	done:Destroy()
+	return result
+end
+
+-- A buy started from inside the Shop.
+local function shopBuy(key: string, giftTo: number?)
+	if buying then
+		return
+	end
+	buying = true
+	local where = list.CanvasPosition
+	Ui.hide(gui, true)
+	showProcessing(true)
+	local ok = prompt(key, giftTo)
+	local bought = false
+	if ok then
+		bought = waitForPrompt(120)
+	end
+	showProcessing(false)
+	if bought then
+		-- Let the PURCHASED! show start (it waits on the server) and play out first.
+		local started = os.clock()
+		while os.clock() - started < 2 and not C.PurchaseController:IsBusy() do
+			task.wait(0.1)
+		end
+		while os.clock() - started < 10 and C.PurchaseController:IsBusy() do
+			task.wait(0.1)
+		end
+	end
+	buying = false
+	-- Back to the Shop, unless another window was opened meanwhile.
+	if not Ui.anyWindowOpen() then
+		reopenShop(where)
+	end
 end
 
 -- "1d 22h 12m 5s" (the reference's timer style).
@@ -241,13 +398,25 @@ local function productTile(key: string, hi: string?, lo: string?, iconName: stri
 		Enabled = true,
 		Tag = tag,
 		OnBuy = function()
-			prompt(key)
+			shopBuy(key)
 		end,
 		GiftKey = if def.Giftable then key else nil,
 	}
 end
 
 -------------------------------------------------------------------------- gift + quantity pickers
+
+-- A picker (gift / how many) shows on its own: the Shop page and its side buttons hide
+-- while it's open and come back when it closes (Dev, 2026-11-01).
+local function showPopup(popup: Frame?)
+	giftPicker.Visible = popup == giftPicker
+	qtyPicker.Visible = popup == qtyPicker
+	local panel = gui:FindFirstChild("Window") and (gui :: any).Window:FindFirstChild("Panel") :: GuiObject?
+	if panel then
+		panel.Visible = popup == nil
+	end
+	nav.Visible = popup == nil
+end
 
 local function openGiftPicker(key: string)
 	for _, child in giftList:GetChildren() do
@@ -276,14 +445,13 @@ local function openGiftPicker(key: string)
 			button.Visible = true
 			button.Parent = giftList
 			Ui.button(button, function()
-				giftPicker.Visible = false
-				prompt(key, other.UserId)
+				showPopup(nil)
+				shopBuy(key, other.UserId)
 			end)
 		end
 	end
 	giftEmpty.Visible = count == 0
-	qtyPicker.Visible = false
-	giftPicker.Visible = true
+	showPopup(giftPicker)
 end
 
 -- Size the picker to its rows (header + note + one 58 px row each).
@@ -321,8 +489,8 @@ local function addOption(order: number, key: string, image: string, tint: Color3
 	end
 	setPrice(Ui.find(option, "Buy"), robuxPrice(Prices.of(def)), ROBUX)
 	Ui.button(Ui.find(option, "Buy"), function()
-		qtyPicker.Visible = false
-		prompt(key)
+		showPopup(nil)
+		shopBuy(key)
 	end)
 	option.Parent = qtyOptions
 end
@@ -362,8 +530,7 @@ local function openQtyPicker(rarity: string)
 	Ui.find(qtyPicker, "Note").Text = "Bought eggs always hatch their own rarity!"
 	;(Ui.find(qtyPicker, "Header.Icon") :: ImageLabel).Image = AssetLibrary.image("Icon_Egg")
 	fitQtyPicker(#packs)
-	giftPicker.Visible = false
-	qtyPicker.Visible = true
+	showPopup(qtyPicker)
 end
 
 -- The same picker for potion cards: one row per product, with its picture.
@@ -382,8 +549,7 @@ local function openChoicePicker(title: string, choices: { Choice })
 	Ui.find(qtyPicker, "Note").Text = "Potions go to your bag. Use them when you want!"
 	;(Ui.find(qtyPicker, "Header.Icon") :: ImageLabel).Image = AssetLibrary.image(choices[1].Icon)
 	fitQtyPicker(rows)
-	giftPicker.Visible = false
-	qtyPicker.Visible = true
+	showPopup(qtyPicker)
 end
 
 -------------------------------------------------------------------------- pieces
@@ -548,7 +714,7 @@ local function addLuckCard()
 	card.Name = "ServerLuck"
 	card.Size = UDim2.new(1, 0, 0, LUCK_H)
 	Ui.button(Ui.find(card, "Buy"), function()
-		prompt("ServerLuck")
+		shopBuy("ServerLuck")
 	end)
 	luckCard = card
 	place(card)
@@ -618,7 +784,7 @@ local function addEggBanner(now: number)
 		end
 		local key = def.Key
 		Ui.button(buy, function()
-			prompt(key)
+			shopBuy(key)
 		end)
 		local gift = Ui.find(cell, "Gift") :: TextButton
 		gift.Visible = def.Giftable == true
@@ -704,7 +870,7 @@ local function buildFeatured(data)
 			Ends = starterEnds,
 			Price = Prices.of(Products.ProductByKey.StarterPack),
 			OnBuy = function()
-				prompt("StarterPack")
+				shopBuy("StarterPack")
 			end,
 		})
 	end
@@ -717,7 +883,7 @@ local function buildFeatured(data)
 		setPrice(Ui.find(row, "Buy"), robuxPrice(if Products.ProductByKey[offer.Product] then Prices.of(Products.ProductByKey[offer.Product]) else offer.Price), ROBUX)
 		local product = offer.Product
 		Ui.button(Ui.find(row, "Buy"), function()
-			prompt(product)
+			shopBuy(product)
 		end)
 		local label = Ui.find(row, "Timer") :: TextLabel
 		local expires = offer.Expires
@@ -787,7 +953,7 @@ local function buildPasses(data, color: Color3)
 				Icon = if info then info.Icon else "Icon_Star",
 				Tag = if owned or not info then nil else info.Tag,
 				OnBuy = function()
-					prompt(pass.Key)
+					shopBuy(pass.Key)
 				end,
 				-- Passes can't be gifted on Roblox; each has a gift product instead.
 				GiftKey = if Products.passGift(pass.Key) then "Gift" .. pass.Key else nil,
@@ -965,8 +1131,7 @@ end
 
 local function open(section: string?)
 	local key = section and (ALIAS[section] or section)
-	giftPicker.Visible = false
-	qtyPicker.Visible = false
+	showPopup(nil)
 	list.CanvasPosition = Vector2.zero
 	render()
 	if key and key ~= "Featured" then
@@ -976,6 +1141,16 @@ local function open(section: string?)
 			jumpTo(key)
 		end)
 	end
+end
+
+reopenShop = function(where: Vector2)
+	Ui.open("Shop")
+	showPopup(nil)
+	render()
+	task.defer(function()
+		task.wait()
+		list.CanvasPosition = where
+	end)
 end
 
 function ShopController:Toggle()
@@ -1071,10 +1246,10 @@ function ShopController:Start()
 		Ui.close("Shop")
 	end)
 	Ui.button(Ui.find(gui, "Window.GiftPicker.Close"), function()
-		giftPicker.Visible = false
+		showPopup(nil)
 	end)
 	Ui.button(Ui.find(qtyPicker, "Close"), function()
-		qtyPicker.Visible = false
+		showPopup(nil)
 	end)
 	-- Dev Academy tip: the server opens the Shop at Money on the 3rd "not enough cash".
 	Net.event("OpenShop").OnClientEvent:Connect(function(section: any)

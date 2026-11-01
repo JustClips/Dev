@@ -389,6 +389,11 @@ local function pump()
 	playing = false
 end
 
+-- True while a celebration is showing or waiting (the Shop reopens after it).
+function PurchaseController:IsBusy(): boolean
+	return playing or #queue > 0
+end
+
 -- Plays the celebration for a product or pass key (also usable by other controllers).
 function PurchaseController:Celebrate(key: string, info: any?)
 	table.insert(queue, { key = key, info = info or {} })
