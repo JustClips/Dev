@@ -222,7 +222,9 @@ local function tickBubbles()
 			b.Button.Rotation = if phase < 0.5 and not Ui.reducedMotion() then math.sin(phase * math.pi * 6) * 10 else 0
 		end
 	end
-	offersFrame.Visible = any
+	-- Other round buttons (the free potion countdown, RewardsController) also live here.
+	local stay = offersFrame:FindFirstChild("StayBubble") :: GuiObject?
+	offersFrame.Visible = any or (stay ~= nil and stay.Visible)
 end
 
 local function showOffer(offer)

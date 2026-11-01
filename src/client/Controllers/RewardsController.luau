@@ -302,22 +302,36 @@ end
 
 -------------------------------------------------------------------------- stay offer
 
+-- The free potion countdown is a small round button with the other offers on the right
+-- (Hud.Offers), not a wide chip by the wallet (Dev, 2026-11-01: it took a lot of space).
+local stayBubble: GuiButton? = nil
 local function renderStay()
-	local chip = Ui.find(stayGui, "Chip") :: Frame
+	local old = Ui.find(stayGui, "Chip") :: GuiObject
+	old.Visible = false
 	local left = stayEndsAt and stayEndsAt - os.clock()
-	-- Hidden while a window (shop, bag...) is open: it sat on top of them.
-	chip.Visible = left ~= nil and left > 0 and not Ui.anyWindowOpen()
-	if chip.Visible and left then
-		Ui.setText(chip, `Free potion in {Format.time(left)}`)
-		-- A small chip right next to the cash counter, out of the way of the game.
-		local hud = Ui.screen("Hud")
-		local wallet = hud:FindFirstChild("Wallet") :: GuiObject?
-		local first = wallet and wallet:FindFirstChild("CashPanel") :: GuiObject?
-		if wallet and first then
-			local at = first.AbsolutePosition - hud.AbsolutePosition
-			chip.AnchorPoint = Vector2.new(0, 0.5)
-			chip.Position = UDim2.fromOffset(at.X + first.AbsoluteSize.X + math.ceil(10 * Ui.scale()), at.Y + first.AbsoluteSize.Y / 2)
-		end
+	local show = left ~= nil and left > 0
+	local offers = Ui.find(Ui.screen("Hud"), "Offers") :: Frame
+	if show and not stayBubble then
+		local bubble = (offers:FindFirstChild("Template") :: GuiButton):Clone()
+		bubble.Name = "StayBubble"
+		bubble.LayoutOrder = -1
+		;(bubble:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.image("Icon_PotionLuck")
+		;(bubble:FindFirstChild("Tag") :: TextLabel).Text = "FREE"
+		bubble.BackgroundColor3 = Color3.fromRGB(92, 214, 92)
+		Ui.button(bubble, function()
+			local remaining = stayEndsAt and stayEndsAt - os.clock() or 0
+			C.HudController:Toast(`Stay {Format.time(math.max(0, remaining))} more for a free Luck Potion!`, "Info")
+		end)
+		bubble.Parent = offers
+		stayBubble = bubble
+	elseif not show and stayBubble then
+		stayBubble:Destroy()
+		stayBubble = nil
+	end
+	if stayBubble and left then
+		stayBubble.Visible = true
+		;(stayBubble:FindFirstChild("Timer") :: TextLabel).Text = Format.time(left)
+		offers.Visible = true
 	end
 end
 
