@@ -654,7 +654,13 @@ local function renderBoard(silent: boolean?)
 				end
 			end
 		end
-		Ui.setBadge(node:FindFirstChild("Badge") :: GuiObject?, if count > 0 then count else nil)
+		local badge = node:FindFirstChild("Badge") :: GuiObject?
+		if badge then
+			-- On the hexagon's top-right edge, not the empty corner of its box (Dev,
+			-- 2026-11-01: the Pet Lab badge floated over the next hex).
+			badge:SetAttribute("Spot", UDim2.fromOffset(106, 20))
+		end
+		Ui.setBadge(badge, if count > 0 then count else nil)
 	end
 	local back = backHexes[current]
 	if back then

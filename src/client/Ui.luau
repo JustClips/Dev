@@ -516,7 +516,10 @@ local function styleBadge(badge: GuiObject)
 	-- that button and never hangs half off the screen (Dev, 2026-11-01: badges looked
 	-- misplaced).
 	badge.AnchorPoint = Vector2.new(0.5, 0.5)
-	badge.Position = UDim2.new(1, -4, 0, 4)
+	-- A badge on a non-square button (the upgrade tree's hexagons) says where it sits with a
+	-- "Spot" attribute (UDim2), so it lands on the shape, not on its box's empty corner.
+	local spot = badge:GetAttribute("Spot")
+	badge.Position = if typeof(spot) == "UDim2" then spot else UDim2.new(1, -4, 0, 4)
 	-- One disc: glossy red fill with a thick white rim drawn by the stroke (a red disc
 	-- nested inside a white one rounded to different pixels on small screens and looked
 	-- off-centre, Dev 2026-11-01).
