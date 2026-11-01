@@ -429,7 +429,29 @@ local function update()
 				Ui.popFrame(card)
 			end
 		end
-		card.Visible = not holding
+		-- Upgrade / Tree: the line follows where you are (menu closed, menu open, window
+		-- open), so it never asks you to tap something that's already open. Right after
+		-- the free Broom, Gear is still up for a second before it closes and the Upgrade
+		-- menu opens (GarageController): the card and arrow stay hidden for that moment.
+		local handoff = key == "Tree" and Ui.isOpen(Ui.screen("Garage"))
+		if (key == "Upgrade" or key == "Tree") and not celebrating and not handoff then
+			local menuOpen = C.MenuController:IsOpen("UpgradeMenu")
+			local touch = UserInputService.TouchEnabled and not Ui.gamepad()
+			local want
+			if key == "Upgrade" then
+				want = if Ui.isOpen(Ui.screen("Garage")) then "Grab your FREE Broom!"
+					elseif menuOpen then "Tap Gear!"
+					else stepText(step)
+			else
+				want = if C.UpgradeController:IsOpen() then (if Ui.gamepad() then "Press A on Sweep Power. FREE!" elseif touch then "Double-tap Sweep Power. FREE!" else "Click Sweep Power. FREE!")
+					elseif menuOpen then (if touch then "Tap Upgrades!" else "Click Upgrades!")
+					else stepText(step)
+			end
+			if textLabel.Text ~= want then
+				textLabel.Text = want
+			end
+		end
+		card.Visible = not holding and (not handoff or celebrating) -- the "Nice!" still shows
 		glow.Adornee = worldTarget(data)
 		glow.Enabled = glow.Adornee ~= nil
 		local inventoryOpen = Ui.isOpen(Ui.screen("Inventory"))
@@ -486,6 +508,8 @@ local function update()
 		elseif key == "Upgrade" then
 			-- Gear is open: the spotlight moves onto the FREE! button of the Broom card.
 			pointAt(C.GarageController:NextToolButton())
+		elseif handoff then
+			pointAt(nil)
 		elseif key == "Tree" and not C.UpgradeController:IsOpen() then
 			pointAt(C.MenuController:PointerFor("UpgradeMenu", "TreeButton"))
 		elseif key == "Tree" then
