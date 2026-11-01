@@ -840,9 +840,11 @@ def shop():
             ]),
             text("Title", title, U(1, -(120 + timer_w), 1, -6), U(0, 114, 0.5, 0), (0, 0.5), ts=30, color="#FFE34D",
                  display=True, stroke=3, xa="Left", ZIndex=4, TextWrapped=False, TextScaled=True, children=[fit(30)]),
-            plate("TimerPill", U(0, timer_w, 0, 30), U(1, -8, 0.5, 0), (1, 0.5), tint="#1B1030", stroke=2.5, ZIndex=4, children=[
+            # No outline on the countdown (Dev, 2026-11-01).
+            frame("TimerPill", U(0, timer_w, 0, 30), U(1, -8, 0.5, 0), (1, 0.5), bg="#1B1030", BackgroundTransparency=0.2, ZIndex=4,
+                  children=[
                 icon("Icon", "Timer", 24, U(0, 4, 0.5, 0), (0, 0.5), ZIndex=5),
-                text("Timer", "", U(1, -36, 1, -4), U(0, 32, 0.5, 0), (0, 0.5), ts=18, display=True, stroke=2, xa="Left",
+                text("Timer", "", U(1, -36, 1, -4), U(0, 32, 0.5, 0), (0, 0.5), ts=18, display=True, xa="Left",
                      ZIndex=5, TextScaled=True, children=[fit(18)]),
             ]),
         ])
@@ -884,14 +886,16 @@ def shop():
         text("Chance", "0.5%", U(1, 4, 0, 20), U(0.5, 0, 1, 0), (0.5, 1), ts=18, color="#FFE34D", display=True, stroke=2.5,
              ZIndex=6, TextScaled=True, children=[fit(18)]),
     ])
-    cell = frame("BuyCell", U(0, 112, 0, 74), Visible=False, ZIndex=4, children=[
-        text("Count", "1 EGG", U(1, -34, 0, 22), U(0, 0, 0, 0), ts=18, display=True, stroke=2.5, xa="Left", ZIndex=5,
-             TextScaled=True, children=[fit(18)]),
-        button("Gift", U(0, 28, 0, 26), U(1, 0, 0, -2), (1, 0), color=SHOP_GIFT, ico="Gift", ico_px=20, stroke=2.5, ZIndex=6),
+    # Four cells share the row's width (they overlapped at a fixed 112 px). The count sits
+    # on top with the gift beside it; a small "-32%" pill hangs on the button's corner.
+    cell = frame("BuyCell", U(0.25, -6, 0, 76), Visible=False, ZIndex=4, children=[
+        text("Count", "1 EGG", U(1, -30, 0, 20), U(0, 0, 0, 0), ts=17, display=True, stroke=2, xa="Left", ZIndex=5,
+             TextScaled=True, children=[fit(17, 9)]),
+        button("Gift", U(0, 26, 0, 24), U(1, 0, 0, -2), (1, 0), color=SHOP_GIFT, ico="Gift", ico_px=18, stroke=2.5, ZIndex=6),
         button("Buy", U(1, 0, 0, 46), U(0, 0, 1, 0), (0, 1), color=SHOP_GREEN, label="", ts=22, stroke=3, ZIndex=5,
                children=[node("Rainbow", "UIGradient", {"Color": RAINBOW, "Enabled": False})]),
-        plate("Save", U(0, 70, 0, 18), U(0, -4, 1, -54), (0, 0.5), tint=DANGER, stroke=2, Rotation=-6, Visible=False, ZIndex=7,
-              children=[text("Label", "SAVE 30%", U(1, -4, 1, 0), U(0, 2, 0, 0), ts=13, display=True, stroke=1.5, ZIndex=8,
+        plate("Save", U(0, 44, 0, 18), U(0, -4, 1, -46), (0, 0.5), tint=DANGER, stroke=2, Rotation=-6, Visible=False, ZIndex=7,
+              children=[text("Label", "-30%", U(1, -4, 1, 0), U(0, 2, 0, 0), ts=13, display=True, stroke=1.5, ZIndex=8,
                              TextScaled=True, children=[fit(13)])]),
     ])
     egg_banner = frame("EggBanner", U(1, 0, 0, SHOP_EGG_H), bg="#4B2380", Visible=False, children=[
@@ -905,7 +909,7 @@ def shop():
         text("PetsTitle", "PETS INSIDE", U(1, -212, 0, 18), U(0, 200, 0, 54), ts=15, color="#E0C8FF", display=True, stroke=2,
              xa="Left", ZIndex=4),
         frame("Pets", U(1, -212, 0, 92), U(0, 200, 0, 76), ZIndex=4, children=[hlist(8, h="Left", v="Top")]),
-        frame("Buys", U(1, -212, 0, 74), U(0, 200, 1, -12), (0, 1), ZIndex=4, children=[hlist(8, h="Left", v="Bottom")]),
+        frame("Buys", U(1, -212, 0, 76), U(0, 200, 1, -10), (0, 1), ZIndex=4, children=[hlist(8, h="Left", v="Bottom")]),
     ])
 
     # A limited offer the game made you (backpack full, rare egg growing...): stays a while.

@@ -593,7 +593,7 @@ local function addEggBanner(now: number)
 		local savePill = cell:FindFirstChild("Save") :: GuiObject?
 		if savePill then
 			savePill.Visible = count > 1 and save >= 5
-			Ui.find(savePill, "Label").Text = `SAVE {save}%`
+			Ui.find(savePill, "Label").Text = `-{save}%`
 		end
 		local buy = Ui.find(cell, "Buy") :: TextButton
 		setPrice(buy, robuxPrice(Prices.of(def)), ROBUX)
@@ -1001,6 +1001,16 @@ function ShopController:Init(controllers)
 		BigPet = { Model = "ViewportFrame", Glow = "ImageLabel", Label = "TextLabel", Stroke = "UIStroke" },
 		BuyCell = { Worth = "TextLabel" },
 	}
+	for _, name in { "Banner", "EggBanner" } do
+		local pill = templates[name]:FindFirstChild("Strip") and templates[name].Strip:FindFirstChild("TimerPill")
+		if pill then
+			for _, d in pill:GetDescendants() do
+				if d:IsA("UIStroke") or d.Name == "Studs" then
+					d:Destroy()
+				end
+			end
+		end
+	end
 	for name, pieces in STALE do
 		local template = templates[name]
 		for child, class in pieces do

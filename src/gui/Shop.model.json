@@ -2707,40 +2707,11 @@
            0.5
           ],
           "BorderSizePixel": 0,
+          "BackgroundTransparency": 0.2,
           "ZIndex": 4,
-          "BackgroundTransparency": 0,
           "BackgroundColor3": "#1B1030"
          },
          "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2.5,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Round"
-           }
-          },
-          {
-           "name": "Shade",
-           "className": "UIGradient",
-           "properties": {
-            "Color": {
-             "keypoints": [
-              [
-               0,
-               "#FFFFFF"
-              ],
-              [
-               1,
-               "#DCE0E7"
-              ]
-             ]
-            },
-            "Rotation": 90
-           }
-          },
           {
            "name": "Icon",
            "className": "ImageLabel",
@@ -2821,16 +2792,6 @@
             "TextScaled": true
            },
            "children": [
-            {
-             "name": "TextStroke",
-             "className": "UIStroke",
-             "properties": {
-              "Color": "#17191E",
-              "Thickness": 2,
-              "ApplyStrokeMode": "Contextual",
-              "LineJoinMode": "Round"
-             }
-            },
             {
              "name": "Fit",
              "className": "UITextSizeConstraint",
@@ -3786,40 +3747,11 @@
            0.5
           ],
           "BorderSizePixel": 0,
+          "BackgroundTransparency": 0.2,
           "ZIndex": 4,
-          "BackgroundTransparency": 0,
           "BackgroundColor3": "#1B1030"
          },
          "children": [
-          {
-           "name": "Stroke",
-           "className": "UIStroke",
-           "properties": {
-            "Color": "#17191E",
-            "Thickness": 2.5,
-            "ApplyStrokeMode": "Border",
-            "LineJoinMode": "Round"
-           }
-          },
-          {
-           "name": "Shade",
-           "className": "UIGradient",
-           "properties": {
-            "Color": {
-             "keypoints": [
-              [
-               0,
-               "#FFFFFF"
-              ],
-              [
-               1,
-               "#DCE0E7"
-              ]
-             ]
-            },
-            "Rotation": 90
-           }
-          },
           {
            "name": "Icon",
            "className": "ImageLabel",
@@ -3900,16 +3832,6 @@
             "TextScaled": true
            },
            "children": [
-            {
-             "name": "TextStroke",
-             "className": "UIStroke",
-             "properties": {
-              "Color": "#17191E",
-              "Thickness": 2,
-              "ApplyStrokeMode": "Contextual",
-              "LineJoinMode": "Round"
-             }
-            },
             {
              "name": "Fit",
              "className": "UITextSizeConstraint",
@@ -4125,7 +4047,7 @@
          ],
          [
           0,
-          74
+          76
          ]
         ],
         "Position": [
@@ -4135,7 +4057,7 @@
          ],
          [
           1,
-          -12
+          -10
          ]
         ],
         "AnchorPoint": [
@@ -4701,12 +4623,12 @@
      "properties": {
       "Size": [
        [
-        0,
-        112
+        0.25,
+        -6
        ],
        [
         0,
-        74
+        76
        ]
       ],
       "Position": [
@@ -4736,11 +4658,11 @@
         "Size": [
          [
           1,
-          -34
+          -30
          ],
          [
           0,
-          22
+          20
          ]
         ],
         "Position": [
@@ -4761,7 +4683,7 @@
         "BackgroundTransparency": 1,
         "Text": "1 EGG",
         "TextColor3": "#FFFFFF",
-        "TextSize": 18,
+        "TextSize": 17,
         "TextXAlignment": "Left",
         "TextYAlignment": "Center",
         "TextWrapped": true,
@@ -4779,7 +4701,7 @@
          "className": "UIStroke",
          "properties": {
           "Color": "#17191E",
-          "Thickness": 2.5,
+          "Thickness": 2,
           "ApplyStrokeMode": "Contextual",
           "LineJoinMode": "Round"
          }
@@ -4788,7 +4710,7 @@
          "name": "Fit",
          "className": "UITextSizeConstraint",
          "properties": {
-          "MaxTextSize": 18,
+          "MaxTextSize": 17,
           "MinTextSize": 7
          }
         }
@@ -4801,11 +4723,11 @@
         "Size": [
          [
           0,
-          28
+          26
          ],
          [
           0,
-          26
+          24
          ]
         ],
         "Position": [
@@ -4963,11 +4885,11 @@
           "Size": [
            [
             0,
-            20
+            18
            ],
            [
             0,
-            20
+            18
            ]
           ],
           "Position": [
@@ -5255,7 +5177,7 @@
         "Size": [
          [
           0,
-          70
+          44
          ],
          [
           0,
@@ -5269,7 +5191,7 @@
          ],
          [
           1,
-          -54
+          -46
          ]
         ],
         "AnchorPoint": [
@@ -5343,7 +5265,7 @@
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
-          "Text": "SAVE 30%",
+          "Text": "-30%",
           "TextColor3": "#FFFFFF",
           "TextSize": 16,
           "TextXAlignment": "Center",
@@ -8042,7 +7964,7 @@
             ],
             "BorderSizePixel": 0,
             "BackgroundTransparency": 1,
-            "Image": "rbxassetid://117153372879344",
+            "Image": "rbxassetid://74769095296614",
             "ScaleType": "Fit",
             "ZIndex": 13,
             "Visible": false
