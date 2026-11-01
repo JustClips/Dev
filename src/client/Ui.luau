@@ -475,11 +475,11 @@ local BADGE_TOP = Color3.fromRGB(255, 72, 96) -- glossy top of the red
 local BADGE_BOTTOM = Color3.fromRGB(176, 8, 40)
 local BADGE_RING = Color3.fromRGB(255, 255, 255)
 local BADGE_OUTLINE = Color3.fromRGB(40, 14, 22)
--- Pulse (Dev, 2026-11-01, round 3: "pulse each 5 seconds, twice, a gap of 0.5s ... each
+-- Pulse (Dev, 2026-11-01, round 3, then "only twice each 10s": "pulse twice, a gap of 0.5s ... each
 -- pulse should increase by 0.2x with a tween in 0.4s", cartoony not harsh): the badge
 -- circle itself bumps to 1.2x and back, twice, each bump sending out a thin ring. Every badge
--- runs on the same 5 s beat but with its own offset, so they don't all go at once.
-local PULSE_EVERY = 5 -- seconds between one badge's double pulse
+-- runs on the same 10 s beat but with its own offset, so they don't all go at once.
+local PULSE_EVERY = 10 -- seconds between one badge's double pulse (Dev: twice every 10 s)
 local PULSE_GAP = 0.5 -- seconds between the two pulses
 local PULSE_BUMP = 1.2 -- the badge's size at the top of a pulse
 local PULSE_BUMP_TIME = 0.4 -- one grow-and-back
@@ -691,7 +691,11 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	local label = badge:FindFirstChild("Label") :: TextLabel?
 	if label then
 		label.Text = shown
-		label.TextSize = math.floor(px * (if #shown >= 3 then 0.5 else 0.66) + 0.5)
+		label.TextSize = math.floor(px * (if #shown >= 3 then 0.5 else 0.62) + 0.5)
+		-- Montserrat Heavy digits sit low and a lone "1" leans right of its box: nudge them
+		-- onto the optical centre so every badge looks the same (Dev, 2026-11-01).
+		local nudgeX = if shown == "1" then -math.floor(px * 0.06 + 0.5) else 0
+		label.Position = UDim2.new(0.5, nudgeX, 0.5, -math.max(1, math.floor(px * 0.05 + 0.5)))
 	end
 	-- Round for one digit, a pill for "12" or "99+".
 	local extra = if #shown >= 3 then 0.75 elseif #shown == 2 then 0.3 else 0
@@ -700,7 +704,7 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
 	badgeCounts[badge] = shown
 	badge.Visible = true
 	liftHost(badge, true)
-	-- A new or bigger count pulses right away and restarts that badge's 5 s beat.
+	-- A new or bigger count pulses right away and restarts that badge's 10 s beat.
 	if before ~= shown and (before == nil or (tonumber(shown) or 0) > (tonumber(before) or 0)) and not Ui.reducedMotion() then
 		nextPulse[badge] = os.clock() + PULSE_EVERY
 		task.defer(pulseTwice, badge)
