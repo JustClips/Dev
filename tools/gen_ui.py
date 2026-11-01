@@ -343,14 +343,18 @@ def write(name, tree):
 
 
 # ---------------------------------------------------------------- HUD
-def rail_tile(name, label, ico, color, order, ico_px=58, ico_x=0, label_x=0):
+def rail_tile(name, label, ico, color, order, ico_px=58, ico_x=0, ico_y=33, label_x=0):
     return button(name, U(0, 84, 0, 84), color=color, LayoutOrder=order, children=[
         # Label inside the tile (Dev: text hanging off the bottom looked out of bounds).
-        # The icon is centred on the space above the label (y 33), whatever its size.
+        # The icon is centred on the space above the label (y 33); a flat icon like the More
+        # dots sits lower (ico_y) so it reads as centred in the tile (Dev, 2026-11-01).
         # ico_x / label_x nudge a symmetric icon and its label onto one line by eye.
-        icon("Icon", ico, ico_px, U(0.5, ico_x, 0, 33), (0.5, 0.5)),
-        text("Label", label, U(1, -4, 0, 20), U(0.5, label_x, 1, -4), (0.5, 1), ts=17, display=True, stroke=2.5,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 7})]),
+        icon("Icon", ico, ico_px, U(0.5, ico_x, 0, ico_y), (0.5, 0.5)),
+        # Every label uses the same size (15 fits "Upgrade") and sits on the same bottom line,
+        # so the words don't step up and down from tile to tile (Dev, 2026-11-01).
+        text("Label", label, U(1, -4, 0, 20), U(0.5, label_x, 1, -5), (0.5, 1), ts=15, display=True, stroke=2.5,
+             ya="Bottom", TextScaled=True,
+             children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 7})]),
         badge(),
     ])
 
@@ -427,7 +431,7 @@ def hud():
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("UpgradesButton", "Upgrade", "Upgrade", "#FF9A3C", 2),
         rail_tile("BaseButton", "Base", "Base", PILL_BASE, 3),
-        rail_tile("MoreButton", "More", "More", REBIRTH, 4, ico_px=74, ico_x=1, label_x=-2),
+        rail_tile("MoreButton", "More", "More", REBIRTH, 4, ico_px=74, ico_x=1, ico_y=39, label_x=-2),
     ])
 
     def menu(name, title, tiles):
