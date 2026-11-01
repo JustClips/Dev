@@ -13,6 +13,7 @@ local Workspace = game:GetService("Workspace")
 
 local Sounds = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Sounds"))
 local Net = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Net"))
+local Assets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("Assets"))
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui") :: PlayerGui
@@ -693,6 +694,81 @@ local function liftHost(badge: GuiObject, lifted: boolean)
 	host.ZIndex = if lifted then (baseZ :: number) + 1 + rank else baseZ :: number
 end
 
+-- Badge numbers are images (art: Montserrat Black, white with a dark-red edge, each cropped
+-- to its own ink), not text. Text snapped to different pixels on phones' scaled HUD and sat
+-- off-centre (Dev 2026-11-01); scaled images centre exactly at any size.
+local DIGIT_ASPECT = {
+	["0"] = 0.949, ["1"] = 0.646, ["2"] = 0.874, ["3"] = 0.874, ["4"] = 0.975, ["5"] = 0.869,
+	["6"] = 0.914, ["7"] = 0.899, ["8"] = 0.934, ["9"] = 0.914, ["+"] = 0.869,
+}
+local function badgeDigits(badge: GuiObject, label: TextLabel?, shown: string, px: number)
+	local images = Assets.Images :: { [string]: string }
+	local usable = images.Digit_0 ~= nil
+	for i = 1, #shown do
+		if not DIGIT_ASPECT[string.sub(shown, i, i)] then
+			usable = false
+		end
+	end
+	local holder = badge:FindFirstChild("Digits") :: Frame?
+	if not usable then
+		if holder then
+			holder.Visible = false
+		end
+		if label then
+			label.Visible = true
+		end
+		return
+	end
+	if label then
+		label.Visible = false
+	end
+	if not holder then
+		local made = Instance.new("Frame")
+		made.Name = "Digits"
+		made.BackgroundTransparency = 1
+		made.AnchorPoint = Vector2.new(0.5, 0.5)
+		made.Position = UDim2.fromScale(0.5, 0.5)
+		made.Size = UDim2.fromScale(1, 1)
+		made.ZIndex = badge.ZIndex + 1
+		made.Parent = badge
+		holder = made
+	end
+	local box = holder :: Frame
+	box.Visible = true
+	if box:GetAttribute("Shown") == shown then
+		return
+	end
+	box:SetAttribute("Shown", shown)
+	for _, old in box:GetChildren() do
+		old:Destroy()
+	end
+	-- Height as a share of the disc, so the row scales with the badge.
+	local h = if #shown >= 3 then 0.42 elseif #shown == 2 then 0.5 else 0.56
+	local total = 0
+	for i = 1, #shown do
+		total += DIGIT_ASPECT[string.sub(shown, i, i)]
+	end
+	local overlap = 0.12 -- the dark edges of neighbouring digits overlap a little
+	total -= overlap * (#shown - 1)
+	-- Widths are in the disc's height units; the badge is wider than tall for 2+ digits.
+	local width = badge.Size.X.Offset / math.max(badge.Size.Y.Offset, 1)
+	local x = 0.5 - h * total / width / 2
+	for i = 1, #shown do
+		local ch = string.sub(shown, i, i)
+		local w = h * DIGIT_ASPECT[ch] / width
+		local image = Instance.new("ImageLabel")
+		image.Name = "D" .. i
+		image.BackgroundTransparency = 1
+		image.Image = images[if ch == "+" then "Digit_Plus" else "Digit_" .. ch]
+		image.AnchorPoint = Vector2.new(0, 0.5)
+		image.Position = UDim2.fromScale(x, 0.5)
+		image.Size = UDim2.fromScale(w, h)
+		image.ZIndex = box.ZIndex + i
+		image.Parent = box
+		x += w - h * overlap / width
+	end
+end
+
 -- `ownBeat`: the badge only pulses on its own 10 s beat, never because its count went up
 -- (core buttons that add up their menu's badges; Dev, 2026-11-01: a category pulsed every
 -- time something inside it did).
@@ -718,13 +794,12 @@ function Ui.setBadge(badge: GuiObject?, count: (number | string)?, ownBeat: bool
 	if label then
 		label.Text = shown
 		label.TextSize = math.floor(px * (if #shown >= 3 then 0.5 else 0.62) + 0.5)
-		-- Measured: Montserrat digits (the "1" too) are centred in their text box, so the
-		-- label sits dead centre with no nudges (the old nudges pushed them off-centre).
 		label.Position = UDim2.fromScale(0.5, 0.5)
 	end
 	-- Round for one digit, a pill for "12" or "99+".
 	local extra = if #shown >= 3 then 0.75 elseif #shown == 2 then 0.3 else 0
 	badge.Size = UDim2.fromOffset(math.floor(px * (1 + extra) + 0.5), px)
+	badgeDigits(badge, label, shown, px)
 	local before = badgeCounts[badge]
 	badgeCounts[badge] = shown
 	badge.Visible = true

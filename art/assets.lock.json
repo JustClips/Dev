@@ -1138,6 +1138,50 @@
    "id": 114720155624899,
    "sha": "7ea119751b8a03cfdd9b40d16c8c4527978450dfcbfc877db8d6757585c525df"
   },
+  "Digit_0": {
+   "id": 120507147264538,
+   "sha": "dd6637d16dd372bfed032d2ce1472a1cea5499c207f456461a6bfe1f96e25df0"
+  },
+  "Digit_1": {
+   "id": 95888284245743,
+   "sha": "2f5280018cf822d205fb37373726aaac58c254048292b746800843ae95c9b922"
+  },
+  "Digit_2": {
+   "id": 72018396799391,
+   "sha": "e5f11f7cad481520ee50dfdf835699eefbfbee074e00724b0001cb81f0c01b57"
+  },
+  "Digit_3": {
+   "id": 90769705350380,
+   "sha": "72a4fc4536a90ddb86c5f6811170c5b7ae37e4fb64f33ee1fbac465d9ca0db00"
+  },
+  "Digit_4": {
+   "id": 129073060717443,
+   "sha": "51044f1f1556b0b28fc6a936e01bbdb71e02b3a86de376305e62bdd640eecc71"
+  },
+  "Digit_5": {
+   "id": 112426099719554,
+   "sha": "a9d3329668a4fad8018edacec06df6f706b4aeaa5b05c002b7ffef31885c1f67"
+  },
+  "Digit_6": {
+   "id": 132994300035085,
+   "sha": "c8d75bbdb296f2e81f0d25495f7352a936b31226c6e36cfb047606cfc166c273"
+  },
+  "Digit_7": {
+   "id": 105763035378088,
+   "sha": "413a9938aba006d2b2720319281e6802ceec1ea696e4f1d0eb0c339620284339"
+  },
+  "Digit_8": {
+   "id": 91718847639491,
+   "sha": "133a6dbfaf218d86498f7835b703f2d5fb4184eda1078ddd2d8d950209a8a29a"
+  },
+  "Digit_9": {
+   "id": 122751532658995,
+   "sha": "fdcb9eb18bb1ca468d81e02cd155c7ecbc0eece1611e32b312aed36144dab874"
+  },
+  "Digit_Plus": {
+   "id": 121494884071424,
+   "sha": "eae044f85e3a63e1e36e94878e0c2b2e934aee39a87b1f690eb51c092d30781f"
+  },
   "EggSkin_Common_Bloodlit": {
    "id": 127389763269575,
    "sha": "51ea91d70088af38a1e717aea15fcbabaa6c643b85d7760ccddd95d5019611ba"
