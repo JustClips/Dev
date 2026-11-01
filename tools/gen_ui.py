@@ -343,10 +343,11 @@ def write(name, tree):
 
 
 # ---------------------------------------------------------------- HUD
-def rail_tile(name, label, ico, color, order):
+def rail_tile(name, label, ico, color, order, ico_px=58):
     return button(name, U(0, 84, 0, 84), color=color, LayoutOrder=order, children=[
         # Label inside the tile (Dev: text hanging off the bottom looked out of bounds).
-        icon("Icon", ico, 58, U(0.5, 0, 0, 4), (0.5, 0)),
+        # The icon is centred on the space above the label (y 33), whatever its size.
+        icon("Icon", ico, ico_px, U(0.5, 0, 0, 33), (0.5, 0.5)),
         text("Label", label, U(1, -4, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=17, display=True, stroke=2.5,
              TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 17, "MinTextSize": 7})]),
         badge(),
@@ -425,7 +426,7 @@ def hud():
         rail_tile("ShopButton", "Shop", "Shop", PREMIUM, 1),
         rail_tile("UpgradesButton", "Upgrade", "Upgrade", "#FF9A3C", 2),
         rail_tile("BaseButton", "Base", "Base", PILL_BASE, 3),
-        rail_tile("MoreButton", "More", "More", REBIRTH, 4),
+        rail_tile("MoreButton", "More", "More", REBIRTH, 4, ico_px=74),
     ])
 
     def menu(name, title, tiles):
@@ -597,7 +598,7 @@ def hud():
             plus("PlusButton"),
         ], line=False),
         row("BackpackPanel", 54, 40, [
-            icon("Icon", "Backpack", 32, U(0, 26, 0.5, 0), (0.5, 0.5), ZIndex=4),
+            icon("Icon", "Leaf", 32, U(0, 26, 0.5, 0), (0.5, 0.5), ZIndex=4),  # leaves, not a bag (Dev 2026-11-01)
             frame("Bar", U(1, -58, 0, 24), U(0, 50, 0.5, 0), (0, 0.5), bg="#14171D", children=[
                 border(INK, 2),
                 frame("Fill", U(0.2, 0, 1, 0), bg="#FF9A3C", children=[

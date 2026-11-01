@@ -262,12 +262,12 @@
          ],
          [
           0,
-          4
+          33
          ]
         ],
         "AnchorPoint": [
          0.5,
-         0
+         0.5
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
@@ -628,12 +628,12 @@
          ],
          [
           0,
-          4
+          33
          ]
         ],
         "AnchorPoint": [
          0.5,
-         0
+         0.5
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
@@ -994,12 +994,12 @@
          ],
          [
           0,
-          4
+          33
          ]
         ],
         "AnchorPoint": [
          0.5,
-         0
+         0.5
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
@@ -1346,11 +1346,11 @@
         "Size": [
          [
           0,
-          58
+          74
          ],
          [
           0,
-          58
+          74
          ]
         ],
         "Position": [
@@ -1360,16 +1360,16 @@
          ],
          [
           0,
-          4
+          33
          ]
         ],
         "AnchorPoint": [
          0.5,
-         0
+         0.5
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://133409045721231",
+        "Image": "rbxassetid://88336006873108",
         "ScaleType": "Fit",
         "ZIndex": 3
        }
@@ -1965,12 +1965,12 @@
            ],
            [
             0,
-            4
+            33
            ]
           ],
           "AnchorPoint": [
            0.5,
-           0
+           0.5
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
@@ -2331,12 +2331,12 @@
            ],
            [
             0,
-            4
+            33
            ]
           ],
           "AnchorPoint": [
            0.5,
-           0
+           0.5
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
@@ -2697,12 +2697,12 @@
            ],
            [
             0,
-            4
+            33
            ]
           ],
           "AnchorPoint": [
            0.5,
-           0
+           0.5
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
@@ -3325,12 +3325,12 @@
            ],
            [
             0,
-            4
+            33
            ]
           ],
           "AnchorPoint": [
            0.5,
-           0
+           0.5
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
@@ -3691,12 +3691,12 @@
            ],
            [
             0,
-            4
+            33
            ]
           ],
           "AnchorPoint": [
            0.5,
-           0
+           0.5
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
@@ -4057,12 +4057,12 @@
            ],
            [
             0,
-            4
+            33
            ]
           ],
           "AnchorPoint": [
            0.5,
-           0
+           0.5
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
@@ -4423,12 +4423,12 @@
            ],
            [
             0,
-            4
+            33
            ]
           ],
           "AnchorPoint": [
            0.5,
-           0
+           0.5
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
@@ -4789,12 +4789,12 @@
            ],
            [
             0,
-            4
+            33
            ]
           ],
           "AnchorPoint": [
            0.5,
-           0
+           0.5
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
@@ -5156,12 +5156,12 @@
            ],
            [
             0,
-            4
+            33
            ]
           ],
           "AnchorPoint": [
            0.5,
-           0
+           0.5
           ],
           "BorderSizePixel": 0,
           "BackgroundTransparency": 1,
@@ -9090,7 +9090,7 @@
         ],
         "BorderSizePixel": 0,
         "BackgroundTransparency": 1,
-        "Image": "rbxassetid://96563865120478",
+        "Image": "rbxassetid://80264596707887",
         "ScaleType": "Fit",
         "ZIndex": 4
        }
