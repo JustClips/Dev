@@ -8,6 +8,10 @@
    "id": 81694835784309,
    "sha": "6a12e4635fe0b0701108185fb4decc2f0618959641ae36853a46d796195129ea"
   },
+  "Egg_HalloweenIdle": {
+   "id": 97103593651021,
+   "sha": "490f605f409dd9b3e976c44b504ee374d3f156e27b871ee91138c8d92d418395"
+  },
   "Egg_LegendaryIdle": {
    "id": 106554547026556,
    "sha": "8ba92ec582ded7aaf57c87ee6edee554b919e8aa2a5c265e198ff4ebfad85724"
@@ -10367,6 +10371,10 @@
   "Egg_Epic": {
    "id": 70596230482238,
    "sha": "4373b7354c0cba1099d37ed90a866ffbe29cea27890ad9a56b4bc62eb1c11155"
+  },
+  "Egg_Halloween": {
+   "id": 109484040142218,
+   "sha": "8506814606d16ff514a077297181f532b8923441c7d1e207e1d931053c5949c4"
   },
   "Egg_Legendary": {
    "id": 136078012700727,
