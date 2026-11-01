@@ -283,7 +283,7 @@ local function onSweepResult(result)
 	if not root then
 		return
 	end
-	-- What you swept pops up as coins showing their worth that fly into the bag bar
+	-- What you swept pops up as leaves showing their worth that fly into the bag bar
 	-- (FlyController; Dev 2026-10-31: no more "+$12" / "TRASH x5" / "LUCKY x5" text).
 	local special = if result.Crit and result.Crit > 0
 		then "Lucky"

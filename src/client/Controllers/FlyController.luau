@@ -416,8 +416,8 @@ end
 ------------------------------------------------------------------------ leaves
 
 -- Sweeping fills the bag with cash worth of leaves. Each sweep's value is batched into one
--- coin every so often (a coin per sweep would flood the screen). A trash / lucky / golden
--- hit sends its own bigger coin.
+-- leaf every so often (a leaf per sweep would flood the screen). A trash / lucky / golden
+-- hit sends its own bigger leaf.
 local SPECIAL_COLORS: { [string]: Color3 } = {
 	Trash = Color3.fromRGB(110, 210, 255),
 	Lucky = Color3.fromRGB(124, 255, 140),
@@ -429,7 +429,9 @@ local leafLast = 0
 local function sendLeaves(value: any, special: string?)
 	local s = Ui.scale()
 	launch({
-		image = AssetLibrary.image("Icon_Cash"),
+		-- A leaf, not a coin: sweeping fills the bag with leaves, cash only comes from selling
+		-- (Dev, 2026-11-01: coins flying into the bag were confusing).
+		image = AssetLibrary.image("Icon_Leaf"),
 		from = randomPoint(),
 		target = leafTarget,
 		size = COIN_PX * s * (if special then 1.35 else 0.9),
