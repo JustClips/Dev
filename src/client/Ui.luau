@@ -834,6 +834,16 @@ end
 -- Roblox's touch jump button: how far its left edge and top edge sit from the screen's
 -- right and bottom edges (px). Small screens use a 70 px button, bigger ones 120 px.
 function Ui.jumpButtonArea(): (number, number)
+	-- The real button when Roblox's touch controls exist (its size and spot vary a lot by
+	-- device), measured against the full screen.
+	local touch = playerGui:FindFirstChild("TouchGui")
+	local jump = touch and touch:FindFirstChild("JumpButton", true) :: GuiObject?
+	if jump and jump.AbsoluteSize.X > 0 then
+		local full = fullScreen()
+		local right = full.AbsolutePosition.X + full.AbsoluteSize.X
+		local bottom = full.AbsolutePosition.Y + full.AbsoluteSize.Y
+		return right - jump.AbsolutePosition.X, bottom - jump.AbsolutePosition.Y
+	end
 	local camera = workspace.CurrentCamera
 	local view = if camera then camera.ViewportSize else Vector2.new(1000, 600)
 	if math.min(view.X, view.Y) <= 500 then
