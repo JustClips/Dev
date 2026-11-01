@@ -1135,10 +1135,17 @@ local function open(section: string?)
 	list.CanvasPosition = Vector2.zero
 	render()
 	if key and key ~= "Featured" then
-		-- Let the list lay out before measuring where the section is.
+		-- Let the list lay out before measuring where the section is. The window is still
+		-- popping open and the cards are still sizing for a few frames, so aim again a
+		-- few times (Dev, 2026-11-01: opening at Money stayed at the top).
 		task.defer(function()
-			task.wait()
-			jumpTo(key)
+			for _ = 1, 6 do
+				task.wait(0.05)
+				if not gui.Enabled then
+					return
+				end
+				jumpTo(key)
+			end
 		end)
 	end
 end

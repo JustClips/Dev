@@ -82,11 +82,18 @@ local picked: { [string]: string? } = {}
 local mainAction: () -> () = function() end
 local robuxAction: () -> () = function() end
 
--- A grey Buy (not enough cash) opens the Shop at Money, like most games (Dev, 2026-11-01:
--- it did nothing).
+-- A grey Buy (not enough cash) says so; every 3rd press opens the Shop at Money (Tizzy's
+-- playbook: open the shop after the 3rd "not enough cash"; Dev, 2026-11-01).
+local shortfalls = 0
 local function needCash()
-	toast(false, "Not enough cash! Get more in the Shop.")
-	C.ShopController:Open("Money")
+	shortfalls += 1
+	if shortfalls >= 3 then
+		shortfalls = 0
+		toast(false, "Not enough cash! Get more in the Shop.")
+		C.ShopController:Open("Money")
+	else
+		toast(false, "Not enough cash!")
+	end
 end
 
 local function toolEntries(data): ({ Entry }, Entry?)
