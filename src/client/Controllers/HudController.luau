@@ -350,7 +350,7 @@ end
 -- Base from the Sell step on (it takes you to your base's dump), Upgrade at the Upgrade
 -- step (Gear is in its menu). Everything comes back once the tutorial is done (or after a
 -- rebirth); Sweep Power and SPIN are then taught by the Quest Master's first jobs.
-local STEP_ORDER = { Sweep = 1, Sell = 2, Upgrade = 3, Goal = 4 }
+local STEP_ORDER = { Sweep = 1, Sell = 2, Upgrade = 3, Tree = 4 }
 local function revealRail(data)
 	local key = data.TutorialStep
 	local step = STEP_ORDER[key] or 99
@@ -367,7 +367,7 @@ local function revealRail(data)
 	set(el.Rail:FindFirstChild("ShopButton") :: GuiObject?, done)
 	set(el.Rail:FindFirstChild("MoreButton") :: GuiObject?, done)
 	set(el.Rail:FindFirstChild("BaseButton") :: GuiObject?, done or step >= STEP_ORDER.Sell)
-	set(el.Rail:FindFirstChild("UpgradesButton") :: GuiObject?, done or key == "Upgrade")
+	set(el.Rail:FindFirstChild("UpgradesButton") :: GuiObject?, done or key == "Upgrade" or key == "Tree")
 	set(el.SpinButton, done)
 	set(el.MoonPanel, done)
 	set(el.Right, done)

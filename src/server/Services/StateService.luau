@@ -11,7 +11,6 @@ local Rewards = require(Shared.Config.Rewards)
 local Tools = require(Shared.Config.Tools)
 local Types = require(Shared.Types)
 local Upgrades = require(Shared.Config.Upgrades)
-local World = require(Shared.Config.World)
 
 local StateService = {}
 
@@ -44,14 +43,9 @@ end
 
 -- The tutorial (Dev, 2026-11-01): it answers "why am I here, what do I do?" and nothing
 -- else. Sweep leaves until your bag has some, sell them, upgrade your tool (free Broom),
--- then see your next goal: the gate to the next area. Eggs come after, taught by the egg
--- lesson the first time you find one (eggLesson below).
+-- then buy your first upgrade in the upgrade tree (free Sweep Power). Eggs come after,
+-- taught by the egg lesson the first time you find one (eggLesson below).
 local SWEEP_GOAL = 30 -- leaves in the bag before the Sell step
-local GOAL_REACH = 22 -- studs from the next area's gate that count as "seen it"
-local GOAL_SPOT = (function()
-	local c = World.Corridors[1]
-	return Vector3.new((c.Min.X + c.Max.X) / 2, 0, c.Max.Y - 4)
-end)()
 
 local function tutorialStep(player: Player, session: any): string
 	local data = session.Data
@@ -65,8 +59,10 @@ local function tutorialStep(player: Player, session: any): string
 	if data.ToolTier < Tools.FreeTier then
 		return "Upgrade"
 	end
-	if data.Flags.SawNextArea ~= true then
-		return "Goal"
+	-- Last (Dev, 2026-11-01): buy your first upgrade in the upgrade tree (Sweep Power
+	-- level 1 is free, Tools.tutorialPrice).
+	if (data.Upgrades.Power or 0) < 1 then
+		return "Tree"
 	end
 	data.Flags.TutorialDone = true
 	-- The guaranteed first egg comes a few leaves after the tutorial (EggService).
@@ -235,26 +231,6 @@ function StateService:Init(services)
 end
 
 function StateService:Start()
-	-- Tutorial "Goal" step: done once you walk up to the next area's gate.
-	task.spawn(function()
-		while true do
-			task.wait(0.5)
-			for player, step in lastStep do
-				if step == "Goal" then
-					local session = S.DataService:GetSession(player)
-					local character = player.Character
-					local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-					if session and root then
-						local flat = Vector3.new(root.Position.X, 0, root.Position.Z)
-						if (flat - GOAL_SPOT).Magnitude <= GOAL_REACH then
-							session.Data.Flags.SawNextArea = true
-							StateService:Mark(player)
-						end
-					end
-				end
-			end
-		end
-	end)
 	task.spawn(function()
 		while true do
 			task.wait(Economy.StateFlushInterval)

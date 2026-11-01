@@ -109,10 +109,6 @@ local function targetFor(data): Vector3?
 		return eggSpot(data, true)
 	elseif step == "Sell" then
 		return if data.Backpack > 0 then dumpSpot else nil
-	elseif step == "Goal" then
-		-- The next area's gate (the Park).
-		local c = World.Corridors[1]
-		return Vector3.new((c.Min.X + c.Max.X) / 2, 0, c.Max.Y - 4)
 	end
 	if step ~= "Done" then
 		return nil

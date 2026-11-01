@@ -42,7 +42,7 @@ type Step = { key: string, text: string, touch: string?, pad: string?, icon: str
 -- with a different cheer.
 local STEPS: { Step } = {
 	-- The tutorial (Dev, 2026-11-01): why you're here and what to aim for. Sweep, sell,
-	-- upgrade, then see the next area. No eggs until it's done.
+	-- upgrade your tool, then your first upgrade tree level. No eggs until it's done.
 	{
 		key = "Sweep",
 		text = "Hold the mouse and WALK to sweep leaves!",
@@ -64,9 +64,11 @@ local STEPS: { Step } = {
 		icon = "Icon_Tools",
 	},
 	{
-		key = "Goal",
-		text = "Your goal: open the Park! Follow the arrow to its gate.",
-		icon = "Icon_Zones",
+		key = "Tree",
+		text = "Open Upgrade, then Upgrades, and buy Sweep Power. FREE!",
+		touch = "Open Upgrade, then Upgrades, and double-tap Sweep Power. FREE!",
+		pad = "Open Upgrade, then Upgrades, and press A on Sweep Power. FREE!",
+		icon = "Icon_Upgrade",
 	},
 	-- The egg lesson (after the tutorial, the first time you find an egg; server
 	-- StateService eggLesson). Numbered on its own: "EGGS 1/4".
@@ -98,7 +100,7 @@ local STEPS: { Step } = {
 	},
 }
 -- The number on the card ("STEP 2/4", "EGGS 1/4"): planting is part of bringing it home.
-local SHOWN_NUMBER: { [string]: number } = { Sweep = 1, Sell = 2, Upgrade = 3, Goal = 4, Egg = 1, Base = 2, Place = 2, Hatching = 3, Open = 4 }
+local SHOWN_NUMBER: { [string]: number } = { Sweep = 1, Sell = 2, Upgrade = 3, Tree = 4, Egg = 1, Base = 2, Place = 2, Hatching = 3, Open = 4 }
 local SHOWN_TOTAL = 4
 -- A different cheer each time a step is done.
 local CHEERS = { "Nice!", "Awesome!", "Great job!", "WOW!", "You rock!", "Super!", "Amazing!", "Pro move!" }
@@ -292,7 +294,6 @@ local function worldTarget(data): Instance?
 		local structures = Workspace:FindFirstChild("Structures")
 		return structures and structures:FindFirstChild("LeafDump" .. index)
 	end
-	-- Goal: no outline, the arrow path leads to the Park gate.
 	return nil
 end
 
@@ -483,6 +484,11 @@ local function update()
 		elseif key == "Upgrade" then
 			-- Gear is open: the spotlight moves onto the FREE! button of the Broom card.
 			pointAt(C.GarageController:NextToolButton())
+		elseif key == "Tree" and not C.UpgradeController:IsOpen() then
+			pointAt(C.MenuController:PointerFor("UpgradeMenu", "TreeButton"))
+		elseif key == "Tree" then
+			-- The tree is open: spotlight on the Sweep Power hex (it pulses too).
+			pointAt(C.UpgradeController:GetNode("Power"))
 		else
 			pointAt(nil)
 		end

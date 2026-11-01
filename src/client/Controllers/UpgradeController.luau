@@ -1065,9 +1065,9 @@ function UpgradeController:Start()
 		animateBoard()
 		local data = State.data
 		local job = data and data.Quests and data.Quests.Job
-		local teaching = job ~= nil
-			and job.Kind == "Power"
-			and not job.Done
+		local wantsPower = (data ~= nil and data.TutorialStep == "Tree")
+			or (job ~= nil and job.Kind == "Power" and not job.Done)
+		local teaching = wantsPower
 			and (data.Upgrades.Power or 0) < 1
 			and current == "Main"
 		tutorialHint.Visible = teaching

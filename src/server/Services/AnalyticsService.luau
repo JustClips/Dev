@@ -26,12 +26,12 @@ local ONBOARDING: { { key: string, name: string } } = {
 	{ key = "Loaded", name = "Loading screen done" },
 	{ key = "ToolEquipped", name = "Tool in hand" },
 	{ key = "FirstSweep", name = "First sweep" },
-	-- Since 2026-11-01 (tutorial = sweep, sell, upgrade, next area; eggs after) steps 5-14
+	-- Since 2026-11-01 (tutorial = sweep, sell, Broom, upgrade tree; eggs after) steps 5-14
 	-- mean this. Before, 5-13 were the egg steps, First sell and tutorial done.
 	{ key = "Sell", name = "Filled bag" },
 	{ key = "Upgrade", name = "First sell" },
-	{ key = "Goal", name = "Got free Broom" },
-	{ key = "Done", name = "Saw next area / tutorial done" },
+	{ key = "Tree", name = "Got free Broom" },
+	{ key = "Done", name = "Bought Sweep Power / tutorial done" },
 	{ key = "LessonEgg", name = "Found first egg" },
 	{ key = "LessonBase", name = "Picked up egg" },
 	{ key = "LessonPlace", name = "Brought egg home" },
