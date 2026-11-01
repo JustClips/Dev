@@ -31,7 +31,7 @@ local GarageController = {}
 local C: any
 local gui: ScreenGui
 local list: ScrollingFrame
-local template: Frame
+local template: TextButton
 local tabTools: TextButton
 local tabCars: TextButton
 local hint: TextLabel
@@ -55,77 +55,80 @@ local function promptRobux(key: string)
 	end
 end
 
-local function newRow(order: number, name: string): Frame
-	local row = template:Clone()
-	row.Name = name
-	row.LayoutOrder = order
-	row.Visible = true
-	return row
-end
+-- Layout C (Dev, 2026-11-01): small tiles on the left, details of the tapped one on the
+-- right. Each tab turns its tools / cars into entries; the tiles and the panel draw them.
+type Entry = {
+	key: string,
+	order: number,
+	name: string,
+	image: string,
+	width: number,
+	power: number,
+	holds: number,
+	state: string, -- OWNED, EQUIPPED, NEXT, LOCKED, RENTED, BUY, REBIRTH n
+	color: Color3,
+	shadow: boolean, -- locked: drawn as a dark shadow
+	price: string?, -- on the tile
+	mainText: string,
+	mainColor: Color3,
+	onMain: () -> (),
+	robux: any?,
+	robuxVerb: string,
+}
 
--- Card details shared by tools and cars.
-local function setStats(row: Frame, width: number, power: number, holds: number)
-	local stats = { Width = tostring(width), Leaves = `x{Format.number(power)}`, Holds = Format.number(holds) }
-	for name, value in stats do
-		local cell = row:FindFirstChild(name)
-		local label = cell and cell:FindFirstChild("Value") :: TextLabel?
-		if label then
-			label.Text = value
-		end
-	end
-end
+local detail: Frame
+local picked: { [string]: string? } = {}
+-- The details panel's buttons are wired once; these say what they do right now.
+local mainAction: () -> () = function() end
+local robuxAction: () -> () = function() end
 
--- The corner pill: where you stand with this one (nil hides it).
-local function setStatus(row: Frame, text: string?, color: Color3?)
-	local pill = row:FindFirstChild("Status") :: Frame
-	pill.Visible = text ~= nil
-	if text then
-		pill.BackgroundColor3 = color or GREEN
-		Ui.setText(pill, text)
-	end
-end
-
-local function setMain(row: Frame, text: string, color: Color3, fn: () -> ())
-	local main = row:FindFirstChild("Main") :: TextButton
-	Ui.setText(main, text)
-	main.BackgroundColor3 = color
-	Ui.button(main, fn)
-end
-
-local function setRobux(row: Frame, product: any, verb: string)
-	local robux = row:FindFirstChild("Robux") :: TextButton
-	robux.Visible = product ~= nil
-	if product then
-		Ui.setText(robux, `{verb} {Ui.ROBUX}{Prices.of(product)}`)
-		Ui.button(robux, function()
-			promptRobux(product.Key)
-		end)
-	end
-end
-
-local function toolRows(data)
+local function toolEntries(data): ({ Entry }, Entry?)
+	local entries = {}
 	local current = data.EffectiveTier or data.ToolTier
+	local now: Entry? = nil
 	for _, tool in Tools.List do
-		local row = newRow(tool.Tier, tool.Id)
 		local owned = tool.Tier <= data.ToolTier
 		local isNext = tool.Tier == data.ToolTier + 1
 		local toolPrice = if tool.Tier == 2 then Tools.tutorialPrice(tool.Price, BigNum.toNumber(data.Cash), data.Flags.TutorialDone == true) else tool.Price
 		local afford = BigNum.gte(data.Cash, toolPrice)
-		;(row:FindFirstChild("Name") :: TextLabel).Text = tool.Name
-		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.toolIcon(tool.Id)
-		setStats(row, tool.Radius, tool.Power, tool.Capacity)
+		local e: Entry = {
+			key = tostring(tool.Tier),
+			order = tool.Tier,
+			name = tool.Name,
+			image = AssetLibrary.toolIcon(tool.Id),
+			width = tool.Radius,
+			power = tool.Power,
+			holds = tool.Capacity,
+			state = "LOCKED",
+			color = GREY,
+			shadow = false,
+			mainText = "",
+			mainColor = GREY,
+			onMain = function() end,
+			robux = nil,
+			robuxVerb = "Get now",
+		}
 		if owned then
 			local equipped = tool.Tier == current
-			setStatus(row, if equipped then "EQUIPPED" else "OWNED", if equipped then BLUE else GREEN)
-			setMain(row, if equipped then "Equipped" else "Equip", if equipped then GREY else BLUE, function()
+			e.state = if equipped then "EQUIPPED" else "OWNED"
+			e.color = if equipped then BLUE else GREEN
+			e.mainText = if equipped then "Equipped" else "Equip"
+			e.mainColor = if equipped then GREY else BLUE
+			e.onMain = function()
 				if tool.Tier ~= (State.data and State.data.EffectiveTier or data.ToolTier) then
 					toast(Net.func("EquipTool"):InvokeServer(tool.Tier))
 				end
-			end)
+			end
+			if equipped then
+				now = e
+			end
 		elseif isNext then
-			setStatus(row, "NEXT", GOLD)
-			-- The price is on the button (Dev: it was easy to miss under the name).
-			setMain(row, if toolPrice == 0 then "FREE!" else `Buy {Format.cash(toolPrice)}`, if afford then GREEN else GREY, function()
+			e.state = "NEXT"
+			e.color = GOLD
+			e.price = if toolPrice == 0 then "FREE!" else Format.cash(toolPrice)
+			e.mainText = if toolPrice == 0 then "FREE!" else `Buy {Format.cash(toolPrice)}`
+			e.mainColor = if afford then GREEN else GREY
+			e.onMain = function()
 				local teaching = State.data ~= nil and State.data.TutorialStep == "Upgrade"
 				local ok, message = Net.func("BuyNextTool"):InvokeServer()
 				toast(ok, message)
@@ -138,74 +141,190 @@ local function toolRows(data)
 						C.MenuController:Open("UpgradeMenu")
 					end)
 				end
-			end)
+			end
+			e.robux = if tool.Tier > Tools.FreeTier then liveProduct("ToolSkip" .. tool.Tier) else nil
 		else
-			setStatus(row, "LOCKED", GREY)
-			setMain(row, Format.cash(tool.Price), GREY, function()
+			e.shadow = true
+			e.price = Format.cash(tool.Price)
+			e.mainText = Format.cash(tool.Price)
+			e.onMain = function()
 				toast(false, `Get the {Tools.get(tool.Tier - 1).Name} first`)
-			end)
+			end
 		end
-		setRobux(row, if isNext and tool.Tier > Tools.FreeTier then liveProduct("ToolSkip" .. tool.Tier) else nil, "Get now")
-		row.Parent = list
+		table.insert(entries, e)
 	end
+	return entries, now
 end
 
-local function carRows(data)
+local function carEntries(data): ({ Entry }, Entry?)
+	local entries = {}
+	local now: Entry? = nil
 	for i, car in Tools.Vehicles do
-		local row = newRow(i, car.Id)
 		local owned = Tools.hasVehicle(data.Vehicles, car.Id)
 		local rented = not owned and data.RentedVehicle == car.Id
 		local locked = not owned and not rented and data.Rebirths < car.RequiredRebirths
-		;(row:FindFirstChild("Name") :: TextLabel).Text = car.Name
-		;(row:FindFirstChild("Icon") :: ImageLabel).Image = AssetLibrary.carIcon(car.Id)
-		-- Your best hand tool powers the car's brush too (Tools.carBoost).
-		setStats(row, car.Radius, math.floor(car.Power * Tools.carBoost(data.ToolTier)), car.Capacity)
+		local e: Entry = {
+			key = car.Id,
+			order = i,
+			name = car.Name,
+			image = AssetLibrary.carIcon(car.Id),
+			width = car.Radius,
+			-- Your best hand tool powers the car's brush too (Tools.carBoost).
+			power = math.floor(car.Power * Tools.carBoost(data.ToolTier)),
+			holds = car.Capacity,
+			state = "BUY",
+			color = GOLD,
+			shadow = false,
+			mainText = "",
+			mainColor = GREY,
+			onMain = function() end,
+			robux = nil,
+			robuxVerb = "Get",
+		}
 		if owned or rented then
 			-- Equip picks the car slot 2 spawns; the equipped one spawns right here.
 			local equipped = data.BestVehicle == car.Id
-			setStatus(row, if equipped then "EQUIPPED" elseif owned then "OWNED" else "RENTED", if equipped then BLUE elseif owned then GREEN else ORANGE)
+			e.state = if equipped then "EQUIPPED" elseif owned then "OWNED" else "RENTED"
+			e.color = if equipped then BLUE elseif owned then GREEN else ORANGE
 			if equipped then
-				setMain(row, "Spawn", GREEN, function()
+				now = e
+				e.mainText = "Spawn"
+				e.mainColor = GREEN
+				e.onMain = function()
 					local ok, message = Net.func("SpawnVehicle"):InvokeServer(car.Id)
 					if ok then
 						Ui.close("Garage")
 					else
 						toast(false, message)
 					end
-				end)
+				end
 			else
-				setMain(row, "Equip", BLUE, function()
+				e.mainText = "Equip"
+				e.mainColor = BLUE
+				e.onMain = function()
 					toast(Net.func("EquipVehicle"):InvokeServer(car.Id))
-				end)
+				end
 			end
 		elseif locked then
-			setStatus(row, `REBIRTH {car.RequiredRebirths}`, GREY)
-			setMain(row, Format.cash(car.Price), GREY, function()
+			e.state = `REBIRTH {car.RequiredRebirths}`
+			e.color = GREY
+			e.shadow = true
+			e.price = Format.cash(car.Price)
+			e.mainText = Format.cash(car.Price)
+			e.onMain = function()
 				toast(false, `Reach Rebirth {car.RequiredRebirths} to unlock the {car.Name}`)
-			end)
+			end
 		else
-			setStatus(row, nil)
-			setMain(row, `Buy {Format.cash(car.Price)}`, if BigNum.gte(data.Cash, car.Price) then GREEN else GREY, function()
+			e.price = Format.cash(car.Price)
+			e.mainText = `Buy {Format.cash(car.Price)}`
+			e.mainColor = if BigNum.gte(data.Cash, car.Price) then GREEN else GREY
+			e.onMain = function()
 				toast(Net.func("BuyVehicle"):InvokeServer(car.Id))
-			end)
+			end
+			-- Robux: unlock (until rebirth), or rent for this run if unlock isn't on sale.
+			e.robux = liveProduct(car.UnlockKey) or liveProduct(car.RentKey)
+			e.robuxVerb = if e.robux and e.robux.Kind == "VehicleRental" then "Rent" else "Get"
 		end
-		-- Robux: unlock (until rebirth), or rent for this run if unlock isn't on sale.
-		local product = if owned or rented or locked then nil else (liveProduct(car.UnlockKey) or liveProduct(car.RentKey))
-		setRobux(row, product, if product and product.Kind == "VehicleRental" then "Rent" else "Get")
-		row.Parent = list
+		table.insert(entries, e)
+	end
+	return entries, now
+end
+
+-- Which tile is picked when a tab opens: the next tool / the equipped car.
+local function defaultPick(entries: { Entry }): string?
+	for _, state in { "NEXT", "EQUIPPED", "BUY" } do
+		for _, e in entries do
+			if e.state == state then
+				return e.key
+			end
+		end
+	end
+	return if entries[1] then entries[1].key else nil
+end
+
+local function setStat(name: string, now: number?, new: number, prefix: string)
+	local cell = detail:FindFirstChild(name) :: Frame
+	local value = cell:FindFirstChild("Value") :: TextLabel
+	local fmt = function(n: number): string
+		return prefix .. (if n == math.floor(n) then Format.number(n) else tostring(n))
+	end
+	if now and now ~= new then
+		local color = if new > now then "#22A83A" else "#E0475A"
+		value.Text = `{fmt(now)} → <font color="{color}">{fmt(new)}</font>`
+	else
+		value.Text = fmt(new)
+	end
+	local top = math.max(now or 0, new) * 1.15
+	local bar = cell:FindFirstChild("Bar") :: Frame
+	;(bar:FindFirstChild("New") :: Frame).Size = UDim2.fromScale(if top > 0 then new / top else 0, 1)
+	;(bar:FindFirstChild("Now") :: Frame).Size = UDim2.fromScale(if top > 0 and now then math.min(now, new) / top else 0, 1)
+end
+
+local function showDetail(e: Entry, now: Entry?)
+	local pill = detail:FindFirstChild("Status") :: Frame
+	pill.BackgroundColor3 = e.color
+	Ui.setText(pill, e.state)
+	local image = detail:FindFirstChild("Icon") :: ImageLabel
+	image.Image = e.image
+	image.ImageColor3 = if e.shadow then Color3.new(0, 0, 0) else Color3.new(1, 1, 1)
+	image.ImageTransparency = if e.shadow then 0.45 else 0
+	;(detail:FindFirstChild("Name") :: TextLabel).Text = e.name
+	local base = if now and now ~= e then now else nil
+	setStat("Width", base and base.width, e.width, "")
+	setStat("Leaves", base and base.power, e.power, "x")
+	setStat("Holds", base and base.holds, e.holds, "")
+	local main = detail:FindFirstChild("Main") :: TextButton
+	Ui.setText(main, e.mainText)
+	main.BackgroundColor3 = e.mainColor
+	mainAction = e.onMain
+	local robux = detail:FindFirstChild("Robux") :: TextButton
+	robux.Visible = e.robux ~= nil
+	if e.robux then
+		local product = e.robux
+		Ui.setText(robux, `{e.robuxVerb} {Ui.ROBUX}{Prices.of(product)}`)
+		robuxAction = function()
+			promptRobux(product.Key)
+		end
 	end
 end
 
--- keepScroll: redraws after a purchase or equip stay where you were in the list
+local render: (keepScroll: boolean?) -> ()
+
+local function drawTiles(entries: { Entry }, pick: string?)
+	for _, e in entries do
+		local tile = template:Clone() :: TextButton
+		tile.Name = e.key
+		tile.LayoutOrder = e.order
+		tile.Visible = true
+		tile.BackgroundColor3 = e.color
+		;(tile:FindFirstChild("Tier") :: TextLabel).Text = tostring(e.order)
+		;(tile:FindFirstChild("Mark") :: TextLabel).Text = if e.state == "EQUIPPED" then "ON" else ""
+		;(tile:FindFirstChild("Lock") :: ImageLabel).Visible = e.shadow
+		local image = tile:FindFirstChild("Icon") :: ImageLabel
+		image.Image = e.image
+		image.ImageColor3 = if e.shadow then Color3.new(0, 0, 0) else Color3.new(1, 1, 1)
+		image.ImageTransparency = if e.shadow then 0.45 else 0
+		;(tile:FindFirstChild("Price") :: TextLabel).Text = e.price or ""
+		;(tile:FindFirstChild("Picked") :: Frame).Visible = e.key == pick
+		local key = e.key
+		Ui.button(tile, function()
+			picked[tab] = key
+			render(true)
+		end)
+		tile.Parent = list
+	end
+end
+
+-- keepScroll: redraws after a purchase, equip or tile tap stay where you were in the list
 -- (Dev: buying jumped back to the top). Opening or switching tabs starts at the top.
-local function render(keepScroll: boolean?)
+render = function(keepScroll: boolean?)
 	local data = State.data
 	if not data or not gui.Enabled then
 		return
 	end
 	local scroll = list.CanvasPosition
 	for _, child in list:GetChildren() do
-		if child:IsA("Frame") and child ~= template then
+		if child:IsA("GuiButton") and child ~= template then
 			child:Destroy()
 		end
 	end
@@ -215,51 +334,70 @@ local function render(keepScroll: boolean?)
 	local boost = math.floor((Tools.carBoost(data.ToolTier) - 1) * 100 + 0.5)
 	local fromName = Tools.get(Tools.CarBoost.FromTier + 1).Name
 	local perTier = math.floor(Tools.CarBoost.PerTier * 100 + 0.5)
+	local entries, now
 	if tab == "Tools" then
 		hint.Text = if boost > 0
-			then `Your tool sets your bag on foot. It also boosts every car's Power +{boost}% (+{perTier}% per tool).`
+			then `Your tool sets your bag on foot and boosts every car's Power +{boost}%.`
 			else `Your tool sets your bag on foot. From the {fromName} up, each tool boosts cars +{perTier}%.`
-		toolRows(data)
+		entries, now = toolEntries(data)
 	else
 		hint.Text = if boost > 0
-			then `Your {Tools.get(data.ToolTier).Name} boosts car Power +{boost}% (shown). Equip a car, then spawn it here or from slot 2.`
-			else `Equip a car, then spawn it here or from slot 2. From the {fromName} up, tools boost cars +{perTier}%.`
-		carRows(data)
+			then `Your {Tools.get(data.ToolTier).Name} boosts car Power +{boost}% (shown). Spawn the equipped car here or from slot 2.`
+			else `Equip a car, then spawn it here or from slot 2.`
+		entries, now = carEntries(data)
+	end
+	local pick = picked[tab]
+	local found: Entry? = nil
+	for _, e in entries do
+		if e.key == pick then
+			found = e
+		end
+	end
+	if not found then
+		pick = defaultPick(entries)
+		picked[tab] = pick
+		for _, e in entries do
+			if e.key == pick then
+				found = e
+			end
+		end
+	end
+	drawTiles(entries, pick)
+	if found then
+		showDetail(found, now)
 	end
 	if keepScroll then
 		list.CanvasPosition = scroll
-		-- The canvas grows back after the layout updates; set it again once it has.
 		task.defer(function()
 			list.CanvasPosition = scroll
 		end)
 	else
 		list.CanvasPosition = Vector2.zero
-		-- Tools open at the top, and only scroll when the next tool's card would be out of
-		-- view (Dev 2026-10-31: the window opened half-scrolled with the Broom cut off).
-		if tab == "Tools" then
-			local focus = Tools.List[math.min(data.ToolTier + 1, Tools.MaxTier)]
-			task.defer(function()
-				local card = focus and list:FindFirstChild(focus.Id) :: GuiObject?
-				if not card then
-					return
-				end
-				local top = card.AbsolutePosition.Y - list.AbsolutePosition.Y
-				local bottom = top + card.AbsoluteSize.Y
-				if bottom <= list.AbsoluteSize.Y then
-					return
-				end
-				-- Screen pixels to layout units (the window has a UIScale).
-				local layout = list:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout?
-				local cellY = layout and layout.CellSize.Y.Offset or 0
-				local k = if cellY > 0 then card.AbsoluteSize.Y / cellY else 1
-				list.CanvasPosition = Vector2.new(0, math.max(0, top / math.max(k, 0.01) - 6))
-			end)
-		end
+		-- Scroll only when the picked tile would be out of view.
+		task.defer(function()
+			local tile = pick and list:FindFirstChild(pick) :: GuiObject?
+			if not tile then
+				return
+			end
+			local top = tile.AbsolutePosition.Y - list.AbsolutePosition.Y
+			if top + tile.AbsoluteSize.Y <= list.AbsoluteSize.Y then
+				return
+			end
+			local layout = list:FindFirstChildOfClass("UIGridLayout") :: UIGridLayout?
+			local cellY = layout and layout.CellSize.Y.Offset or 0
+			local k = if cellY > 0 then tile.AbsoluteSize.Y / cellY else 1
+			list.CanvasPosition = Vector2.new(0, math.max(0, top / math.max(k, 0.01) - 6))
+		end)
 	end
 end
 
 function GarageController:Open(which: string?)
 	tab = which or tab
+	-- The tutorial's free Broom is on the Tools tab.
+	if not which and State.data and State.data.Flags.TutorialDone ~= true then
+		tab = "Tools"
+	end
+	picked = {} -- opens on the next tool / the equipped car
 	Ui.open("Garage")
 	render()
 end
@@ -271,10 +409,17 @@ function GarageController:NextToolButton(): GuiObject?
 		return nil
 	end
 	local data = State.data
-	local nextTool = data and data.ToolTier < Tools.MaxTier and Tools.get(data.ToolTier + 1)
-	local row = nextTool and list:FindFirstChild(nextTool.Id)
-	local main = row and row:FindFirstChild("Main")
-	return if main and main:IsA("GuiObject") then main else nil
+	if not data or data.ToolTier >= Tools.MaxTier then
+		return nil
+	end
+	local key = tostring(data.ToolTier + 1)
+	-- Its Buy button when the next tool is the one shown, else its tile (tap it first).
+	if picked.Tools == key then
+		local main = detail:FindFirstChild("Main")
+		return if main and main:IsA("GuiObject") then main else nil
+	end
+	local tile = list:FindFirstChild(key)
+	return if tile and tile:IsA("GuiObject") then tile else nil
 end
 
 function GarageController:Toggle()
@@ -289,13 +434,26 @@ function GarageController:Init(controllers)
 	C = controllers
 	gui = Ui.screen("Garage")
 	list = Ui.find(gui, "Window.List")
+	-- The old card template was a Frame of the same name (LiveSync keeps removed children).
+	for _, child in list:GetChildren() do
+		if child.Name == "Template" and not child:IsA("TextButton") then
+			child:Destroy()
+		end
+	end
 	template = Ui.find(gui, "Window.List.Template")
+	detail = Ui.find(gui, "Window.Detail")
 	tabTools = Ui.find(gui, "Window.Tabs.TabTools")
 	tabCars = Ui.find(gui, "Window.Tabs.TabCars")
 	hint = Ui.find(gui, "Window.Hint")
 end
 
 function GarageController:Start()
+	Ui.button(detail:FindFirstChild("Main") :: GuiButton, function()
+		mainAction()
+	end)
+	Ui.button(detail:FindFirstChild("Robux") :: GuiButton, function()
+		robuxAction()
+	end)
 	Ui.button(Ui.find(gui, "Window.Close"), function()
 		Ui.close("Garage")
 	end)

@@ -439,7 +439,11 @@ local function update()
 			local touch = UserInputService.TouchEnabled and not Ui.gamepad()
 			local want
 			if key == "Upgrade" then
-				want = if Ui.isOpen(Ui.screen("Garage")) then "Grab your FREE Broom!"
+				-- Gear shows tiles + a details panel (Dev, 2026-11-01): if another tile is
+				-- picked, first ask for the Broom's tile, then its FREE! button.
+				local pointer = if Ui.isOpen(Ui.screen("Garage")) then C.GarageController:NextToolButton() else nil
+				want = if pointer and pointer.Name ~= "Main" then "Tap the Broom!"
+					elseif Ui.isOpen(Ui.screen("Garage")) then "Grab your FREE Broom!"
 					elseif menuOpen then "Tap Gear!"
 					else stepText(step)
 			else

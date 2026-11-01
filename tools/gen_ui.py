@@ -1859,41 +1859,65 @@ def garage():
     """Gear window (screen "Garage", called "Tools" before 2026-10-30): a Tools tab (the tool ladder: buy the next one with
     cash or skip with Robux) and a Cars tab (buy, spawn, Robux unlock / rent, and a button
     that teleports you to the Garage). Opened from the Tools button on the right."""
-    # A shop card per tool / car (Dev: the price hid in small text under the name). The
-    # price is on the big button itself ("Buy $1.2B"), a pill on the corner says where you
-    # stand (Equipped / Owned / Next / Locked), and the three stats sit in a little table.
-    def stat(name, label, y):
-        return frame(name, U(1, -16, 0, 20), U(0, 8, 0, y), children=[
-            text("Label", label, U(0.5, 0, 1, 0), ts=16, color=SUB, heavy=True, xa="Left"),
-            text("Value", "", U(0.5, 0, 1, 0), U(1, 0, 0, 0), (1, 0), ts=16, color=INK, display=True, xa="Right"),
-        ])
-    row = plate("Template", U(0, 0, 0, 0), tint=WHITE, stud=0.2, Visible=False, children=[
-        icon("Icon", "Vehicle", 70, U(0.5, 0, 0, 26), (0.5, 0)),
-        frame("Status", U(0, 92, 0, 24), U(0, 6, 0, 6), bg=SUCCESS, Visible=False, ZIndex=4, children=[
-            border(INK, 2),
-            text("Label", "OWNED", U(1, -6, 1, 0), U(0.5, 0, 0, 0), (0.5, 0), ts=16, display=True, stroke=2, ZIndex=5,
-                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+    # Layout C (Dev picked it 2026-11-01 from three mockups): a grid of small square tiles on
+    # the left (colour = where you stand: green owned, blue equipped, gold next, grey locked;
+    # locked ones are a shadow with the price), and a details panel on the right for the tile
+    # you tapped: icon, name, three stats compared to what you hold now, and the buttons.
+    # GarageController clones Window.List.Template for each tile.
+    tile = node("Template", "TextButton", base(U(0, 106, 0, 106), BackgroundColor3="#5B6070", Text="", AutoButtonColor=False,
+                                               Visible=False, ZIndex=2), [
+        border(INK, 4), studs("#5B6070", 0, 30),
+        text("Tier", "1", U(0, 30, 0, 22), U(0, 6, 0, 2), ts=17, display=True, stroke=2.5, xa="Left", ZIndex=4),
+        text("Mark", "", U(0, 44, 0, 22), U(1, -6, 0, 2), (1, 0), ts=17, display=True, stroke=2.5, xa="Right", ZIndex=4),
+        icon("Lock", "Lock", 24, U(1, -4, 0, 4), (1, 0), ZIndex=4, Visible=False),
+        icon("Icon", "Tool", 74, U(0.5, 0, 0.5, 2), (0.5, 0.5), ZIndex=3),
+        text("Price", "", U(1, -8, 0, 20), U(0.5, 0, 1, -4), (0.5, 1), ts=16, display=True, stroke=2.5, ZIndex=4,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+        # White frame around the tapped tile.
+        frame("Picked", U(1, 6, 1, 6), U(0.5, 0, 0.5, 0), (0.5, 0.5), Visible=False, ZIndex=5, children=[
+            node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 4, "ApplyStrokeMode": "Border", "LineJoinMode": "Miter"}),
         ]),
-        text("Name", "Car", U(1, -12, 0, 26), U(0.5, 0, 0, 96), (0.5, 0), ts=21, color=INK, display=True,
-             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 21, "MinTextSize": 10})]),
-        stat("Width", "Width", 122),
-        stat("Leaves", "Leaves", 142),
-        stat("Holds", "Holds", 162),
-        button("Main", U(1, -14, 0, 46), U(0.5, 0, 0, 190), (0.5, 0), color=SUCCESS, label="Buy", ts=21),
-        button("Robux", U(1, -14, 0, 30), U(0.5, 0, 0, 242), (0.5, 0), color=PREMIUM, label="", ts=16, label_color=INK,
-               Visible=False),
     ])
-    tabs = frame("Tabs", U(1, -28, 0, 50), U(0, 14, 0, 76), children=[
+    tabs = frame("Tabs", U(0, 350, 0, 50), U(0, 14, 0, 76), children=[
         hlist(10, "Left", "Center"),
         button("TabTools", U(0, 170, 0, 46), color="#4C8DFF", label="Tools", ts=22, ico="Tool", ico_px=34, LayoutOrder=1),
         button("TabCars", U(0, 170, 0, 46), color="#FF9A3C", label="Cars", ts=22, ico="Vehicle", ico_px=34, LayoutOrder=2),
     ])
-    lst = scroller("List", U(1, -28, 1, -206), U(0, 14, 0, 134), [
-        node("Layout", "UIGridLayout", {"CellSize": U(0, 182, 0, 282), "CellPadding": U(0, 10, 0, 10), "SortOrder": "LayoutOrder",
+    hint = text("Hint", "", U(0, 436, 0, 48), U(1, -14, 0, 77), (1, 0), ts=15, color=SUB, heavy=True, xa="Left",
+                TextScaled=True, TextWrapped=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 15, "MinTextSize": 7})])
+    lst = scroller("List", U(0, 468, 1, -146), U(0, 10, 0, 134), [
+        node("Layout", "UIGridLayout", {"CellSize": U(0, 106, 0, 106), "CellPadding": U(0, 8, 0, 8), "SortOrder": "LayoutOrder",
                                         "HorizontalAlignment": "Left"}),
-        padding(4, 4, 4, 6), row])
-    hint = text("Hint", "", U(1, -28, 0, 44), U(0, 14, 1, -12), (0, 1), ts=15, color=SUB, heavy=True, xa="Left")
-    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Gear", "Tools", [tabs, lst, hint], header="#4C8DFF")],
+        padding(6, 6, 6, 8), tile])
+
+    def stat(name, label, y):
+        return frame(name, U(1, -24, 0, 34), U(0, 12, 0, y), children=[
+            text("Label", label, U(0.5, 0, 0, 18), ts=16, color=INK, display=True, xa="Left"),
+            text("Value", "", U(0.6, 0, 0, 18), U(1, 0, 0, 0), (1, 0), ts=16, color=INK, display=True, xa="Right",
+                 RichText=True, TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+            frame("Bar", U(1, 0, 0, 12), U(0, 0, 0, 20), bg="#E3E6EE", children=[
+                border(INK, 2),
+                frame("New", U(0, 0, 1, 0), bg=SUCCESS),
+                frame("Now", U(0, 0, 1, 0), bg="#4C8DFF", ZIndex=3),
+            ]),
+        ])
+    detail = plate("Detail", U(0, 322, 1, -146), U(1, -12, 0, 134), (1, 0), tint=WHITE, children=[
+        frame("Status", U(0, 104, 0, 24), U(0, 10, 0, 10), bg=PREMIUM, ZIndex=4, children=[
+            border(INK, 2),
+            text("Label", "NEXT", U(1, -6, 1, 0), U(0.5, 0, 0, 0), (0.5, 0), ts=16, display=True, stroke=2, ZIndex=5,
+                 TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 16, "MinTextSize": 7})]),
+        ]),
+        icon("Icon", "Tool", 96, U(0.5, 0, 0, 16), (0.5, 0)),
+        text("Name", "", U(1, -20, 0, 28), U(0.5, 0, 0, 114), (0.5, 0), ts=26, color=INK, display=True,
+             TextScaled=True, children=[node("Fit", "UITextSizeConstraint", {"MaxTextSize": 26, "MinTextSize": 10})]),
+        stat("Width", "Width", 146),
+        stat("Leaves", "Leaves", 182),
+        stat("Holds", "Holds", 218),
+        button("Main", U(1, -20, 0, 50), U(0.5, 0, 1, -54), (0.5, 1), color=SUCCESS, label="Buy", ts=24),
+        button("Robux", U(1, -20, 0, 38), U(0.5, 0, 1, -10), (0.5, 1), color=PREMIUM, label="", ts=18, label_color=INK,
+               Visible=False),
+    ])
+    write("Garage", screen([dim(), window(WIN_W, WIN_H, "Gear", "Tools", [tabs, hint, lst, detail], header="#4C8DFF")],
                            order=10, enabled=False))
 
 
