@@ -788,7 +788,7 @@ layout = function(s: number, compact: boolean)
 		-- Bottom right like on PC (Dev, 2026-11-01), above the jump button; placeRight
 		-- lifts them over the Auto toggles when those show.
 		boosts.AnchorPoint = Vector2.new(1, 1)
-		boosts.Position = UDim2.new(1, -right, 1, -(26 + math.ceil(108 * s)))
+		boosts.Position = UDim2.new(1, -right, 1, -6)
 		if boostLayout then
 			boostLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
 		end
@@ -848,7 +848,8 @@ placeRight = function()
 		-- Boost chips stack above the Auto toggles (or the jump button); the list stops
 		-- above the chips.
 		local toggles = contentEdge(rightFrame, false)
-		local chipsBottom = if toggles then toggles - originY - 6 else height - (26 + 108 * Ui.scale())
+		-- Right down in the corner like on PC (Dev, 2026-11-01: "move them down as much").
+		local chipsBottom = if toggles then toggles - originY - 6 else height - 6 + math.max(0, Ui.bottomGap(hud) - 4)
 		boosts.Position = UDim2.new(1, -margin, 0, math.floor(chipsBottom))
 		local chips = contentEdge(boosts, false)
 		limit = (if chips then chips - originY else chipsBottom) - 8
