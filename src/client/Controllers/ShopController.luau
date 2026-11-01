@@ -286,89 +286,102 @@ local function openGiftPicker(key: string)
 	giftPicker.Visible = true
 end
 
--- "How many?" for one egg rarity: x1, x3 (MOST POPULAR), x10 (BEST VALUE when it is the
--- cheapest per egg, which it is by design).
-local function openQtyPicker(rarity: string)
+-- Size the picker to its rows (header + note + one 58 px row each).
+local function fitQtyPicker(rows: number)
+	qtyPicker.Size = UDim2.fromOffset(qtyPicker.Size.X.Offset, 98 + rows * 66)
+end
+
+local function clearOptions()
 	for _, child in qtyOptions:GetChildren() do
 		if child:GetAttribute("Built") then
 			child:Destroy()
 		end
 	end
+end
+
+-- One slim row: icon, amount, price each, tag, buy button with an optional "-x%" pill.
+local function addOption(order: number, key: string, image: string, tint: Color3?, count: string, each: string, tag: string?, save: number?)
+	local def = Products.ProductByKey[key]
+	local option = clone("Option")
+	option.LayoutOrder = order
+	local pic = Ui.find(option, "Icon") :: ImageLabel
+	pic.Image = image
+	pic.ImageColor3 = tint or Color3.new(1, 1, 1)
+	Ui.find(option, "Count").Text = count
+	Ui.find(option, "Each").Text = each
+	local tagFrame = Ui.find(option, "Tag") :: Frame
+	tagFrame.Visible = tag ~= nil
+	if tag then
+		Ui.find(tagFrame, "Label").Text = tag
+	end
+	local savePill = Ui.find(option, "Save") :: Frame
+	savePill.Visible = save ~= nil and save >= 1
+	if save then
+		Ui.find(savePill, "Label").Text = `-{save}%`
+	end
+	setPrice(Ui.find(option, "Buy"), robuxPrice(Prices.of(def)), ROBUX)
+	Ui.button(Ui.find(option, "Buy"), function()
+		qtyPicker.Visible = false
+		prompt(key)
+	end)
+	option.Parent = qtyOptions
+end
+
+-- Egg colours for the small row icons (the plain egg picture tinted by rarity).
+local EGG_TINT = {
+	Epic = Color3.fromRGB(200, 160, 255),
+	Legendary = Color3.fromRGB(255, 214, 110),
+	Mythic = Color3.fromRGB(255, 130, 140),
+	Cosmic = Color3.fromRGB(130, 160, 255),
+}
+
+-- "How many?" for one egg rarity: x1, x3 (MOST POPULAR), x10 (BEST VALUE when it is the
+-- cheapest per egg, which it is by design). The pill shows the saving against single eggs.
+local function openQtyPicker(rarity: string)
+	clearOptions()
 	local packs = Products.eggPacks(rarity)
 	local cheapest = math.huge
+	local single = math.huge
 	for _, def in packs do
-		cheapest = math.min(cheapest, Prices.of(def) / (def.Count or 1))
+		local each = Prices.of(def) / (def.Count or 1)
+		cheapest = math.min(cheapest, each)
+		if (def.Count or 1) == 1 then
+			single = each
+		end
 	end
 	for i, def in packs do
 		local count = def.Count or 1
-		local option = clone("Option")
-		option.LayoutOrder = i
-		Ui.find(option, "Count").Text = `x{count}`
-		local each = math.floor(Prices.of(def) / count + 0.5)
-		Ui.find(option, "Each").Text = if count > 1 then `{Ui.ROBUX} {each} each` else "Just one"
-		local tag = Ui.find(option, "Tag") :: Frame
-		local tagText = if count == 3 then "MOST POPULAR" elseif count > 1 and Prices.of(def) / count <= cheapest then "BEST VALUE" else nil
-		tag.Visible = tagText ~= nil
-		if tagText then
-			Ui.find(tag, "Label").Text = tagText
-		end
-		setPrice(Ui.find(option, "Buy"), robuxPrice(Prices.of(def)), ROBUX)
-		local key = def.Key
-		Ui.button(Ui.find(option, "Buy"), function()
-			qtyPicker.Visible = false
-			prompt(key)
-		end)
-		option.Parent = qtyOptions
-		local pic = option:FindFirstChild("Icon") :: GuiObject?
-		if pic then
-			pic.Visible = false
-		end
-		ModelView.show(Ui.find(option, "Model"), AssetLibrary.egg(rarity), "Egg_" .. rarity)
+		local eachExact = Prices.of(def) / count
+		local each = math.floor(eachExact + 0.5)
+		local tag = if count == 3 then "MOST POPULAR" elseif count > 1 and eachExact <= cheapest then "BEST VALUE" else nil
+		local save = if count > 1 and single < math.huge then math.floor((1 - eachExact / single) * 100 + 0.5) else nil
+		addOption(i, def.Key, AssetLibrary.image("Icon_Egg"), EGG_TINT[rarity], `x{count}`,
+			if count > 1 then `{Ui.ROBUX} {each} each` else "Just one", tag, save)
 	end
 	Ui.find(qtyPicker, "Header.Title").Text = `How many {rarity} Eggs?`
 	Ui.find(qtyPicker, "Note").Text = "Bought eggs always hatch their own rarity!"
 	;(Ui.find(qtyPicker, "Header.Icon") :: ImageLabel).Image = AssetLibrary.image("Icon_Egg")
+	fitQtyPicker(#packs)
 	giftPicker.Visible = false
 	qtyPicker.Visible = true
 end
 
--- The same picker for potion cards: one option per product, with its picture.
+-- The same picker for potion cards: one row per product, with its picture.
 local function openChoicePicker(title: string, choices: { Choice })
-	for _, child in qtyOptions:GetChildren() do
-		if child:GetAttribute("Built") then
-			child:Destroy()
-		end
-	end
+	clearOptions()
+	local rows = 0
 	for i, choice in choices do
 		local def = Products.ProductByKey[choice.Key]
 		if not def or def.Id == 0 then
 			continue
 		end
-		local option = clone("Option")
-		option.LayoutOrder = i
-		Ui.find(option, "Count").Text = choice.Count
-		Ui.find(option, "Each").Text = choice.Each
-		local tag = Ui.find(option, "Tag") :: Frame
-		tag.Visible = choice.Tag ~= nil
-		if choice.Tag then
-			Ui.find(tag, "Label").Text = choice.Tag
-		end
-		setPrice(Ui.find(option, "Buy"), robuxPrice(Prices.of(def)), ROBUX)
-		Ui.button(Ui.find(option, "Buy"), function()
-			qtyPicker.Visible = false
-			prompt(choice.Key)
-		end)
-		local pic = option:FindFirstChild("Icon") :: ImageLabel?
-		if pic then
-			pic.Image = AssetLibrary.image(choice.Icon)
-			pic.Visible = true
-		end
-		;(Ui.find(option, "Model") :: GuiObject).Visible = false
-		option.Parent = qtyOptions
+		rows += 1
+		addOption(i, choice.Key, AssetLibrary.image(choice.Icon), nil, choice.Count, choice.Each, choice.Tag, nil)
 	end
 	Ui.find(qtyPicker, "Header.Title").Text = title
 	Ui.find(qtyPicker, "Note").Text = "Potions go to your bag. Use them when you want!"
 	;(Ui.find(qtyPicker, "Header.Icon") :: ImageLabel).Image = AssetLibrary.image(choices[1].Icon)
+	fitQtyPicker(rows)
 	giftPicker.Visible = false
 	qtyPicker.Visible = true
 end
@@ -1027,6 +1040,13 @@ function ShopController:Init(controllers)
 	qtyPicker = Ui.find(gui, "Window.QtyPicker")
 	qtyOptions = Ui.find(gui, "Window.QtyPicker.Options")
 	templates.Option = Ui.find(qtyOptions, "Option")
+	-- The old big egg cards left these behind in open Studio places.
+	for _, child in { "Glow", "Model", "Studs" } do
+		local old = templates.Option:FindFirstChild(child)
+		if old then
+			old:Destroy()
+		end
+	end
 	shopBadge = Ui.find(Ui.screen("Hud"), "Rail.ShopButton.Badge")
 end
 

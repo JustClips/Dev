@@ -209,7 +209,10 @@ def button(name, size, pos=U(0, 0, 0, 0), anchor=(0, 0), color=SUCCESS, label=No
             node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 2, "Transparency": 0.55, "ApplyStrokeMode": "Border",
                                         "LineJoinMode": "Miter"}),
         ]))
-    if ico:
+    if ico and label is None:
+        # Icon-only buttons (gift, sell...) keep the icon in the middle.
+        kids.append(icon("Icon", ico, ico_px, U(0.5, 0, 0.5, 0), (0.5, 0.5)))
+    elif ico:
         kids.append(icon("Icon", ico, ico_px, U(0, 8, 0.5, 0), (0, 0.5)))
     if label is not None:
         left = ico_px + 10 if ico else 6
@@ -506,12 +509,13 @@ def hud():
         autoscale(compact=0.85),
         border(INK, 3),
         icon("Icon", "Tools", 42, U(0, 6, 0.5, 0), (0, 0.5), ZIndex=4),
-        text("Title", "NEXT: Rake", U(1, -146, 0, 20), U(0, 54, 0, 3), ts=17, color=PREMIUM, display=True, stroke=2.5,
+        # Dev 2026-11-01: the title sat too low (into the bar), so it starts at the top edge.
+        text("Title", "NEXT: Rake", U(1, -146, 0, 20), U(0, 54, 0, 1), ts=17, color=PREMIUM, display=True, stroke=2.5,
              xa="Left", TextWrapped=False, ZIndex=4),
-        frame("Bar", U(1, -146, 0, 20), U(0, 54, 0, 25), bg="#14171D", ZIndex=3, children=[
+        frame("Bar", U(1, -146, 0, 18), U(0, 54, 0, 27), bg="#14171D", ZIndex=3, children=[
             border(INK, 2),
             frame("Fill", U(0.3, 0, 1, 0), bg=ACCENT, ZIndex=3),
-            text("Value", "$0 / $0", U(1, 0, 1, 0), ts=15, display=True, stroke=2, TextWrapped=False, ZIndex=5),
+            text("Value", "$0 / $0", U(1, 0, 1, 0), ts=14, display=True, stroke=2, TextWrapped=False, ZIndex=5),
         ]),
         button("Buy", U(0, 80, 0, 38), U(1, -6, 0.5, 0), (1, 0.5), color=SUCCESS, label="BUY!", ts=22, stroke=3, ZIndex=4,
                Visible=False),
@@ -989,35 +993,38 @@ def shop():
         text("Empty", "Nobody else is in this server yet", U(1, -24, 0, 40), U(0.5, 0, 0.5, 0), (0.5, 0.5), ts=20,
              color=WHITE, display=True, stroke=2, TextWrapped=True, Visible=False, ZIndex=11),
     ])
-    # "How many?" picker for eggs: three big choices, x3 marked MOST POPULAR (Dev asked).
-    option = frame("Option", U(0, 170, 0, 238), bg="#FF5FA2", Visible=False, ZIndex=12, children=[
-        border(INK, 3), studs("#FF5FA2", 0, 40),
-        node("Glow", "ImageLabel", base(U(0, 170, 0, 170), U(0.5, 0, 0, 66), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
-                                        ImageColor3=WHITE, ImageTransparency=0.25, ZIndex=12)),
-        node("Model", "ViewportFrame", base(U(0, 104, 0, 104), U(0.5, 0, 0, 14), (0.5, 0), BackgroundTransparency=1, ZIndex=13)),
-        # Potion choices show a picture instead of the 3D egg (ShopController).
-        icon("Icon", "Potion", 96, U(0.5, 0, 0, 18), (0.5, 0), ZIndex=13, Visible=False),
-        plate("Tag", U(0, 150, 0, 26), U(0.5, 0, 0, -13), (0.5, 0), tint=BADGE_RED, stroke=2.5, Visible=False, ZIndex=15, children=[
-            text("Label", "MOST POPULAR", U(1, -6, 1, 0), U(0, 3, 0, 0), ts=16, display=True, stroke=2, ZIndex=16,
-                 TextScaled=True, children=[fit(16)]),
-        ]),
-        text("Count", "x1", U(1, 0, 0, 44), U(0.5, 0, 0, 112), (0.5, 0), ts=40, display=True, stroke=3, ZIndex=14),
-        text("Each", "", U(1, -10, 0, 34), U(0.5, 0, 0, 152), (0.5, 0), ts=18, color=WHITE, display=True, stroke=2.5, ZIndex=14,
-             TextScaled=True, children=[fit(18, 13)]),
-        button("Buy", U(1, -16, 0, 50), U(0.5, 0, 1, -8), (0.5, 1), color=SHOP_GREEN, label="", ts=26, stroke=3, ZIndex=14),
+    # "How many?" picker (Dev 2026-11-01: no big egg pictures, just amounts and prices). One
+    # slim row per pack: small icon, amount + price each, MOST POPULAR / BEST VALUE tag, and
+    # the buy button with a "-x%" saving pill on its corner. ShopController sizes the window
+    # to the number of rows.
+    option = frame("Option", U(1, 0, 0, 58), bg="#2A3350", Visible=False, ZIndex=12, children=[
+        border(INK, 3),
+        icon("Icon", "Egg", 42, U(0, 8, 0.5, 0), (0, 0.5), ZIndex=13),
+        text("Count", "x1", U(0, 90, 0, 28), U(0, 58, 0, 5), ts=26, display=True, stroke=2.5, xa="Left", TextWrapped=False,
+             ZIndex=14),
+        text("Each", "", U(0, 120, 0, 18), U(0, 58, 0, 34), ts=15, color=SHOP_LIGHT, display=True, xa="Left", ZIndex=14,
+             TextScaled=True, children=[fit(15, 10)]),
+        plate("Tag", U(0, 120, 0, 24), U(0, 182, 0.5, 0), (0, 0.5), tint=BADGE_RED, stroke=2.5, Visible=False, ZIndex=15,
+              children=[text("Label", "MOST POPULAR", U(1, -8, 1, 0), U(0, 4, 0, 0), ts=14, display=True, stroke=2, ZIndex=16,
+                             TextScaled=True, children=[fit(14)])]),
+        button("Buy", U(0, 122, 0, 44), U(1, -8, 0.5, 0), (1, 0.5), color=SHOP_GREEN, label="", ts=24, stroke=3, ZIndex=14),
+        plate("Save", U(0, 46, 0, 20), U(1, -124, 0, -2), (0.5, 0), tint=DANGER, stroke=2, Rotation=-6, Visible=False, ZIndex=16,
+              children=[text("Label", "-30%", U(1, -4, 1, 0), U(0, 2, 0, 0), ts=14, display=True, stroke=1.5, ZIndex=17,
+                             TextScaled=True, children=[fit(14)])]),
     ])
-    qty = frame("QtyPicker", U(0, 600, 0, 380), U(0, W / 2, 0.5, 20), (0.5, 0.5), bg=SHOP_BODY, Visible=False, ZIndex=11, children=[
+    qty = frame("QtyPicker", U(0, 460, 0, 300), U(0, W / 2, 0.5, 20), (0.5, 0.5), bg=SHOP_BODY, Visible=False, ZIndex=11, children=[
         border(INK, 4),
-        frame("Header", U(1, 0, 0, 56), bg="#FF5FA2", ZIndex=11, children=[
+        frame("Header", U(1, 0, 0, 52), bg="#FF5FA2", ZIndex=11, children=[
             border(INK, 3),
-            icon("Icon", "Egg", 42, U(0, 8, 0.5, 0), (0, 0.5), ZIndex=12),
-            text("Title", "How many?", U(1, -120, 1, 0), U(0, 58, 0, 0), ts=30, display=True, stroke=3, xa="Left", ZIndex=12),
+            icon("Icon", "Egg", 38, U(0, 8, 0.5, 0), (0, 0.5), ZIndex=12),
+            text("Title", "How many?", U(1, -110, 1, 0), U(0, 54, 0, 0), ts=26, display=True, stroke=3, xa="Left", ZIndex=12,
+                 TextScaled=True, children=[fit(26, 14)]),
         ]),
-        button("Close", U(0, 48, 0, 48), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=28, ZIndex=13),
-        text("Note", "Bought eggs always hatch their own rarity!", U(1, -24, 0, 24), U(0.5, 0, 0, 64), (0.5, 0), ts=18,
-             color=SHOP_LIGHT, display=True, ZIndex=12),
-        frame("Options", U(1, -24, 0, 250), U(0.5, 0, 1, -16), (0.5, 1), ZIndex=12, children=[
-            hlist(16, h="Center", v="Bottom"), option,
+        button("Close", U(0, 44, 0, 44), U(1, -6, 0, 6), (0.5, 0.5), color=DANGER, label="X", ts=26, ZIndex=13),
+        text("Note", "Bought eggs always hatch their own rarity!", U(1, -24, 0, 20), U(0.5, 0, 0, 60), (0.5, 0), ts=16,
+             color=SHOP_LIGHT, display=True, ZIndex=12, TextScaled=True, children=[fit(16, 11)]),
+        frame("Options", U(1, -24, 1, -98), U(0.5, 0, 0, 88), (0.5, 0), ZIndex=12, children=[
+            vlist(8, "Center", "Top"), option,
         ]),
     ])
     # One "Window" (the modal scale follows it) holding the panel and the section buttons.

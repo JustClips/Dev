@@ -109,9 +109,12 @@ local function fillCard(card: GuiButton, reward: Rewards.Reward, petId: string?)
 	icon.ImageColor3 = tint or WHITE
 	;(card:FindFirstChild("Reward") :: TextLabel).Text = label
 	local view = card:FindFirstChild("PetView") :: ViewportFrame?
+	-- Pets and eggs show their real 3D model (Dev 2026-11-01: daily eggs use the real egg,
+	-- like the shop, wheel and bag do).
 	local pet = if reward.Kind == "Pet" then Aliens.ById[reward.Pet or ""] else nil
-	icon.Visible = pet == nil
-	if not pet then
+	local eggRarity = if reward.Kind == "Egg" then reward.Rarity or "Common" else nil
+	icon.Visible = pet == nil and eggRarity == nil
+	if not pet and not eggRarity then
 		if view then
 			view.Visible = false
 		end
@@ -133,12 +136,19 @@ local function fillCard(card: GuiButton, reward: Rewards.Reward, petId: string?)
 	local shown = view :: ViewportFrame
 	shown.Visible = true
 	-- Redrawn once the real model has loaded (a stand-in shows until then).
-	local key = pet.Id .. (if AssetLibrary.has("Alien_" .. pet.Id) then "" else "?")
+	local assetKey = if pet then "Alien_" .. pet.Id else "Egg_" .. (eggRarity :: string)
+	local key = assetKey .. (if AssetLibrary.has(assetKey) then "" else "?")
 	if shown:GetAttribute("PetKey") ~= key then
 		shown:SetAttribute("PetKey", key)
-		ModelView.show(shown, AssetLibrary.alien(pet.Id), "Alien_" .. pet.Id)
+		if pet then
+			ModelView.show(shown, AssetLibrary.alien(pet.Id), assetKey)
+		else
+			ModelView.show(shown, AssetLibrary.egg(eggRarity :: string), assetKey)
+		end
 	end
-	;(card:FindFirstChild("Day") :: TextLabel).TextColor3 = Color3.fromRGB(214, 140, 0)
+	if pet then
+		;(card:FindFirstChild("Day") :: TextLabel).TextColor3 = Color3.fromRGB(214, 140, 0)
+	end
 end
 
 local function setButton(button: GuiButton, text: string, color: Color3, labelColor: Color3?)
