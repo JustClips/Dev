@@ -815,6 +815,129 @@ def mythic():
     return finish(a, "Mythic")
 
 
+# ----------------------------------------------------------------- limited: Halloween
+
+PUMPKIN, PUMPKIN_DARK, PUMPKIN_LIGHT = "FF8A1F", "D9620E", "FF9C38"
+SPOOKY, SPOOKY_DARK = "7B3FC4", "56288F"
+CANDLE = "FFD23F"
+
+
+def _jack_face(x, z):
+    """Is (x, z) on the front of the egg inside the carved jack-o'-lantern face?"""
+    for cx in (-0.42, 0.42):                       # triangle eyes, point up
+        if 1.5 <= z <= 1.95 and abs(x - cx) <= 0.27 * (1 - (z - 1.5) / 0.45):
+            return True
+    if 1.24 <= z <= 1.44 and abs(x) <= 0.13 * (z - 1.24) / 0.2 + 0.03:   # nose
+        return True
+    lo, hi = 0.6 + 0.62 * x * x, 1.0 + 0.3 * x * x                     # grin
+    if abs(x) < 0.76 and lo <= z <= hi:
+        if z > hi - 0.13 and any(abs(x - tx) < 0.07 for tx in (-0.26, 0.26)):
+            return False                           # top teeth
+        if z < lo + 0.13 and abs(x) < 0.07:
+            return False                           # bottom tooth
+        return True
+    return False
+
+
+def _face_rim(x, z, w=0.1):
+    """Just outside the carved face: the dark cut edge."""
+    return any(_jack_face(x + dx, z + dz) for dx, dz in ((w, 0), (-w, 0), (0, w), (0, -w)))
+
+
+def _bat(size, centre, X, Y, Z):
+    """A little brick bat: round body, pointy ears, scalloped wings spread along X,
+    yellow eyes on its -Y side."""
+    k = 1.3                                        # overall size
+    w, d, h = 0.52 * k, 0.2 * k, 0.3 * k
+    v = Vox(size, origin=centre - X * w - Y * d - Z * h, X=X, Y=Y, Z=Z)
+
+    def f(lp, wp):
+        x, y, z = (lp.x - w) / k, (lp.y - d) / k, (lp.z - h) / k
+        ax = abs(x)
+        if (x / 0.12) ** 2 + (y / 0.12) ** 2 + (z / 0.14) ** 2 < 1:
+            if y < -0.04 and 0.0 < z < 0.09 and 0.02 < ax < 0.1:
+                return CANDLE
+            return "2E1A45"
+        if 0.03 < ax < 0.1 and 0.1 < z < 0.24 - (ax - 0.03) * 0.9 and abs(y) < 0.05:
+            return "2E1A45"                        # ears
+        if 0.08 < ax < 0.52 and abs(y) < 0.04:
+            u = (ax - 0.08) / 0.44
+            top = 0.05 + 0.14 * u
+            bot = top - (0.24 * (1 - u) + 0.07) + 0.08 * abs(math.sin(3 * math.pi * u))
+            if bot < z < top:
+                return "4A2C6E" if u < 0.35 else "3A2257"
+        return None
+    return v.fill((0, 0, 0), (2 * w, 2 * d, 2 * h), f)
+
+
+def halloween():
+    """The limited Halloween egg: a brick pumpkin with a glowing carved face, purple slime
+    dripping round the bottom, a wobbly witch hat and three bats flying round it."""
+    a = BrickEgg("Egg_Halloween")
+    use(a)
+    rnd = random.Random("halloween")
+    drips = [(i * 30 + rnd.uniform(-8, 8), rnd.uniform(0.05, 0.17)) for i in range(12)]
+
+    def col(p, t, ang):
+        if p.y < -0.25:
+            if _jack_face(p.x, p.z):
+                return CANDLE
+            if _face_rim(p.x, p.z):
+                return "7A2C06"
+        slime = 0.13 + 0.025 * math.sin(math.radians(ang) * 7)
+        for da, ln in drips:
+            dd = abs((ang - da + 180) % 360 - 180)
+            if dd < 6 and t < slime + ln * (1 - dd / 6) ** 0.5:
+                return SPOOKY if dd < 3 or rnd.random() < 0.5 else SPOOKY_DARK
+        if t < slime:
+            return SPOOKY_DARK if t < slime - 0.05 or rnd.random() < 0.3 else SPOOKY
+        rib = math.cos(math.radians(ang) * 10)          # ten pumpkin ribs
+        if p.y < -0.25 and abs(p.x) < 0.95 and 0.45 < p.z < 2.15:
+            rib = 0.0                                   # keep the face area plain
+        if rib < -0.7:
+            return PUMPKIN_DARK
+        if rib > 0.75 and rnd.random() < 0.5:
+            return PUMPKIN_LIGHT
+        return PUMPKIN if rnd.random() < 0.85 else "F57A12"
+    build(a, egg_shell(col), glow_colours=[CANDLE])
+
+    # witch hat: a wide brim and a tall cone bending backwards, orange band, gold buckle
+    base = Vector((0, 0, H - 0.24))
+    hs = 0.075
+    hat = Vox(hs, origin=base - Vector((0.9, 0.9, 0)))
+
+    def fhat(lp, wp):
+        x, y, z = wp.x - base.x, wp.y - base.y, wp.z - base.z
+        if z < 0.11:
+            return "4A2178" if math.hypot(x, y) < 0.86 else None
+        k = (z - 0.11) / 1.05
+        if k > 1:
+            return None
+        bend = 0.42 * k * k                        # tip flops backwards
+        r = 0.46 * (1 - k) + 0.04
+        if math.hypot(x, y - bend) > r:
+            return None
+        if 0.13 < z < 0.29:
+            if y < 0 and abs(x) < 0.12:
+                return "FFD24D" if abs(x) > 0.05 or not 0.17 < z < 0.25 else PUMPKIN
+            return PUMPKIN
+        return "6B32B0" if rnd.random() < 0.8 else "5A2A91"
+    hat.fill((0, 0, 0), (1.8, 1.8, 1.3), fhat)
+    moving(a, "Hat", [hat.mesh(a, "hat")], base, {"sway": 7, "cycles": 2})
+
+    # three bats flying round the egg at different heights
+    centre = Vector((0, 0, H * 0.48))
+    bats = []
+    for i in range(3):
+        ang = math.radians(i * 120 + 90)       # none in front of the face at rest
+        Rd = Vector((math.cos(ang), math.sin(ang), 0))
+        T = Vector((-math.sin(ang), math.cos(ang), 0))
+        c = centre + Rd * 1.5 + Vector((0, 0, (i - 1) * 0.42))
+        bats.append(_bat(0.065, c, Rd, T, Vector((0, 0, 1))).mesh(a, "bat"))
+    moving(a, "Bats", bats, centre, {"spin": -1, "bob": 0.12})
+    return finish(a, "Halloween")
+
+
 # ----------------------------------------------------------------- celestial extras (Cosmic)
 
 GOLD, GOLD_DARK = "FFC83A", "E09A1C"
@@ -1063,4 +1186,5 @@ EGGS = {
     "Legendary": legendary,
     "Mythic": mythic,
     "Cosmic": cosmic,
+    "Halloween": halloween,
 }
