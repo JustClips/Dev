@@ -670,7 +670,14 @@ local function liftHost(badge: GuiObject, lifted: boolean)
 		baseZ = host.ZIndex
 		host:SetAttribute("BaseZIndex", baseZ)
 	end
-	host.ZIndex = if lifted then (baseZ :: number) + 1 else baseZ :: number
+	-- A badge sticks out up and to the right, so the button to its right (or above it)
+	-- would cover it if both are lifted the same. Buttons further left / lower go higher.
+	local rank = 0
+	if lifted then
+		local at = host.AbsolutePosition
+		rank = math.clamp(math.floor((at.Y - at.X + 4000) / 30), 0, 400)
+	end
+	host.ZIndex = if lifted then (baseZ :: number) + 1 + rank else baseZ :: number
 end
 
 function Ui.setBadge(badge: GuiObject?, count: (number | string)?)
