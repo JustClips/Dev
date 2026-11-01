@@ -734,8 +734,8 @@ SHOP_PANEL_W = 720  # the shop panel; the section buttons sit to its right (WIN_
 SHOP_NAV_W = 96
 SHOP_CELL = (220, 226)  # 3 cards per row in the 680 px wide list
 SHOP_LUCK_H = 132  # LUCK_H in ShopController
-SHOP_BANNER_H = 168  # BANNER_H in ShopController
-SHOP_EGG_H = 258  # the limited egg banner
+SHOP_BANNER_H = 172  # BANNER_H in ShopController
+SHOP_EGG_H = 270  # the limited egg banner
 SHOP_BODY = "#3A3E49"  # dark stud panel (Dev's reference)
 SHOP_GREEN = "#4CD137"  # header and Robux buttons
 SHOP_GIFT = "#B24DFF"  # gift buttons (purple, like the reference)
@@ -828,69 +828,84 @@ def shop():
         text("Caption", "", U(1, 6, 0, 22), U(0.5, 0, 1, 0), (0.5, 1), ts=16, display=True, stroke=2, ZIndex=4,
              TextScaled=True, children=[fit(16)]),
     ])
+    # Featured banners, redesigned 2026-11-01 (Dev: "the exclusive offers at the top look
+    # bad"): a dark title strip (tag, title, timer pill) over a clean body, pictures on the
+    # left, one clear buy area on the right. No struck-through prices squeezed between
+    # buttons; savings show as a small "SAVE x%" pill instead.
+    def title_strip(tag, title, timer_w=200):
+        return frame("Strip", U(1, 0, 0, 44), bg="#000000", BackgroundTransparency=0.55, ZIndex=3, children=[
+            plate("Tag", U(0, 96, 0, 30), U(0, 8, 0.5, 0), (0, 0.5), tint=DANGER, stroke=2.5, ZIndex=4, Rotation=-4, children=[
+                text("Label", tag, U(1, -8, 1, 0), U(0, 4, 0, 0), ts=18, display=True, stroke=2, ZIndex=5,
+                     TextScaled=True, children=[fit(18)]),
+            ]),
+            text("Title", title, U(1, -(120 + timer_w), 1, -6), U(0, 114, 0.5, 0), (0, 0.5), ts=30, color="#FFE34D",
+                 display=True, stroke=3, xa="Left", ZIndex=4, TextWrapped=False, TextScaled=True, children=[fit(30)]),
+            plate("TimerPill", U(0, timer_w, 0, 30), U(1, -8, 0.5, 0), (1, 0.5), tint="#1B1030", stroke=2.5, ZIndex=4, children=[
+                icon("Icon", "Timer", 24, U(0, 4, 0.5, 0), (0, 0.5), ZIndex=5),
+                text("Timer", "", U(1, -36, 1, -4), U(0, 32, 0.5, 0), (0, 0.5), ts=18, display=True, stroke=2, xa="Left",
+                     ZIndex=5, TextScaled=True, children=[fit(18)]),
+            ]),
+        ])
+
     banner = frame("Banner", U(1, 0, 0, SHOP_BANNER_H), bg="#FF4D5E", Visible=False, children=[
         border("#FFB020", 4), studs("#FF4D5E", 0, 40),
-        plate("Tag", U(0, 104, 0, 34), U(0, 8, 0, 8), tint=DANGER, stroke=3, ZIndex=4, children=[
-            text("Label", "New!", U(1, -8, 1, 0), U(0, 4, 0, 0), ts=22, display=True, stroke=2.5, ZIndex=5,
-                 TextScaled=True, children=[fit(22)]),
+        title_strip("OFFER", "STARTER PACK"),
+        frame("Items", U(1, -220, 0, 100), U(0, 10, 1, -10), (0, 1), ZIndex=3, children=[hlist(6, h="Left", v="Bottom")]),
+        plate("Worth", U(0, 150, 0, 26), U(1, -22, 1, -70), (1, 1), tint="#1B1030", stroke=2, ZIndex=4, children=[
+            text("Label", "", U(1, -8, 1, -2), U(0.5, 0, 0.5, 0), (0.5, 0.5), ts=16, color="#FFE34D", display=True, stroke=2,
+                 ZIndex=5, TextScaled=True, children=[fit(16)]),
         ]),
-        text("Title", "STARTER PACK", U(1, -380, 0, 36), U(0, 122, 0, 6), ts=34, color="#FFE34D", display=True, stroke=3.5,
-             xa="Left", ZIndex=3, TextScaled=True, children=[fit(34)]),
-        text("Sub", "Limited Time!", U(0, 220, 0, 22), U(0, 122, 0, 42), ts=20, display=True, stroke=2.5, xa="Left", ZIndex=3),
-        frame("Items", U(1, -200, 0, 88), U(0, 10, 1, -8), (0, 1), ZIndex=3, children=[hlist(4, h="Left", v="Bottom")]),
-        text("Timer", "", U(0, 250, 0, 28), U(1, -12, 0, 10), (1, 0), ts=24, display=True, stroke=3, xa="Right", ZIndex=3,
-             TextScaled=True, children=[fit(24)]),
-        text("Worth", "", U(0, 160, 0, 22), U(1, -12, 1, -58), (1, 1), ts=20, color=DANGER, display=True, stroke=2.5, ZIndex=4,
-             children=[frame("Strike", U(0, 70, 0, 3), U(0.5, 0, 0.5, 0), (0.5, 0.5), bg=DANGER, ZIndex=5)]),
-        button("Buy", U(0, 170, 0, 50), U(1, -12, 1, -10), (1, 1), color=SHOP_GREEN, label="", ts=30, stroke=3, ZIndex=4),
+        button("Buy", U(0, 190, 0, 54), U(1, -12, 1, -10), (1, 1), color=SHOP_GREEN, label="", ts=30, stroke=3, ZIndex=4),
     ])
 
-    # The limited egg, copied from Dev's "Halloween Egg" reference.
-    pet = frame("PetCard", U(0, 70, 0, 70), bg="#000000", BackgroundTransparency=0.45, Visible=False, ZIndex=4, children=[
-        border(INK, 3),
-        node("Model", "ViewportFrame", base(U(1, -4, 1, -4), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, ZIndex=5,
-                                            Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1])),
-        text("Chance", "40%", U(1, -6, 0, 22), U(1, -4, 1, -2), (1, 1), ts=20, display=True, stroke=2.5, xa="Right", ZIndex=6,
-             TextScaled=True, children=[fit(20)]),
-    ])
-    big = frame("BigPet", U(0, 124, 0, 118), bg="#4A1E7A", Visible=False, ZIndex=4, children=[
-        node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 4, "ApplyStrokeMode": "Border"}, [
-            node("Rainbow", "UIGradient", {"Color": RAINBOW, "Rotation": 45}),
+    # The limited egg: every pet the same size in one row (chance under each, the rarest
+    # with a rainbow frame and a RAREST ribbon), buy cells underneath.
+    pet = frame("PetCard", U(0, 70, 0, 92), Visible=False, ZIndex=4, children=[
+        frame("Box", U(0, 70, 0, 70), bg="#000000", BackgroundTransparency=0.45, ZIndex=4, children=[
+            border(INK, 3),
+            node("Model", "ViewportFrame", base(U(1, -4, 1, -4), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, ZIndex=5,
+                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1])),
         ]),
-        node("Glow", "ImageLabel", base(U(0, 170, 0, 170), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, Image=img("Glow"),
-                                        ImageColor3="#C59BFF", ImageTransparency=0.4, ZIndex=4)),
-        node("Model", "ViewportFrame", base(U(1, -8, 1, -8), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, ZIndex=5,
-                                            Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1])),
-        text("Label", "RAREST", U(1, 20, 0, 24), U(0.5, 0, 0, -4), (0.5, 1), ts=20, color="#E4FF8A", display=True, stroke=2.5,
-             ZIndex=6, TextScaled=True, children=[fit(20)]),
-        text("Chance", "0.5%", U(1, -8, 0, 24), U(1, -4, 1, -2), (1, 1), ts=22, color="#FFE34D", display=True, stroke=2.5,
-             xa="Right", ZIndex=6, TextScaled=True, children=[fit(22)]),
+        text("Chance", "40%", U(1, 4, 0, 20), U(0.5, 0, 1, 0), (0.5, 1), ts=18, display=True, stroke=2.5, ZIndex=6,
+             TextScaled=True, children=[fit(18)]),
     ])
-    cell = frame("BuyCell", U(0, 157, 0, 60), Visible=False, ZIndex=4, children=[
-        button("Gift", U(0, 40, 0, 40), U(0, 0, 0, 0), color=SHOP_GIFT, ico="Gift", ico_px=28, stroke=3, ZIndex=5),
-        button("Buy", U(1, -46, 0, 40), U(1, 0, 0, 0), (1, 0), color=SHOP_GREEN, label="", ts=24, stroke=3, ZIndex=5,
+    big = frame("BigPet", U(0, 70, 0, 92), Visible=False, ZIndex=4, children=[
+        frame("Box", U(0, 70, 0, 70), bg="#4A1E7A", ZIndex=4, children=[
+            node("Stroke", "UIStroke", {"Color": WHITE, "Thickness": 3, "ApplyStrokeMode": "Border"}, [
+                node("Rainbow", "UIGradient", {"Color": RAINBOW, "Rotation": 45}),
+            ]),
+            node("Model", "ViewportFrame", base(U(1, -4, 1, -4), U(0.5, 0, 0.5, 0), (0.5, 0.5), BackgroundTransparency=1, ZIndex=5,
+                                                Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1])),
+            plate("Ribbon", U(0, 64, 0, 16), U(0.5, 0, 0, -8), (0.5, 0), tint="#E4FF8A", stroke=2, ZIndex=7, children=[
+                text("Label", "RAREST", U(1, -4, 1, 0), U(0, 2, 0, 0), ts=12, color=INK, display=True, ZIndex=8,
+                     TextScaled=True, children=[fit(12)]),
+            ]),
+        ]),
+        text("Chance", "0.5%", U(1, 4, 0, 20), U(0.5, 0, 1, 0), (0.5, 1), ts=18, color="#FFE34D", display=True, stroke=2.5,
+             ZIndex=6, TextScaled=True, children=[fit(18)]),
+    ])
+    cell = frame("BuyCell", U(0, 112, 0, 74), Visible=False, ZIndex=4, children=[
+        text("Count", "1 EGG", U(1, -34, 0, 22), U(0, 0, 0, 0), ts=18, display=True, stroke=2.5, xa="Left", ZIndex=5,
+             TextScaled=True, children=[fit(18)]),
+        button("Gift", U(0, 28, 0, 26), U(1, 0, 0, -2), (1, 0), color=SHOP_GIFT, ico="Gift", ico_px=20, stroke=2.5, ZIndex=6),
+        button("Buy", U(1, 0, 0, 46), U(0, 0, 1, 0), (0, 1), color=SHOP_GREEN, label="", ts=22, stroke=3, ZIndex=5,
                children=[node("Rainbow", "UIGradient", {"Color": RAINBOW, "Enabled": False})]),
-        text("Count", "1 Egg", U(1, 0, 0, 18), U(0.5, 0, 1, 0), (0.5, 1), ts=16, display=True, stroke=2, ZIndex=5),
-        text("Worth", "", U(0, 90, 0, 18), U(0, 52, 0, -16), ts=16, color="#FF4D4D", display=True, stroke=2, xa="Left",
-             Visible=False, ZIndex=6, children=[frame("Strike", U(0, 62, 0, 2), U(0, -2, 0.5, 0), (0, 0.5), bg="#FF4D4D", ZIndex=7)]),
+        plate("Save", U(0, 70, 0, 18), U(0, -4, 1, -54), (0, 0.5), tint=DANGER, stroke=2, Rotation=-6, Visible=False, ZIndex=7,
+              children=[text("Label", "SAVE 30%", U(1, -4, 1, 0), U(0, 2, 0, 0), ts=13, display=True, stroke=1.5, ZIndex=8,
+                             TextScaled=True, children=[fit(13)])]),
     ])
     egg_banner = frame("EggBanner", U(1, 0, 0, SHOP_EGG_H), bg="#4B2380", Visible=False, children=[
         node("Stroke", "UIStroke", {"Color": "#F2A33A", "Thickness": 4, "ApplyStrokeMode": "Border"}),
         node("Sky", "UIGradient", {"Color": {"keypoints": [[0, "#9A55E0"], [0.55, "#6A2FB0"], [1, "#2A1450"]]}, "Rotation": 90}),
-        node("Glow", "ImageLabel", base(U(0, 360, 0, 260), U(0.6, 0, 0, 70), (0.5, 0.5), BackgroundTransparency=1,
-                                        Image=img("Glow"), ImageColor3="#FF9A2E", ImageTransparency=0.6, ZIndex=1)),
-        node("Egg", "ViewportFrame", base(U(0, 210, 0, 200), U(0, 0, 0, 22), BackgroundTransparency=1, ZIndex=2,
+        title_strip("LIMITED", "HALLOWEEN EGG", 230),
+        node("Glow", "ImageLabel", base(U(0, 260, 0, 260), U(0, 100, 0, 150), (0.5, 0.5), BackgroundTransparency=1,
+                                        Image=img("Glow"), ImageColor3="#FF9A2E", ImageTransparency=0.45, ZIndex=1)),
+        node("Egg", "ViewportFrame", base(U(0, 180, 0, 180), U(0, 100, 0, 150), (0.5, 0.5), BackgroundTransparency=1, ZIndex=2,
                                           Ambient="#C8D0E8", LightColor=WHITE, LightDirection=[-1, -1, -1])),
-        plate("New", U(0, 100, 0, 34), U(0, 8, 0, 8), tint=DANGER, stroke=3, ZIndex=4, children=[
-            text("Label", "New!", U(1, 0, 1, 0), ts=22, display=True, stroke=2.5, ZIndex=5),
-        ]),
-        text("Title", "HALLOWEEN EGG", U(1, -350, 0, 38), U(0, 118, 0, 6), ts=36, color="#FFE34D", display=True, stroke=3.5,
-             xa="Left", ZIndex=4, TextWrapped=False, TextScaled=True, children=[fit(36)]),
-        text("Sub", "Limited Time!", U(0, 220, 0, 22), U(0, 118, 0, 44), ts=20, display=True, stroke=2.5, xa="Left", ZIndex=4),
-        text("Timer", "", U(0, 216, 0, 30), U(1, -12, 0, 10), (1, 0), ts=26, display=True, stroke=3, xa="Right", ZIndex=4,
-             TextScaled=True, children=[fit(26)]),
-        frame("Pets", U(1, -20, 0, 150), U(0, 10, 0, 182), (0, 1), ZIndex=4, children=[hlist(8, h="Right", v="Bottom")]),
-        frame("Buys", U(1, -20, 0, 60), U(0, 10, 1, -6), (0, 1), ZIndex=4, children=[hlist(10, h="Center", v="Bottom")]),
+        text("PetsTitle", "PETS INSIDE", U(1, -212, 0, 18), U(0, 200, 0, 54), ts=15, color="#E0C8FF", display=True, stroke=2,
+             xa="Left", ZIndex=4),
+        frame("Pets", U(1, -212, 0, 92), U(0, 200, 0, 76), ZIndex=4, children=[hlist(8, h="Left", v="Top")]),
+        frame("Buys", U(1, -212, 0, 74), U(0, 200, 1, -12), (0, 1), ZIndex=4, children=[hlist(8, h="Left", v="Bottom")]),
     ])
 
     # A limited offer the game made you (backpack full, rare egg growing...): stays a while.

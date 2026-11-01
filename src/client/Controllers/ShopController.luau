@@ -46,7 +46,6 @@ local YELLOW = "#FFE34D"
 
 local LUCK_H = 132 -- SHOP_LUCK_H in tools/gen_ui.py
 -- The limited egg's small pet cards, most common first; the rarest gets the big card.
-local PET_SIZES = { 64, 64, 75, 88, 100 }
 
 type Tile = {
 	Hi: string?, -- the yellow part of the card's line ("+$24K", "2x")
@@ -450,8 +449,8 @@ local function addBanner(opts: {
 })
 	local banner = clone("Banner")
 	tint(banner, opts.Color)
-	Ui.find(banner, "Tag.Label").Text = opts.Tag
-	Ui.find(banner, "Title").Text = string.upper(opts.Title)
+	Ui.find(banner, "Strip.Tag.Label").Text = opts.Tag
+	Ui.find(banner, "Strip.Title").Text = string.upper(opts.Title)
 	local row = Ui.find(banner, "Items") :: Frame
 	for i, chip in opts.Chips do
 		local c = clone("Chip")
@@ -460,14 +459,15 @@ local function addBanner(opts: {
 		c.Parent = row
 		showPicture(c, chip.Icon, chip.Rarity)
 	end
-	local worth = Ui.find(banner, "Worth") :: TextLabel
+	local worth = Ui.find(banner, "Worth") :: Frame
 	worth.Visible = opts.Worth ~= nil
 	if opts.Worth then
-		worth.Text = robuxPrice(opts.Worth)
+		Ui.find(worth, "Label").Text = `WORTH {robuxPrice(opts.Worth)}`
 	end
 	setPrice(Ui.find(banner, "Buy"), robuxPrice(opts.Price), ROBUX)
 	Ui.button(Ui.find(banner, "Buy"), opts.OnBuy)
-	local timer = Ui.find(banner, "Timer") :: TextLabel
+	local timer = Ui.find(banner, "Strip.TimerPill.Timer") :: TextLabel
+	;(Ui.find(banner, "Strip.TimerPill") :: GuiObject).Visible = opts.Ends ~= nil
 	local ends = opts.Ends
 	local function tick(): boolean
 		if not ends then
@@ -555,7 +555,8 @@ local function addEggBanner(now: number)
 	end
 	local banner = clone("EggBanner")
 	banner.Name = "LimitedEgg"
-	Ui.find(banner, "Title").Text = string.upper(LimitedEgg.Name)
+	Ui.find(banner, "Strip.Title").Text = string.upper(LimitedEgg.Name)
+	Ui.find(banner, "Strip.Tag.Label").Text = "LIMITED"
 	ModelView.show(Ui.find(banner, "Egg"), AssetLibrary.egg(LimitedEgg.EggRarity), "Egg_" .. LimitedEgg.EggRarity)
 	local pets = Ui.find(banner, "Pets") :: Frame
 	local odds = table.clone(LimitedEgg.Odds)
@@ -569,10 +570,6 @@ local function addEggBanner(now: number)
 			local card = clone(if rarest then "BigPet" else "PetCard")
 			card.Name = def.Id
 			card.LayoutOrder = i
-			if not rarest then
-				local px = PET_SIZES[math.min(i, #PET_SIZES)]
-				card.Size = UDim2.fromOffset(px, px)
-			end
 			local chance = Ui.find(card, "Chance") :: TextLabel
 			chance.Text = `{entry.Chance}%`
 			local rarity = Eggs.ByName[def.Rarity]
@@ -580,7 +577,7 @@ local function addEggBanner(now: number)
 				chance.TextColor3 = Color3.fromRGB(255, 227, 77)
 			end
 			card.Parent = pets
-			ModelView.show(Ui.find(card, "Model"), AssetLibrary.alien(def.Id), "Alien_" .. def.Id)
+			ModelView.show(Ui.find(card, "Box.Model"), AssetLibrary.alien(def.Id), "Alien_" .. def.Id)
 		end
 	end
 	local single = Prices.of(packs[1]) / (packs[1].Count or 1)
@@ -590,16 +587,20 @@ local function addEggBanner(now: number)
 		local count = def.Count or 1
 		local cell = clone("BuyCell")
 		cell.LayoutOrder = #packs - i + 1
-		Ui.find(cell, "Count").Text = if count == 1 then "1 Egg" else `{count} Eggs`
+		Ui.find(cell, "Count").Text = if count == 1 then "1 EGG" else `{count} EGGS`
+		-- Savings per egg against buying them one by one, as a small pill on the button.
+		local save = math.floor((1 - Prices.of(def) / (single * count)) * 100 + 0.5)
+		local savePill = cell:FindFirstChild("Save") :: GuiObject?
+		if savePill then
+			savePill.Visible = count > 1 and save >= 5
+			Ui.find(savePill, "Label").Text = `SAVE {save}%`
+		end
 		local buy = Ui.find(cell, "Buy") :: TextButton
 		setPrice(buy, robuxPrice(Prices.of(def)), ROBUX)
 		if i == #packs and count > 1 then
 			-- The biggest pack: rainbow button with what the same eggs cost one by one.
 			(Ui.find(buy, "Rainbow") :: UIGradient).Enabled = true
 			tint(buy, WHITE)
-			local worth = Ui.find(cell, "Worth") :: TextLabel
-			worth.Visible = true
-			worth.Text = robuxPrice(math.floor(single * count + 0.5))
 		end
 		local key = def.Key
 		Ui.button(buy, function()
@@ -612,7 +613,7 @@ local function addEggBanner(now: number)
 		end)
 		cell.Parent = buys
 	end
-	local timer = Ui.find(banner, "Timer") :: TextLabel
+	local timer = Ui.find(banner, "Strip.TimerPill.Timer") :: TextLabel
 	local function tick(): boolean
 		local left = LimitedEgg.EndsAt - workspace:GetServerTimeNow()
 		timer.Text = leftText(left, "Gone!")
@@ -990,6 +991,24 @@ function ShopController:Init(controllers)
 	nav = Ui.find(gui, "Window.Nav")
 	for _, name in { "Heading", "Grid", "Card", "Banner", "Chip", "EggBanner", "PetCard", "BigPet", "BuyCell", "Offer", "LuckCard" } do
 		templates[name] = Ui.find(gui, "Window." .. name)
+	end
+	-- Banner redesign (2026-11-01): LiveSync never deletes children in Dev's Studio place,
+	-- so drop the old loose pieces (they moved into Strip / Box) before anything is cloned.
+	local STALE: { [string]: { [string]: string } } = {
+		Banner = { Tag = "Frame", Title = "TextLabel", Sub = "TextLabel", Timer = "TextLabel", Worth = "TextLabel" },
+		EggBanner = { New = "Frame", Title = "TextLabel", Sub = "TextLabel", Timer = "TextLabel" },
+		PetCard = { Model = "ViewportFrame", Stroke = "UIStroke" },
+		BigPet = { Model = "ViewportFrame", Glow = "ImageLabel", Label = "TextLabel", Stroke = "UIStroke" },
+		BuyCell = { Worth = "TextLabel" },
+	}
+	for name, pieces in STALE do
+		local template = templates[name]
+		for child, class in pieces do
+			local old = template:FindFirstChild(child)
+			if old and old.ClassName == class then
+				old:Destroy()
+			end
+		end
 	end
 	giftPicker = Ui.find(gui, "Window.GiftPicker")
 	giftList = Ui.find(gui, "Window.GiftPicker.List")
