@@ -32,7 +32,7 @@ Music: 120 BPM, so 1 beat = 0.5 s = 15 frames at 30 fps, 1 bar = 2 s.
 | S05 | 4.0 s | TOOL LADDER: 4 x 1 s hero shots, avatar holding broom, rake, blower, vacuum, slight orbit each | handtools.py tiers |
 | S06 | 3.0 s | Low tracking shot, sweeper car drives through a leaf field, brushes spinning, leaves spray | cars.py |
 | S07 | 2.0 s | Egg on the pet park pad grows from small to full, sparkles | eggs.py |
-| S08 | 5.0 s | HATCH: egg floats up, wobbles, cracks, bursts (hatch_vfx meshes: ring, swirl, star, brick shards), Legendary pet (Dragon) revealed; camera slow push | burst at exactly 3.0 s into the shot |
+| S08 | 7.0 s | HATCH: egg floats up, wobbles (getting stronger for 5 s), cracks, bursts (hatch_vfx meshes: ring, swirl, star, brick shards), Legendary pet (Dragon) revealed; camera slow push | burst at exactly 5.2 s into the shot (it lands on the music drop) |
 | S09 | 2.0 s | Pet hero turntable: Phoenix with flame aura, low angle | |
 | S10 | 3.0 s | PET ARMY: avatar walks toward camera with 8-10 voxel pets following, low angle | |
 | S11 | 3.0 s | Base earning: pets sitting on the base, coins rising from each pet | |
@@ -40,4 +40,4 @@ Music: 120 BPM, so 1 beat = 0.5 s = 15 frames at 30 fps, 1 bar = 2 s.
 | S13 | 4.0 s | CLIMAX: Cosmic hatch (AutumnStag), world dims, bigger burst, cosmic pet glow | burst at 2.0 s |
 | S14 | 5.0 s | END: sunset hero wide, avatar + pets on a clean hill, slow pull back; leave the upper middle empty for the logo | |
 
-Total ~49 s. Edit, text supers, cash/combo numbers, music and SFX are done afterwards in the edit.
+Total ~51 s of renders; the cut is ~43 s. Edit, text supers, cash/combo numbers, music and SFX are done afterwards in the edit.
