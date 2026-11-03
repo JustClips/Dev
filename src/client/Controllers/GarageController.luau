@@ -151,13 +151,14 @@ local function toolEntries(data): ({ Entry }, Entry?)
 				local teaching = State.data ~= nil and State.data.TutorialStep == "Upgrade"
 				local ok, message = Net.func("BuyNextTool"):InvokeServer()
 				toast(ok, message)
-				-- Tutorial (Dev, 2026-11-01): after the free Broom, Gear closes by itself a
-				-- second later and the Upgrade menu opens, so the next step's spotlight lands
-				-- straight on the Upgrades tile.
+				-- Tutorial: after the free Broom, Gear closes by itself a second later and the
+				-- upgrade tree opens, so the next step is one tap on the Sweep Power hex (the
+				-- 2026-11-03 funnel check lost 8% of new players walking menu -> Upgrades tile).
 				if ok and teaching then
 					task.delay(1, function()
 						Ui.close("Garage")
-						C.MenuController:Open("UpgradeMenu")
+						C.MenuController:Close()
+						C.UpgradeController:Open()
 					end)
 				end
 			end

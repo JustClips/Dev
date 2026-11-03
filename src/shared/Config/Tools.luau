@@ -14,10 +14,10 @@ local List: { ToolDef } = {
 	{ Tier = 1, Id = "Toothbrush", Name = "Toothbrush", Style = "Scrub", Radius = 4, Power = 1, Capacity = 150, Price = 0, IsVehicle = false, Color = Color3.fromRGB(120, 200, 255), Scale = 1 },
 	{ Tier = 2, Id = "Broom", Name = "Broom", Style = "Brush", Radius = 5, Power = 2, Capacity = 400, Price = 150, IsVehicle = false, Color = Color3.fromRGB(220, 170, 90), Scale = 1.3 },
 	{ Tier = 3, Id = "Rake", Name = "Rake", Style = "Brush", Radius = 5.5, Power = 3, Capacity = 800, Price = 1_300, IsVehicle = false, Color = Color3.fromRGB(80, 200, 90), Scale = 1.35 },
-	{ Tier = 4, Id = "Mop", Name = "Mop", Style = "Brush", Radius = 6, Power = 4, Capacity = 1_500, Price = 1_500, IsVehicle = false, Color = Color3.fromRGB(150, 230, 200), Scale = 1.45 },
-	{ Tier = 5, Id = "PushBroom", Name = "Push Broom", Style = "Brush", Radius = 7, Power = 6, Capacity = 2_800, Price = 44_000, IsVehicle = false, Color = Color3.fromRGB(225, 75, 75), Scale = 1.5 },
-	{ Tier = 6, Id = "LeafBlower", Name = "Leaf Blower", Style = "Blower", Radius = 8, Power = 8, Capacity = 4_500, Price = 180_000, IsVehicle = false, Color = Color3.fromRGB(255, 140, 60), Scale = 1.6 },
-	{ Tier = 7, Id = "LeafVac", Name = "Leaf Vacuum", Style = "Vacuum", Radius = 9, Power = 12, Capacity = 8_000, Price = 1_600_000, IsVehicle = false, Color = Color3.fromRGB(90, 185, 75), Scale = 1.7 },
+	{ Tier = 4, Id = "Mop", Name = "Mop", Style = "Brush", Radius = 6, Power = 4, Capacity = 1_500, Price = 2_200, IsVehicle = false, Color = Color3.fromRGB(150, 230, 200), Scale = 1.45 },
+	{ Tier = 5, Id = "PushBroom", Name = "Push Broom", Style = "Brush", Radius = 7, Power = 6, Capacity = 2_800, Price = 14_000, IsVehicle = false, Color = Color3.fromRGB(225, 75, 75), Scale = 1.5 },
+	{ Tier = 6, Id = "LeafBlower", Name = "Leaf Blower", Style = "Blower", Radius = 8, Power = 8, Capacity = 4_500, Price = 70_000, IsVehicle = false, Color = Color3.fromRGB(255, 140, 60), Scale = 1.6 },
+	{ Tier = 7, Id = "LeafVac", Name = "Leaf Vacuum", Style = "Vacuum", Radius = 9, Power = 12, Capacity = 8_000, Price = 450_000, IsVehicle = false, Color = Color3.fromRGB(90, 185, 75), Scale = 1.7 },
 	{ Tier = 8, Id = "ShopVac", Name = "Shop Vac", Style = "Vacuum", Radius = 10, Power = 16, Capacity = 15_000, Price = 2_900_000, IsVehicle = false, Color = Color3.fromRGB(255, 210, 60), Scale = 1.8 },
 	{ Tier = 9, Id = "PressureWasher", Name = "Pressure Washer", Style = "Spray", Radius = 11, Power = 24, Capacity = 26_000, Price = 4_800_000, IsVehicle = false, Color = Color3.fromRGB(60, 140, 255), Scale = 1.9 },
 	{ Tier = 10, Id = "TurboVacuum", Name = "Turbo Vacuum", Style = "Vacuum", Radius = 12, Power = 32, Capacity = 45_000, Price = 42_000_000, IsVehicle = false, Color = Color3.fromRGB(200, 90, 255), Scale = 2 },
@@ -30,6 +30,9 @@ local List: { ToolDef } = {
 }
 
 -- Capacity: a car raises your backpack size while you own it. Later cars need rebirths.
+-- 2026-11-03 funnel check: Mop 2.2K, Push Broom 14K, Leaf Blower 70K, Leaf Vacuum 450K (was
+-- 1.5K / 44K / 180K / 1.6M). Real players stalled on the Mop holding ~$16K in front of a 29x jump;
+-- now each early step is 1.7-6.5x (sim: Rake 3m, Mop 4m, Push Broom 6m, Leaf Blower 7m, R1 unchanged).
 -- Prices are fitted by tools/balance/fit.py (first car ~1 h, rebirth 1 ~1.5 h, rebirth 5 ~15 h).
 local Vehicles: { VehicleDef } = {
 	{ Order = 1, Id = "SweeperCart", Name = "Sweeper Cart", Radius = 14, Power = 50, Capacity = 100_000, Price = 4_300_000_000, RequiredRebirths = 0, Color = Color3.fromRGB(80, 200, 120), Scale = 1, Speed = 44, RentKey = "RentSweeperCart", UnlockKey = "UnlockSweeperCart" },

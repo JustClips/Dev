@@ -300,6 +300,8 @@ end
 
 -------------------------------------------------------------------------- update + notify
 
+local claimJob: (Player) -> (boolean, string?)
+
 -- Fires QuestReady once per finished quest (not for ones already done when you joined).
 local function notifyReady(player: Player, key: string, text: string, isJob: boolean, npc: string?)
 	local session = S.DataService:GetSession(player)
@@ -330,7 +332,21 @@ function QuestService:Update(player: Player)
 	local now_ = counters(player, data)
 	local job, jp = jobState(player, data, now_)
 	if job and jp >= Quests.target(job) then
-		notifyReady(player, "J" .. data.Flags.QuestJob, Quests.text(job), true)
+		-- Quest Master jobs claim themselves (2026-11-03 funnel check: 69% of new players
+		-- never got past job 1, some finished it and never claimed). The chain keeps moving
+		-- and the client shows what you got.
+		local session = S.DataService:GetSession(player)
+		if session and not session.Runtime.JobClaiming then
+			session.Runtime.JobClaiming = true
+			local text = Quests.text(job)
+			task.defer(function()
+				local ok, got = claimJob(player)
+				session.Runtime.JobClaiming = false
+				if ok then
+					Net.fire("QuestReady", player, { Text = text, Job = true, Claimed = true, Reward = got })
+				end
+			end)
+		end
 	end
 	local daily = dailyState(player, data, now_)
 	if daily then
@@ -354,7 +370,7 @@ end
 
 -------------------------------------------------------------------------- claims
 
-local function claimJob(player: Player): (boolean, string?)
+claimJob = function(player: Player): (boolean, string?)
 	local data = S.DataService:GetData(player)
 	if not data then
 		return false, "Still loading"

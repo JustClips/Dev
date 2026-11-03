@@ -83,6 +83,10 @@ local selected: string? = nil -- tapped once: tooltip stays, the next tap buys
 -- Phones: the first tap shows the tooltip (the exact numbers), the second buys. With a mouse
 -- the tooltip is up from hovering, so one click buys (Dev, 2026-10-31).
 local function twoTaps(): boolean
+	-- The tutorial's free Sweep Power buys on the first tap (2026-11-03 funnel check).
+	if State.data and State.data.TutorialStep == "Tree" then
+		return false
+	end
 	return UserInputService:GetLastInputType() == Enum.UserInputType.Touch
 end
 
@@ -1083,6 +1087,7 @@ function UpgradeController:Start()
 			local pad = Ui.gamepad()
 			tutorialHint.Text = if pad
 				then "Press A on the middle hex to buy it!"
+				elseif touch and not twoTaps() then "Tap the middle hex to buy it!"
 				elseif touch and selected == Upgrades.Root then "Tap it again to buy!"
 				elseif touch then "Double-tap the middle hex to buy it!"
 				else "Click the middle hex to buy it!"

@@ -927,6 +927,12 @@ function QuestController:Start()
 		talk()
 	end)
 	Net.event("QuestReady").OnClientEvent:Connect(function(info)
+		if info.Claimed then
+			Ui.sound("Reveal")
+			C.HudController:Toast(`Quest done: {info.Text}! You got {info.Reward or "a reward"}!`, "Good")
+			Ui.popFrame(Ui.find(list, "Header"))
+			return
+		end
 		Ui.sound("Tutorial")
 		if info.Npc then
 			C.HudController:Toast(`Quest done: {info.Text}! Tap it in your quest list to claim.`, "Good")

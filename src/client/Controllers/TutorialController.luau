@@ -66,7 +66,7 @@ local STEPS: { Step } = {
 	{
 		key = "Tree",
 		text = "Open Upgrade, then Upgrades, and buy Sweep Power. FREE!",
-		touch = "Open Upgrade, then Upgrades, and double-tap Sweep Power. FREE!",
+		touch = "Open Upgrade, then Upgrades, and tap Sweep Power. FREE!",
 		pad = "Open Upgrade, then Upgrades, and press A on Sweep Power. FREE!",
 		icon = "Icon_Upgrade",
 	},
@@ -148,6 +148,7 @@ local leavesReached = false
 local sawArrow = false
 local lastNeedTool = false
 local textChangedAt = 0
+local autoOpened: { [string]: boolean } = {}
 local TEXT_MIN_SECONDS = 4
 
 -- True while the sweeping tool is in your hands (the first step needs it).
@@ -429,6 +430,25 @@ local function update()
 				Ui.popFrame(card)
 			end
 		end
+		-- Upgrade / Tree open their window by themselves, once each, so the step is one tap
+		-- (2026-11-03 funnel check: 19% of new players quit walking Upgrade -> Gear -> Broom
+		-- and Upgrade -> Upgrades -> Sweep Power). The menu path still works if they close it.
+		if (key == "Upgrade" or key == "Tree") and not autoOpened[key] then
+			autoOpened[key] = true
+			task.delay(1.2, function()
+				local now = State.data
+				if not now or now.TutorialStep ~= key or C.PlacementController:IsHolding() then
+					return
+				end
+				if key == "Upgrade" and not Ui.isOpen(Ui.screen("Garage")) then
+					C.MenuController:Close()
+					C.GarageController:Open("Tools")
+				elseif key == "Tree" and not C.UpgradeController:IsOpen() and not Ui.isOpen(Ui.screen("Garage")) then
+					C.MenuController:Close()
+					C.UpgradeController:Open()
+				end
+			end)
+		end
 		-- Upgrade / Tree: the line follows where you are (menu closed, menu open, window
 		-- open), so it never asks you to tap something that's already open. Right after
 		-- the free Broom, Gear is still up for a second before it closes and the Upgrade
@@ -447,7 +467,7 @@ local function update()
 					elseif menuOpen then "Tap Gear!"
 					else stepText(step)
 			else
-				want = if C.UpgradeController:IsOpen() then (if Ui.gamepad() then "Press A on Sweep Power. FREE!" elseif touch then "Double-tap Sweep Power. FREE!" else "Click Sweep Power. FREE!")
+				want = if C.UpgradeController:IsOpen() then (if Ui.gamepad() then "Press A on Sweep Power. FREE!" elseif touch then "Tap Sweep Power. FREE!" else "Click Sweep Power. FREE!")
 					elseif menuOpen then (if touch then "Tap Upgrades!" else "Click Upgrades!")
 					else stepText(step)
 			end
@@ -537,7 +557,7 @@ local function update()
 	end
 
 	-- Tutorial finished.
-	pointAt(jobPointer(data), false)
+	pointAt(jobPointer(data) or C.NextGoalController:Pointer(), false)
 	holdHint.Visible = false
 	card.Position = UDim2.new(0.5, 0, 1, -cardLift(false))
 	glow.Enabled = false
@@ -654,6 +674,15 @@ function TutorialController:Start()
 	end)
 	local function close()
 		Ui.close("TutorialDone")
+		-- Straight into the free spin (the first quest): most new players never found the
+		-- corner Spin button (2026-11-03 funnel check). They still press SPIN themselves.
+		local data = State.data
+		local job = data and data.Quests and data.Quests.Job
+		if job and job.Kind == "FreeSpin" and not job.Done then
+			task.delay(0.4, function()
+				C.WheelController:Open()
+			end)
+		end
 	end
 	Ui.button(Ui.find(doneGui, "Window.Ok"), close)
 	Ui.button(Ui.find(doneGui, "Window.Close"), close)

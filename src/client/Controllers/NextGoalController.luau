@@ -25,6 +25,9 @@ local ZoneQuests = require(Shared.Config.ZoneQuests)
 
 local NextGoalController = {}
 
+-- Below this tool tier an affordable tool also gets a toast and the tutorial arrow.
+local NUDGE_BELOW_TIER = 7
+
 type Goal = { Kind: string, Id: string, Name: string, Price: number, Icon: string }
 
 local C: any
@@ -102,6 +105,11 @@ local function render()
 	-- The moment it becomes affordable: pop the chip and play a sound, once.
 	if ready and not wasReady then
 		Ui.sound("Sparkle")
+		-- Early on also say it in words (2026-11-03 funnel check: 31% of new players left
+		-- holding enough cash for their next tool, the chip alone wasn't noticed).
+		if goal.Kind == "Tool" and data.ToolTier < NUDGE_BELOW_TIER and C and C.HudController then
+			C.HudController:Toast(`You can buy the {goal.Name}! Tap BUY!`, "Good")
+		end
 		if not Ui.reducedMotion() then
 			local pop = chip:FindFirstChild("Pop") :: UIScale?
 			if not pop then
@@ -144,6 +152,20 @@ local function activate()
 	if message then
 		C.HudController:Toast(message, if ok then "Good" else "Bad")
 	end
+end
+
+-- The BUY! button while the next goal is an affordable early tool and nothing else is on
+-- screen (TutorialController points its arrow at it, no dimming), else nil.
+function NextGoalController:Pointer(): GuiObject?
+	local goal = current
+	local data = State.data
+	if not goal or not data or goal.Kind ~= "Tool" or data.ToolTier >= NUDGE_BELOW_TIER then
+		return nil
+	end
+	if not chip.Visible or not buy.Visible or Ui.anyWindowOpen() then
+		return nil
+	end
+	return buy
 end
 
 function NextGoalController:Init(controllers)
