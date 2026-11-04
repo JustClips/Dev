@@ -57,7 +57,10 @@ It never deletes things it didn't create. Warnings (unknown property, bad value)
 
 1. In Studio: **Plugins** tab → **Plugins Folder**.
 2. Copy `studio-plugin/LiveSync.server.lua` into that folder and restart Studio (or reload plugins).
-3. Click **LiveSync** in the Plugins tab, enter the server URL and sync key, press **Connect**. The login is saved and reconnects automatically next time; **Pause** stops syncing, **Log out** forgets the key.
+3. Click **LiveSync** in the Plugins tab, enter the server URL and sync key, pick the **repository** (`owner/name` or a GitHub link) and **branch** (the plugin lists the repo's branches), press **Connect**.
+   Each place remembers its own repo and reconnects to it automatically next time, so one server can sync several games.
+   A place with no repo yet (a new game) shows the picker instead of connecting. **Switch repo** picks another repo for this place
+   (what the old repo synced here is removed), **Pause** stops syncing, **Log out** forgets the key.
 4. The first time, Studio asks to allow HTTP requests to the server's domain. Allow it.
 
 ## Server
@@ -67,12 +70,14 @@ Railway settings live in `/railway.json` (it only redeploys when `sync-server/` 
 | Env var | Meaning |
 |---|---|
 | `SYNC_KEY` | required; the key the plugin sends as `X-Sync-Key` |
-| `REPO_URL` | repo to mirror (default this repo) |
-| `GITHUB_TOKEN` | read-only token if the repo is private (fine-grained, Contents: Read-only, this repo only) |
-| `BRANCH` | default `main` |
+| `REPO_URL` | default repo, used when the plugin names none (default this repo) |
+| `GITHUB_TOKEN` | read-only token for private repos (fine-grained, Contents: Read-only, on every private repo you sync) |
+| `ALLOWED_REPOS` | optional comma list (`owner/name` or `owner/*`); other repos are refused |
+| `MAX_REPOS` / `IDLE_MINUTES` | most repos mirrored at once (default 12); an unused repo is dropped after this long (default 30) |
+| `BRANCH` | branch of the default repo, default `main` |
 | `POLL_SECONDS` | how often to check GitHub (default 3) |
 | `WEBHOOK_SECRET` | optional; enables instant sync from a GitHub push webhook to `POST /webhook` |
 
-Endpoints: `GET /healthz` (public), `GET /api/state?since=<version>&wait=<seconds>` (needs `X-Sync-Key`).
+Endpoints: `GET /healthz` (public); with `X-Sync-Key`: `GET /api/state?repo=<owner/name>&branch=<branch>&since=<version>&wait=<seconds>` (repo/branch blank = the default repo; each repo+branch gets its own mirror), `GET /api/branches?repo=<owner/name>`, `GET /api/repos` (mirrors in use).
 
 Run locally against this folder without git: `SYNC_KEY=dev LOCAL_DIR=$PWD node sync-server/server.js`

@@ -1,8 +1,11 @@
 --!nonstrict
--- LiveSync Studio plugin (v3).
--- Long-polls the LiveSync server (hosted on Railway) and applies the GitHub
+-- LiveSync Studio plugin (v4).
+-- Long-polls the LiveSync server (hosted on Railway) and applies a GitHub
 -- repo into the open place: scripts, any instance type, properties,
 -- attributes and tags. Like `rojo serve`, but in the cloud.
+--
+-- v4: pick the repo and branch per place. Each place remembers its own repo,
+-- so one server can sync several games.
 --
 -- Install: save this file into your local Plugins folder
 -- (Studio: Plugins tab > Plugins Folder), then restart Studio.
@@ -17,7 +20,7 @@ if RunService:IsRunning() then
 	return -- don't sync into play-test sessions
 end
 
-local VERSION = "v3"
+local VERSION = "v4"
 local TAG = "LiveSync"
 local PATH_ATTR = "LiveSyncPath"
 local WAIT_SECONDS = 20
@@ -752,13 +755,40 @@ local loginView = make("ScrollingFrame", {
 }, { listLayout(8), padding(16) })
 
 label({ Text = "LiveSync", Font = Enum.Font.SourceSansBold, TextSize = 22, LayoutOrder = 1, Parent = loginView })
-label({ Text = "Live sync from GitHub into this place through your cloud server. Your login is saved, so you only do this once.", LayoutOrder = 2, Parent = loginView }, "SubText")
+label({ Text = "Live sync from GitHub into this place through your cloud server. Pick the repo for this place; the place remembers it.", LayoutOrder = 2, Parent = loginView }, "SubText")
 label({ Text = "SERVER URL", Font = Enum.Font.SourceSansBold, TextSize = 12, LayoutOrder = 3, Parent = loginView }, "DimmedText")
 local urlBox = input("https://your-server.up.railway.app", loginView, 4)
 label({ Text = "SYNC KEY", Font = Enum.Font.SourceSansBold, TextSize = 12, LayoutOrder = 5, Parent = loginView }, "DimmedText")
 local keyBox = input("Paste your sync key", loginView, 6)
-local connectButton = button("Connect", true, loginView, 7)
-local loginError = label({ Text = "", LayoutOrder = 8, TextColor3 = RED, Parent = loginView })
+label({ Text = "REPOSITORY", Font = Enum.Font.SourceSansBold, TextSize = 12, LayoutOrder = 7, Parent = loginView }, "DimmedText")
+local repoBox = input("owner/name or a GitHub link", loginView, 8)
+local recentList = make("Frame", {
+	Size = UDim2.new(1, 0, 0, 0),
+	AutomaticSize = Enum.AutomaticSize.Y,
+	BackgroundTransparency = 1,
+	LayoutOrder = 9,
+	Parent = loginView,
+}, { listLayout(4) })
+label({ Text = "BRANCH", Font = Enum.Font.SourceSansBold, TextSize = 12, LayoutOrder = 10, Parent = loginView }, "DimmedText")
+local branchBox = input("default branch", loginView, 11)
+local branchList = make("Frame", {
+	Size = UDim2.new(1, 0, 0, 0),
+	AutomaticSize = Enum.AutomaticSize.Y,
+	BackgroundTransparency = 1,
+	LayoutOrder = 12,
+	Parent = loginView,
+}, {
+	make("UIGridLayout", {
+		CellSize = UDim2.new(0.5, -3, 0, 24),
+		CellPadding = UDim2.fromOffset(6, 4),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}),
+})
+local branchHint = label({ Text = "", TextSize = 13, LayoutOrder = 13, TextColor3 = YELLOW, Parent = loginView })
+branchHint.Visible = false
+local placeNote = label({ Text = "", TextSize = 13, LayoutOrder = 14, Parent = loginView }, "DimmedText")
+local connectButton = button("Connect", true, loginView, 15)
+local loginError = label({ Text = "", LayoutOrder = 16, TextColor3 = RED, Parent = loginView })
 
 -- The key is shown as dots unless the box is focused.
 local realKey = plugin:GetSetting("key") or ""
@@ -774,6 +804,115 @@ keyBox.FocusLost:Connect(function()
 end)
 urlBox.Text = plugin:GetSetting("url") or ""
 maskKey()
+
+-- Repo choice is saved per place, so each game's place syncs its own repo.
+-- Unpublished places (PlaceId 0) all look the same, so they always ask.
+local PLACE_SETTING = if game.PlaceId ~= 0 then `repo_{game.PlaceId}` else nil
+local placeName = if game.PlaceId ~= 0 then `place {game.PlaceId}` else "this unpublished place"
+
+type RepoChoice = { repo: string, branch: string }
+
+local function savedChoice(): RepoChoice?
+	if not PLACE_SETTING then
+		return nil
+	end
+	local v = plugin:GetSetting(PLACE_SETTING)
+	if type(v) == "table" and type(v.repo) == "string" and v.repo ~= "" then
+		return { repo = v.repo, branch = if type(v.branch) == "string" then v.branch else "" }
+	end
+	return nil
+end
+
+local function recentChoices(): { RepoChoice }
+	local v = plugin:GetSetting("recentRepos")
+	return if type(v) == "table" then v else {}
+end
+
+-- "https://github.com/Owner/Name.git" or "Owner/Name/" -> "Owner/Name" (nil if it isn't one).
+local function normalizeRepo(text: string): string?
+	local s = string.gsub(text, "%s", "")
+	s = string.gsub(s, "^git@github%.com:", "")
+	s = string.gsub(s, "^https?://", "")
+	s = string.gsub(s, "^www%.", "")
+	s = string.gsub(s, "^github%.com/", "")
+	s = string.gsub(s, "/tree/.*$", "")
+	s = string.gsub(s, "%.git$", "")
+	s = string.gsub(s, "/+$", "")
+	local owner, name = string.match(s, "^([%w%-]+)/([%w%._%-]+)$")
+	return if owner then `{owner}/{name}` else nil
+end
+
+local function rememberChoice(choice: RepoChoice)
+	if PLACE_SETTING then
+		plugin:SetSetting(PLACE_SETTING, choice)
+	end
+	local list = { choice }
+	for _, c in recentChoices() do
+		if #list >= 6 then
+			break
+		end
+		if type(c) == "table" and c.repo and not (string.lower(c.repo) == string.lower(choice.repo) and c.branch == choice.branch) then
+			table.insert(list, c)
+		end
+	end
+	plugin:SetSetting("recentRepos", list)
+end
+
+local function choiceText(c: RepoChoice): string
+	return if c.branch ~= "" then `{c.repo} @ {c.branch}` else c.repo
+end
+
+local refreshBranches: () -> ()
+
+local function renderRecent()
+	for _, child in recentList:GetChildren() do
+		if not child:IsA("UIListLayout") then
+			child:Destroy()
+		end
+	end
+	local list = recentChoices()
+	if #list == 0 then
+		return
+	end
+	label({ Text = "Recent:", TextSize = 13, LayoutOrder = 0, Parent = recentList }, "DimmedText")
+	for i, c in list do
+		if type(c) ~= "table" or type(c.repo) ~= "string" then
+			continue
+		end
+		local b = button(choiceText(c), false, recentList, i)
+		b.Size = UDim2.new(1, 0, 0, 24)
+		b.TextSize = 13
+		b.Font = Enum.Font.Code
+		b.TextXAlignment = Enum.TextXAlignment.Left
+		make("UIPadding", { PaddingLeft = UDim.new(0, 8), Parent = b })
+		b.MouseButton1Click:Connect(function()
+			repoBox.Text = c.repo
+			branchBox.Text = c.branch or ""
+			refreshBranches()
+		end)
+	end
+end
+
+local function updatePlaceNote()
+	local saved = savedChoice()
+	if not PLACE_SETTING then
+		placeNote.Text = "This place isn't published, so the repo isn't remembered."
+	elseif saved then
+		placeNote.Text = `{placeName} syncs {choiceText(saved)}. Picking another repo removes what the old one synced here.`
+	else
+		placeNote.Text = `{placeName} has no repo yet. It will remember the one you connect.`
+	end
+end
+
+do
+	local saved = savedChoice()
+	if saved then
+		repoBox.Text = saved.repo
+		branchBox.Text = saved.branch
+	end
+	renderRecent()
+	updatePlaceNote()
+end
 
 -- ----- connected view -----
 
@@ -812,9 +951,11 @@ themed(hostText, "TextColor3", "DimmedText")
 
 local actions = make("Frame", { Position = UDim2.fromOffset(0, 40), Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1, Parent = header }, { listLayout(6, true) })
 local pauseButton = button("Pause", false, actions, 1)
-pauseButton.Size = UDim2.new(0.5, -3, 0, 26)
-local logoutButton = button("Log out", false, actions, 2)
-logoutButton.Size = UDim2.new(0.5, -3, 0, 26)
+pauseButton.Size = UDim2.new(1 / 3, -4, 0, 26)
+local switchButton = button("Switch repo", false, actions, 2)
+switchButton.Size = UDim2.new(1 / 3, -4, 0, 26)
+local logoutButton = button("Log out", false, actions, 3)
+logoutButton.Size = UDim2.new(1 / 3, -4, 0, 26)
 
 local body = make("ScrollingFrame", {
 	Position = UDim2.fromOffset(0, 84),
@@ -1030,10 +1171,14 @@ end)
 local session = 0 -- bumps on every connect/disconnect so old loops stop
 local connected = false
 
-local function request(url: string, key: string, since: string): (boolean, any)
+local function request(url: string, key: string, since: string, choice: RepoChoice): (boolean, any)
+	local query = `since={since}&wait={WAIT_SECONDS}&repo={HttpService:UrlEncode(choice.repo)}`
+	if choice.branch ~= "" then
+		query ..= `&branch={HttpService:UrlEncode(choice.branch)}`
+	end
 	local ok, res = pcall(function()
 		return HttpService:RequestAsync({
-			Url = `{url}/api/state?since={since}&wait={WAIT_SECONDS}`,
+			Url = `{url}/api/state?{query}`,
 			Method = "GET",
 			Headers = { ["X-Sync-Key"] = key },
 		})
@@ -1065,19 +1210,125 @@ local function disconnect(reason: string?, forget: boolean?)
 	end
 	showView(false)
 	loginError.Text = reason or ""
+	renderRecent()
+	updatePlaceNote()
+	refreshBranches()
 end
 
-local function connect()
+-- Server URL without spaces or trailing slash, with https:// added.
+local function cleanUrl(): string
 	local url = string.gsub(urlBox.Text, "%s", "")
 	url = string.gsub(url, "/+$", "")
+	if url ~= "" and not string.match(url, "^https?://") then
+		url = "https://" .. url
+	end
+	return url
+end
+
+-- Asks the server for the repo's branches and shows them as buttons.
+local branchSeq = 0
+refreshBranches = function()
+	branchSeq += 1
+	local mySeq = branchSeq
+	for _, child in branchList:GetChildren() do
+		if not child:IsA("UIGridLayout") then
+			child:Destroy()
+		end
+	end
+	branchHint.Visible = false
+	local repo = normalizeRepo(repoBox.Text)
+	local url = cleanUrl()
+	if not repo or url == "" or realKey == "" or not loginView.Visible then
+		return
+	end
+	task.spawn(function()
+		local ok, res = pcall(function()
+			return HttpService:RequestAsync({
+				Url = `{url}/api/branches?repo={HttpService:UrlEncode(repo)}`,
+				Method = "GET",
+				Headers = { ["X-Sync-Key"] = realKey },
+			})
+		end)
+		if mySeq ~= branchSeq then
+			return
+		end
+		local data = nil
+		if ok then
+			pcall(function()
+				data = HttpService:JSONDecode(res.Body)
+			end)
+		end
+		if not ok or not data then
+			return -- old server or no HTTP permission yet; typing the branch still works
+		end
+		if not res.Success then
+			if (res.StatusCode == 404 or res.StatusCode == 400) and data.error then
+				branchHint.Text = data.error
+				branchHint.Visible = true
+			end
+			return
+		end
+		if branchBox.Text == "" and data.defaultBranch then
+			branchBox.Text = data.defaultBranch
+		end
+		local shown = 0
+		for i, name in data.branches or {} do
+			if shown >= 10 then
+				break
+			end
+			shown += 1
+			local b = button(name, name == branchBox.Text, branchList, i)
+			b.Size = UDim2.new()
+			b.TextSize = 13
+			b.TextTruncate = Enum.TextTruncate.AtEnd
+			b.MouseButton1Click:Connect(function()
+				branchBox.Text = name
+				refreshBranches()
+			end)
+		end
+		if #(data.branches or {}) > shown then
+			branchHint.Text = `{#data.branches - shown} more branches; type the name to use one of those.`
+			branchHint.Visible = true
+		end
+	end)
+end
+
+local repoBefore = ""
+repoBox.Focused:Connect(function()
+	repoBefore = repoBox.Text
+end)
+repoBox.FocusLost:Connect(function()
+	local repo = normalizeRepo(repoBox.Text)
+	if repo then
+		repoBox.Text = repo
+	end
+	if string.lower(repoBox.Text) ~= string.lower(repoBefore) then
+		branchBox.Text = "" -- new repo: fill in its default branch
+	end
+	refreshBranches()
+end)
+branchBox.FocusLost:Connect(function()
+	branchBox.Text = string.gsub(branchBox.Text, "%s", "")
+	refreshBranches()
+end)
+keyBox.FocusLost:Connect(function()
+	task.defer(refreshBranches)
+end)
+
+local function connect()
+	local url = cleanUrl()
 	local key = realKey
 	if url == "" or key == "" then
 		loginError.Text = "Enter the server URL and sync key first."
 		return
 	end
-	if not string.match(url, "^https?://") then
-		url = "https://" .. url
+	local repo = normalizeRepo(repoBox.Text)
+	if not repo then
+		loginError.Text = if repoBox.Text == "" then "Pick a repository for this place." else "Repository should look like owner/name."
+		return
 	end
+	local choice: RepoChoice = { repo = repo, branch = string.gsub(branchBox.Text, "%s", "") }
+	repoBox.Text = repo
 	urlBox.Text = url
 	plugin:SetSetting("url", url)
 	plugin:SetSetting("key", key)
@@ -1087,9 +1338,17 @@ local function connect()
 	connected = true
 	local mySession = session
 	showView(true)
-	hostText.Text = string.gsub(url, "^https?://", "")
+	local host = string.gsub(url, "^https?://", "")
+	hostText.Text = `{choiceText(choice)}  ·  {host}`
 	setStatus("connecting", "Connecting…")
-	print(`[LiveSync] {VERSION} connecting to {url}`)
+	print(`[LiveSync] {VERSION} connecting to {url} for {choiceText(choice)}`)
+	-- Forget the old repo's history so the panel doesn't mix two repos.
+	history = {}
+	appliedLog = {}
+	inStudioCommit = nil
+	instanceCount = 0
+	renderHistory()
+	renderInfo()
 
 	-- Studio asks once per domain before a plugin may use HTTP. Until that popup
 	-- is answered the request just waits, so say so if nothing comes back.
@@ -1103,7 +1362,7 @@ local function connect()
 		local version = ""
 		local failures = 0
 		while session == mySession do
-			local ok, data = request(url, key, version)
+			local ok, data = request(url, key, version, choice)
 			if session ~= mySession then
 				break
 			end
@@ -1114,14 +1373,36 @@ local function connect()
 					disconnect("Wrong sync key.", false)
 					break
 				end
+				if string.find(data, "^HTTP 400") then
+					local okJson, body = pcall(HttpService.JSONDecode, HttpService, string.match(data, "^HTTP 400: (.*)$") or "")
+					disconnect(if okJson and type(body) == "table" and body.error then body.error else data, false)
+					break
+				end
 				setStatus("retrying", `Reconnecting ({failures})…`)
 				syncInfo.Text = escape(string.sub(data, 1, 200))
 				task.wait(math.min(2 ^ failures, 30))
 				continue
 			end
+			if data.repo == nil then
+				disconnect("This server only syncs one repo. Redeploy the LiveSync server (v4) to pick repos.", false)
+				break
+			end
+			if (data.version or "") == "" then
+				if data.error then
+					-- The repo or branch never loaded (typo, private, no project file).
+					disconnect(`Couldn't load {choiceText(choice)}: {data.error}`, false)
+					break
+				end
+				setStatus("connecting", `Downloading {data.repo}…`)
+				continue
+			end
 			if failures > 0 or statusText.Text ~= "Connected" then
 				failures = 0
 				plugin:SetSetting("autoConnect", true)
+				-- Save what the server actually synced (fills in the default branch).
+				choice = { repo = data.repo, branch = data.branch or choice.branch }
+				rememberChoice(choice)
+				hostText.Text = `{choiceText(choice)}  ·  {host}`
 				setStatus("connected", "Connected")
 			end
 			lastCheckAt = os.date("%H:%M:%S")
@@ -1172,6 +1453,9 @@ connectButton.MouseButton1Click:Connect(safeConnect)
 pauseButton.MouseButton1Click:Connect(function()
 	disconnect("Paused. Your login is saved; press Connect to resume.", false)
 end)
+switchButton.MouseButton1Click:Connect(function()
+	disconnect("Pick a repo and branch, then press Connect.", false)
+end)
 logoutButton.MouseButton1Click:Connect(function()
 	disconnect("Logged out.", true)
 end)
@@ -1187,8 +1471,22 @@ end)
 
 print(`[LiveSync] plugin loaded ({VERSION})`)
 
--- Reconnect automatically when a saved login exists (first run of v3 included).
+-- Reconnect automatically only when this place already has a repo. A place
+-- without one (a new game, or the first run of v4) shows the picker instead, so
+-- a game's place never gets another game's scripts by accident.
 local auto = plugin:GetSetting("autoConnect")
-if auto ~= false and urlBox.Text ~= "" and realKey ~= "" then
+if auto ~= false and urlBox.Text ~= "" and realKey ~= "" and savedChoice() then
 	task.defer(safeConnect)
+else
+	if urlBox.Text ~= "" and realKey ~= "" and not savedChoice() then
+		widget.Enabled = true -- show the picker so it's obvious this place needs a repo
+		if repoBox.Text == "" then
+			local recent = recentChoices()[1]
+			if type(recent) == "table" and recent.repo then
+				repoBox.Text = recent.repo
+				branchBox.Text = recent.branch or ""
+			end
+		end
+	end
+	task.defer(refreshBranches)
 end

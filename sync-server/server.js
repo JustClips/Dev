@@ -1,11 +1,18 @@
-// LiveSync server: mirrors a GitHub repo and serves its Rojo-style tree to the
+// LiveSync server: mirrors GitHub repos and serves their Rojo-style trees to the
 // LiveSync Studio plugin. The plugin long-polls /api/state and applies changes.
+//
+// One server can sync many games: the plugin says which repo and branch it wants
+// (?repo=owner/name&branch=main). Each repo+branch gets its own mirror, made on
+// first use and dropped after it has been idle for a while.
 //
 // Env:
 //   SYNC_KEY       required. Shared key the Studio plugin sends as X-Sync-Key.
-//   REPO_URL       git URL of the game repo (default: JustClips/Dev).
-//   GITHUB_TOKEN   read token for a private repo (fine-grained, Contents: read).
-//   BRANCH         default "main".
+//   REPO_URL       default repo, used when the plugin sends no repo (default: JustClips/Dev).
+//   BRANCH         default branch for REPO_URL (default "main").
+//   GITHUB_TOKEN   read token for private repos (fine-grained, Contents: read). Used for every github.com repo.
+//   ALLOWED_REPOS  optional comma list ("owner/name" or "owner/*"). If set, other repos are refused.
+//   MAX_REPOS      most mirrors kept at once (default 12).
+//   IDLE_MINUTES   a mirror nobody has asked for in this long stops polling and is dropped (default 30).
 //   POLL_SECONDS   how often to check GitHub for new commits (default 3).
 //   WEBHOOK_SECRET optional. If set, POST /webhook (GitHub push webhook) triggers an instant fetch.
 //   PROJECT_FILE   default "default.project.json".
@@ -18,6 +25,8 @@ const path = require("path");
 const crypto = require("crypto");
 const { execFile } = require("child_process");
 
+// ---------- config ----------
+
 const SYNC_KEY = process.env.SYNC_KEY || "";
 const REPO_URL = process.env.REPO_URL || "https://github.com/JustClips/Dev.git";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
@@ -26,8 +35,11 @@ const POLL_SECONDS = Number(process.env.POLL_SECONDS || 3);
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "";
 const PROJECT_FILE = process.env.PROJECT_FILE || "default.project.json";
 const PORT = Number(process.env.PORT || 34873);
-const WORKDIR = process.env.WORKDIR || path.join(require("os").tmpdir(), "livesync-repo");
-// Set LOCAL_DIR to serve a local folder instead of cloning (for testing).
+const MAX_REPOS = Number(process.env.MAX_REPOS || 12);
+const IDLE_MS = Number(process.env.IDLE_MINUTES || 30) * 60 * 1000;
+const ALLOWED_REPOS = (process.env.ALLOWED_REPOS || "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+const WORKROOT = process.env.WORKDIR || path.join(require("os").tmpdir(), "livesync-repos");
+// Set LOCAL_DIR to serve a local folder as the default repo instead of cloning (for testing).
 const LOCAL_DIR = process.env.LOCAL_DIR || "";
 const STARTED_AT = new Date().toISOString();
 
@@ -36,9 +48,35 @@ if (!SYNC_KEY) {
   process.exit(1);
 }
 
-function authedUrl() {
-  if (!GITHUB_TOKEN) return REPO_URL;
-  const u = new URL(REPO_URL);
+// "owner/name", "github.com/owner/name", "https://github.com/owner/name(.git)(/tree/branch)" -> "owner/name"
+function parseRepo(input) {
+  let s = String(input || "").trim();
+  s = s.replace(/^git@github\.com:/i, "").replace(/^(https?:\/\/)?(www\.)?github\.com\//i, "");
+  s = s.replace(/\/tree\/.*$/, "").replace(/\.git$/i, "").replace(/\/+$/, "");
+  const m = s.match(/^([A-Za-z0-9][A-Za-z0-9-]{0,38})\/([A-Za-z0-9._-]{1,100})$/);
+  if (!m || m[2] === "." || m[2] === "..") return null;
+  return `${m[1]}/${m[2]}`;
+}
+
+function validBranch(b) {
+  return typeof b === "string" && b.length > 0 && b.length <= 200 && /^[A-Za-z0-9._\/-]+$/.test(b) &&
+    !b.startsWith("-") && !b.startsWith("/") && !b.includes("..") && !b.endsWith(".lock");
+}
+
+function repoAllowed(repo) {
+  if (!ALLOWED_REPOS.length) return true;
+  const r = repo.toLowerCase();
+  const owner = r.split("/")[0];
+  return ALLOWED_REPOS.includes(r) || ALLOWED_REPOS.includes(`${owner}/*`);
+}
+
+const DEFAULT_REPO = parseRepo(REPO_URL) || REPO_URL;
+
+function gitUrl(repo) {
+  const plain = repo === DEFAULT_REPO && !parseRepo(REPO_URL) ? REPO_URL : `https://github.com/${repo}.git`;
+  if (!GITHUB_TOKEN) return plain;
+  const u = new URL(plain);
+  if (u.hostname !== "github.com") return plain;
   u.username = "x-access-token";
   u.password = GITHUB_TOKEN;
   return u.toString();
@@ -46,9 +84,17 @@ function authedUrl() {
 
 function git(args, cwd) {
   return new Promise((resolve, reject) => {
-    execFile("git", args, { cwd, maxBuffer: 64 * 1024 * 1024 }, (err, stdout, stderr) => {
+    execFile("git", args, { cwd, maxBuffer: 64 * 1024 * 1024, env: Object.assign({}, process.env, { GIT_TERMINAL_PROMPT: "0" }) }, (err, stdout, stderr) => {
       if (err) {
-        const msg = String(stderr || err.message).split(GITHUB_TOKEN || "\u0000").join("***");
+        let msg = String(stderr || err.message).split(GITHUB_TOKEN || "\u0000").join("***");
+        // git asks for a password when a repo is private or missing; say that plainly.
+        if (/could not read Username|terminal prompts disabled|Repository not found|Authentication failed/i.test(msg)) {
+          msg = GITHUB_TOKEN
+            ? "Repository not found, or the server's GITHUB_TOKEN can't read it."
+            : "Repository not found, or it's private (the server has no GITHUB_TOKEN).";
+        } else if (/Remote branch .* not found|couldn't find remote ref/i.test(msg)) {
+          msg = "Branch not found.";
+        }
         reject(new Error(msg.trim()));
       } else resolve(stdout.trim());
     });
@@ -193,11 +239,11 @@ function buildFromProject(root, tree, segs, out) {
 let warnings = [];
 let currentRoot = "";
 
-function buildSnapshot(root) {
+function buildSnapshot(root, projectFile) {
   warnings = [];
   currentRoot = root;
-  const project = readJson(path.join(root, PROJECT_FILE));
-  if (!project || !project.tree) throw new Error(`${PROJECT_FILE} missing or has no "tree"`);
+  const project = readJson(path.join(root, projectFile));
+  if (!project || !project.tree) throw new Error(`${projectFile} missing or has no "tree"`);
   const nodes = [];
   buildFromProject(root, project.tree, [], nodes);
   return { nodes, warnings };
@@ -222,58 +268,155 @@ async function readHistory(cwd) {
   return out;
 }
 
-// ---------- state + polling ----------
+// ---------- mirrors (one per repo + branch) ----------
 
-// version is a content hash, so it stays stable across restarts/redeploys and a
-// plugin can never miss an update because a counter reset.
-let state = { version: "", commit: null, hash: null, nodes: [], history: [], warnings: [], error: null, updatedAt: null };
-let waiters = [];
+class Mirror {
+  constructor(repo, branch, localDir) {
+    this.repo = repo;
+    this.branch = branch;
+    this.key = `${repo.toLowerCase()}@${branch}`;
+    this.localDir = localDir || "";
+    this.workdir = path.join(WORKROOT, this.key.replace(/[^A-Za-z0-9._-]/g, "_"));
+    // version is a content hash, so it stays stable across restarts/redeploys and a
+    // plugin can never miss an update because a counter reset.
+    this.state = { version: "", commit: null, hash: null, nodes: [], history: [], warnings: [], error: null, updatedAt: null };
+    this.waiters = [];
+    this.syncing = false;
+    this.lastRemote = null;
+    this.lastUsed = Date.now();
+    this.retryAt = 0;
+    this.firstSync = this.syncOnce();
+  }
 
-function publish(commit, snap, history) {
-  const hash = crypto.createHash("sha1").update(commit + JSON.stringify(snap.nodes)).digest("hex");
-  if (hash === state.hash) return;
-  state = {
-    version: hash.slice(0, 12), commit, hash, nodes: snap.nodes, history, warnings: snap.warnings,
-    error: null, updatedAt: new Date().toISOString(),
-  };
-  console.log(`v${state.version} commit=${commit.slice(0, 7)} nodes=${snap.nodes.length}` + (snap.warnings.length ? ` warnings=${snap.warnings.length}` : ""));
-  for (const w of snap.warnings) console.log("  warning:", w);
-  const w = waiters;
-  waiters = [];
-  for (const fn of w) fn();
-}
+  notify() {
+    const w = this.waiters;
+    this.waiters = [];
+    for (const fn of w) fn();
+  }
 
-let syncing = false;
-let lastRemote = null;
-
-async function syncOnce() {
-  if (syncing) return;
-  syncing = true;
-  try {
-    if (LOCAL_DIR) {
-      let history = [];
-      try { history = await readHistory(LOCAL_DIR); } catch {}
-      publish("local", buildSnapshot(LOCAL_DIR), history);
+  publish(commit, snap, history) {
+    const hash = crypto.createHash("sha1").update(commit + JSON.stringify(snap.nodes)).digest("hex");
+    if (hash === this.state.hash) {
+      if (this.state.error) {
+        this.state.error = null;
+        this.notify();
+      }
       return;
     }
-    if (!fs.existsSync(path.join(WORKDIR, ".git"))) {
-      fs.rmSync(WORKDIR, { recursive: true, force: true });
-      await git(["clone", "--depth", String(HISTORY_DEPTH), "--branch", BRANCH, authedUrl(), WORKDIR]);
-      lastRemote = null;
-    }
-    const remote = (await git(["ls-remote", authedUrl(), `refs/heads/${BRANCH}`], WORKDIR)).split(/\s+/)[0];
-    if (remote && remote === lastRemote) return;
-    await git(["fetch", "--depth", String(HISTORY_DEPTH), authedUrl(), BRANCH], WORKDIR);
-    await git(["reset", "--hard", "FETCH_HEAD"], WORKDIR);
-    const commit = await git(["rev-parse", "HEAD"], WORKDIR);
-    publish(commit, buildSnapshot(WORKDIR), await readHistory(WORKDIR));
-    lastRemote = remote;
-  } catch (e) {
-    if (state.error !== e.message) console.error("sync error:", e.message);
-    state.error = e.message;
-  } finally {
-    syncing = false;
+    this.state = {
+      version: hash.slice(0, 12), commit, hash, nodes: snap.nodes, history, warnings: snap.warnings,
+      error: null, updatedAt: new Date().toISOString(),
+    };
+    console.log(`[${this.key}] v${this.state.version} commit=${commit.slice(0, 7)} nodes=${snap.nodes.length}` + (snap.warnings.length ? ` warnings=${snap.warnings.length}` : ""));
+    for (const w of snap.warnings) console.log("  warning:", w);
+    this.notify();
   }
+
+  async syncOnce(force) {
+    if (this.syncing) return;
+    // A repo/branch that has never loaded (typo, private, deleted) is retried slowly.
+    if (!force && !this.state.version && this.state.error && Date.now() < this.retryAt) return;
+    this.syncing = true;
+    try {
+      if (this.localDir) {
+        let history = [];
+        try { history = await readHistory(this.localDir); } catch {}
+        this.publish("local", buildSnapshot(this.localDir, PROJECT_FILE), history);
+        return;
+      }
+      const url = gitUrl(this.repo);
+      if (!fs.existsSync(path.join(this.workdir, ".git"))) {
+        fs.rmSync(this.workdir, { recursive: true, force: true });
+        fs.mkdirSync(WORKROOT, { recursive: true });
+        await git(["clone", "--depth", String(HISTORY_DEPTH), "--branch", this.branch, "--", url, this.workdir], WORKROOT);
+        this.lastRemote = null;
+      }
+      const remote = (await git(["ls-remote", url, `refs/heads/${this.branch}`], this.workdir)).split(/\s+/)[0];
+      if (!remote) throw new Error("Branch not found.");
+      if (remote === this.lastRemote) return;
+      await git(["fetch", "--depth", String(HISTORY_DEPTH), url, this.branch], this.workdir);
+      await git(["reset", "--hard", "FETCH_HEAD"], this.workdir);
+      const commit = await git(["rev-parse", "HEAD"], this.workdir);
+      this.publish(commit, buildSnapshot(this.workdir, PROJECT_FILE), await readHistory(this.workdir));
+      this.lastRemote = remote;
+    } catch (e) {
+      if (this.state.error !== e.message) {
+        console.error(`[${this.key}] sync error:`, e.message);
+        this.state.error = e.message;
+        this.notify();
+      }
+      this.retryAt = Date.now() + 30000;
+    } finally {
+      this.syncing = false;
+    }
+  }
+
+  summary() {
+    return { repo: this.repo, branch: this.branch, version: this.state.version, commit: this.state.commit, error: this.state.error, lastUsed: new Date(this.lastUsed).toISOString() };
+  }
+
+  drop() {
+    this.notify();
+    fs.rm(this.workdir, { recursive: true, force: true }, () => {});
+  }
+}
+
+const mirrors = new Map();
+const defaultBranch = BRANCH;
+
+function mirrorFor(repo, branch) {
+  const key = `${repo.toLowerCase()}@${branch}`;
+  let m = mirrors.get(key);
+  if (m) {
+    m.lastUsed = Date.now();
+    return m;
+  }
+  if (mirrors.size >= MAX_REPOS) {
+    // Make room by dropping the least recently used mirror (never the default one).
+    let oldest = null;
+    for (const x of mirrors.values()) {
+      if (x.key === defaultKey) continue;
+      if (!oldest || x.lastUsed < oldest.lastUsed) oldest = x;
+    }
+    if (oldest) {
+      console.log(`[${oldest.key}] dropped (too many repos)`);
+      mirrors.delete(oldest.key);
+      oldest.drop();
+    }
+  }
+  m = new Mirror(repo, branch, repo === DEFAULT_REPO && branch === defaultBranch ? LOCAL_DIR : "");
+  mirrors.set(key, m);
+  console.log(`[${key}] mirror created`);
+  return m;
+}
+
+const defaultKey = `${DEFAULT_REPO.toLowerCase()}@${defaultBranch}`;
+
+function pollAll() {
+  const now = Date.now();
+  for (const m of [...mirrors.values()]) {
+    if (m.key !== defaultKey && now - m.lastUsed > IDLE_MS && m.waiters.length === 0) {
+      console.log(`[${m.key}] dropped (idle)`);
+      mirrors.delete(m.key);
+      m.drop();
+      continue;
+    }
+    m.syncOnce();
+  }
+}
+
+// Branches of a repo plus its default branch, straight from GitHub.
+async function listBranches(repo) {
+  const url = gitUrl(repo);
+  const [heads, head] = await Promise.all([
+    git(["ls-remote", "--heads", url], WORKROOT),
+    git(["ls-remote", "--symref", url, "HEAD"], WORKROOT).catch(() => ""),
+  ]);
+  const branches = heads.split("\n").map((l) => (l.split("\t")[1] || "").replace(/^refs\/heads\//, "")).filter(Boolean);
+  const m = head.match(/^ref: refs\/heads\/(\S+)\s+HEAD/m);
+  const def = m ? m[1] : branches.includes("main") ? "main" : branches[0] || null;
+  branches.sort((a, b) => (a === def ? -1 : b === def ? 1 : a.localeCompare(b)));
+  return { repo, defaultBranch: def, branches };
 }
 
 // ---------- HTTP ----------
@@ -290,11 +433,42 @@ function keyOk(req) {
   return got.length === want.length && crypto.timingSafeEqual(got, want);
 }
 
+// Default branch of each repo, looked up once (for requests that name no branch).
+const headCache = new Map();
+async function repoDefaultBranch(repo) {
+  if (repo === DEFAULT_REPO) return defaultBranch;
+  const key = repo.toLowerCase();
+  if (!headCache.has(key)) {
+    fs.mkdirSync(WORKROOT, { recursive: true });
+    const head = await git(["ls-remote", "--symref", gitUrl(repo), "HEAD"], WORKROOT).catch(() => "");
+    const m = head.match(/^ref: refs\/heads\/(\S+)\s+HEAD/m);
+    if (!m) return "main"; // not cached, so a later fix (token added, repo made) is picked up
+    headCache.set(key, m[1]);
+  }
+  return headCache.get(key);
+}
+
+// Reads ?repo= and ?branch= (blank = the server's default repo/branch).
+function target(url) {
+  const rawRepo = url.searchParams.get("repo") || "";
+  const repo = rawRepo ? parseRepo(rawRepo) : DEFAULT_REPO;
+  if (!repo) return { error: `"${rawRepo.slice(0, 100)}" isn't a GitHub repo. Use owner/name.` };
+  if (!repoAllowed(repo)) return { error: `${repo} isn't in this server's ALLOWED_REPOS.` };
+  const branch = url.searchParams.get("branch") || "";
+  if (branch && !validBranch(branch)) return { error: `"${branch.slice(0, 100)}" isn't a valid branch name.` };
+  return { repo, branch };
+}
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, "http://x");
 
   if (url.pathname === "/" || url.pathname === "/healthz") {
-    return send(res, 200, { ok: true, name: "livesync", startedAt: STARTED_AT, version: state.version, commit: state.commit, error: state.error });
+    const d = mirrors.get(defaultKey);
+    return send(res, 200, {
+      ok: true, name: "livesync", multiRepo: true, startedAt: STARTED_AT, defaultRepo: DEFAULT_REPO, defaultBranch,
+      version: d ? d.state.version : "", commit: d ? d.state.commit : null, error: d ? d.state.error : null,
+      repos: mirrors.size,
+    });
   }
 
   if (url.pathname === "/webhook" && req.method === "POST") {
@@ -309,50 +483,89 @@ const server = http.createServer((req, res) => {
           return send(res, 401, { error: "bad signature" });
         }
       }
-      lastRemote = null;
-      syncOnce();
+      let full = "";
+      try { full = String(JSON.parse(body.toString("utf8")).repository.full_name || "").toLowerCase(); } catch {}
+      for (const m of mirrors.values()) {
+        if (!full || m.repo.toLowerCase() === full) {
+          m.lastRemote = null;
+          m.syncOnce(true);
+        }
+      }
       send(res, 200, { ok: true });
     });
     return;
   }
 
-  if (url.pathname === "/api/state" && req.method === "GET") {
-    if (!keyOk(req)) {
-      console.log(`401 wrong sync key from ${req.headers["x-forwarded-for"] || req.socket.remoteAddress}`);
-      return send(res, 401, { error: "bad or missing X-Sync-Key" });
-    }
-    if (url.searchParams.get("since") !== state.version) {
-      console.log(`plugin sync: since=${url.searchParams.get("since") || "(none)"} -> ${state.version}`);
-    }
-    const since = String(url.searchParams.get("since") || "");
-    const wait = Math.min(Number(url.searchParams.get("wait") || 0), 25);
-    const reply = () => {
-      if (since === state.version) {
-        send(res, 200, { version: state.version, commit: state.commit, unchanged: true, error: state.error });
-      } else {
-        send(res, 200, { version: state.version, commit: state.commit, nodes: state.nodes, history: state.history, warnings: state.warnings, error: state.error });
-      }
-    };
-    if (since !== state.version || wait <= 0 || !state.version) return reply();
-    let done = false;
-    const fire = () => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      reply();
-    };
-    const timer = setTimeout(fire, wait * 1000);
-    waiters.push(fire);
-    req.on("close", () => {
-      done = true;
-      clearTimeout(timer);
+  if (!url.pathname.startsWith("/api/")) return send(res, 404, { error: "not found" });
+  if (!keyOk(req)) {
+    console.log(`401 wrong sync key from ${req.headers["x-forwarded-for"] || req.socket.remoteAddress}`);
+    return send(res, 401, { error: "bad or missing X-Sync-Key" });
+  }
+
+  // Repos this server is mirroring right now, for the plugin's picker.
+  if (url.pathname === "/api/repos" && req.method === "GET") {
+    return send(res, 200, {
+      defaultRepo: DEFAULT_REPO, defaultBranch, allowed: ALLOWED_REPOS,
+      repos: [...mirrors.values()].sort((a, b) => b.lastUsed - a.lastUsed).map((m) => m.summary()),
     });
+  }
+
+  if (url.pathname === "/api/branches" && req.method === "GET") {
+    const t = target(url);
+    if (t.error) return send(res, 400, { error: t.error });
+    fs.mkdirSync(WORKROOT, { recursive: true });
+    listBranches(t.repo).then((r) => send(res, 200, r), (e) => send(res, 404, { error: e.message }));
     return;
+  }
+
+  if (url.pathname === "/api/state" && req.method === "GET") {
+    const t = target(url);
+    if (t.error) return send(res, 400, { error: t.error });
+    if (!t.branch) {
+      repoDefaultBranch(t.repo).then((b) => serveState(req, res, url, mirrorFor(t.repo, b)));
+      return;
+    }
+    return serveState(req, res, url, mirrorFor(t.repo, t.branch));
   }
 
   send(res, 404, { error: "not found" });
 });
 
-server.listen(PORT, () => console.log(`livesync listening on :${PORT}, repo=${LOCAL_DIR || REPO_URL} branch=${BRANCH}`));
-syncOnce();
-setInterval(syncOnce, POLL_SECONDS * 1000);
+// Long-poll: answers right away if the plugin is behind, else waits up to ?wait= seconds.
+function serveState(req, res, url, m) {
+  const since = String(url.searchParams.get("since") || "");
+  const wait = Math.min(Number(url.searchParams.get("wait") || 0), 25);
+  if (since !== m.state.version) {
+    console.log(`[${m.key}] plugin sync: since=${since || "(none)"} -> ${m.state.version || "(loading)"}`);
+  }
+  const base = () => ({ repo: m.repo, branch: m.branch, version: m.state.version, commit: m.state.commit, error: m.state.error });
+  const reply = () => {
+    if (!m.state.version || since === m.state.version) {
+      send(res, 200, Object.assign(base(), { unchanged: true, loading: !m.state.version && !m.state.error }));
+    } else {
+      send(res, 200, Object.assign(base(), { nodes: m.state.nodes, history: m.state.history, warnings: m.state.warnings }));
+    }
+  };
+  const ready = m.state.version && since !== m.state.version;
+  const failedFirst = !m.state.version && m.state.error;
+  if (failedFirst && !since) return m.syncOnce(true).then(reply); // fresh connect: try again now
+  if (ready || failedFirst || wait <= 0) return reply();
+  let done = false;
+  const fire = () => {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    m.lastUsed = Date.now();
+    reply();
+  };
+  const timer = setTimeout(fire, wait * 1000);
+  m.waiters.push(fire);
+  req.on("close", () => {
+    done = true;
+    clearTimeout(timer);
+  });
+}
+
+server.listen(PORT, () => console.log(`livesync listening on :${PORT}, default repo=${LOCAL_DIR || DEFAULT_REPO} branch=${defaultBranch}`));
+mirrorFor(DEFAULT_REPO, defaultBranch);
+setInterval(pollAll, POLL_SECONDS * 1000);
