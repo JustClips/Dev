@@ -83,6 +83,9 @@ local function hatchSeconds(data, rarity: string): number
 	end
 	seconds /= Upgrades.multiplier(data.Upgrades, "HatchSpeed")
 	seconds /= S.AdminService:Mult("Hatch") -- admin "Hatch Speed" event
+	if (data.Stats.Hatches or 0) < Eggs.StarterHatches then
+		seconds = math.min(seconds, Eggs.StarterHatchSeconds)
+	end
 	return math.ceil(seconds)
 end
 

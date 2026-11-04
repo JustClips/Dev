@@ -428,7 +428,7 @@ function EggService:OnTileCleared(player: Player, zone, position: Vector3)
 	end
 	-- Then the first egg is guaranteed a few leaves later, and the egg lesson starts.
 	if stats.EggsFound == 0 and not session.Runtime.TutorialEggSpawned and stats.TilesCleared >= (flags.EggLessonFrom or 0) + Economy.TutorialEggTile then
-		foundEgg(player, position, "Common", zone.Id)
+		foundEgg(player, position, Eggs.FirstEggRarity, zone.Id)
 		return
 	end
 	local luck = S.BoostService:GetServerLuck() * Upgrades.multiplier(session.Data.Upgrades, "Luck") * S.BoostService:GetPersonalLuck(player)

@@ -59,6 +59,13 @@ local Eggs = {
 	FasterHatchMult = 0.5,
 	-- A brand-new player's first egg opens after this many seconds (HatchService).
 	FirstEggSeconds = 3,
+	-- New players' first few hatches are quick (2026-11-04 funnel check: most new players
+	-- hatched one pet, then quit around minute 3 while the next egg took 15 s to 2 min).
+	-- Eggs placed while you have fewer than StarterHatches hatches take at most this long.
+	StarterHatches = 5,
+	StarterHatchSeconds = 10,
+	-- The guaranteed first egg after the tutorial (EggService).
+	FirstEggRarity = "Rare",
 }
 
 for _, r in Rarities do
