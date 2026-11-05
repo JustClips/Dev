@@ -340,6 +340,10 @@ class Mirror {
       this.publish(commit, buildSnapshot(this.workdir, PROJECT_FILE), await readHistory(this.workdir));
       this.lastRemote = remote;
     } catch (e) {
+      if (e.message === "Branch not found." && !this.state.version) {
+        const heads = await git(["ls-remote", "--heads", gitUrl(this.repo)], WORKROOT).catch(() => "x");
+        if (!heads) e.message = "This repo is empty. Push a first commit with default.project.json and src/.";
+      }
       if (this.state.error !== e.message) {
         console.error(`[${this.key}] sync error:`, e.message);
         this.state.error = e.message;
