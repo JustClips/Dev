@@ -21,7 +21,7 @@ if RunService:IsRunning() then
 	return -- don't sync into play-test sessions
 end
 
-local VERSION = "v5"
+local VERSION = "v6"
 local TAG = "LiveSync"
 local PATH_ATTR = "LiveSyncPath"
 local WAIT_SECONDS = 20
@@ -584,6 +584,35 @@ end
 
 local ASSET_ATTR, CENTER_ATTR, LOADED_ATTR = "LiveSyncAsset", "LiveSyncBoxCenter", "LiveSyncAssetLoaded"
 local loadingAssets: { [Instance]: boolean } = {}
+local TEXTURES_ATTR, TEXTURED_ATTR = "LiveSyncTextures", "LiveSyncTexturesApplied"
+
+-- v6: LiveSyncTextures = JSON { part name: Roblox Image id } sets MeshPart.TextureID (and drops
+-- the embedded SurfaceAppearance) so textures show even when the GLB's own images don't.
+local function applyTextures(model: Model)
+	local raw = model:GetAttribute(TEXTURES_ATTR)
+	if type(raw) ~= "string" or model:GetAttribute(TEXTURED_ATTR) == raw then
+		return
+	end
+	local ok, map = pcall(HttpService.JSONDecode, HttpService, raw)
+	if not ok or type(map) ~= "table" then
+		return
+	end
+	for _, d in model:GetDescendants() do
+		local id = d:IsA("MeshPart") and map[d.Name]
+		if id then
+			for _, c in d:GetChildren() do
+				if c:IsA("SurfaceAppearance") then
+					c:Destroy()
+				end
+			end
+			pcall(function()
+				(d :: MeshPart).TextureID = `rbxassetid://{id}`
+			end)
+			d.Color = Color3.new(1, 1, 1)
+		end
+	end
+	model:SetAttribute(TEXTURED_ATTR, raw)
+end
 
 local function loadAssetInto(model: Model)
 	local id = tonumber(model:GetAttribute(ASSET_ATTR))
@@ -626,6 +655,7 @@ local function loadAssetInto(model: Model)
 			local box = model:GetBoundingBox()
 			model:PivotTo(CFrame.new(center) * box:ToObjectSpace(model:GetPivot()))
 		end
+		applyTextures(model)
 		model:SetAttribute(LOADED_ATTR, want)
 		if recording then
 			ChangeHistoryService:FinishRecording(recording, Enum.FinishRecordingOperation.Commit)
@@ -638,6 +668,9 @@ local function loadAssets()
 	for _, inst in CollectionService:GetTagged(TAG) do
 		if inst:IsA("Model") and inst:GetAttribute(ASSET_ATTR) then
 			loadAssetInto(inst)
+			if inst:GetAttribute(LOADED_ATTR) then
+				applyTextures(inst)
+			end
 		end
 	end
 end
