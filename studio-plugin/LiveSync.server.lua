@@ -15,12 +15,13 @@ local CollectionService = game:GetService("CollectionService")
 local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local ScriptEditorService = game:GetService("ScriptEditorService")
 local RunService = game:GetService("RunService")
+local InsertService = game:GetService("InsertService")
 
 if RunService:IsRunning() then
 	return -- don't sync into play-test sessions
 end
 
-local VERSION = "v4"
+local VERSION = "v5"
 local TAG = "LiveSync"
 local PATH_ATTR = "LiveSyncPath"
 local WAIT_SECONDS = 20
@@ -569,6 +570,76 @@ local function apply(nodes: { Node }): (number, number)
 	end
 
 	return changed, removed
+end
+
+--------------------------------------------------------------------------------
+-- Uploaded models in the repo (v5)
+--
+-- A Model in a .model.json with attribute LiveSyncAsset = <Roblox Model asset id> gets
+-- that asset's contents loaded into it, so Blender models show in edit mode too.
+-- LiveSyncBoxCenter (Vector3, optional) = where its bounding-box centre goes.
+-- Reloads when the id or the centre changes; the game's own scripts can do the same
+-- at run time for places that don't have this plugin.
+--------------------------------------------------------------------------------
+
+local ASSET_ATTR, CENTER_ATTR, LOADED_ATTR = "LiveSyncAsset", "LiveSyncBoxCenter", "LiveSyncAssetLoaded"
+local loadingAssets: { [Instance]: boolean } = {}
+
+local function loadAssetInto(model: Model)
+	local id = tonumber(model:GetAttribute(ASSET_ATTR))
+	local center = model:GetAttribute(CENTER_ATTR)
+	local want = `{id}|{tostring(center)}`
+	if not id or model:GetAttribute(LOADED_ATTR) == want or loadingAssets[model] then
+		return
+	end
+	loadingAssets[model] = true
+	task.spawn(function()
+		local ok, container = pcall(InsertService.LoadAsset, InsertService, id)
+		loadingAssets[model] = nil
+		if not ok then
+			warn(`[LiveSync] could not load asset {id} into {model:GetFullName()}: {container}`)
+			return
+		end
+		if not model.Parent then
+			container:Destroy()
+			return
+		end
+		local recording = ChangeHistoryService:TryBeginRecording("LiveSync model asset")
+		-- drop the previous copy (anything LiveSync didn't make itself)
+		for _, child in model:GetChildren() do
+			if not CollectionService:HasTag(child, TAG) then
+				child:Destroy()
+			end
+		end
+		for _, d in container:GetDescendants() do
+			if d:IsA("BasePart") then
+				d.Anchored = true
+			elseif d:IsA("Script") or d:IsA("LocalScript") then
+				d:Destroy()
+			end
+		end
+		for _, child in container:GetChildren() do
+			child.Parent = model
+		end
+		container:Destroy()
+		if typeof(center) == "Vector3" then
+			local box = model:GetBoundingBox()
+			model:PivotTo(CFrame.new(center) * box:ToObjectSpace(model:GetPivot()))
+		end
+		model:SetAttribute(LOADED_ATTR, want)
+		if recording then
+			ChangeHistoryService:FinishRecording(recording, Enum.FinishRecordingOperation.Commit)
+		end
+		print(`[LiveSync] loaded model asset {id} into {model:GetFullName()}`)
+	end)
+end
+
+local function loadAssets()
+	for _, inst in CollectionService:GetTagged(TAG) do
+		if inst:IsA("Model") and inst:GetAttribute(ASSET_ATTR) then
+			loadAssetInto(inst)
+		end
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -1412,6 +1483,7 @@ local function connect()
 				if recording then
 					ChangeHistoryService:FinishRecording(recording, Enum.FinishRecordingOperation.Commit)
 				end
+				pcall(loadAssets)
 				version = data.version
 				history = data.history or history
 				instanceCount = #data.nodes
