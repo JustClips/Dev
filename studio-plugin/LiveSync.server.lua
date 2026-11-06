@@ -22,7 +22,7 @@ if RunService:IsRunning() then
 	return -- don't sync into play-test sessions
 end
 
-local VERSION = "v7"
+local VERSION = "v8"
 local TAG = "LiveSync"
 local PATH_ATTR = "LiveSyncPath"
 local WAIT_SECONDS = 20
@@ -641,10 +641,16 @@ local function loadAssetInto(model: Model)
 				child:Destroy()
 			end
 		end
+		-- With LiveSyncTextures the colour maps come from uploaded Images, so drop the GLB's own
+		-- SurfaceAppearances: otherwise Studio tries to upload them as TexturePacks and fails
+		-- ("Referenced Asset N is NOT found", rate limited).
+		local hasTextures = type(model:GetAttribute(TEXTURES_ATTR)) == "string"
 		for _, d in container:GetDescendants() do
 			if d:IsA("BasePart") then
 				d.Anchored = true
 			elseif d:IsA("Script") or d:IsA("LocalScript") then
+				d:Destroy()
+			elseif hasTextures and d:IsA("SurfaceAppearance") then
 				d:Destroy()
 			end
 		end
