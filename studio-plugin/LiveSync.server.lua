@@ -16,12 +16,13 @@ local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local ScriptEditorService = game:GetService("ScriptEditorService")
 local RunService = game:GetService("RunService")
 local InsertService = game:GetService("InsertService")
+local ContentProvider = game:GetService("ContentProvider")
 
 if RunService:IsRunning() then
 	return -- don't sync into play-test sessions
 end
 
-local VERSION = "v6"
+local VERSION = "v7"
 local TAG = "LiveSync"
 local PATH_ATTR = "LiveSyncPath"
 local WAIT_SECONDS = 20
@@ -662,6 +663,86 @@ local function loadAssetInto(model: Model)
 		end
 		print(`[LiveSync] loaded model asset {id} into {model:GetFullName()}`)
 	end)
+end
+
+-- v7: images that failed to load (Roblox hiccup, account moderation, slow CDN) stay grey for
+-- the whole Studio session, because setting the same TextureID again does nothing. Every
+-- RETRY_SECONDS, preload every image used by LiveSync models and the City folder; any that
+-- failed is cleared and set again, which makes Studio fetch it fresh.
+local RETRY_SECONDS = 15
+local lastRetry = 0
+
+local function imageUsers(): { [string]: { Instance } }
+	local users: { [string]: { Instance } } = {}
+	local function add(inst: Instance, id: string)
+		if id ~= "" then
+			users[id] = users[id] or {}
+			table.insert(users[id], inst)
+		end
+	end
+	local roots = {}
+	for _, inst in CollectionService:GetTagged(TAG) do
+		if inst:IsA("Model") and inst:GetAttribute(ASSET_ATTR) then
+			table.insert(roots, inst)
+		end
+	end
+	local city = workspace:FindFirstChild("City")
+	if city then
+		table.insert(roots, city)
+	end
+	local seen: { [Instance]: boolean } = {}
+	for _, root in roots do
+		for _, d in root:GetDescendants() do
+			if seen[d] then
+				continue
+			end
+			seen[d] = true
+			if d:IsA("MeshPart") then
+				add(d, d.TextureID)
+			elseif d:IsA("Texture") or d:IsA("Decal") then
+				add(d, d.Texture)
+			end
+		end
+	end
+	return users
+end
+
+local function retryFailedImages()
+	if os.clock() - lastRetry < RETRY_SECONDS then
+		return
+	end
+	lastRetry = os.clock()
+	local users = imageUsers()
+	local ids = {}
+	for id in users do
+		table.insert(ids, id)
+	end
+	if #ids == 0 then
+		return
+	end
+	local failed = {}
+	pcall(ContentProvider.PreloadAsync, ContentProvider, ids, function(id, status)
+		if status ~= Enum.AssetFetchStatus.Success then
+			table.insert(failed, id)
+		end
+	end)
+	if #failed == 0 then
+		return
+	end
+	for _, id in failed do
+		for _, inst in users[id] do
+			local prop = if inst:IsA("MeshPart") then "TextureID" else "Texture"
+			pcall(function()
+				(inst :: any)[prop] = ""
+			end)
+			task.defer(function()
+				pcall(function()
+					(inst :: any)[prop] = id
+				end)
+			end)
+		end
+	end
+	print(`[LiveSync] {#failed} image(s) had not loaded, asked Studio to fetch them again`)
 end
 
 local function loadAssets()
@@ -1517,6 +1598,7 @@ local function connect()
 					ChangeHistoryService:FinishRecording(recording, Enum.FinishRecordingOperation.Commit)
 				end
 				pcall(loadAssets)
+				task.spawn(pcall, retryFailedImages)
 				version = data.version
 				history = data.history or history
 				instanceCount = #data.nodes
@@ -1572,6 +1654,14 @@ end)
 
 plugin.Unloading:Connect(function()
 	session += 1
+end)
+
+task.spawn(function()
+	task.wait(5)
+	while plugin.Parent do
+		pcall(retryFailedImages)
+		task.wait(RETRY_SECONDS)
+	end
 end)
 
 print(`[LiveSync] plugin loaded ({VERSION})`)
