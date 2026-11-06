@@ -22,7 +22,7 @@ if RunService:IsRunning() then
 	return -- don't sync into play-test sessions
 end
 
-local VERSION = "v8"
+local VERSION = "v9"
 local TAG = "LiveSync"
 local PATH_ATTR = "LiveSyncPath"
 local WAIT_SECONDS = 20
@@ -757,6 +757,15 @@ local function loadAssets()
 			loadAssetInto(inst)
 			if inst:GetAttribute(LOADED_ATTR) then
 				applyTextures(inst)
+				-- v9: also clear SurfaceAppearances left in models loaded by older versions; they
+				-- make every play test try to upload TexturePacks ("Referenced Asset N is NOT found")
+				if type(inst:GetAttribute(TEXTURES_ATTR)) == "string" then
+					for _, d in inst:GetDescendants() do
+						if d:IsA("SurfaceAppearance") then
+							d:Destroy()
+						end
+					end
+				end
 			end
 		end
 	end
