@@ -60,7 +60,10 @@ local function pick(data): Goal?
 		if zone.UnlockCost > 0 and not data.ZonesUnlocked[zone.Id] then
 			if zone.RequiredRebirths <= (data.Rebirths or 0) then
 				local cost = zoneCost(data, zone)
-				if best == nil or cost < best.Price then
+				-- The "Open the Park" starter goal (Config/Quests) puts the zone first.
+				local job = data.Quests and data.Quests.Job
+				local zoneJob = job ~= nil and job.Kind == "Zones" and (job.Number or 99) <= 3
+				if best == nil or cost < best.Price or zoneJob then
 					best = { Kind = "Zone", Id = zone.Id, Name = zone.Name, Price = cost, Icon = AssetLibrary.image("Icon_Zones") }
 				end
 			end
@@ -166,6 +169,17 @@ function NextGoalController:Pointer(): GuiObject?
 		return nil
 	end
 	return buy
+end
+
+-- The id of the next zone while it's the Next goal and you can pay for it, else nil
+-- (ArrowController leads you to its gate).
+function NextGoalController:AffordableZone(): string?
+	local goal = current
+	local data = State.data
+	if not goal or not data or goal.Kind ~= "Zone" or not BigNum.gte(data.Cash, goal.Price) then
+		return nil
+	end
+	return goal.Id
 end
 
 function NextGoalController:Init(controllers)

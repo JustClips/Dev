@@ -19,6 +19,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Format = require(Shared.Format)
 local Tools = require(Shared.Config.Tools)
+local Zones = require(Shared.Config.Zones)
 
 export type Reward = { Kind: string, Seconds: number?, Floor: number?, Item: string?, Amount: number?, Rarity: string?, Bonus: Reward? }
 export type Quest = { Kind: string, Goal: number?, Rarity: string?, Reward: Reward?, Free: boolean? }
@@ -59,28 +60,34 @@ end
 
 -- The Quest Master's jobs, in order. They start once the tutorial is done (the tutorial
 -- covers the first sweep, egg, hatch and sell).
--- The first one is the free wheel spin (checks what you have, so players who already
--- spun can claim it right away). The free Broom and free Sweep Power jobs were removed
--- 2026-11-01 (Dev): the tutorial teaches both now.
-Quests.StarterJobs = 1
--- Bump when jobs are added/removed before existing ones: QuestService moves saved job
--- numbers (v2 added Broom, Power, FreeSpin in front; v3 removed Broom and Power).
-Quests.JobsVersion = 3
+-- The first three are the "what next" chain right after the tutorial (2026-11-07 funnel
+-- check: 57% of new players left the moment the tutorial ended, half with one pet, 29% on
+-- tool 2, under 30% ever opened the Park): hatch 3 pets, get the Rake, open the Park. They
+-- claim themselves and the guide path points at each one (ArrowController). The free wheel
+-- spin comes after. StarterJobs = how many of the first jobs get the tutorial-style pointer. The free Broom and free Sweep Power jobs were removed 2026-11-01 (Dev):
+-- the tutorial teaches both now.
+Quests.StarterJobs = 4
+-- Bump when jobs are added/removed/moved: QuestService moves saved job numbers (v2 added
+-- Broom, Power, FreeSpin in front; v3 removed Broom and Power; v4 moved Hatches 3, Tool 3
+-- and Zones 2 to the front).
+Quests.JobsVersion = 4
+-- v3 job number -> v4 job number (same job where it still exists, else the next one).
+Quests.V3toV4 = { 1, 5, 6, 7, 8, 8, 9, 10, 10, 11, 12, 13, 14, 15, 15, 16, 17, 18, 19, 20, 21 }
 Quests.Jobs = {
+	{ Kind = "Hatches", Goal = 3, Reward = ITEM("HatchPotion", 2) },
+	{ Kind = "Tool", Goal = 3, Reward = CASH(180, 0.4) },
+	{ Kind = "Zones", Goal = 2, Reward = EGG("Rare") },
 	{ Kind = "FreeSpin", Goal = 1, Free = true, Reward = ITEM("LuckPotion") },
 	{ Kind = "Leaves", Goal = 200, Reward = CASH(120, 0.3) },
 	{ Kind = "Sells", Goal = 3, Reward = ITEM("LuckPotion") },
 	{ Kind = "Bunnies", Goal = 2, Reward = CASH(180, 0.3) },
-	{ Kind = "Hatches", Goal = 3, Reward = ITEM("HatchPotion", 2) },
 	{ Kind = "Golden", Goal = 3, Reward = CASH(240, 0.4) },
 	{ Kind = "Upgrades", Goal = 5, Reward = ITEM("SpeedPotion") },
-	{ Kind = "Tool", Goal = 3, Reward = CASH(300, 0.4) },
 	{ Kind = "Placed", Goal = 4, Reward = EGG("Rare") },
 	{ Kind = "Pet", Rarity = "Rare", Reward = SPIN(1) },
 	{ Kind = "Trash", Goal = 10, Reward = ITEM("CashPotion") },
 	{ Kind = "Items", Goal = 1, Reward = CASH(300, 0.5) },
 	{ Kind = "Cash", Goal = 50_000, Reward = ITEM("LuckPotion", 2) },
-	{ Kind = "Zones", Goal = 2, Reward = EGG("Epic") },
 	{ Kind = "Eggs", Goal = 15, Reward = SPIN(2) },
 	{ Kind = "Hatches", Goal = 25, Reward = ITEM("SuperLuckPotion") },
 	{ Kind = "Pet", Rarity = "Epic", Reward = ITEM("HugeCharm") },
@@ -181,6 +188,9 @@ textOf = function(q: Quest): string
 		local name = Tools.get(n).Name
 		return `Get the {name}`
 	elseif k == "Zones" then
+		if n == 2 and Zones.List[2] then
+			return `Open the {Zones.List[2].Name}`
+		end
 		return if n <= 2 then "Unlock a new zone" else `Unlock {n - 1} new zones`
 	elseif k == "Placed" then
 		return `Put {num} pets on your base`

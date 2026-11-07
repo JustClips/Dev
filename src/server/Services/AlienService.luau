@@ -275,6 +275,11 @@ local function grantOffline(player: Player, session)
 	end
 	local amount = base * S.BoostService:GetBaseCashMultiplier(player) * seconds * Economy.OfflineIncomeRate
 		* Upgrades.multiplier(data.Upgrades, "Offline")
+	local returns = tonumber(data.Flags.OfflineReturns) or 0
+	if returns < Economy.FirstReturns then
+		amount *= Economy.FirstReturnsOfflineMult
+		data.Flags.OfflineReturns = returns + 1
+	end
 	S.BackpackService:GiveCash(player, amount, "OfflineIncome")
 	session.Runtime.OfflineReward = amount
 	task.delay(4, function()

@@ -120,6 +120,30 @@ local function targetFor(data): Vector3?
 	if data.Backpack >= data.Capacity and not data.Gamepasses.SellAnywhere then
 		return dumpSpot
 	end
+	-- The first Quest Master goals (2026-11-07: hatch 3, Rake, Park) keep the path on,
+	-- like the tutorial: to a ready egg, home with bag eggs, and to the next zone's gate
+	-- once you can pay for it (also whenever the Next goal chip is an affordable zone).
+	local job = data.Quests and data.Quests.Job
+	local starter = job and not job.Done and (job.Number or 99) <= 3
+	local fewHatches = (data.Stats and data.Stats.Hatches or 0) < 10
+	if hasBase and (starter or fewHatches) then
+		local ready = eggSpot(data, true)
+		if ready then
+			return ready
+		end
+	end
+	if hasBase and starter and job.Kind == "Hatches" and next(data.Eggs or {}) ~= nil
+		and #data.Hatching < (data.Incubators or 4) and not C.PlacementController:IsHolding() then
+		return parkCentre(data.BaseIndex)
+	end
+	local zoneGoal = C.NextGoalController:AffordableZone()
+	if zoneGoal then
+		local gates = moon:FindFirstChild("Gates")
+		local gate = gates and gates:FindFirstChild("Gate_" .. zoneGoal) :: BasePart?
+		if gate then
+			return Vector3.new(gate.Position.X, 0, gate.Position.Z)
+		end
+	end
 	-- A finished Quest Master job: the path leads to him to claim it.
 	local quests = data.Quests
 	if hasBase and quests and quests.Job and quests.Job.Done then

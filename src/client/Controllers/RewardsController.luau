@@ -17,6 +17,7 @@ local Ui = require(Client.Ui)
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
 local Aliens = require(Shared.Config.Aliens)
+local Economy = require(Shared.Config.Economy)
 local Eggs = require(Shared.Config.Eggs)
 local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
@@ -92,6 +93,60 @@ local function describeAll(reward: Rewards.Reward): (string, string, Color3?)
 		label ..= " + " .. extra
 	end
 	return image, label, tint
+end
+
+-- The next daily reward: its day number, the reward and a short label for it.
+local function nextDaily(info): (number, Rewards.Reward?, string)
+	local day = if info.DailyReady then info.DailyIndex else (info.DailyIndex % #Rewards.Daily) + 1
+	local reward = Rewards.Daily[day]
+	if not reward then
+		return day, nil, ""
+	end
+	local _, label = describeAll(reward)
+	if reward.Kind == "Pet" then
+		local def = info.DailyPet and Aliens.ById[info.DailyPet]
+		label = (if def then `exclusive {def.Name}` else "an exclusive pet") .. (if reward.Bonus then " + " .. select(2, describe(reward.Bonus)) else "")
+	end
+	return day, reward, label
+end
+
+-- "See you tomorrow" card, once per session after 10 minutes, for players who haven't
+-- reached their day-7 reward yet (2026-11-07: ~2% of new players came back the next day,
+-- and most left before they ever saw the daily rewards).
+local COMEBACK_AFTER = 10 * 60
+local function comebackCard()
+	local data = State.data
+	local info = data and data.Rewards
+	if not data or not info or not data.Flags.TutorialDone then
+		return false
+	end
+	local streak = (data.Daily and data.Daily.Streak) or 0
+	if streak >= #Rewards.Daily then
+		return true -- regulars don't need it
+	end
+	if Ui.anyWindowOpen() or C.PurchaseController:IsBusy() or C.HatchController:IsBusy() then
+		return false -- try again in a moment
+	end
+	local day, reward, label = nextDaily(info)
+	if not reward then
+		return true
+	end
+	local returns = tonumber(data.Flags.OfflineReturns) or 0
+	local extra = if returns < Economy.FirstReturns then ` Next visit they pay {Economy.FirstReturnsOfflineMult}x!` else ""
+	C.ConfirmController:Ask({
+		title = if info.DailyReady then "DAILY REWARD!" else "SEE YOU TOMORROW!",
+		name = `Day {day}: {label}`,
+		text = (if info.DailyReady then "Claim it in Rewards today, then come back tomorrow for the next one!" else "Come back tomorrow to claim it!")
+			.. ` Your pets keep earning cash while you're away.{extra}`,
+		icon = "Icon_Daily",
+		yes = if info.DailyReady then "Claim it!" else "I'll be back!",
+		no = "Close",
+	}, function()
+		if info.DailyReady then
+			RewardsController:Toggle()
+		end
+	end)
+	return true
 end
 
 -- The wheel window labels its prizes the same way (WheelController).
@@ -370,13 +425,7 @@ local function renderLeave()
 	local tomorrow = leaveGui:FindFirstChild("Tomorrow", true) :: TextLabel?
 	local info = data.Rewards
 	if tomorrow and info then
-		local day = if info.DailyReady then info.DailyIndex else (info.DailyIndex % #Rewards.Daily) + 1
-		local reward = Rewards.Daily[day]
-		local _, label = describeAll(reward)
-		if reward and reward.Kind == "Pet" then
-			local def = info.DailyPet and Aliens.ById[info.DailyPet]
-			label = (if def then `exclusive {def.Name}` else "an exclusive pet") .. (if reward.Bonus then " + " .. select(2, describe(reward.Bonus)) else "")
-		end
+		local day, reward, label = nextDaily(info)
 		local when = if info.DailyReady then "DON'T FORGET" else "COME BACK TOMORROW FOR"
 		tomorrow.Text = `{when} {gold}DAY {day}: {string.upper(label)}</font>!`
 		tomorrow.Visible = reward ~= nil
@@ -427,6 +476,12 @@ function RewardsController:Init(controllers)
 end
 
 function RewardsController:Start()
+	task.spawn(function()
+		task.wait(COMEBACK_AFTER)
+		while not comebackCard() do
+			task.wait(5)
+		end
+	end)
 	Ui.button(Ui.find(Ui.screen("Hud"), "MoreMenu.Items.RewardsButton"), function()
 		RewardsController:Toggle()
 	end)

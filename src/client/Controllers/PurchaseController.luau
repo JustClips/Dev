@@ -23,6 +23,7 @@ local LimitedEgg = require(Shared.Config.LimitedEgg)
 local Net = require(Shared.Net)
 local Products = require(Shared.Config.Products)
 local Tools = require(Shared.Config.Tools)
+local Zones = require(Shared.Config.Zones)
 
 local HEAVY = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Heavy)
 local INK = Color3.fromRGB(23, 25, 30)
@@ -78,6 +79,12 @@ type Look = { name: string, icon: string?, egg: string?, eggZone: string?, color
 
 -- What to show for a product or pass key: a picture (icon or 3D egg), its name and colour.
 local function lookFor(key: string): Look
+	-- A zone you just opened (ZoneController, not a purchase): "Zone:<id>".
+	local zoneId = string.match(key, "^Zone:(.+)$")
+	if zoneId then
+		local zone = Zones.ById[zoneId]
+		return { name = if zone then string.upper(zone.Name) .. " IS OPEN!" else "NEW AREA!", icon = "Icon_Zones", color = GREEN, toBag = false }
+	end
 	local pass = Products.PassByKey[key]
 	if pass then
 		return { name = pass.Name, icon = PASS_ICONS[key] or "Icon_Star", color = PURPLE, toBag = false }
@@ -190,7 +197,8 @@ local function play(key: string, info: any)
 	local look = lookFor(key)
 	local still = Ui.reducedMotion()
 	local gift = type(info) == "table" and (info.From or info.To) or nil
-	local title = if type(info) == "table" and info.From
+	local title = if type(info) == "table" and info.Title then info.Title
+		elseif type(info) == "table" and info.From
 		then "GIFT FOR YOU!"
 		elseif type(info) == "table" and info.To then "GIFT SENT!"
 		else "PURCHASED!"
@@ -290,7 +298,8 @@ local function play(key: string, info: any)
 	name.TextTransparency = 1
 	local nameStroke = name:FindFirstChildOfClass("UIStroke") :: UIStroke
 	nameStroke.Transparency = 1
-	local subText = if type(info) == "table" and info.From
+	local subText = if type(info) == "table" and info.Sub then info.Sub
+		elseif type(info) == "table" and info.From
 		then `from {info.From}`
 		elseif type(info) == "table" and info.To then `to {info.To}`
 		else "Thanks for supporting the game!"

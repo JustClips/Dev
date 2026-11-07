@@ -46,6 +46,10 @@ local Economy = {
 	OfflineCapSeconds = 8 * 3600,
 	OfflineCapSecondsVIP = 12 * 3600,
 	OfflineMinSeconds = 60, -- below this, no welcome back screen
+	-- A new player's first few comebacks pay extra offline cash (2026-11-07: only ~2% of new
+	-- players came back the next day). The 10-minute "see you tomorrow" card says so.
+	FirstReturnsOfflineMult = 3,
+	FirstReturns = 3,
 
 	-- Cash multipliers
 	VIPCashBonus = 0.2,

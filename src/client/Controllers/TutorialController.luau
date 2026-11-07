@@ -25,10 +25,13 @@ local Ui = require(Client.Ui)
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local AssetLibrary = require(Shared.AssetLibrary)
+local BigNum = require(Shared.BigNum)
 local Format = require(Shared.Format)
 local Items = require(Shared.Config.Items)
 local Net = require(Shared.Net)
 local Quests = require(Shared.Config.Quests)
+local Tools = require(Shared.Config.Tools)
+local Zones = require(Shared.Config.Zones)
 local World = require(Shared.Config.World)
 
 local NEAR_PARK = 75 -- studs from the park centre to put the egg in your hands
@@ -377,8 +380,78 @@ local function standingStill(): boolean
 	return now - stillSince >= STILL_SECONDS
 end
 
--- After the tutorial: the Quest Master's first jobs (free Broom, free Sweep Power, free
--- spin) used to be tutorial steps, so the pointer still shows their button until done.
+-- After the tutorial: the first Quest Master jobs (Config/Quests StarterJobs: hatch 3,
+-- Rake, Park) keep the tutorial card up with a "what to do now" line and progress, so
+-- the guidance doesn't stop when the tutorial does (2026-11-07 funnel check: 57% of new
+-- players left right at the end of the tutorial). Returns nil when no goal card is due.
+local GOAL_JOBS = 3
+local EGG_NUDGE_EVERY = 60
+local lastEggNudge = os.clock()
+local function bagEggCount(data): number
+	local n = 0
+	for _ in data.Eggs or {} do
+		n += 1
+	end
+	return n
+end
+
+local function freeIncubators(data): number
+	return math.max(0, (data.Incubators or 4) - #data.Hatching)
+end
+
+local function readyEggs(data): number
+	local now, n = State.now(), 0
+	for _, entry in data.Hatching do
+		if entry.EndsAt <= now then
+			n += 1
+		end
+	end
+	return n
+end
+
+local function goalLine(data): (string?, string?, number?)
+	local job = data.Quests and data.Quests.Job
+	if not job or job.Done or (job.Number or 99) > GOAL_JOBS then
+		return nil
+	end
+	local cash = BigNum.toNumber(data.Cash)
+	if job.Kind == "Hatches" then
+		local bag = bagEggCount(data) + #data.CarriedEggs
+		if readyEggs(data) > 0 then
+			return "Your egg is ready! Open it in your pet park.", "Icon_Egg", job.Fraction
+		elseif bag > 0 and freeIncubators(data) > 0 then
+			local eggs = if bag == 1 then "an egg" else `{bag} eggs`
+			return `You have {eggs}! Take them home and place them.`, "Icon_Egg", job.Fraction
+		elseif #data.Hatching > 0 then
+			return "Your eggs are hatching! Sweep for more eggs meanwhile.", "Icon_Egg", job.Fraction
+		end
+		return "Sweep leaves to find eggs, then hatch them!", "Icon_Egg", job.Fraction
+	elseif job.Kind == "Tool" then
+		local tool = Tools.get(math.min(job.Goal or 3, Tools.MaxTier))
+		if data.ToolTier + 1 < tool.Tier then
+			return nil
+		end
+		local frac = math.clamp(cash / math.max(1, tool.Price), 0, 1)
+		if cash >= tool.Price then
+			return `You can buy the {tool.Name}! Tap BUY!`, AssetLibrary.toolIcon(tool.Id), 1
+		end
+		return `Sweep and sell to get the {tool.Name}: {Format.cash(cash)} / {Format.cash(tool.Price)}`, AssetLibrary.toolIcon(tool.Id), frac
+	elseif job.Kind == "Zones" then
+		local zone = Zones.List[job.Goal or 2]
+		if not zone or data.ZonesUnlocked[zone.Id] then
+			return nil
+		end
+		local frac = math.clamp(cash / math.max(1, zone.UnlockCost), 0, 1)
+		if cash >= zone.UnlockCost then
+			return `Open the {zone.Name}! Follow the arrow to the gate.`, "Icon_Zones", 1
+		end
+		return `Save {Format.cash(zone.UnlockCost)} to open the {zone.Name}: {zone.CashMult}x cash!`, "Icon_Zones", frac
+	end
+	return nil
+end
+
+-- After the tutorial: the Quest Master's first jobs (hatch 3, Rake, Park, free spin) keep
+-- the tutorial pointer on their button until done (the Rake only once you can pay for it).
 -- No dimming: the player is free to do other things.
 local function jobPointer(data): GuiObject?
 	local job = data.Quests and data.Quests.Job
@@ -386,6 +459,10 @@ local function jobPointer(data): GuiObject?
 		return nil
 	end
 	if job.Kind == "Tool" then
+		local tool = Tools.get(math.min(data.ToolTier + 1, Tools.MaxTier))
+		if not BigNum.gte(data.Cash, tool.Price) then
+			return nil
+		end
 		if Ui.isOpen(Ui.screen("Garage")) then
 			return C.GarageController:NextToolButton()
 		end
@@ -576,12 +653,46 @@ local function update()
 	if celebrating then
 		return
 	end
+	-- Eggs left in the bag with room in the park: a reminder every minute for newer
+	-- players (2026-11-07: finishers left with 3-5 eggs never placed).
+	local bag = bagEggCount(data)
+	if bag > 0 and freeIncubators(data) > 0 and (data.Stats.Hatches or 0) < 15
+		and os.clock() - lastEggNudge > EGG_NUDGE_EVERY and os.clock() >= nudgeUntil then
+		lastEggNudge = os.clock()
+		local job = data.Quests and data.Quests.Job
+		if not (job and job.Kind == "Hatches" and (job.Number or 99) <= GOAL_JOBS) then
+			nudgeText = if bag == 1 then "You have an egg in your bag! Place it at home to hatch it."
+				else `You have {bag} eggs in your bag! Place them at home to hatch them.`
+			nudgeUntil = os.clock() + NUDGE_SECONDS
+			Ui.sound("Notify")
+		end
+	end
 	if os.clock() < nudgeUntil and not holding then
 		card.Visible = true
 		stepLabel.Visible = false
 		barFill.Parent.Visible = false
 		cardIcon.Image = AssetLibrary.image("Icon_Egg")
 		textLabel.Text = nudgeText
+		return
+	end
+	local line, icon, frac = goalLine(data)
+	if line and not holding then
+		local job = data.Quests.Job
+		-- Hatch job: walking into your park puts a bag egg in your hands, like the
+		-- tutorial's Place step (you still place it yourself).
+		if job.Kind == "Hatches" and freeIncubators(data) > 0 then
+			placeEggNearPark(data)
+		end
+		card.Visible = true
+		stepLabel.Visible = true
+		stepLabel.Text = `GOAL {job.Number}/{GOAL_JOBS}`
+		if textLabel.Text ~= line then
+			textLabel.Text = line
+		end
+		local image = if icon and string.find(icon, "rbx", 1, true) then icon else AssetLibrary.image(icon or "Icon_Star")
+		cardIcon.Image = image
+		barFill.Parent.Visible = true
+		barFill.Size = UDim2.fromScale(math.clamp(frac or 0, 0, 1), 1)
 		return
 	end
 	card.Visible = false
