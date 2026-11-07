@@ -22,7 +22,7 @@ if RunService:IsRunning() then
 	return -- don't sync into play-test sessions
 end
 
-local VERSION = "v11"
+local VERSION = "v12"
 local TAG = "LiveSync"
 local PATH_ATTR = "LiveSyncPath"
 local WAIT_SECONDS = 20
@@ -653,6 +653,27 @@ local function fetchAsset(id: number, cache: boolean): (boolean, any)
 	return false, res
 end
 
+-- v12: some uploaded models (the City Prop pack) carry SurfaceAppearances whose EmissiveMaskContent
+-- points at rbxassetid://3, 4, 5, 7 (leftover local image indices). Those never load, spam
+-- "Request asset was not found" and make every play test fail to upload TexturePacks. Only a
+-- plugin may write that property, so it is cleared here.
+local function fixBadMaps(root: Instance): number
+	local n = 0
+	for _, d in root:GetDescendants() do
+		if d:IsA("SurfaceAppearance") then
+			pcall(function()
+				local c = (d :: any).EmissiveMaskContent
+				local id = c and c.Uri and tonumber(tostring(c.Uri):match("^rbxassetid://(%d+)$"))
+				if id and id < 100000 then
+					(d :: any).EmissiveMaskContent = Content.none
+					n += 1
+				end
+			end)
+		end
+	end
+	return n
+end
+
 local function dropParts(root: Instance, raw: any)
 	if type(raw) ~= "string" or raw == "" then
 		return
@@ -715,6 +736,7 @@ local function loadAssetInto(model: Model)
 				d:Destroy()
 			end
 		end
+		fixBadMaps(container)
 		if typeof(placed) == "CFrame" or type(scale) == "number" then
 			container.WorldPivot = CFrame.identity
 			if type(scale) == "number" and scale > 0 and scale ~= 1 then
@@ -829,6 +851,10 @@ local function loadAssets()
 			loadAssetInto(inst)
 			if inst:GetAttribute(LOADED_ATTR) then
 				applyTextures(inst)
+				if inst:GetAttribute(CFRAME_ATTR) ~= nil and not inst:GetAttribute("LiveSyncMapsFixed") then
+					fixBadMaps(inst)
+					inst:SetAttribute("LiveSyncMapsFixed", true)
+				end
 				-- v9: also clear SurfaceAppearances left in models loaded by older versions; they
 				-- make every play test try to upload TexturePacks ("Referenced Asset N is NOT found")
 				if type(inst:GetAttribute(TEXTURES_ATTR)) == "string" then
