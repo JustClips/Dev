@@ -22,7 +22,7 @@ if RunService:IsRunning() then
 	return -- don't sync into play-test sessions
 end
 
-local VERSION = "v10"
+local VERSION = "v11"
 local TAG = "LiveSync"
 local PATH_ATTR = "LiveSyncPath"
 local WAIT_SECONDS = 20
@@ -615,16 +615,77 @@ local function applyTextures(model: Model)
 	model:SetAttribute(TEXTURED_ATTR, raw)
 end
 
+-- v11: placed props (street lamps, signals: many copies of a few small models)
+--   LiveSyncScale  (number)  the asset is scaled by this about its own origin
+--   LiveSyncCFrame (CFrame)  then moved by this: a part at P in the asset ends at CFrame * P.
+--                            Used instead of LiveSyncBoxCenter, so props can be turned.
+--   LiveSyncDrop   (string)  comma-separated Lua patterns; parts whose name matches one are
+--                            deleted after loading (e.g. old baked lamps in a street mesh)
+-- Assets with LiveSyncCFrame are loaded once per session and cloned for every copy.
+local SCALE_ATTR, CFRAME_ATTR, DROP_ATTR = "LiveSyncScale", "LiveSyncCFrame", "LiveSyncDrop"
+local assetCache: { [number]: Instance } = {}
+local assetWaiting: { [number]: { thread } } = {}
+
+local function fetchAsset(id: number, cache: boolean): (boolean, any)
+	if not cache then
+		return pcall(InsertService.LoadAsset, InsertService, id)
+	end
+	if not assetCache[id] and assetWaiting[id] then
+		table.insert(assetWaiting[id], coroutine.running())
+		coroutine.yield()
+	end
+	if assetCache[id] then
+		return true, assetCache[id]:Clone()
+	end
+	assetWaiting[id] = {}
+	local ok, res = pcall(InsertService.LoadAsset, InsertService, id)
+	if ok then
+		assetCache[id] = res
+	end
+	local waiting = assetWaiting[id]
+	assetWaiting[id] = nil
+	for _, th in waiting do
+		task.spawn(th)
+	end
+	if ok then
+		return true, res:Clone()
+	end
+	return false, res
+end
+
+local function dropParts(root: Instance, raw: any)
+	if type(raw) ~= "string" or raw == "" then
+		return
+	end
+	local patterns = string.split(raw, ",")
+	for _, d in root:GetDescendants() do
+		if d:IsA("BasePart") then
+			for _, p in patterns do
+				if p ~= "" and d.Name:match(p) then
+					d:Destroy()
+					break
+				end
+			end
+		end
+	end
+end
+
 local function loadAssetInto(model: Model)
 	local id = tonumber(model:GetAttribute(ASSET_ATTR))
 	local center = model:GetAttribute(CENTER_ATTR)
+	local scale = model:GetAttribute(SCALE_ATTR)
+	local placed = model:GetAttribute(CFRAME_ATTR)
+	local drop = model:GetAttribute(DROP_ATTR)
 	local want = `{id}|{tostring(center)}`
+	if scale ~= nil or placed ~= nil or drop ~= nil then
+		want ..= `|{tostring(scale)}|{tostring(placed)}|{tostring(drop)}`
+	end
 	if not id or model:GetAttribute(LOADED_ATTR) == want or loadingAssets[model] then
 		return
 	end
 	loadingAssets[model] = true
 	task.spawn(function()
-		local ok, container = pcall(InsertService.LoadAsset, InsertService, id)
+		local ok, container = fetchAsset(id, typeof(placed) == "CFrame")
 		loadingAssets[model] = nil
 		if not ok then
 			warn(`[LiveSync] could not load asset {id} into {model:GetFullName()}: {container}`)
@@ -654,14 +715,25 @@ local function loadAssetInto(model: Model)
 				d:Destroy()
 			end
 		end
+		if typeof(placed) == "CFrame" or type(scale) == "number" then
+			container.WorldPivot = CFrame.identity
+			if type(scale) == "number" and scale > 0 and scale ~= 1 then
+				container:ScaleTo(scale)
+			end
+			if typeof(placed) == "CFrame" then
+				container:PivotTo(placed)
+			end
+		end
 		for _, child in container:GetChildren() do
 			child.Parent = model
 		end
 		container:Destroy()
-		if typeof(center) == "Vector3" then
+		if typeof(center) == "Vector3" and typeof(placed) ~= "CFrame" then
 			local box = model:GetBoundingBox()
 			model:PivotTo(CFrame.new(center) * box:ToObjectSpace(model:GetPivot()))
 		end
+		-- after centring: the box is the whole uploaded mesh, dropped parts included
+		dropParts(model, drop)
 		applyTextures(model)
 		model:SetAttribute(LOADED_ATTR, want)
 		if recording then
