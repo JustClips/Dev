@@ -22,7 +22,7 @@ if RunService:IsRunning() then
 	return -- don't sync into play-test sessions
 end
 
-local VERSION = "v9"
+local VERSION = "v10"
 local TAG = "LiveSync"
 local PATH_ATTR = "LiveSyncPath"
 local WAIT_SECONDS = 20
@@ -763,6 +763,16 @@ local function loadAssets()
 					for _, d in inst:GetDescendants() do
 						if d:IsA("SurfaceAppearance") then
 							d:Destroy()
+						elseif
+							-- v10: exact collision. One Blender part often spans a whole lot (all the
+							-- fence pieces are one mesh), and the default rough shape makes invisible
+							-- walls over yards and doorways.
+							d:IsA("MeshPart")
+							and d.CollisionFidelity ~= Enum.CollisionFidelity.PreciseConvexDecomposition
+						then
+							pcall(function()
+								d.CollisionFidelity = Enum.CollisionFidelity.PreciseConvexDecomposition
+							end)
 						end
 					end
 				end
