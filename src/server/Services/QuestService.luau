@@ -335,6 +335,36 @@ local function notifyReady(player: Player, key: string, text: string, isJob: boo
 	Net.fire("QuestReady", player, { Text = text, Job = isJob, Npc = npc })
 end
 
+-- Eggs you could still hatch: in the bag, in your hands, and in the park (ready or not).
+local function eggsOnHand(player: Player, data): number
+	local session = S.DataService:GetSession(player)
+	local carried = if session then #(session.Runtime.Carried or {}) else 0
+	return count(data.Eggs) + carried + #data.Hatching
+end
+
+-- Job 1 "Hatch 3 eggs" never dead-ends: when you don't have enough eggs for the hatches
+-- left, the Quest Master puts the missing ones in your bag (Quests.StarterEggs). The goal
+-- card and the path then lead you home to place them (TutorialController, ArrowController).
+local function topUpStarterEggs(player: Player, data, job: Quests.Quest, progress: number)
+	local cfg = Quests.StarterEggs
+	if job.Kind ~= "Hatches" or data.Flags.QuestJob ~= cfg.Job or (data.Stats.Hatches or 0) < 1 then
+		return
+	end
+	local given = tonumber(data.Flags.StarterEggsGiven) or 0
+	local need = Quests.target(job) - progress - eggsOnHand(player, data)
+	local n = math.min(need, cfg.MaxGiven - given)
+	if n <= 0 then
+		return
+	end
+	for _ = 1, n do
+		S.InventoryService:AddEgg(player, cfg.Rarity, Zones.StartZone, true)
+	end
+	data.Flags.StarterEggsGiven = given + n
+	S.AnalyticsService:Custom(player, "StarterEggs", n, nil)
+	local eggs = if n == 1 then "an egg" else `{n} eggs`
+	Net.fire("Notify", player, `The Quest Master gave you {eggs}! Place them in your pet park.`, "Egg")
+end
+
 function QuestService:Update(player: Player)
 	local data = S.DataService:GetData(player)
 	if not data or data.Flags.TutorialDone ~= true then
@@ -342,6 +372,9 @@ function QuestService:Update(player: Player)
 	end
 	local now_ = counters(player, data)
 	local job, jp = jobState(player, data, now_)
+	if job and jp < Quests.target(job) then
+		topUpStarterEggs(player, data, job, jp)
+	end
 	if job and jp >= Quests.target(job) then
 		-- Quest Master jobs claim themselves (2026-11-03 funnel check: 69% of new players
 		-- never got past job 1, some finished it and never claimed). The chain keeps moving

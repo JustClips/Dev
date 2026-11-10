@@ -67,6 +67,11 @@ end
 -- spin comes after. StarterJobs = how many of the first jobs get the tutorial-style pointer. The free Broom and free Sweep Power jobs were removed 2026-11-01 (Dev):
 -- the tutorial teaches both now.
 Quests.StarterJobs = 4
+-- Job 1 "Hatch 3 eggs": the Quest Master tops up your egg bag so you always have enough
+-- eggs for the hatches you still need (2026-11-10 funnel check: 63% of tutorial finishers
+-- sat on this job and 460 of 558 had no egg at all, so they quit). Only once the egg lesson
+-- is done (first hatch). MaxGiven caps the free eggs per save.
+Quests.StarterEggs = { Job = 1, Rarity = "Common", MaxGiven = 4 }
 -- Bump when jobs are added/removed/moved: QuestService moves saved job numbers (v2 added
 -- Broom, Power, FreeSpin in front; v3 removed Broom and Power; v4 moved Hatches 3, Tool 3
 -- and Zones 2 to the front).
