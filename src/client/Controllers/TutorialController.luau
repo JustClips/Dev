@@ -384,7 +384,7 @@ end
 -- Rake, Park) keep the tutorial card up with a "what to do now" line and progress, so
 -- the guidance doesn't stop when the tutorial does (2026-11-07 funnel check: 57% of new
 -- players left right at the end of the tutorial). Returns nil when no goal card is due.
-local GOAL_JOBS = 3
+local GOAL_JOBS = 4
 local EGG_NUDGE_EVERY = 60
 local lastEggNudge = os.clock()
 local function bagEggCount(data): number
@@ -446,8 +446,57 @@ local function goalLine(data): (string?, string?, number?)
 			return `Open the {zone.Name}! Follow the arrow to the gate.`, "Icon_Zones", 1
 		end
 		return `Save {Format.cash(zone.UnlockCost)} to open the {zone.Name}: {zone.CashMult}x cash!`, "Icon_Zones", frac
+	elseif job.Kind == "FreeSpin" then
+		if Ui.isOpen(Ui.screen("Wheel")) then
+			return "Tap SPIN! Your spin is FREE!", "Icon_Spin", 0
+		end
+		return "Your FREE spin is waiting! Tap SPIN!", "Icon_Spin", 0
 	end
 	return nil
+end
+
+-- Quest 4 (free spin) and quest 2 (Rake, once you can pay for it) open their window by
+-- themselves, once per visit, so the pointer lands right on the button (2026-11-11 funnel
+-- check: 32% of egg-lesson finishers stopped at the free spin after ~6.6 min, 19% at the
+-- Rake). Waits for a calm moment: no window open, nothing in hand, no hatch show. The
+-- server logs it (Analytics "JobOpen") so the next funnel check can count it.
+local JOB_OPEN_DELAY = 2.5
+local jobOpened: { [string]: boolean } = {}
+local jobReadyAt: { [string]: number } = {}
+local function jobAutoOpen(data, holding: boolean)
+	local job = data.Quests and data.Quests.Job
+	if not job or job.Done or (job.Number or 99) > Quests.StarterJobs then
+		return
+	end
+	local kind = job.Kind
+	if jobOpened[kind] or (kind ~= "FreeSpin" and kind ~= "Tool") then
+		return
+	end
+	local ready = true
+	if kind == "Tool" then
+		local tool = Tools.get(math.min(data.ToolTier + 1, Tools.MaxTier))
+		ready = data.ToolTier < Tools.MaxTier and tool.Tier <= (job.Goal or 3) and BigNum.gte(data.Cash, tool.Price)
+	end
+	if not ready or holding or Ui.anyWindowOpen() then
+		jobReadyAt[kind] = nil
+		return
+	end
+	local now = os.clock()
+	if not jobReadyAt[kind] then
+		jobReadyAt[kind] = now
+		return
+	end
+	if now - jobReadyAt[kind] < JOB_OPEN_DELAY then
+		return
+	end
+	jobOpened[kind] = true
+	C.MenuController:Close()
+	if kind == "FreeSpin" then
+		C.WheelController:Open()
+	else
+		C.GarageController:Open("Tools")
+	end
+	Ui.report("JobOpen", kind)
 end
 
 -- After the tutorial: the Quest Master's first jobs (hatch 3, Rake, Park, free spin) keep
@@ -634,7 +683,11 @@ local function update()
 	end
 
 	-- Tutorial finished.
-	pointAt(jobPointer(data) or C.NextGoalController:Pointer(), false)
+	-- The free spin inside the open wheel gets the full spotlight (rest of the screen dims).
+	local jobTarget = jobPointer(data)
+	local spinJob = data.Quests and data.Quests.Job
+	local spotlight = jobTarget ~= nil and spinJob ~= nil and spinJob.Kind == "FreeSpin" and Ui.isOpen(Ui.screen("Wheel"))
+	pointAt(jobTarget or C.NextGoalController:Pointer(), spotlight)
 	holdHint.Visible = false
 	card.Position = UDim2.new(0.5, 0, 1, -cardLift(false))
 	glow.Enabled = false
@@ -653,6 +706,7 @@ local function update()
 	if celebrating then
 		return
 	end
+	jobAutoOpen(data, holding)
 	-- Eggs left in the bag with room in the park: a reminder every minute for newer
 	-- players (2026-11-07: finishers left with 3-5 eggs never placed).
 	local bag = bagEggCount(data)

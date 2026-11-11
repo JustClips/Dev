@@ -347,6 +347,21 @@ local function onClient(player: Player, kind: any, arg: any)
 	end
 	if kind == "Loaded" then
 		AnalyticsService:Funnel(player, "Loaded")
+	elseif kind == "JobOpen" and (arg == "FreeSpin" or arg == "Tool") then
+		-- TutorialController opened the wheel / Gear for quest 4 / quest 2 by itself. Kept
+		-- in the save too (first time only) so save-dump funnel checks can count it.
+		local data = S.DataService:GetData(player)
+		if data then
+			local seen = data.Flags.JobAutoOpen
+			if type(seen) ~= "table" then
+				seen = {}
+				data.Flags.JobAutoOpen = seen
+			end
+			if seen[arg] == nil then
+				seen[arg] = os.time()
+			end
+		end
+		AnalyticsService:Custom(player, "JobAutoOpen", 1, { Job = arg })
 	elseif kind == "Open" and type(arg) == "string" and WINDOWS[arg] then
 		rt.lastWindow = arg
 		rt.windows += 1
